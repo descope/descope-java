@@ -12,6 +12,6 @@ import lombok.Data;
 public class Provider {
   private Client client;
   private AuthParams authParams;
-  private Key providedKey;
-  private Map<String, Key> keyMap;
+  private Key providedKey; // Probably provided by Client
+  private Map<String, Key> keyMap; // If no key was provided | key is Project ID
 }

@@ -76,8 +76,8 @@ class MagicLinkServiceImpl extends AuthenticationsBase
     var apiProxy = getApiProxy();
     var jwtResponse = apiProxy.post(verifyMagicLinkURL, verifyRequest, JWTResponse.class);
 
-    Token sessionToken = createToken(jwtResponse.getSessionJwt());
-    Token refreshToken = createToken(jwtResponse.getRefreshJwt());
+    Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
+    Token refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
 
     // TODO - Set Cookies | 18/04/23 | by keshavram
 

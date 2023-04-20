@@ -19,10 +19,7 @@ import com.descope.model.magiclink.MaskedPhoneRes;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.AuthenticationService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.Jwts;
+import com.descope.utils.JwtUtils;
 import java.math.BigInteger;
 import java.net.URI;
 import java.security.Key;
@@ -65,6 +62,8 @@ abstract class AuthenticationsBase implements AuthenticationService {
       return provider.getProvidedKey();
     }
 
+    // TODO - Cache keys | 18/04/23 | by keshavram
+
     String projectId = authParams.getProjectId();
     var apiProxy = getApiProxy();
     var uri = composeGetKeysURI(projectId);
@@ -76,6 +75,7 @@ abstract class AuthenticationsBase implements AuthenticationService {
     }
 
     // TODO - Understand the concept | 18/04/23 | by keshavram
+    // Will have rotating keys
     var signingKey = signingKeys[0];
     var publicKey = getPublicKey(signingKey);
 
@@ -162,26 +162,10 @@ abstract class AuthenticationsBase implements AuthenticationService {
     return uri.resolve(newPath).normalize();
   }
 
-  Token createToken(String jwt) {
+  Token validateAndCreateToken(String jwt) {
     if (StringUtils.isBlank(jwt)) {
       throw ClientFunctionalException.invalidToken();
     }
-
-    var jwtParser =
-        Jwts.parserBuilder()
-            .setSigningKey(requestKeys())
-            .setAllowedClockSkewSeconds(SKEW_SECONDS)
-            .build();
-    Jws<Claims> claimsJws = jwtParser.parseClaimsJws(jwt);
-    JwsHeader<?> header = claimsJws.getHeader();
-    var claims = claimsJws.getBody();
-
-    return Token.builder()
-        .jwt(jwt)
-        .projectId(header.getKeyId())
-        .id(claims.getId())
-        .expiration(claims.getExpiration().getTime())
-        .claims(claims)
-        .build();
+    return JwtUtils.getToken(jwt, requestKeys());
   }
 }
