@@ -48,6 +48,18 @@ abstract class AuthenticationsBase implements AuthenticationService {
         Provider.builder().client(client).authParams(authParams).keyMap(new HashMap<>()).build();
   }
 
+  @SneakyThrows
+  // https://mojoauth.com/blog/jwt-validation-with-jwks-java/
+  private static PublicKey getPublicKey(SigningKey signingKey) {
+    byte[] exponentB = Base64.getUrlDecoder().decode(signingKey.getE());
+    byte[] modulusB = Base64.getUrlDecoder().decode(signingKey.getN());
+    BigInteger bigExponent = new BigInteger(1, exponentB);
+    BigInteger bigModulus = new BigInteger(1, modulusB);
+
+    return KeyFactory.getInstance(signingKey.getKty())
+        .generatePublic(new RSAPublicKeySpec(bigModulus, bigExponent));
+  }
+
   ApiProxy getApiProxy() {
     String projectId = authParams.getProjectId();
     if (StringUtils.isNotBlank(projectId)) {
@@ -81,18 +93,6 @@ abstract class AuthenticationsBase implements AuthenticationService {
 
     provider.setProvidedKey(publicKey);
     return publicKey;
-  }
-
-  @SneakyThrows
-  // https://mojoauth.com/blog/jwt-validation-with-jwks-java/
-  private static PublicKey getPublicKey(SigningKey signingKey) {
-    byte[] exponentB = Base64.getUrlDecoder().decode(signingKey.getE());
-    byte[] modulusB = Base64.getUrlDecoder().decode(signingKey.getN());
-    BigInteger bigExponent = new BigInteger(1, exponentB);
-    BigInteger bigModulus = new BigInteger(1, modulusB);
-
-    return KeyFactory.getInstance(signingKey.getKty())
-        .generatePublic(new RSAPublicKeySpec(bigModulus, bigExponent));
   }
 
   URI composeGetKeysURI(String projectId) {

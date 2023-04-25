@@ -9,8 +9,7 @@ public class ApiProxyBuilder {
     return new ApiProxyImpl();
   }
 
-  public static ApiProxy buildProxy(Supplier<String> authHeaderSupplier){
+  public static ApiProxy buildProxy(Supplier<String> authHeaderSupplier) {
     return new ApiProxyImpl(authHeaderSupplier);
   }
-
 }
