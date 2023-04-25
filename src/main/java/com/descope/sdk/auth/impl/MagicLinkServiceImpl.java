@@ -1,9 +1,10 @@
 package com.descope.sdk.auth.impl;
 
 import static com.descope.enums.DeliveryMethod.EMAIL;
-import static com.descope.literals.Routes.AuthEndPoints.SIGN_IN_MAGIC_LINK;
-import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_MAGIC_LINK;
-import static com.descope.literals.Routes.AuthEndPoints.VERIFY_MAGIC_LINK;
+import static com.descope.enums.DeliveryMethod.SMS;
+import static com.descope.literals.Routes.AuthEndPoints.*;
+import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
+import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
@@ -14,10 +15,7 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.JWTResponse;
 import com.descope.model.jwt.Token;
-import com.descope.model.magiclink.Masked;
-import com.descope.model.magiclink.SignInRequest;
-import com.descope.model.magiclink.SignUpRequest;
-import com.descope.model.magiclink.VerifyRequest;
+import com.descope.model.magiclink.*;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.MagicLinkService;
 import java.net.URI;
@@ -85,6 +83,80 @@ class MagicLinkServiceImpl extends AuthenticationsBase
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
   }
 
+  @Override
+  public String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri)
+      throws DescopeException {
+
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+
+    Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
+    URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
+    // TODO - Ask Slavik what about User Model when signing up? | 25/04/23 | by keshavram
+    var signInRequest = new SignInRequest(uri, loginId);
+
+    var apiProxy = getApiProxy();
+    var masked = apiProxy.post(magicLinkSignUpOrInURL, signInRequest, maskedClass);
+    return masked.getMasked();
+  }
+
+  @Override
+  public String updateUserEmail(String loginId, String email, String uri) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(email) || !EMAIL_PATTERN.matcher(email).matches()) {
+      throw ServerCommonException.invalidArgument("Email");
+    }
+
+    Class<? extends Masked> maskedClass = getMaskedValue(EMAIL);
+    URI magicLinkUpdateUserEmail = composeUpdateUserEmailMagiclink();
+
+    UpdateEmailRequest updateEmailRequest =
+        UpdateEmailRequest.builder()
+            .email(email)
+            .uri(uri)
+            .loginId(loginId)
+            .crossDevice(false)
+            .build();
+
+    var apiProxy = getApiProxy();
+    var masked = apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, maskedClass);
+    return masked.getMasked();
+  }
+
+  @Override
+  public String updateUserPhone(
+      DeliveryMethod deliveryMethod, String loginId, String phone, String uri)
+      throws DescopeException {
+
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(phone) || !PHONE_PATTERN.matcher(phone).matches()) {
+      throw ServerCommonException.invalidArgument("Phone");
+    }
+    if (deliveryMethod != DeliveryMethod.WHATSAPP && deliveryMethod != DeliveryMethod.SMS) {
+      throw ServerCommonException.invalidArgument("Method");
+    }
+
+    Class<? extends Masked> maskedClass = getMaskedValue(SMS);
+    URI magicLinkUpdateUserPhone = composeUpdateUserPhoneMagiclink(deliveryMethod);
+
+    UpdatePhoneRequest updatePhoneRequest =
+        UpdatePhoneRequest.builder()
+            .phone(phone)
+            .uri(uri)
+            .loginId(loginId)
+            .crossDevice(false)
+            .build();
+
+    var apiProxy = getApiProxy();
+    var masked = apiProxy.post(magicLinkUpdateUserPhone, updatePhoneRequest, maskedClass);
+    return masked.getMasked();
+  }
+
   private URI composeMagicLinkSignInURI(DeliveryMethod deliveryMethod) {
     return composeURI(SIGN_IN_MAGIC_LINK, deliveryMethod.getValue());
   }
@@ -95,5 +167,17 @@ class MagicLinkServiceImpl extends AuthenticationsBase
 
   private URI composeVerifyMagicLinkURL() {
     return getUri(VERIFY_MAGIC_LINK);
+  }
+
+  private URI composeMagicLinkSignUpOrInURI(DeliveryMethod deliveryMethod) {
+    return composeURI(SIGN_UP_OR_IN_MAGIC_LINK, deliveryMethod.getValue());
+  }
+
+  private URI composeUpdateUserEmailMagiclink() {
+    return composeURI(UPDATE_EMAIL_MAGIC_LINK, EMAIL.getValue());
+  }
+
+  private URI composeUpdateUserPhoneMagiclink(DeliveryMethod deliveryMethod) {
+    return composeURI(UPDATE_USER_PHONE_MAGIC_LINK, deliveryMethod.getValue());
   }
 }

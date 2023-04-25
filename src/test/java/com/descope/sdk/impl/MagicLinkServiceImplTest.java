@@ -1,14 +1,11 @@
 package com.descope.sdk.impl;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
@@ -19,6 +16,7 @@ import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
 import com.descope.model.magiclink.MaskedEmailRes;
+import com.descope.model.magiclink.MaskedPhoneRes;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.MagicLinkService;
@@ -41,6 +39,11 @@ class MagicLinkServiceImplTest {
   public static final String MOCK_EMAIL = "username@domain.com";
   public static final String MOCK_MASKED_EMAIL = "u*******@domain.com";
   public static final String MOCK_DOMAIN = "https://www.domain.com";
+  public static final String UPDATE_MOCK_EMAIL = "updateusername@domain.com";
+
+  public static final String MOCK_PHONE = "+11-1234567890";
+
+  public static final String MOCK_MASKED_PHONE = "+11-123XXXXX90";
   public static final UserResponse MOCK_USER_RESPONSE =
       new UserResponse(
           "someUserId",
@@ -151,6 +154,138 @@ class MagicLinkServiceImplTest {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
       String signIn = magicLinkService.signIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
       Assertions.assertThat(signIn).isNotBlank().contains("*");
+    }
+  }
+
+  @Test
+  void testSignUpOrInForSuccess() {
+    var apiProxy = mock(ApiProxy.class);
+    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
+    doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      String signUpOrIn =
+          magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
+      Assertions.assertThat(signUpOrIn).isNotBlank().contains("*");
+    }
+  }
+
+  @Test
+  void testSignUpOrInForEmptyloginId() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, "", MOCK_DOMAIN));
+
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserEmailForEmptyloginId() {
+
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.updateUserEmail("", MOCK_EMAIL, MOCK_DOMAIN));
+
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserEmailForEmptyEmail() {
+
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.updateUserEmail(MOCK_EMAIL, "", MOCK_DOMAIN));
+
+    assertNotNull(thrown);
+    assertEquals("The Email argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserEmailForInvalidEmail() {
+
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.updateUserEmail(MOCK_EMAIL, "abc", MOCK_DOMAIN));
+
+    assertNotNull(thrown);
+    assertEquals("The Email argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserEmailForSuccess() {
+    var apiProxy = mock(ApiProxy.class);
+    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
+    doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      String updateUserEmail =
+          magicLinkService.updateUserEmail(MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN);
+      Assertions.assertThat(updateUserEmail).isNotBlank().contains("*");
+    }
+  }
+
+  @Test
+  void testUpdateUserPhoneForLoginID() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(DeliveryMethod.SMS, "", MOCK_PHONE, MOCK_DOMAIN));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserPhoneForEmptyPhone() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, "", MOCK_DOMAIN));
+    assertNotNull(thrown);
+    assertEquals("The Phone argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserPhoneForInvalidPhone() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(
+                    DeliveryMethod.SMS, MOCK_EMAIL, "1234E", MOCK_DOMAIN));
+    assertNotNull(thrown);
+    assertEquals("The Phone argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserPhoneForInvalidMethod() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(
+                    DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN));
+    assertNotNull(thrown);
+    assertEquals("The Method argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserPhoneForSuccess() {
+    var apiProxy = mock(ApiProxy.class);
+    var maskedEmailRes = new MaskedPhoneRes(MOCK_MASKED_PHONE);
+    doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      String updateUserPhone =
+          magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN);
+      Assertions.assertThat(updateUserPhone).isNotBlank().contains("X");
     }
   }
 }

@@ -10,6 +10,7 @@ public class ErrorCode {
   // server common
   public static final String INVALID_ARGUMENT = "E011004";
 
+
   // client setup
   public static final String MISSING_PROJECT_ID = "G010001";
 
