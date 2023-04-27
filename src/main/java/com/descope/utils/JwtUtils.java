@@ -1,6 +1,7 @@
 package com.descope.utils;
 
 import com.descope.model.jwt.Token;
+import com.descope.model.magiclink.LoginOptions;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
@@ -9,6 +10,8 @@ import lombok.experimental.UtilityClass;
 
 import java.security.Key;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.nonNull;
 
 
 @UtilityClass
@@ -31,5 +34,9 @@ public class JwtUtils {
                 .expiration(claims.getExpiration().getTime())
                 .claims(claims)
                 .build();
+    }
+
+    public static boolean isJWTRequired(LoginOptions loginOptions) {
+        return nonNull(loginOptions) && (loginOptions.isStepUp() || loginOptions.isMfa());
     }
 }

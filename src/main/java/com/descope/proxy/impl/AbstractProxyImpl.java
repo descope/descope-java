@@ -1,6 +1,10 @@
 package com.descope.proxy.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -12,15 +16,19 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.util.function.Supplier;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 abstract class AbstractProxyImpl {
 
   private String authHeaderKey;
   private Supplier<String> authHeaderSupplier; // supplies value of AUTHORIZATION header
+
+  @SneakyThrows
+  private static <B> BodyPublisher getBodyPublisher(B body) {
+    var objectMapper = new ObjectMapper();
+    String requestBody = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(body);
+    return BodyPublishers.ofString(requestBody);
+  }
 
   protected void setAuthHeader(String authHeaderKey, Supplier<String> authHeaderSupplier) {
     if (StringUtils.isNotBlank(authHeaderKey) && authHeaderSupplier != null) {
@@ -56,13 +64,6 @@ abstract class AbstractProxyImpl {
     }
   }
 
-  @SneakyThrows
-  private static <B> BodyPublisher getBodyPublisher(B body) {
-    var objectMapper = new ObjectMapper();
-    String requestBody = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(body);
-    return BodyPublishers.ofString(requestBody);
-  }
-
   protected <B, R> R post(URI uri, B body, Class<R> returnClz) {
     return exchange(uri, "POST", body, returnClz);
   }
@@ -77,11 +78,6 @@ abstract class AbstractProxyImpl {
 
     public JsonBodyHandler(Class<R> returnClz) {
       this.returnClz = returnClz;
-    }
-
-    @Override
-    public HttpResponse.BodySubscriber<Supplier<R>> apply(HttpResponse.ResponseInfo responseInfo) {
-      return asJson(returnClz);
     }
 
     private static <R> HttpResponse.BodySubscriber<Supplier<R>> asJson(Class<R> returnClz) {
@@ -101,6 +97,13 @@ abstract class AbstractProxyImpl {
           throw new UncheckedIOException(e);
         }
       };
+    }
+
+    @Override
+    public HttpResponse.BodySubscriber<Supplier<R>> apply(HttpResponse.ResponseInfo responseInfo) {
+
+      return asJson(returnClz);
+
     }
   }
 }

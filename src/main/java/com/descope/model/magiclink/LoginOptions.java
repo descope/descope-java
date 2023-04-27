@@ -1,20 +1,18 @@
 package com.descope.model.magiclink;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignInRequest {
-
-  @JsonProperty("URI")
-  private String uri;
-
-  private String loginId;
-  private LoginOptions loginOptions;
+public class LoginOptions {
+  private boolean stepUp;
+  private boolean mfa;
+  private Map<String, Object> customClaims;
 }

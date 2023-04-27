@@ -10,11 +10,14 @@ import com.descope.model.client.Client;
 import com.descope.model.jwt.JWTResponse;
 import com.descope.model.jwt.Token;
 import com.descope.model.magiclink.*;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.MagicLinkService;
+import com.descope.utils.JwtUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
+import java.net.http.HttpRequest;
 import java.util.Objects;
 
 import static com.descope.enums.DeliveryMethod.EMAIL;
@@ -31,17 +34,22 @@ class MagicLinkServiceImpl extends AuthenticationsBase
     }
 
     @Override
-    public String signIn(DeliveryMethod deliveryMethod, String loginId, String uri)
+    public String signIn(DeliveryMethod deliveryMethod, String loginId, String uri, HttpRequest request, LoginOptions loginOptions)
             throws DescopeException {
         if (StringUtils.isBlank(loginId)) {
             throw ServerCommonException.invalidArgument("Login ID");
         }
 
+        ApiProxy apiProxy;
         Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
         URI magicLinkSignInURL = composeMagicLinkSignInURI(deliveryMethod);
-        var signInRequest = new SignInRequest(uri, loginId);
-
-        var apiProxy = getApiProxy();
+        var signInRequest = new SignInRequest(uri, loginId, loginOptions);
+        if (JwtUtils.isJWTRequired(loginOptions)) {
+            var pwd = getValidRefreshToken(request);
+            apiProxy = getApiProxy(pwd);
+        } else {
+            apiProxy = getApiProxy();
+        }
         var masked = apiProxy.post(magicLinkSignInURL, signInRequest, maskedClass);
         return masked.getMasked();
     }
@@ -96,7 +104,7 @@ class MagicLinkServiceImpl extends AuthenticationsBase
 
         URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
 
-        var signInRequest = new SignInRequest(uri, loginId);
+        var signInRequest = new SignInRequest(uri, loginId, null);
 
         var apiProxy = getApiProxy();
         var masked = apiProxy.post(magicLinkSignUpOrInURL, signInRequest, maskedClass);
@@ -104,7 +112,7 @@ class MagicLinkServiceImpl extends AuthenticationsBase
     }
 
     @Override
-    public String updateUserEmail(String loginId, String email, String uri) throws DescopeException {
+    public String updateUserEmail(String loginId, String email, String uri, HttpRequest request) throws DescopeException {
         if (StringUtils.isBlank(loginId)) {
             throw ServerCommonException.invalidArgument("Login ID");
         }
@@ -115,21 +123,21 @@ class MagicLinkServiceImpl extends AuthenticationsBase
             throw ServerCommonException.invalidArgument("Email");
         }
 
+        var pwd = getValidRefreshToken(request);
+
         Class<? extends Masked> maskedClass = getMaskedValue(EMAIL);
-
         URI magicLinkUpdateUserEmail = composeUpdateUserEmailMagiclink();
-
         UpdateEmailRequest updateEmailRequest = UpdateEmailRequest.builder().email(email).uri(uri)
                 .loginId(loginId).crossDevice(false).build();
 
-        var apiProxy = getApiProxy();
+        var apiProxy = getApiProxy(pwd);
         var masked = apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, maskedClass);
         return masked.getMasked();
 
     }
 
     @Override
-    public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String uri)
+    public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String uri, HttpRequest request)
             throws DescopeException {
 
         if (StringUtils.isBlank(loginId)) {
@@ -145,6 +153,8 @@ class MagicLinkServiceImpl extends AuthenticationsBase
             throw ServerCommonException.invalidArgument("Method");
         }
 
+        var pwd = getValidRefreshToken(request);
+
         Class<? extends Masked> maskedClass = getMaskedValue(SMS);
 
         URI magicLinkUpdateUserPhone = composeUpdateUserPhoneMagiclink(deliveryMethod);
@@ -152,7 +162,7 @@ class MagicLinkServiceImpl extends AuthenticationsBase
         UpdatePhoneRequest updatePhoneRequest = UpdatePhoneRequest.builder().phone(phone).uri(uri)
                 .loginId(loginId).crossDevice(false).build();
 
-        var apiProxy = getApiProxy();
+        var apiProxy = getApiProxy(pwd);
         var masked = apiProxy.post(magicLinkUpdateUserPhone, updatePhoneRequest, maskedClass);
         return masked.getMasked();
 
