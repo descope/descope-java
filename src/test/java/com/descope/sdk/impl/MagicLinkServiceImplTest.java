@@ -240,6 +240,28 @@ class MagicLinkServiceImplTest {
   }
 
   @Test
+  void testUpdateUserEmailForInvalidToken() {
+
+    ServerCommonException thrown = assertThrows(
+        ServerCommonException.class,
+        () -> magicLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, null));
+
+    assertNotNull(thrown);
+    assertEquals("Unable to find tokens from cookies", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateUserPhoneForInvalidToken() {
+
+    ServerCommonException thrown = assertThrows(
+        ServerCommonException.class,
+        () -> magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, null));
+
+    assertNotNull(thrown);
+    assertEquals("Unable to find tokens from cookies", thrown.getMessage());
+  }
+
+  @Test
   void testUpdateUserPhoneForLoginID() {
     ServerCommonException thrown = assertThrows(
         ServerCommonException.class,
@@ -248,6 +270,7 @@ class MagicLinkServiceImplTest {
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
+
 
   @Test
   void testUpdateUserPhoneForEmptyPhone() {
