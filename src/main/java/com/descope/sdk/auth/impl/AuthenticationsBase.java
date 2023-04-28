@@ -2,6 +2,7 @@ package com.descope.sdk.auth.impl;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ClientFunctionalException;
+import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.User;
 import com.descope.model.auth.AuthParams;
@@ -20,6 +21,7 @@ import com.descope.utils.JwtUtils;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -216,5 +218,24 @@ abstract class AuthenticationsBase implements AuthenticationService {
     return tokens;
   }
 
+  @Override
+  public Token validateSessionWithRequest(HttpRequest httpRequest) throws DescopeException {
+    if (isNull(httpRequest)) {
+      throw ServerCommonException.invalidArgument("request");
+    }
+    Tokens tokens = provideTokens(httpRequest);
+    if (Strings.isEmpty(tokens.getSessionToken())) {
+      ServerCommonException.errMissingArguments("Request doesn't contain session token");
+    }
+    return validateSession(tokens.getSessionToken());
+  }
+
+  private Token validateSession(String sessionToken) {
+    return validateJWT(sessionToken);
+  }
+
+  private Token validateJWT(String jwt) {
+    return JwtUtils.getToken(jwt, requestKeys());
+  }
 }
 
