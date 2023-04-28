@@ -198,18 +198,18 @@ abstract class AuthenticationsBase implements AuthenticationService {
       if (sessionTokens.length == 2) {
         tokens.setSessionToken(sessionTokens[1]);
       }
-      if (isEmpty(tokens.getSessionToken())) {
-        Optional<String> cookies = request.headers().firstValue(COOKIE);
-        if (cookies.isPresent()) {
-          String[] cookiesList = cookies.get().split(";");
-          var sessionCookie = Arrays.stream(cookiesList).filter(cookie -> SESSION_COOKIE_NAME.contains(cookie)).findAny().orElse(null);
-          if (nonNull(sessionCookie)) {
-            tokens.setSessionToken(sessionCookie.split("=")[1]);
-          }
-          var refreshCookie = Arrays.stream(cookiesList).filter(cookie -> REFRESH_COOKIE_NAME.contains(cookie)).findAny().orElse(null);
-          if (nonNull(refreshCookie)) {
-            tokens.setRefreshToken(refreshCookie.split("=")[1]);
-          }
+    }
+    if (isEmpty(tokens.getSessionToken())) {
+      Optional<String> cookies = request.headers().firstValue(COOKIE);
+      if (cookies.isPresent()) {
+        String[] cookiesList = cookies.get().split(";");
+        var sessionCookie = Arrays.stream(cookiesList).filter(cookie -> cookie.contains(SESSION_COOKIE_NAME)).findAny().orElse(null);
+        if (nonNull(sessionCookie)) {
+          tokens.setSessionToken(sessionCookie.split("=")[1]);
+        }
+        var refreshCookie = Arrays.stream(cookiesList).filter(cookie -> cookie.contains(REFRESH_COOKIE_NAME)).findAny().orElse(null);
+        if (nonNull(refreshCookie)) {
+          tokens.setRefreshToken(refreshCookie.split("=")[1]);
         }
       }
     }

@@ -24,11 +24,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import java.net.URI;
+import java.net.http.HttpRequest;
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.descope.literals.AppConstants.COOKIE;
+import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -45,6 +49,7 @@ class MagicLinkServiceImplTest {
   public static final String MOCK_PHONE = "+11-1234567890";
 
   public static final String MOCK_MASKED_PHONE = "+11-123XXXXX90";
+  public static final String MOCK_REFRESH_TOKEN = "2423r4gftrhtyu7i78ujuiy978";
   public static final UserResponse MOCK_USER_RESPONSE =
       new UserResponse(
           "someUserId",
@@ -225,7 +230,11 @@ class MagicLinkServiceImplTest {
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      String updateUserEmail = magicLinkService.updateUserEmail(MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN, null);
+      HttpRequest httpRequest = HttpRequest.newBuilder()
+          .header(COOKIE, REFRESH_COOKIE_NAME + "=" + MOCK_REFRESH_TOKEN)
+          .uri(URI.create(MOCK_DOMAIN))
+          .build();
+      String updateUserEmail = magicLinkService.updateUserEmail(MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN, httpRequest);
       Assertions.assertThat(updateUserEmail).isNotBlank().contains("*");
     }
   }
@@ -277,7 +286,11 @@ class MagicLinkServiceImplTest {
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      String updateUserPhone = magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, null);
+      HttpRequest httpRequest = HttpRequest.newBuilder()
+          .header(COOKIE, REFRESH_COOKIE_NAME + "=" + MOCK_REFRESH_TOKEN)
+          .uri(URI.create(MOCK_DOMAIN))
+          .build();
+      String updateUserPhone = magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, httpRequest);
       Assertions.assertThat(updateUserPhone).isNotBlank().contains("X");
     }
   }
