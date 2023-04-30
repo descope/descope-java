@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tokens {
-
   private String sessionToken;
   private String refreshToken;
-
 }

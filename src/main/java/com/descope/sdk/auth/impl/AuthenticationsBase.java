@@ -1,8 +1,19 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.AppConstants.AUTHORIZATION_HEADER_NAME;
+import static com.descope.literals.AppConstants.BEARER_AUTHORIZATION_PREFIX;
+import static com.descope.literals.AppConstants.COOKIE;
+import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
+import static com.descope.literals.AppConstants.SESSION_COOKIE_NAME;
+import static com.descope.literals.Routes.AuthEndPoints.GET_KEYS_LINK;
+import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
+import static com.descope.utils.PatternUtils.PHONE_PATTERN;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ClientFunctionalException;
-import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.User;
 import com.descope.model.auth.AuthParams;
@@ -18,11 +29,6 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.utils.JwtUtils;
-import lombok.SneakyThrows;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
-
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -30,20 +36,17 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static com.descope.literals.AppConstants.*;
-import static com.descope.literals.Routes.AuthEndPoints.GET_KEYS_LINK;
-import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
-import static com.descope.utils.PatternUtils.PHONE_PATTERN;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Objects;
+import java.util.Optional;
+import lombok.SneakyThrows;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 abstract class AuthenticationsBase implements AuthenticationService {
 
-  private static final long SKEW_SECONDS = TimeUnit.SECONDS.toSeconds(5);
   protected final Client client;
   private final AuthParams authParams;
   private final Provider provider;
@@ -76,10 +79,13 @@ abstract class AuthenticationsBase implements AuthenticationService {
   }
 
   ApiProxy getApiProxy(String refreshToken) {
-    if (StringUtils.isNotBlank(refreshToken)) {
-      return ApiProxyBuilder.buildProxy(() -> "Bearer " + refreshToken);
+    String projectId = authParams.getProjectId();
+    if (StringUtils.isBlank(refreshToken) || StringUtils.isNotBlank(projectId)) {
+      return getApiProxy();
     }
-    return ApiProxyBuilder.buildProxy();
+
+    String token = String.format("Bearer %s:%s", projectId, refreshToken);
+    return ApiProxyBuilder.buildProxy(() -> token);
   }
 
   @SneakyThrows
@@ -120,27 +126,29 @@ abstract class AuthenticationsBase implements AuthenticationService {
 
     switch (deliveryMethod) {
       case SMS:
-      case WHATSAPP: {
-        String phone = user.getPhone();
-        if (StringUtils.isBlank(phone)) {
-          phone = loginId;
+      case WHATSAPP:
+        {
+          String phone = user.getPhone();
+          if (StringUtils.isBlank(phone)) {
+            phone = loginId;
+          }
+          if (!PHONE_PATTERN.matcher(phone).matches()) {
+            throw ServerCommonException.invalidArgument("user.phone");
+          }
+          break;
         }
-        if (!PHONE_PATTERN.matcher(phone).matches()) {
-          throw ServerCommonException.invalidArgument("user.phone");
+      case EMAIL:
+        {
+          String email = user.getEmail();
+          if (StringUtils.isBlank(email)) {
+            email = loginId;
+            user.setEmail(email);
+          }
+          if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw ServerCommonException.invalidArgument("user.email");
+          }
+          break;
         }
-        break;
-      }
-      case EMAIL: {
-        String email = user.getEmail();
-        if (StringUtils.isBlank(email)) {
-          email = loginId;
-          user.setEmail(email);
-        }
-        if (!EMAIL_PATTERN.matcher(email).matches()) {
-          throw ServerCommonException.invalidArgument("user.email");
-        }
-        break;
-      }
     }
   }
 
@@ -189,10 +197,11 @@ abstract class AuthenticationsBase implements AuthenticationService {
     return tokens.getRefreshToken();
   }
 
-  private Tokens provideTokens(HttpRequest request) {
+  Tokens provideTokens(HttpRequest request) {
     if (isNull(request)) {
       return Tokens.builder().build();
     }
+
     Tokens tokens = new Tokens();
     Optional<String> authToken = request.headers().firstValue(AUTHORIZATION_HEADER_NAME);
     if (authToken.isPresent()) {
@@ -201,41 +210,36 @@ abstract class AuthenticationsBase implements AuthenticationService {
         tokens.setSessionToken(sessionTokens[1]);
       }
     }
+
     if (isEmpty(tokens.getSessionToken())) {
       Optional<String> cookies = request.headers().firstValue(COOKIE);
       if (cookies.isPresent()) {
         String[] cookiesList = cookies.get().split(";");
-        var sessionCookie = Arrays.stream(cookiesList).filter(cookie -> cookie.contains(SESSION_COOKIE_NAME)).findAny().orElse(null);
+        String sessionCookie =
+            Arrays.stream(cookiesList)
+                .filter(cookie -> cookie.contains(SESSION_COOKIE_NAME))
+                .map(String::trim)
+                .findAny()
+                .orElse(null);
         if (nonNull(sessionCookie)) {
           tokens.setSessionToken(sessionCookie.split("=")[1]);
         }
-        var refreshCookie = Arrays.stream(cookiesList).filter(cookie -> cookie.contains(REFRESH_COOKIE_NAME)).findAny().orElse(null);
+
+        String refreshCookie =
+            Arrays.stream(cookiesList)
+                .filter(cookie -> cookie.contains(REFRESH_COOKIE_NAME))
+                .findAny()
+                .orElse(null);
         if (nonNull(refreshCookie)) {
           tokens.setRefreshToken(refreshCookie.split("=")[1]);
         }
       }
     }
+
     return tokens;
   }
 
-  @Override
-  public Token validateSessionWithRequest(HttpRequest httpRequest) throws DescopeException {
-    if (isNull(httpRequest)) {
-      throw ServerCommonException.invalidArgument("request");
-    }
-    Tokens tokens = provideTokens(httpRequest);
-    if (Strings.isEmpty(tokens.getSessionToken())) {
-      ServerCommonException.errMissingArguments("Request doesn't contain session token");
-    }
-    return validateSession(tokens.getSessionToken());
-  }
-
-  private Token validateSession(String sessionToken) {
-    return validateJWT(sessionToken);
-  }
-
-  private Token validateJWT(String jwt) {
+  Token validateJWT(String jwt) {
     return JwtUtils.getToken(jwt, requestKeys());
   }
 }
-

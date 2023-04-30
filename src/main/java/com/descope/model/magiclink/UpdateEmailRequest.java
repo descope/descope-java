@@ -14,7 +14,9 @@ public class UpdateEmailRequest {
 
   private String email;
   private String loginId;
+
   @JsonProperty("URI")
   private String uri;
+
   private boolean crossDevice;
 }

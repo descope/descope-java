@@ -2,7 +2,6 @@ package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.jwt.Token;
-
 import java.net.http.HttpRequest;
 
 public interface AuthenticationService {

@@ -46,7 +46,7 @@ public class Config {
   // console.
   private String sessionJWTCookieDomain;
 
-  public String initializeProjectId(){
+  public String initializeProjectId() {
     if (StringUtils.isBlank(this.projectId)) {
       this.projectId = EnvironmentUtils.getProjectId();
     }

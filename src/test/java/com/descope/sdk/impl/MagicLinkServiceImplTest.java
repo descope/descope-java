@@ -1,5 +1,11 @@
 package com.descope.sdk.impl;
 
+import static com.descope.literals.AppConstants.COOKIE;
+import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.User;
@@ -18,24 +24,17 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.MagicLinkService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.utils.JwtUtils;
-import lombok.SneakyThrows;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static com.descope.literals.AppConstants.COOKIE;
-import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import lombok.SneakyThrows;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class MagicLinkServiceImplTest {
 
@@ -116,7 +115,7 @@ class MagicLinkServiceImplTest {
   void testVerify() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[]{MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
@@ -158,7 +157,8 @@ class MagicLinkServiceImplTest {
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      String signIn = magicLinkService.signIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN, null, null);
+      String signIn =
+          magicLinkService.signIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN, null, null);
       Assertions.assertThat(signIn).isNotBlank().contains("*");
     }
   }
@@ -170,17 +170,18 @@ class MagicLinkServiceImplTest {
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      String signUpOrIn = magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
+      String signUpOrIn =
+          magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
       Assertions.assertThat(signUpOrIn).isNotBlank().contains("*");
     }
   }
 
   @Test
   void testSignUpOrInForEmptyloginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, "", MOCK_DOMAIN)
-    );
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, "", MOCK_DOMAIN));
 
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -189,38 +190,37 @@ class MagicLinkServiceImplTest {
   @Test
   void testUpdateUserEmailForEmptyloginId() {
 
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserEmail("", MOCK_EMAIL, MOCK_DOMAIN, null));
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.updateUserEmail("", MOCK_EMAIL, MOCK_DOMAIN, null));
 
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
 
-
   @Test
   void testUpdateUserEmailForEmptyEmail() {
 
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserEmail(MOCK_EMAIL, "", MOCK_DOMAIN, null));
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.updateUserEmail(MOCK_EMAIL, "", MOCK_DOMAIN, null));
 
     assertNotNull(thrown);
     assertEquals("The Email argument is invalid", thrown.getMessage());
-
   }
-
 
   @Test
   void testUpdateUserEmailForInvalidEmail() {
 
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserEmail(MOCK_EMAIL, "abc", MOCK_DOMAIN, null));
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.updateUserEmail(MOCK_EMAIL, "abc", MOCK_DOMAIN, null));
 
     assertNotNull(thrown);
     assertEquals("The Email argument is invalid", thrown.getMessage());
-
   }
 
   @Test
@@ -230,11 +230,13 @@ class MagicLinkServiceImplTest {
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      HttpRequest httpRequest = HttpRequest.newBuilder()
-          .header(COOKIE, REFRESH_COOKIE_NAME + "=" + MOCK_REFRESH_TOKEN)
-          .uri(URI.create(MOCK_DOMAIN))
-          .build();
-      String updateUserEmail = magicLinkService.updateUserEmail(MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN, httpRequest);
+      HttpRequest httpRequest =
+          HttpRequest.newBuilder()
+              .header(COOKIE, REFRESH_COOKIE_NAME + "=" + MOCK_REFRESH_TOKEN)
+              .uri(URI.create(MOCK_DOMAIN))
+              .build();
+      String updateUserEmail =
+          magicLinkService.updateUserEmail(MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN, httpRequest);
       Assertions.assertThat(updateUserEmail).isNotBlank().contains("*");
     }
   }
@@ -242,9 +244,10 @@ class MagicLinkServiceImplTest {
   @Test
   void testUpdateUserEmailForInvalidToken() {
 
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, null));
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> magicLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, null));
 
     assertNotNull(thrown);
     assertEquals("Unable to find tokens from cookies", thrown.getMessage());
@@ -253,9 +256,12 @@ class MagicLinkServiceImplTest {
   @Test
   void testUpdateUserPhoneForInvalidToken() {
 
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, null));
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(
+                    DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, null));
 
     assertNotNull(thrown);
     assertEquals("Unable to find tokens from cookies", thrown.getMessage());
@@ -263,41 +269,48 @@ class MagicLinkServiceImplTest {
 
   @Test
   void testUpdateUserPhoneForLoginID() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserPhone(DeliveryMethod.SMS, "", MOCK_PHONE, MOCK_DOMAIN, null)
-    );
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(
+                    DeliveryMethod.SMS, "", MOCK_PHONE, MOCK_DOMAIN, null));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
 
-
   @Test
   void testUpdateUserPhoneForEmptyPhone() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, "", MOCK_DOMAIN, null)
-    );
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(
+                    DeliveryMethod.SMS, MOCK_EMAIL, "", MOCK_DOMAIN, null));
     assertNotNull(thrown);
     assertEquals("The Phone argument is invalid", thrown.getMessage());
   }
 
   @Test
   void testUpdateUserPhoneForInvalidPhone() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, "1234E", MOCK_DOMAIN, null)
-    );
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(
+                    DeliveryMethod.SMS, MOCK_EMAIL, "1234E", MOCK_DOMAIN, null));
     assertNotNull(thrown);
     assertEquals("The Phone argument is invalid", thrown.getMessage());
   }
 
   @Test
   void testUpdateUserPhoneForInvalidMethod() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> magicLinkService.updateUserPhone(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, null)
-    );
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () ->
+                magicLinkService.updateUserPhone(
+                    DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, null));
     assertNotNull(thrown);
     assertEquals("The Method argument is invalid", thrown.getMessage());
   }
@@ -309,11 +322,14 @@ class MagicLinkServiceImplTest {
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      HttpRequest httpRequest = HttpRequest.newBuilder()
-          .header(COOKIE, REFRESH_COOKIE_NAME + "=" + MOCK_REFRESH_TOKEN)
-          .uri(URI.create(MOCK_DOMAIN))
-          .build();
-      String updateUserPhone = magicLinkService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, httpRequest);
+      HttpRequest httpRequest =
+          HttpRequest.newBuilder()
+              .header(COOKIE, REFRESH_COOKIE_NAME + "=" + MOCK_REFRESH_TOKEN)
+              .uri(URI.create(MOCK_DOMAIN))
+              .build();
+      String updateUserPhone =
+          magicLinkService.updateUserPhone(
+              DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, httpRequest);
       Assertions.assertThat(updateUserPhone).isNotBlank().contains("X");
     }
   }
