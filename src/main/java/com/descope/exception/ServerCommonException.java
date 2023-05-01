@@ -1,6 +1,8 @@
 package com.descope.exception;
 
-import static com.descope.exception.ErrorCode.*;
+import static com.descope.exception.ErrorCode.ERR_MISSING_ARGUMENTS;
+import static com.descope.exception.ErrorCode.ERR_REFRESH_TOKEN;
+import static com.descope.exception.ErrorCode.INVALID_ARGUMENT;
 
 public class ServerCommonException extends DescopeException {
 
@@ -21,5 +23,4 @@ public class ServerCommonException extends DescopeException {
   public static ServerCommonException errMissingArguments(String error) {
     return new ServerCommonException(error, ERR_MISSING_ARGUMENTS);
   }
-
 }

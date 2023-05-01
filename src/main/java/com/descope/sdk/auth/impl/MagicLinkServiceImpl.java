@@ -2,7 +2,12 @@ package com.descope.sdk.auth.impl;
 
 import static com.descope.enums.DeliveryMethod.EMAIL;
 import static com.descope.enums.DeliveryMethod.SMS;
-import static com.descope.literals.Routes.AuthEndPoints.*;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_IN_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OR_IN_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.UPDATE_EMAIL_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_PHONE_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.VERIFY_MAGIC_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 
@@ -15,7 +20,13 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.JWTResponse;
 import com.descope.model.jwt.Token;
-import com.descope.model.magiclink.*;
+import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.Masked;
+import com.descope.model.magiclink.SignInRequest;
+import com.descope.model.magiclink.SignUpRequest;
+import com.descope.model.magiclink.UpdateEmailRequest;
+import com.descope.model.magiclink.UpdatePhoneRequest;
+import com.descope.model.magiclink.VerifyRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.MagicLinkService;
