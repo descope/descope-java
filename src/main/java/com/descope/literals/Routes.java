@@ -15,5 +15,6 @@ public class Routes {
     public static final String UPDATE_USER_PHONE_MAGIC_LINK = "auth/magiclink/update/phone";
 
     public static final String GET_KEYS_LINK = "/keys";
+    public static final String REFRESH_TOKEN_LINK = "/auth/refresh";
   }
 }

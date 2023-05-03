@@ -16,11 +16,11 @@ public class ServerCommonException extends DescopeException {
     return new ServerCommonException(message, INVALID_ARGUMENT);
   }
 
-  public static ServerCommonException errorRefreshToken(String error) {
+  public static ServerCommonException refreshToken(String error) {
     return new ServerCommonException(error, ERR_REFRESH_TOKEN);
   }
 
-  public static ServerCommonException errMissingArguments(String error) {
+  public static ServerCommonException missingArguments(String error) {
     return new ServerCommonException(error, ERR_MISSING_ARGUMENTS);
   }
 }

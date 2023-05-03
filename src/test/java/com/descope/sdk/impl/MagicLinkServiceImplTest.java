@@ -184,7 +184,7 @@ class MagicLinkServiceImplTest {
   }
 
   @Test
-  void testSignUpOrInForEmptyloginId() {
+  void testSignUpOrInForEmptyLoginId() {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
@@ -195,7 +195,7 @@ class MagicLinkServiceImplTest {
   }
 
   @Test
-  void testUpdateUserEmailForEmptyloginId() {
+  void testUpdateUserEmailForEmptyLoginId() {
 
     ServerCommonException thrown =
         assertThrows(

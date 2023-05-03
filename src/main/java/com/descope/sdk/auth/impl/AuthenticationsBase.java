@@ -6,6 +6,7 @@ import static com.descope.literals.AppConstants.COOKIE;
 import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
 import static com.descope.literals.AppConstants.SESSION_COOKIE_NAME;
 import static com.descope.literals.Routes.AuthEndPoints.GET_KEYS_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 import static java.util.Objects.isNull;
@@ -17,7 +18,9 @@ import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.User;
 import com.descope.model.auth.AuthParams;
+import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
+import com.descope.model.jwt.JWTResponse;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
@@ -42,9 +45,11 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+@Slf4j
 abstract class AuthenticationsBase implements AuthenticationService {
 
   protected final Client client;
@@ -192,7 +197,7 @@ abstract class AuthenticationsBase implements AuthenticationService {
   String getValidRefreshToken(HttpRequest request) {
     Tokens tokens = provideTokens(request);
     if (isEmpty(tokens.getRefreshToken())) {
-      throw ServerCommonException.errorRefreshToken("Unable to find tokens from cookies");
+      throw ServerCommonException.refreshToken("Unable to find tokens from cookies");
     }
     return tokens.getRefreshToken();
   }
@@ -205,9 +210,11 @@ abstract class AuthenticationsBase implements AuthenticationService {
     Tokens tokens = new Tokens();
     Optional<String> authToken = request.headers().firstValue(AUTHORIZATION_HEADER_NAME);
     if (authToken.isPresent()) {
-      String[] sessionTokens = authToken.get().split(BEARER_AUTHORIZATION_PREFIX);
-      if (sessionTokens.length == 2) {
-        tokens.setSessionToken(sessionTokens[1]);
+      try {
+        String sessionToken = getSessionTokenFromBearerToken(authToken.get());
+        tokens.setSessionToken(sessionToken);
+      } catch (ServerCommonException e) {
+        log.warn(e.getMessage());
       }
     }
 
@@ -239,7 +246,49 @@ abstract class AuthenticationsBase implements AuthenticationService {
     return tokens;
   }
 
+  String getSessionTokenFromBearerToken(String bearerToken) {
+    if (StringUtils.isNotBlank(bearerToken)) {
+      String[] sessionTokens = bearerToken.split(BEARER_AUTHORIZATION_PREFIX);
+      if (sessionTokens.length == 2) {
+        try {
+          return sessionTokens[1];
+        } catch (ArrayIndexOutOfBoundsException e) {
+          throw ServerCommonException.invalidArgument("bearerToken");
+        }
+      }
+    }
+    throw ServerCommonException.invalidArgument("bearerToken");
+  }
+
   Token validateJWT(String jwt) {
     return JwtUtils.getToken(jwt, requestKeys());
+  }
+
+  Token refreshSession(String refreshToken) {
+    var token = validateJWT(refreshToken);
+    var apiProxy = getApiProxy(refreshToken);
+    URI refreshTokenLinkURL = composeRefreshTokenLinkURL();
+
+    var jwtResponse = apiProxy.post(refreshTokenLinkURL, null, JWTResponse.class);
+    var authenticationInfo = getAuthenticationInfo(jwtResponse);
+
+    Token sessionToken = authenticationInfo.getToken();
+    sessionToken.setExpiration(token.getExpiration());
+
+    return sessionToken;
+  }
+
+  AuthenticationInfo getAuthenticationInfo(JWTResponse jwtResponse) {
+    Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
+    Token refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
+
+    // TODO - Set Cookies | 18/04/23 | by keshavram
+
+    return new AuthenticationInfo(
+        sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
+  }
+
+  private URI composeRefreshTokenLinkURL() {
+    return getUri(REFRESH_TOKEN_LINK);
   }
 }
