@@ -7,4 +7,9 @@ public class AppConstants {
   public static final String PROJECT_ID_ENV_VAR = "DESCOPE_PROJECT_ID";
   public static final String PUBLIC_KEY_ENV_VAR = "DESCOPE_PUBLIC_KEY";
   public static final String MANAGEMENT_KEY_ENV_VAR = "DESCOPE_MANAGEMENT_KEY";
+  public static final String AUTHORIZATION_HEADER_NAME = "Authorization";
+  public static final String BEARER_AUTHORIZATION_PREFIX = "Bearer ";
+  public static final String COOKIE = "Cookie";
+  public static final String SESSION_COOKIE_NAME = "DS";
+  public static final String REFRESH_COOKIE_NAME = "DSR";
 }

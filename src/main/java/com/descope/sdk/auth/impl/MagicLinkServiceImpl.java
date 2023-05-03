@@ -2,7 +2,12 @@ package com.descope.sdk.auth.impl;
 
 import static com.descope.enums.DeliveryMethod.EMAIL;
 import static com.descope.enums.DeliveryMethod.SMS;
-import static com.descope.literals.Routes.AuthEndPoints.*;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_IN_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OR_IN_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.UPDATE_EMAIL_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_PHONE_MAGIC_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.VERIFY_MAGIC_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 
@@ -15,14 +20,23 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.JWTResponse;
 import com.descope.model.jwt.Token;
-import com.descope.model.magiclink.*;
+import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.Masked;
+import com.descope.model.magiclink.SignInRequest;
+import com.descope.model.magiclink.SignUpRequest;
+import com.descope.model.magiclink.UpdateEmailRequest;
+import com.descope.model.magiclink.UpdatePhoneRequest;
+import com.descope.model.magiclink.VerifyRequest;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.MagicLinkService;
+import com.descope.utils.JwtUtils;
 import java.net.URI;
+import java.net.http.HttpRequest;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
-class MagicLinkServiceImpl extends AuthenticationsBase
+class MagicLinkServiceImpl extends AuthenticationServiceImpl
     implements MagicLinkService, AuthenticationService {
 
   MagicLinkServiceImpl(Client client, AuthParams authParams) {
@@ -30,17 +44,27 @@ class MagicLinkServiceImpl extends AuthenticationsBase
   }
 
   @Override
-  public String signIn(DeliveryMethod deliveryMethod, String loginId, String uri)
+  public String signIn(
+      DeliveryMethod deliveryMethod,
+      String loginId,
+      String uri,
+      HttpRequest request,
+      LoginOptions loginOptions)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
 
+    ApiProxy apiProxy;
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignInURL = composeMagicLinkSignInURI(deliveryMethod);
-    var signInRequest = new SignInRequest(uri, loginId);
-
-    var apiProxy = getApiProxy();
+    var signInRequest = new SignInRequest(uri, loginId, loginOptions);
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      var pwd = getValidRefreshToken(request);
+      apiProxy = getApiProxy(pwd);
+    } else {
+      apiProxy = getApiProxy();
+    }
     var masked = apiProxy.post(magicLinkSignInURL, signInRequest, maskedClass);
     return masked.getMasked();
   }
@@ -74,13 +98,7 @@ class MagicLinkServiceImpl extends AuthenticationsBase
     var apiProxy = getApiProxy();
     var jwtResponse = apiProxy.post(verifyMagicLinkURL, verifyRequest, JWTResponse.class);
 
-    Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
-    Token refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
-
-    // TODO - Set Cookies | 18/04/23 | by keshavram
-
-    return new AuthenticationInfo(
-        sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
+    return getAuthenticationInfo(jwtResponse);
   }
 
   @Override
@@ -93,8 +111,7 @@ class MagicLinkServiceImpl extends AuthenticationsBase
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
-    // TODO - Ask Slavik what about User Model when signing up? | 25/04/23 | by keshavram
-    var signInRequest = new SignInRequest(uri, loginId);
+    var signInRequest = new SignInRequest(uri, loginId, null);
 
     var apiProxy = getApiProxy();
     var masked = apiProxy.post(magicLinkSignUpOrInURL, signInRequest, maskedClass);
@@ -102,7 +119,8 @@ class MagicLinkServiceImpl extends AuthenticationsBase
   }
 
   @Override
-  public String updateUserEmail(String loginId, String email, String uri) throws DescopeException {
+  public String updateUserEmail(String loginId, String email, String uri, HttpRequest request)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -110,9 +128,9 @@ class MagicLinkServiceImpl extends AuthenticationsBase
       throw ServerCommonException.invalidArgument("Email");
     }
 
+    String refreshToken = getValidRefreshToken(request);
     Class<? extends Masked> maskedClass = getMaskedValue(EMAIL);
     URI magicLinkUpdateUserEmail = composeUpdateUserEmailMagiclink();
-
     UpdateEmailRequest updateEmailRequest =
         UpdateEmailRequest.builder()
             .email(email)
@@ -121,14 +139,14 @@ class MagicLinkServiceImpl extends AuthenticationsBase
             .crossDevice(false)
             .build();
 
-    var apiProxy = getApiProxy();
+    var apiProxy = getApiProxy(refreshToken);
     var masked = apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, maskedClass);
     return masked.getMasked();
   }
 
   @Override
   public String updateUserPhone(
-      DeliveryMethod deliveryMethod, String loginId, String phone, String uri)
+      DeliveryMethod deliveryMethod, String loginId, String phone, String uri, HttpRequest request)
       throws DescopeException {
 
     if (StringUtils.isBlank(loginId)) {
@@ -141,9 +159,9 @@ class MagicLinkServiceImpl extends AuthenticationsBase
       throw ServerCommonException.invalidArgument("Method");
     }
 
+    String refreshToken = getValidRefreshToken(request);
     Class<? extends Masked> maskedClass = getMaskedValue(SMS);
     URI magicLinkUpdateUserPhone = composeUpdateUserPhoneMagiclink(deliveryMethod);
-
     UpdatePhoneRequest updatePhoneRequest =
         UpdatePhoneRequest.builder()
             .phone(phone)
@@ -152,7 +170,7 @@ class MagicLinkServiceImpl extends AuthenticationsBase
             .crossDevice(false)
             .build();
 
-    var apiProxy = getApiProxy();
+    var apiProxy = getApiProxy(refreshToken);
     var masked = apiProxy.post(magicLinkUpdateUserPhone, updatePhoneRequest, maskedClass);
     return masked.getMasked();
   }
