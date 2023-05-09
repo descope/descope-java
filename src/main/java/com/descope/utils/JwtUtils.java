@@ -26,8 +26,9 @@ public class JwtUtils {
     return Token.builder()
         .jwt(jwt)
         .projectId(header.getKeyId())
-        .id(claims.getId())
+        .id(claims.getSubject())
         .expiration(claims.getExpiration().getTime())
+        .refreshExpiration(claims.get("rexp", Long.class))
         .claims(claims)
         .build();
   }

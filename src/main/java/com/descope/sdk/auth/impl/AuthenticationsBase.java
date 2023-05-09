@@ -41,11 +41,15 @@ import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -286,6 +290,19 @@ abstract class AuthenticationsBase implements AuthenticationService {
 
     return new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
+  }
+
+   List<String> getAuthorizationClaimItems(
+      Token token, String tenant, List<String> permissions) {
+    if (Objects.isNull(tenant) || MapUtils.isEmpty(token.getClaims())) {
+      return Collections.emptyList();
+    }
+
+    // TODO - Understand Tenant Roles | 08/05/23 | by keshavram
+
+    return token.getClaims().keySet().stream()
+        .filter(permissions::contains)
+        .collect(Collectors.toList());
   }
 
   private URI composeRefreshTokenLinkURL() {

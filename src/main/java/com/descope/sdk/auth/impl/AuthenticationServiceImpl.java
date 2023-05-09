@@ -1,15 +1,17 @@
 package com.descope.sdk.auth.impl;
 
-import static java.util.Objects.isNull;
+import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_ACCESS_KEY_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.client.Client;
+import com.descope.model.jwt.JWTResponse;
 import com.descope.model.jwt.Token;
-import com.descope.model.magiclink.Tokens;
 import com.descope.sdk.auth.AuthenticationService;
-import java.net.http.HttpRequest;
+import java.net.URI;
+import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
@@ -17,20 +19,6 @@ class AuthenticationServiceImpl extends AuthenticationsBase implements Authentic
 
   AuthenticationServiceImpl(Client client, AuthParams authParams) {
     super(client, authParams);
-  }
-
-  @Override
-  public Token validateSessionWithRequest(HttpRequest httpRequest) throws DescopeException {
-    if (isNull(httpRequest)) {
-      throw ServerCommonException.invalidArgument("request");
-    }
-
-    Tokens tokens = provideTokens(httpRequest);
-    if (Strings.isEmpty(tokens.getSessionToken())) {
-      throw ServerCommonException.missingArguments("Request doesn't contain session token");
-    }
-
-    return validateJWT(tokens.getSessionToken());
   }
 
   @Override
@@ -42,25 +30,11 @@ class AuthenticationServiceImpl extends AuthenticationsBase implements Authentic
   }
 
   @Override
-  public Token refreshSessionWithRequest(HttpRequest httpRequest, boolean addCookies)
-      throws DescopeException {
-    if (isNull(httpRequest)) {
-      throw ServerCommonException.invalidArgument("request");
-    }
-
-    Tokens tokens = provideTokens(httpRequest);
-    String refreshToken = tokens.getRefreshToken();
-    return refreshSessionWithToken(refreshToken, addCookies);
-  }
-
-  @Override
-  public Token refreshSessionWithToken(String refreshToken, boolean addCookies)
-      throws DescopeException {
+  public Token refreshSessionWithToken(String refreshToken) throws DescopeException {
     if (Strings.isEmpty(refreshToken)) {
       throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
     }
 
-    // TODO - Add Cookies while creating AuthenticationInfo | 03/05/23 | by keshavram
     return refreshSession(refreshToken);
   }
 
@@ -72,7 +46,34 @@ class AuthenticationServiceImpl extends AuthenticationsBase implements Authentic
     } else if (StringUtils.isNotBlank(sessionToken)) {
       return validateSessionWithToken(sessionToken);
     } else {
-      return refreshSessionWithToken(refreshToken, false);
+      return refreshSessionWithToken(refreshToken);
     }
+  }
+
+  @Override
+  public Token exchangeAccessKey(String accessKey) throws DescopeException {
+    var apiProxy = getApiProxy(accessKey);
+    URI exchangeAccessKeyLinkURL = composeExchangeAccessKeyLinkURL();
+
+    var jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL, null, JWTResponse.class);
+    var authenticationInfo = getAuthenticationInfo(jwtResponse);
+    return authenticationInfo.getToken();
+  }
+
+  @Override
+  public boolean validatePermissions(Token token, List<String> permissions)
+      throws DescopeException {
+    return validatePermissions(token, "", permissions);
+  }
+
+  @Override
+  public boolean validatePermissions(Token token, String tenant, List<String> permissions)
+      throws DescopeException {
+    List<String> authorizationClaimItems = getAuthorizationClaimItems(token, tenant, permissions);
+    return CollectionUtils.isEqualCollection(authorizationClaimItems, permissions);
+  }
+
+  private URI composeExchangeAccessKeyLinkURL() {
+    return getUri(EXCHANGE_ACCESS_KEY_LINK);
   }
 }

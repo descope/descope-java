@@ -8,6 +8,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class AuthenticationServiceBuilder {
   public static AuthenticationService buildService(Client client, AuthParams authParams) {
+    // switch
     return new MagicLinkServiceImpl(client, authParams);
   }
 }
