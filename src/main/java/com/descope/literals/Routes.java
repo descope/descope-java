@@ -17,5 +17,11 @@ public class Routes {
     public static final String GET_KEYS_LINK = "/keys";
     public static final String REFRESH_TOKEN_LINK = "/auth/refresh";
     public static final String EXCHANGE_ACCESS_KEY_LINK = "/auth/accesskey/exchange";
+    public static final String SIGN_IN_OTP_LINK = "auth/otp/signin";
+    public static final String SIGN_UP_OTP_LINK = "auth/otp/signup";
+    public static final String SIGN_UP_OR_IN_OTP_LINK = "auth/otp/signup-in";
+    public static final String VERIFY_CODE = "auth/otp/verify";
+    public static final String OTP_UPDATE_EMAIL = "auth/otp/update/email";
+    public static final String OTP_UPDATE_PHONE = "auth/otp/update/phone";
   }
 }

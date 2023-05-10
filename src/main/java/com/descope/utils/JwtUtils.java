@@ -1,16 +1,18 @@
 package com.descope.utils;
 
-import static java.util.Objects.nonNull;
-
 import com.descope.model.jwt.Token;
 import com.descope.model.magiclink.LoginOptions;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
-import java.security.Key;
-import java.util.concurrent.TimeUnit;
 import lombok.experimental.UtilityClass;
+
+import java.security.Key;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.nonNull;
 
 @UtilityClass
 public class JwtUtils {
@@ -28,7 +30,7 @@ public class JwtUtils {
         .projectId(header.getKeyId())
         .id(claims.getSubject())
         .expiration(claims.getExpiration().getTime())
-        .refreshExpiration(claims.get("rexp", Long.class))
+        .refreshExpiration(claims.get("rexp", Date.class))
         .claims(claims)
         .build();
   }
