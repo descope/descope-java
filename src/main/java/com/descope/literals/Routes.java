@@ -23,5 +23,11 @@ public class Routes {
     public static final String VERIFY_CODE = "auth/otp/verify";
     public static final String OTP_UPDATE_EMAIL = "auth/otp/update/email";
     public static final String OTP_UPDATE_PHONE = "auth/otp/update/phone";
+    public static final String SIGN_IN_ENCHANTED_LINK = "auth/enchantedlink/signin";
+    public static final String SIGN_UP_ENCHANTED_LINK = "auth/enchantedlink/signup";
+    public static final String SIGN_UP_OR_IN_ENCHANTED_LINK = "auth/enchantedlink/signup-in";
+    public static final String VERIFY_ENCHANTED_LINK = "auth/enchantedlink/verify";
+    public static final String ENCHANTED_LINK_SESSION = "auth/enchantedlink/pending-session";
+    public static final String UPDATE_EMAIL_ENCHANTED_LINK = "auth/enchantedlink/update/email";
   }
 }
