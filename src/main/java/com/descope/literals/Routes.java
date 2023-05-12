@@ -29,5 +29,8 @@ public class Routes {
     public static final String VERIFY_ENCHANTED_LINK = "auth/enchantedlink/verify";
     public static final String ENCHANTED_LINK_SESSION = "auth/enchantedlink/pending-session";
     public static final String UPDATE_EMAIL_ENCHANTED_LINK = "auth/enchantedlink/update/email";
+    public static final String TOTP_SIGNUP = "auth/totp/signup";
+    public static final String TOTP_USERUPDATE = "auth/totp/update";
+    public static final String VERIFY_TOTPCODE = "auth/totp/verify";
   }
 }
