@@ -17,5 +17,20 @@ public class Routes {
     public static final String GET_KEYS_LINK = "/keys";
     public static final String REFRESH_TOKEN_LINK = "/auth/refresh";
     public static final String EXCHANGE_ACCESS_KEY_LINK = "/auth/accesskey/exchange";
+    public static final String SIGN_IN_OTP_LINK = "auth/otp/signin";
+    public static final String SIGN_UP_OTP_LINK = "auth/otp/signup";
+    public static final String SIGN_UP_OR_IN_OTP_LINK = "auth/otp/signup-in";
+    public static final String VERIFY_CODE = "auth/otp/verify";
+    public static final String OTP_UPDATE_EMAIL = "auth/otp/update/email";
+    public static final String OTP_UPDATE_PHONE = "auth/otp/update/phone";
+    public static final String SIGN_IN_ENCHANTED_LINK = "auth/enchantedlink/signin";
+    public static final String SIGN_UP_ENCHANTED_LINK = "auth/enchantedlink/signup";
+    public static final String SIGN_UP_OR_IN_ENCHANTED_LINK = "auth/enchantedlink/signup-in";
+    public static final String VERIFY_ENCHANTED_LINK = "auth/enchantedlink/verify";
+    public static final String ENCHANTED_LINK_SESSION = "auth/enchantedlink/pending-session";
+    public static final String UPDATE_EMAIL_ENCHANTED_LINK = "auth/enchantedlink/update/email";
+    public static final String TOTP_SIGNUP = "auth/totp/signup";
+    public static final String TOTP_USERUPDATE = "auth/totp/update";
+    public static final String VERIFY_TOTPCODE = "auth/totp/verify";
   }
 }
