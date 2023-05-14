@@ -73,6 +73,18 @@ class AuthenticationServiceImpl extends AuthenticationsBase implements Authentic
     return CollectionUtils.isEqualCollection(authorizationClaimItems, permissions);
   }
 
+  @Override
+  public boolean validateRoles(Token token, List<String> roles) throws DescopeException {
+    return validateRoles(token, "", roles);
+  }
+
+  @Override
+  public boolean validateRoles(Token token, String tenant, List<String> roles)
+      throws DescopeException {
+    List<String> authorizationClaimItems = getAuthorizationClaimItems(token, tenant, roles);
+    return CollectionUtils.isEqualCollection(authorizationClaimItems, roles);
+  }
+
   private URI composeExchangeAccessKeyLinkURL() {
     return getUri(EXCHANGE_ACCESS_KEY_LINK);
   }
