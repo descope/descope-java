@@ -1,4 +1,4 @@
-package com.descope.model.jwt;
+package com.descope.model.jwt.response;
 
 import com.descope.model.auth.UserResponse;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

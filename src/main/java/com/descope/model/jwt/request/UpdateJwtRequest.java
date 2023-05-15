@@ -1,5 +1,6 @@
-package com.descope.model.totp;
+package com.descope.model.jwt.request;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TOTPResponse {
-  private String ProvisioningURL;
-  private String Image;
-  private String Key;
+public class UpdateJwtRequest {
+  String jwt;
+  Map<String, Object> customClaims;
 }

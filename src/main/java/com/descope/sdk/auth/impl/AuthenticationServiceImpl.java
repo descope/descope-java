@@ -6,7 +6,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.JWTResponse;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.jwt.Token;
 import com.descope.sdk.auth.AuthenticationService;
 import java.net.URI;

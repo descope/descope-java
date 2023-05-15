@@ -1,6 +1,5 @@
-package com.descope.model.magiclink;
+package com.descope.model.magiclink.request;
 
-import com.descope.model.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,11 +10,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SignUpRequest {
+public class UpdateEmailRequest {
+
   private String email;
   private String loginId;
-  private User user;
 
   @JsonProperty("URI")
   private String uri;
+
+  private boolean crossDevice;
 }

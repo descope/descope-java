@@ -6,7 +6,7 @@ import com.descope.model.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.JWTResponse;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.otp.AuthenticationVerifyRequestBody;
 import com.descope.model.totp.TOTPResponse;
@@ -66,11 +66,11 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
   }
 
   private URI composeUpdateTOTPURL() {
-    return getUri(TOTP_USERUPDATE);
+    return getUri(TOTP_USER_UPDATE);
 
   }
 
   private URI composeVerifyTOTPCodeURL() {
-    return getUri(VERIFY_TOTPCODE);
+    return getUri(VERIFY_TOTP_CODE);
   }
 }

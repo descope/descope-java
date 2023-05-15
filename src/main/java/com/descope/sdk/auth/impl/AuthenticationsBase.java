@@ -20,16 +20,17 @@ import com.descope.model.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.JWTResponse;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
-import com.descope.model.magiclink.Masked;
-import com.descope.model.magiclink.MaskedEmailRes;
-import com.descope.model.magiclink.MaskedPhoneRes;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.Tokens;
+import com.descope.model.magiclink.response.Masked;
+import com.descope.model.magiclink.response.MaskedEmailRes;
+import com.descope.model.magiclink.response.MaskedPhoneRes;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.SdkServicesBase;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.utils.JwtUtils;
 import java.math.BigInteger;
@@ -54,14 +55,12 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
-abstract class AuthenticationsBase implements AuthenticationService {
-
-  protected final Client client;
+abstract class AuthenticationsBase extends SdkServicesBase implements AuthenticationService {
   private final AuthParams authParams;
   private final Provider provider;
 
   AuthenticationsBase(Client client, AuthParams authParams) {
-    this.client = client;
+    super(client);
     this.authParams = authParams;
     this.provider =
         Provider.builder().client(client).authParams(authParams).keyMap(new HashMap<>()).build();
@@ -173,24 +172,6 @@ abstract class AuthenticationsBase implements AuthenticationService {
     }
   }
 
-  URI composeURI(String base, String path) {
-    URI uri = getUri(base);
-    return addPath(uri, path);
-  }
-
-  URI getUri(String path) {
-    return URI.create(client.getUri() + (path.startsWith("/") ? path : "/" + path));
-  }
-
-  private URI addPath(URI uri, String path) {
-    String newPath;
-    if (path.startsWith("/")) newPath = path.replaceAll("//+", "/");
-    else if (uri.getPath().endsWith("/")) newPath = uri.getPath() + path.replaceAll("//+", "/");
-    else newPath = uri.getPath() + "/" + path.replaceAll("//+", "/");
-
-    return uri.resolve(newPath).normalize();
-  }
-
   Token validateAndCreateToken(String jwt) {
     if (StringUtils.isBlank(jwt)) {
       throw ClientFunctionalException.invalidToken();
@@ -292,8 +273,7 @@ abstract class AuthenticationsBase implements AuthenticationService {
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
   }
 
-   List<String> getAuthorizationClaimItems(
-      Token token, String tenant, List<String> permissions) {
+  List<String> getAuthorizationClaimItems(Token token, String tenant, List<String> permissions) {
     if (Objects.isNull(tenant) || MapUtils.isEmpty(token.getClaims())) {
       return Collections.emptyList();
     }

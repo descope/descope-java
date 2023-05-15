@@ -1,5 +1,6 @@
-package com.descope.model.totp;
+package com.descope.model.tenant;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TOTPResponse {
-  private String ProvisioningURL;
-  private String Image;
-  private String Key;
+public class Tenant {
+  String id;
+  String name;
+  List<String> selfProvisioningDomains;
 }

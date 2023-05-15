@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @Getter
-// The main entry point for working with the Descope SDK.
 public class DescopeClient {
 
   private static final String DEFAULT_BASE_URL = "https://api.descope.com";
@@ -78,7 +77,7 @@ public class DescopeClient {
             .sessionJwtViaCookie(config.isSessionJWTViaCookie())
             .cookieDomain(config.getSessionJWTCookieDomain())
             .build();
-    return AuthenticationServiceBuilder.buildService(client, authParams);
+    return AuthenticationServiceBuilder.buildService(null, client, authParams);
   }
 
   private static Client getClient(Config config) {
