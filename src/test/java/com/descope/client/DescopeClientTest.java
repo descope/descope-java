@@ -25,8 +25,8 @@ class DescopeClientTest {
     var config = descopeClient.getConfig();
     Assertions.assertThat(config.getProjectId()).isEqualTo(expectedProjectID);
     Assertions.assertThat(config.getPublicKey()).isEqualTo(expectedPublicKey);
-    Assertions.assertThat(descopeClient.getAuthenticationService()).isNotNull();
-    Assertions.assertThat(descopeClient.getManagementService()).isNotNull();
+    Assertions.assertThat(descopeClient.getAuthenticationServices()).isNotNull();
+    Assertions.assertThat(descopeClient.getManagementServices()).isNotNull();
   }
 
   // TODO - TestConcurrentClients | 17/04/23 | by keshavram

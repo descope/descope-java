@@ -1,4 +1,4 @@
-package com.descope.model.magiclink;
+package com.descope.model.magiclink.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

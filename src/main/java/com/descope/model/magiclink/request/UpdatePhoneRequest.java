@@ -1,4 +1,4 @@
-package com.descope.model.magiclink;
+package com.descope.model.magiclink.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

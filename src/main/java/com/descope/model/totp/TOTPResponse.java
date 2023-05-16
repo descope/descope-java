@@ -1,4 +1,4 @@
-package com.descope.model;
+package com.descope.model.totp;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
-  private String name;
-  private String email;
-  private String phone;
+public class TOTPResponse {
+  private String provisioningURL;
+  private String image;
+  private String key;
 }

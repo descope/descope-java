@@ -4,13 +4,13 @@ import com.descope.exception.ClientSetupException;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
+import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.client.Client;
 import com.descope.model.client.ClientParams;
 import com.descope.model.client.SdkInfo;
-import com.descope.model.magement.ManagementParams;
-import com.descope.sdk.auth.AuthenticationService;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.mgmt.ManagementServices;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
-import com.descope.sdk.mgmt.ManagementService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import io.jsonwebtoken.lang.Collections;
 import java.util.HashMap;
@@ -22,20 +22,19 @@ import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @Getter
-// The main entry point for working with the Descope SDK.
 public class DescopeClient {
 
   private static final String DEFAULT_BASE_URL = "https://api.descope.com";
 
   private final Config config;
-  private final ManagementService managementService;
-  private final AuthenticationService authenticationService;
+  private final ManagementServices managementServices;
+  private final AuthenticationServices authenticationServices;
 
   public DescopeClient() throws DescopeException {
     var descopeClient = new DescopeClient(new Config());
     this.config = descopeClient.config;
-    this.managementService = descopeClient.managementService;
-    this.authenticationService = descopeClient.authenticationService;
+    this.managementServices = descopeClient.managementServices;
+    this.authenticationServices = descopeClient.authenticationServices;
   }
 
   public DescopeClient(Config config) throws DescopeException {
@@ -55,22 +54,22 @@ public class DescopeClient {
     config.initializeManagementKey();
 
     var client = getClient(config);
-    this.authenticationService = getAuthenticationService(config, client);
-    this.managementService = getManagementService(config, projectId, client);
+    this.authenticationServices = getAuthenticationServices(config, client);
+    this.managementServices = getManagementServices(config, projectId, client);
     this.config = config;
   }
 
-  private static ManagementService getManagementService(
+  private static ManagementServices getManagementServices(
       Config config, String projectId, Client client) {
     var managementParams =
         ManagementParams.builder()
             .projectId(projectId)
             .managementKey(config.getManagementKey())
             .build();
-    return ManagementServiceBuilder.buildService(client, managementParams);
+    return ManagementServiceBuilder.buildServices(client, managementParams);
   }
 
-  private static AuthenticationService getAuthenticationService(Config config, Client client) {
+  private static AuthenticationServices getAuthenticationServices(Config config, Client client) {
     var authParams =
         AuthParams.builder()
             .projectId(config.getProjectId())
@@ -78,7 +77,7 @@ public class DescopeClient {
             .sessionJwtViaCookie(config.isSessionJWTViaCookie())
             .cookieDomain(config.getSessionJWTCookieDomain())
             .build();
-    return AuthenticationServiceBuilder.buildService(client, authParams);
+    return AuthenticationServiceBuilder.buildServices(client, authParams);
   }
 
   private static Client getClient(Config config) {

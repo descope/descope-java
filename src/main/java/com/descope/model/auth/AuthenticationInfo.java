@@ -1,6 +1,7 @@
 package com.descope.model.auth;
 
 import com.descope.model.jwt.Token;
+import com.descope.model.user.response.UserResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
