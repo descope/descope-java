@@ -1,7 +1,7 @@
 package com.descope.sdk.mgmt.impl;
 
 import com.descope.model.client.Client;
-import com.descope.model.magement.ManagementParams;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.SdkServicesBase;

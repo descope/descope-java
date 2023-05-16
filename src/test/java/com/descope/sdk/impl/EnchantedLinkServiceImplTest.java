@@ -1,10 +1,16 @@
 package com.descope.sdk.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-import com.descope.enums.AuthType;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
@@ -27,23 +33,15 @@ import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 public class EnchantedLinkServiceImplTest {
   public static final String MOCK_PROJECT_ID = "someProjectId";
   public static final String MOCK_EMAIL = "username@domain.com";
   public static final String MOCK_MASKED_EMAIL = "u*******@domain.com";
   public static final String MOCK_DOMAIN = "https://www.domain.com";
-  public static final String UPDATE_MOCK_EMAIL = "updateusername@domain.com";
-
-  public static final String MOCK_PHONE = "+11-1234567890";
-
-  public static final String MOCK_MASKED_PHONE = "+11-123XXXXX90";
-  public static final String MOCK_REFRESH_TOKEN = "2423r4gftrhtyu7i78ujuiy978";
 
   public static final UserResponse MOCK_USER_RESPONSE =
       new UserResponse(
@@ -89,8 +87,7 @@ public class EnchantedLinkServiceImplTest {
     var authParams = AuthParams.builder().projectId(MOCK_PROJECT_ID).build();
     var client = Client.builder().uri("https://api.descope.com/v1").build();
     this.enchantedLinkService =
-        (EnchantedLinkService)
-            AuthenticationServiceBuilder.buildService(AuthType.ENCHANTED_LINK, client, authParams);
+        AuthenticationServiceBuilder.buildServices(client, authParams).getEnchantedLinkService();
   }
 
   @Test
@@ -98,11 +95,11 @@ public class EnchantedLinkServiceImplTest {
     User user = new User("someUserName", MOCK_EMAIL, "+910000000000");
 
     var apiProxy = mock(ApiProxy.class);
-    doReturn(Mockito.mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
+    doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
       EnchantedLinkResponse signUp = enchantedLinkService.signUp(MOCK_EMAIL, MOCK_DOMAIN, user);
-      Assertions.assertNotNull(signUp);
+      assertNotNull(signUp);
     }
   }
 
@@ -110,7 +107,7 @@ public class EnchantedLinkServiceImplTest {
   void signIn() {
     var apiProxy = mock(ApiProxy.class);
     var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
-    doReturn(Mockito.mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
+    doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
       String signIn = String.valueOf(enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null));
@@ -121,7 +118,7 @@ public class EnchantedLinkServiceImplTest {
   void testSignUpOrInForSuccess() {
     var apiProxy = mock(ApiProxy.class);
     var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
-    doReturn(Mockito.mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
+    doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
       EnchantedLinkResponse signUpOrIn = enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN);
@@ -231,7 +228,7 @@ public class EnchantedLinkServiceImplTest {
   @Test
   void testVerify() {
     var apiProxy = mock(ApiProxy.class);
-    doReturn(Mockito.mock(EmptyResponse.class)).when(apiProxy).post(any(), any(), any());
+    doReturn(mock(EmptyResponse.class)).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);

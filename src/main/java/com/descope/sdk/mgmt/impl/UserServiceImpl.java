@@ -6,7 +6,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.client.Client;
-import com.descope.model.magement.ManagementParams;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.UserResponse;

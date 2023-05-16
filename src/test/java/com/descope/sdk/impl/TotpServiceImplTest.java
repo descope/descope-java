@@ -13,7 +13,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import com.descope.enums.AuthType;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
@@ -93,7 +92,7 @@ public class TotpServiceImplTest {
     var authParams = AuthParams.builder().projectId(MOCK_PROJECT_ID).build();
     var client = Client.builder().uri("https://api.descope.com/v1").build();
     this.totpService =
-        (TOTPService) AuthenticationServiceBuilder.buildService(AuthType.TOTP, client, authParams);
+        AuthenticationServiceBuilder.buildServices(client, authParams).getTotpService();
   }
 
   @Test

@@ -8,7 +8,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
-import com.descope.model.magement.ManagementParams;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
 import com.descope.sdk.mgmt.TenantService;

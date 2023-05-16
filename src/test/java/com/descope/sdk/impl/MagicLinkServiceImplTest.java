@@ -1,6 +1,5 @@
 package com.descope.sdk.impl;
 
-import static com.descope.enums.AuthType.MAGIC_LINK;
 import static com.descope.literals.AppConstants.COOKIE;
 import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,17 +15,17 @@ import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.user.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
-import com.descope.model.user.response.UserResponse;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.response.MaskedEmailRes;
 import com.descope.model.magiclink.response.MaskedPhoneRes;
+import com.descope.model.user.User;
+import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.MagicLinkService;
@@ -101,8 +100,7 @@ class MagicLinkServiceImplTest {
     var authParams = AuthParams.builder().projectId(MOCK_PROJECT_ID).build();
     var client = Client.builder().uri("https://api.descope.com/v1").build();
     this.magicLinkService =
-        (MagicLinkService)
-            AuthenticationServiceBuilder.buildService(MAGIC_LINK, client, authParams);
+        AuthenticationServiceBuilder.buildServices(client, authParams).getMagicLinkService();
   }
 
   @Test

@@ -1,4 +1,4 @@
-package com.descope.model.magement;
+package com.descope.model.mgmt;
 
 import lombok.Builder;
 import lombok.Data;

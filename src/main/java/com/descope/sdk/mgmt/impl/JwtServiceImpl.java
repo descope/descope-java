@@ -7,7 +7,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.request.UpdateJwtRequest;
 import com.descope.model.jwt.response.JWTResponse;
-import com.descope.model.magement.ManagementParams;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
 import java.util.Map;
