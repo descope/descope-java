@@ -3,7 +3,7 @@ package com.descope.sdk.auth.impl;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.User;
+import com.descope.model.user.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;

@@ -1,6 +1,6 @@
 package com.descope.model.jwt.response;
 
-import com.descope.model.auth.UserResponse;
+import com.descope.model.user.response.UserResponse;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;

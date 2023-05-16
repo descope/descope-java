@@ -1,6 +1,7 @@
-package com.descope.model.totp;
+package com.descope.model.tenant.response;
 
-import com.descope.model.user.User;
+import com.descope.model.tenant.Tenant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class TotpSignUpRequestBody {
-  private String LoginID;
-  private User user;
+public class GetAllTenantsResponse {
+  List<Tenant> tenants;
 }

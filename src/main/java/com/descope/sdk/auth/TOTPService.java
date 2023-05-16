@@ -1,7 +1,7 @@
 package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
-import com.descope.model.User;
+import com.descope.model.user.User;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.totp.TOTPResponse;
@@ -12,7 +12,7 @@ public interface TOTPService {
    * Create a new user, and create a seed for it
    *
    * @param loginId - User login ID
-   * @param user    - {@link com.descope.model.User User}
+   * @param user    - {@link User User}
    * @return value will allow to connect it to an authenticator app
    * @throws DescopeException - error upon failure
    */

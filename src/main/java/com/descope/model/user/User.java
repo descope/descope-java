@@ -1,4 +1,4 @@
-package com.descope.model;
+package com.descope.model.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

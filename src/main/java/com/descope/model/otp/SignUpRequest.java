@@ -1,6 +1,6 @@
 package com.descope.model.otp;
 
-import com.descope.model.User;
+import com.descope.model.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

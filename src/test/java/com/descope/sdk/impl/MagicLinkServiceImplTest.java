@@ -16,10 +16,10 @@ import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.User;
+import com.descope.model.user.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
-import com.descope.model.auth.UserResponse;
+import com.descope.model.user.response.UserResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.jwt.Provider;

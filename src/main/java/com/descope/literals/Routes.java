@@ -43,8 +43,16 @@ public class Routes {
 
   @UtilityClass
   public static class ManagementEndPoints {
+    // User
+    public static final String CREATE_USER_LINK = "/mgmt/user/create";
+    public static final String UPDATE_USER_LINK = "/mgmt/user/update";
+    public static final String DELETE_USER_LINK = "/mgmt/user/delete";
+
     // Tenant
     public static final String CREATE_TENANT_LINK = "/mgmt/tenant/create";
+    public static final String UPDATE_TENANT_LINK = "/mgmt/tenant/update";
+    public static final String DELETE_TENANT_LINK = "/mgmt/tenant/delete";
+    public static final String LOAD_ALL_TENANTS_LINK = "/mgmt/tenant/all";
 
     // JWT
     public static final String UPDATE_JWT_LINK = "/mgmt/jwt/update";

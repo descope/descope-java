@@ -1,6 +1,6 @@
 package com.descope.model.magiclink.request;
 
-import com.descope.model.User;
+import com.descope.model.user.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

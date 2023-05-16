@@ -1,7 +1,7 @@
 package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
-import com.descope.model.User;
+import com.descope.model.user.User;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.magiclink.LoginOptions;
@@ -27,7 +27,7 @@ public interface EnchantedLinkService {
    *
    * @param loginId - User login ID
    * @param uri     - Base URI
-   * @param user    - {@link com.descope.model.User User}
+   * @param user    - {@link User User}
    * @return pendingRef, linkId and masked email
    * @throws DescopeException - error upon failure
    */
