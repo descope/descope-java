@@ -47,6 +47,9 @@ public class Routes {
     public static final String CREATE_USER_LINK = "/mgmt/user/create";
     public static final String UPDATE_USER_LINK = "/mgmt/user/update";
     public static final String DELETE_USER_LINK = "/mgmt/user/delete";
+    public static final String DELETE_ALL_TEST_USERS_LINK = "mgmt/user/test/delete/all";
+    public static final String LOAD_USER_LINK = "mgmt/user";
+    public static final String USER_SEARCH_ALL = "mgmt/user/search";
 
     // Tenant
     public static final String CREATE_TENANT_LINK = "/mgmt/tenant/create";
