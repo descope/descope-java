@@ -2,7 +2,6 @@ package com.descope.sdk.auth.impl;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.user.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
@@ -11,12 +10,16 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.otp.AuthenticationVerifyRequestBody;
 import com.descope.model.totp.TOTPResponse;
 import com.descope.model.totp.TotpSignUpRequestBody;
+import com.descope.model.user.User;
 import com.descope.sdk.auth.TOTPService;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 
-import static com.descope.literals.Routes.AuthEndPoints.*;
+import static com.descope.literals.Routes.AuthEndPoints.TOTP_SIGNUP;
+import static com.descope.literals.Routes.AuthEndPoints.TOTP_USER_UPDATE;
+import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_CODE;
+
 
 class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
 

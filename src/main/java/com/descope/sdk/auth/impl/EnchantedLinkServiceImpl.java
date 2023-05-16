@@ -2,7 +2,6 @@ package com.descope.sdk.auth.impl;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.user.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
@@ -10,12 +9,13 @@ import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.enchantedlink.EnchantedLinkSessionBody;
 import com.descope.model.jwt.response.JWTResponse;
-import com.descope.model.magiclink.*;
+import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.request.SignInRequest;
 import com.descope.model.magiclink.request.SignUpRequest;
 import com.descope.model.magiclink.request.UpdateEmailRequest;
 import com.descope.model.magiclink.request.VerifyRequest;
 import com.descope.model.magiclink.response.Masked;
+import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.EnchantedLinkService;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +24,12 @@ import java.net.URI;
 import java.util.Objects;
 
 import static com.descope.enums.DeliveryMethod.EMAIL;
-import static com.descope.literals.Routes.AuthEndPoints.*;
+import static com.descope.literals.Routes.AuthEndPoints.ENCHANTED_LINK_SESSION;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_IN_ENCHANTED_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_ENCHANTED_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OR_IN_ENCHANTED_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.UPDATE_EMAIL_ENCHANTED_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.VERIFY_ENCHANTED_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static org.apache.logging.log4j.util.Strings.isEmpty;
 
@@ -95,8 +100,7 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl
     URI verifyEnchantedLinkURL = composeVerifyEnchantedLinkURL();
     var verifyRequest = new VerifyRequest(token);
     var apiProxy = getApiProxy();
-    EmptyResponse emptyResponse = apiProxy.post(verifyEnchantedLinkURL, verifyRequest, EmptyResponse.class);
-    System.out.println(emptyResponse);
+    apiProxy.post(verifyEnchantedLinkURL, verifyRequest, EmptyResponse.class);
   }
 
   @Override
