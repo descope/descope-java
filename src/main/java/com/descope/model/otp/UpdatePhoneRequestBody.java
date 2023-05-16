@@ -13,5 +13,4 @@ public class UpdatePhoneRequestBody {
 
   private String phone;
   private String loginId;
-
 }

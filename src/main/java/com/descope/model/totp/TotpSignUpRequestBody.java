@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class TotpSignUpRequestBody {
-  private String LoginID;
+  private String loginId;
   private User user;
 }

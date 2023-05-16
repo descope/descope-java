@@ -19,9 +19,9 @@ public class Routes {
     public static final String SIGN_IN_OTP_LINK = "auth/otp/signin";
     public static final String SIGN_UP_OTP_LINK = "auth/otp/signup";
     public static final String SIGN_UP_OR_IN_OTP_LINK = "auth/otp/signup-in";
-    public static final String VERIFY_CODE = "auth/otp/verify";
-    public static final String OTP_UPDATE_EMAIL = "auth/otp/update/email";
-    public static final String OTP_UPDATE_PHONE = "auth/otp/update/phone";
+    public static final String VERIFY_OTP_LINK = "auth/otp/verify";
+    public static final String OTP_UPDATE_EMAIL_LINK = "auth/otp/update/email";
+    public static final String OTP_UPDATE_PHONE_LINK = "auth/otp/update/phone";
 
     // EnchantedLink
     public static final String SIGN_IN_ENCHANTED_LINK = "auth/enchantedlink/signin";
@@ -32,9 +32,9 @@ public class Routes {
     public static final String UPDATE_EMAIL_ENCHANTED_LINK = "auth/enchantedlink/update/email";
 
     // TOTP
-    public static final String TOTP_SIGNUP = "auth/totp/signup";
-    public static final String TOTP_USER_UPDATE = "auth/totp/update";
-    public static final String VERIFY_TOTP_CODE = "auth/totp/verify";
+    public static final String SIGN_UP_TOTP_LINK = "auth/totp/signup";
+    public static final String UPDATE_USER_TOTP_LINK = "auth/totp/update";
+    public static final String VERIFY_TOTP_LINK = "auth/totp/verify";
 
     public static final String GET_KEYS_LINK = "/keys";
     public static final String REFRESH_TOKEN_LINK = "/auth/refresh";

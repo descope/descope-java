@@ -1,38 +1,48 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.enums.DeliveryMethod.EMAIL;
+import static com.descope.enums.DeliveryMethod.SMS;
+import static com.descope.enums.DeliveryMethod.WHATSAPP;
+import static com.descope.literals.Routes.AuthEndPoints.OTP_UPDATE_EMAIL_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.OTP_UPDATE_PHONE_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_IN_OTP_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OR_IN_OTP_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OTP_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.VERIFY_OTP_LINK;
+import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
+import static com.descope.utils.PatternUtils.PHONE_PATTERN;
+import static java.util.Objects.isNull;
+
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.user.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.response.Masked;
-import com.descope.model.otp.*;
+import com.descope.model.otp.AuthenticationVerifyRequestBody;
+import com.descope.model.otp.SignInRequest;
+import com.descope.model.otp.SignUpRequest;
+import com.descope.model.otp.UpdateEmailRequestBody;
+import com.descope.model.otp.UpdatePhoneRequestBody;
+import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.OTPService;
 import com.descope.utils.JwtUtils;
+import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 
-import java.net.URI;
-
-import static com.descope.enums.DeliveryMethod.*;
-import static com.descope.literals.Routes.AuthEndPoints.*;
-import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
-import static com.descope.utils.PatternUtils.PHONE_PATTERN;
-import static java.util.Objects.isNull;
-
-class OTPServiceImpl extends AuthenticationServiceImpl
-    implements OTPService {
+class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
 
   OTPServiceImpl(Client client, AuthParams authParams) {
     super(client, authParams);
   }
 
   @Override
-  public String signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions) throws DescopeException {
+  public String signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -41,7 +51,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl
     URI otpSignInURL = composeSignInURL(deliveryMethod);
     var signInRequest = new SignInRequest(loginId, loginOptions);
     if (JwtUtils.isJWTRequired(loginOptions)) {
-      var pwd = "";//getValidRefreshToken(request);
+      var pwd = ""; // getValidRefreshToken(request);
       apiProxy = getApiProxy(pwd);
     } else {
       apiProxy = getApiProxy();
@@ -51,7 +61,8 @@ class OTPServiceImpl extends AuthenticationServiceImpl
   }
 
   @Override
-  public String signUp(DeliveryMethod deliveryMethod, String loginId, User user) throws DescopeException {
+  public String signUp(DeliveryMethod deliveryMethod, String loginId, User user)
+      throws DescopeException {
     if (isNull(user)) {
       user = new User();
     }
@@ -84,7 +95,8 @@ class OTPServiceImpl extends AuthenticationServiceImpl
   }
 
   @Override
-  public AuthenticationInfo verifyCode(DeliveryMethod deliveryMethod, String loginId, String code) throws DescopeException {
+  public AuthenticationInfo verifyCode(DeliveryMethod deliveryMethod, String loginId, String code)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -99,7 +111,8 @@ class OTPServiceImpl extends AuthenticationServiceImpl
     var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code);
     URI otpVerifyCode = composeVerifyCodeURL(deliveryMethod);
     var apiProxy = getApiProxy();
-    var jwtResponse = apiProxy.post(otpVerifyCode, authenticationVerifyRequestBody, JWTResponse.class);
+    var jwtResponse =
+        apiProxy.post(otpVerifyCode, authenticationVerifyRequestBody, JWTResponse.class);
 
     return getAuthenticationInfo(jwtResponse);
   }
@@ -113,7 +126,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl
       throw ServerCommonException.invalidArgument("Email");
     }
 
-    //TODO - Need to check on UpdateOptions which got recently added on go lang
+    // TODO - Need to check on UpdateOptions which got recently added on go lang
     Class<? extends Masked> maskedClass = getMaskedValue(EMAIL);
     URI otpUpdateUserEmail = composeUpdateUserEmailOTP();
 
@@ -125,7 +138,8 @@ class OTPServiceImpl extends AuthenticationServiceImpl
   }
 
   @Override
-  public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone) throws DescopeException {
+  public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -144,16 +158,15 @@ class OTPServiceImpl extends AuthenticationServiceImpl
   }
 
   private URI composeUpdateUserPhoneOTP(DeliveryMethod deliveryMethod) {
-    return composeURI(OTP_UPDATE_PHONE, deliveryMethod.getValue());
+    return composeURI(OTP_UPDATE_PHONE_LINK, deliveryMethod.getValue());
   }
 
   private URI composeUpdateUserEmailOTP() {
-    return getUri(OTP_UPDATE_EMAIL);
-
+    return getUri(OTP_UPDATE_EMAIL_LINK);
   }
 
   private URI composeVerifyCodeURL(DeliveryMethod deliveryMethod) {
-    return composeURI(VERIFY_CODE, deliveryMethod.getValue());
+    return composeURI(VERIFY_OTP_LINK, deliveryMethod.getValue());
   }
 
   private URI composeSignUpOrInURL(DeliveryMethod deliveryMethod) {

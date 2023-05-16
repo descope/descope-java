@@ -1,8 +1,8 @@
 package com.descope.sdk.auth.impl;
 
-import static com.descope.literals.Routes.AuthEndPoints.TOTP_SIGNUP;
-import static com.descope.literals.Routes.AuthEndPoints.TOTP_USER_UPDATE;
-import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_CODE;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_TOTP_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_TOTP_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -28,11 +28,11 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
   @Override
   public TOTPResponse signUp(String loginId, User user) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
+      throw ServerCommonException.invalidArgument("loginId");
     }
     URI totpSignUpURL = composeSignUpTOTPURL();
 
-    var signUpRequest = TotpSignUpRequestBody.builder().LoginID(loginId).user(user).build();
+    var signUpRequest = TotpSignUpRequestBody.builder().loginId(loginId).user(user).build();
     var apiProxy = getApiProxy();
     return apiProxy.post(totpSignUpURL, signUpRequest, TOTPResponse.class);
   }
@@ -41,8 +41,9 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
   public AuthenticationInfo signInCode(String loginId, String code, LoginOptions loginOptions)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
+      throw ServerCommonException.invalidArgument("loginId");
     }
+
     var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code);
     URI totpVerifyCode = composeVerifyTOTPCodeURL();
     var apiProxy = getApiProxy();
@@ -55,23 +56,24 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
   @Override
   public TOTPResponse updateUser(String loginId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
+      throw ServerCommonException.invalidArgument("loginId");
     }
+
     URI totpUpdateUser = composeUpdateTOTPURL();
-    var signUpRequest = TotpSignUpRequestBody.builder().LoginID(loginId).build();
+    var signUpRequest = TotpSignUpRequestBody.builder().loginId(loginId).build();
     var apiProxy = getApiProxy();
     return apiProxy.post(totpUpdateUser, signUpRequest, TOTPResponse.class);
   }
 
   private URI composeSignUpTOTPURL() {
-    return getUri(TOTP_SIGNUP);
+    return getUri(SIGN_UP_TOTP_LINK);
   }
 
   private URI composeUpdateTOTPURL() {
-    return getUri(TOTP_USER_UPDATE);
+    return getUri(UPDATE_USER_TOTP_LINK);
   }
 
   private URI composeVerifyTOTPCodeURL() {
-    return getUri(VERIFY_TOTP_CODE);
+    return getUri(VERIFY_TOTP_LINK);
   }
 }

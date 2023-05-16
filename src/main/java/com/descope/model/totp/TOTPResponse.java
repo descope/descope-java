@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TOTPResponse {
-  private String ProvisioningURL;
-  private String Image;
-  private String Key;
+  private String provisioningURL;
+  private String image;
+  private String key;
 }
