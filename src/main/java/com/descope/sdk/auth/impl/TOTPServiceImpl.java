@@ -1,8 +1,11 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.Routes.AuthEndPoints.TOTP_SIGNUP;
+import static com.descope.literals.Routes.AuthEndPoints.TOTP_USER_UPDATE;
+import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_CODE;
+
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.user.User;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
@@ -11,12 +14,10 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.otp.AuthenticationVerifyRequestBody;
 import com.descope.model.totp.TOTPResponse;
 import com.descope.model.totp.TotpSignUpRequestBody;
+import com.descope.model.user.User;
 import com.descope.sdk.auth.TOTPService;
-import org.apache.commons.lang3.StringUtils;
-
 import java.net.URI;
-
-import static com.descope.literals.Routes.AuthEndPoints.*;
+import org.apache.commons.lang3.StringUtils;
 
 class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
 
@@ -36,16 +37,17 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
     return apiProxy.post(totpSignUpURL, signUpRequest, TOTPResponse.class);
   }
 
-
   @Override
-  public AuthenticationInfo signInCode(String loginId, String code, LoginOptions loginOptions) throws DescopeException {
+  public AuthenticationInfo signInCode(String loginId, String code, LoginOptions loginOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code);
     URI totpVerifyCode = composeVerifyTOTPCodeURL();
     var apiProxy = getApiProxy();
-    var jwtResponse = apiProxy.post(totpVerifyCode, authenticationVerifyRequestBody, JWTResponse.class);
+    var jwtResponse =
+        apiProxy.post(totpVerifyCode, authenticationVerifyRequestBody, JWTResponse.class);
 
     return getAuthenticationInfo(jwtResponse);
   }
@@ -67,7 +69,6 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
 
   private URI composeUpdateTOTPURL() {
     return getUri(TOTP_USER_UPDATE);
-
   }
 
   private URI composeVerifyTOTPCodeURL() {
