@@ -1,9 +1,11 @@
 package com.descope.sdk.mgmt;
 
+import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.UserResponse;
+import java.net.URI;
 import java.util.List;
 
 /** Provides functions for managing users in a project. */
@@ -299,4 +301,45 @@ public interface UserService {
    *     thrown.
    */
   void expirePassword(String loginId) throws DescopeException;
+
+  /**
+   * Generate OTP for the given login ID of a test user. This is useful when running tests and don't
+   * want to use 3rd party messaging services. The redirect URI is optional. If provided however, it
+   * will be used instead of any global configuration.
+   *
+   * @param loginId The loginID is required.
+   * @param deliveryMethod Choose the selected delivery method for verification.
+   * @return It returns the code for the login (exactly as it sent via Email or SMS)
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  String generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
+      throws DescopeException;
+
+  /**
+   * Generate Magic Link for the given login ID of a test user. This is useful when running tests
+   * and don't want to use 3rd party messaging services. The redirect URI is optional. If provided
+   * however, it will be used instead of any global configuration.
+   *
+   * @param loginId The loginID is required.
+   * @param deliveryMethod Choose the selected delivery method for verification.
+   * @return It returns the link for the login (exactly as it sent via Email)
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  String generateMagicLinkForTestUser(String loginId, URI uri, DeliveryMethod deliveryMethod)
+      throws DescopeException;
+
+  /**
+   * Generate Enchanted Link for the given login ID of a test user. This is useful when running
+   * tests and don't want to use 3rd party messaging services The redirect URI is optional. If
+   * provided however, it will be used instead of any global configuration.
+   *
+   * @param loginId loginId The loginID is required.
+   * @return It returns the link for the login (exactly as it sent via Email) and pendingRef which
+   *     is used to poll for a valid session
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  String generateEnchantedLinkForTestUser(String loginId, URI uri) throws DescopeException;
 }
