@@ -39,6 +39,9 @@ public class Routes {
     public static final String GET_KEYS_LINK = "/keys";
     public static final String REFRESH_TOKEN_LINK = "/auth/refresh";
     public static final String EXCHANGE_ACCESS_KEY_LINK = "/auth/accesskey/exchange";
+    //oauth
+    public static final String COMPOSE_OAUTH_LINK = "auth/oauth/authorize";
+    public static final String EXCHANGE_OAUTH_LINK = "auth/oauth/exchange";
   }
 
   @UtilityClass
