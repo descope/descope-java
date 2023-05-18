@@ -13,6 +13,7 @@ public class AuthenticationServiceBuilder {
         .magicLinkService(new MagicLinkServiceImpl(client, authParams))
         .enchantedLinkService(new EnchantedLinkServiceImpl(client, authParams))
         .totpService(new TOTPServiceImpl(client, authParams))
+        .oAuthService(new OAuthServiceImpl(client, authParams))
         .build();
   }
 }
