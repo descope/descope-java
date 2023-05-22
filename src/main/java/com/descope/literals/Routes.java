@@ -42,6 +42,9 @@ public class Routes {
     //oauth
     public static final String COMPOSE_OAUTH_LINK = "auth/oauth/authorize";
     public static final String EXCHANGE_OAUTH_LINK = "auth/oauth/exchange";
+    //SAML
+    public static final String COMPOSE_SAML_START_LINK = "auth/saml/authorize";
+    public static final String EXCHANGE_SAML_LINK = "auth/saml/exchange";
   }
 
   @UtilityClass

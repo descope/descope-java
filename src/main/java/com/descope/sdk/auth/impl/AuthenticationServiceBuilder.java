@@ -14,6 +14,7 @@ public class AuthenticationServiceBuilder {
         .enchantedLinkService(new EnchantedLinkServiceImpl(client, authParams))
         .totpService(new TOTPServiceImpl(client, authParams))
         .oAuthService(new OAuthServiceImpl(client, authParams))
+        .samlService(new SAMLServiceImpl(client, authParams))
         .build();
   }
 }
