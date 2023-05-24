@@ -15,6 +15,7 @@ public class AuthenticationServiceBuilder {
         .totpService(new TOTPServiceImpl(client, authParams))
         .oAuthService(new OAuthServiceImpl(client, authParams))
         .samlService(new SAMLServiceImpl(client, authParams))
+        .passwordService(new PasswordServiceImpl(client, authParams))
         .build();
   }
 }

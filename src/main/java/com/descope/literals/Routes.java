@@ -45,6 +45,15 @@ public class Routes {
     //SAML
     public static final String COMPOSE_SAML_START_LINK = "auth/saml/authorize";
     public static final String EXCHANGE_SAML_LINK = "auth/saml/exchange";
+
+    //Password
+    public static final String SIGNUP_PASSWORD = "auth/password/signup";
+    public static final String SIGNIN_PASSWORD = "auth/password/signin";
+    public static final String SEND_RESET_PASSWORD = "auth/password/reset";
+    public static final String UPDATE_USER_PASSWORD = "auth/password/update";
+    public static final String REPLACE_USER_PASSWORD = "auth/password/replace";
+    public static final String PASSWORD_POLICY = "auth/password/policy";
+
   }
 
   @UtilityClass
