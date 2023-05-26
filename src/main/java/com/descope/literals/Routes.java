@@ -88,5 +88,15 @@ public class Routes {
 
     // JWT
     public static final String UPDATE_JWT_LINK = "/mgmt/jwt/update";
+
+    //Access key
+    public static final String MANAGEMENT_ACCESSKEY_CREATE = "mgmt/accesskey/create";
+
+    public static final String MANAGEMENT_ACCESSKEY_LOAD = "mgmt/accesskey";
+    public static final String MANAGEMENT_ACCESSKEY_SEARCH_ALL = "mgmt/accesskey/search";
+    public static final String MANAGEMENT_ACCESSKEY_UPDATE = "mgmt/accesskey/update";
+    public static final String MANAGEMENT_ACCESSKEY_DEACTIVE = "mgmt/accesskey/deactivate";
+    public static final String MANAGEMENT_ACCESSKEY_ACTIVE = "mgmt/accesskey/activate";
+    public static final String MANAGEMENT_ACCESSKEY_DELETE = "mgmt/accesskey/delete";
   }
 }
