@@ -98,5 +98,24 @@ public class Routes {
     public static final String MANAGEMENT_ACCESSKEY_DEACTIVE = "mgmt/accesskey/deactivate";
     public static final String MANAGEMENT_ACCESSKEY_ACTIVE = "mgmt/accesskey/activate";
     public static final String MANAGEMENT_ACCESSKEY_DELETE = "mgmt/accesskey/delete";
+    //Permission
+
+    public static final String MANAGEMENT_PERMISSION_CREATE = "mgmt/permission/create";
+
+    public static final String MANAGEMENT_PERMISSION_UPDATE = "mgmt/permission/update";
+
+    public static final String MANAGEMENT_PERMISSION_DELETE = "mgmt/permission/delete";
+
+    public static final String MANAGEMENT_PERMISSION_LOADALL = "mgmt/permission/all";
+
+    //Roles
+    public static final String MANAGEMENT_ROLES_CREATE = "mgmt/role/create";
+
+    public static final String MANAGEMENT_ROLES_UPDATE = "mgmt/role/update";
+
+    public static final String MANAGEMENT_ROLES_DELETE = "mgmt/role/delete";
+
+    public static final String MANAGEMENT_ROLES_LOADALL = "mgmt/role/all";
+
   }
 }
