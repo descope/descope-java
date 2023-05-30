@@ -1,0 +1,93 @@
+package com.descope.sdk.mgmt.impl;
+
+import com.descope.exception.DescopeException;
+import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.sso.AttributeMapping;
+import com.descope.model.sso.RoleMapping;
+import com.descope.sdk.mgmt.SsoService;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_MAPPING;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_METADATA;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SETTINGS;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTINGS;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS;
+
+public class SsoServiceImpl extends ManagementsBase implements SsoService {
+  SsoServiceImpl(Client client, ManagementParams managementParams) {
+    super(client, managementParams);
+  }
+
+  @Override
+  public void getSettings(String tenantID) throws DescopeException {
+    if (StringUtils.isBlank(tenantID)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    Map<String, String> params = Map.of("tenantId", tenantID);
+    var apiProxy = getApiProxy();
+    apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS, params), Void.class);
+  }
+
+  @Override
+  public void deleteSettings(String tenantID) throws DescopeException {
+    if (StringUtils.isBlank(tenantID)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    Map<String, String> request = Map.of("tenantId", tenantID);
+    var apiProxy = getApiProxy();
+    apiProxy.delete(getUri(SSO_DELETE_SETTINGS), request, Void.class);
+  }
+
+  @Override
+  public void configureSettings(String tenantID, String idpURL, String idpCert, String entityID, String redirectURL, String domain) throws DescopeException {
+    if (StringUtils.isBlank(tenantID)) {
+      throw ServerCommonException.invalidArgument("TenantID");
+    }
+    if (StringUtils.isBlank(idpURL)) {
+      throw ServerCommonException.invalidArgument("IdpURL");
+    }
+    if (StringUtils.isBlank(idpCert)) {
+      throw ServerCommonException.invalidArgument("IdpCert");
+    }
+    if (StringUtils.isBlank(entityID)) {
+      throw ServerCommonException.invalidArgument("EntityID");
+    }
+    if (StringUtils.isBlank(redirectURL)) {
+      throw ServerCommonException.invalidArgument("RedirectURL");
+    }
+    Map<String, String> request = Map.of("tenantId", tenantID, "idpURL", idpURL, "idpCert", idpCert, "entityId", entityID, "redirectURL", redirectURL, "domain", domain);
+    var apiProxy = getApiProxy();
+    apiProxy.post(getUri(SSO_CONFIGURE_SETTINGS), request, Void.class);
+
+  }
+
+  @Override
+  public void configureMetadata(String tenantID, String idpMetadataURL) throws DescopeException {
+    if (StringUtils.isBlank(tenantID)) {
+      throw ServerCommonException.invalidArgument("TenantID");
+    }
+    if (StringUtils.isBlank(idpMetadataURL)) {
+      throw ServerCommonException.invalidArgument("IdpMetadataURL");
+    }
+    Map<String, String> request = Map.of("tenantId", tenantID, "idpMetadataURL", idpMetadataURL);
+    var apiProxy = getApiProxy();
+    apiProxy.post(getUri(SSO_CONFIGURE_METADATA), request, Void.class);
+
+  }
+
+  @Override
+  public void configureMapping(String tenantID, List<RoleMapping> roleMapping, AttributeMapping attributeMapping) throws DescopeException {
+    if (StringUtils.isBlank(tenantID)) {
+      throw ServerCommonException.invalidArgument("TenantID");
+    }
+    Map<String, Object> request = Map.of("tenantId", tenantID, "roleMappings", roleMapping, "attributeMapping", attributeMapping);
+    var apiProxy = getApiProxy();
+    apiProxy.post(getUri(SSO_CONFIGURE_MAPPING), request, Void.class);
+
+  }
+}

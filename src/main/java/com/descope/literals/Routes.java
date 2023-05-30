@@ -86,6 +86,36 @@ public class Routes {
     public static final String DELETE_TENANT_LINK = "/mgmt/tenant/delete";
     public static final String LOAD_ALL_TENANTS_LINK = "/mgmt/tenant/all";
 
+    //SSO
+
+    public static final String SSO_GET_SETTINGS = "mgmt/sso/settings";
+
+    public static final String SSO_DELETE_SETTINGS = "mgmt/sso/settings";
+
+    public static final String SSO_CONFIGURE_SETTINGS = "mgmt/sso/settings";
+
+    public static final String SSO_CONFIGURE_METADATA = "mgmt/sso/metadata";
+
+    public static final String SSO_CONFIGURE_MAPPING = "mgmt/sso/mapping";
+
+    //Group
+
+    public static final String GROUP_LOAD_ALL = "mgmt/group/all";
+
+    public static final String LOAD_ALL_FOR_GROUP_MEMBERS = "mgmt/group/member/all";
+
+    public static final String LOAD_ALL_GROUP_MEMBERS = "mgmt/group/members";
+
+    //FLOW
+
+    public static final String FLOW_EXPORT = "mgmt/flow/export";
+
+    public static final String FLOW_IMPORT = "mgmt/flow/import";
+
+    public static final String THEME_EXPORT = "mgmt/theme/export";
+
+    public static final String THEME_IMPORT = "mgmt/theme/import";
+
     // JWT
     public static final String UPDATE_JWT_LINK = "/mgmt/jwt/update";
 
