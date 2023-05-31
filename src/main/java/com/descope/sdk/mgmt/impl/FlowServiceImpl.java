@@ -36,7 +36,7 @@ public class FlowServiceImpl extends ManagementsBase implements FlowService {
   }
 
   @Override
-  public FlowResponse ImportFlow(String flowID, Flow flow, Screen screen) throws DescopeException {
+  public FlowResponse importFlow(String flowID, Flow flow, Screen screen) throws DescopeException {
     if (StringUtils.isBlank(flowID)) {
       throw ServerCommonException.invalidArgument("FlowID");
     }
@@ -46,13 +46,13 @@ public class FlowServiceImpl extends ManagementsBase implements FlowService {
   }
 
   @Override
-  public Theme ExportTheme() throws DescopeException {
+  public Theme exportTheme() throws DescopeException {
     var apiProxy = getApiProxy();
     return apiProxy.post(getUri(THEME_EXPORT), null, Theme.class);
   }
 
   @Override
-  public Theme ImportTheme(Theme theme) throws DescopeException {
+  public Theme importTheme(Theme theme) throws DescopeException {
     if (Objects.isNull(theme)) {
       throw ServerCommonException.invalidArgument("Theme");
     }

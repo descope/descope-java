@@ -6,6 +6,7 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
+import com.descope.model.sso.SSOSettingsResponse;
 import com.descope.sdk.mgmt.SsoService;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,13 +25,13 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
   }
 
   @Override
-  public void getSettings(String tenantID) throws DescopeException {
+  public SSOSettingsResponse getSettings(String tenantID) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
     Map<String, String> params = Map.of("tenantId", tenantID);
     var apiProxy = getApiProxy();
-    apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS, params), Void.class);
+    return apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS, params), SSOSettingsResponse.class);
   }
 
   @Override

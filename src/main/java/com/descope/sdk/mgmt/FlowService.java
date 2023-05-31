@@ -9,9 +9,9 @@ import com.descope.model.flow.Theme;
 public interface FlowService {
   FlowResponse exportFlow(String flowID) throws DescopeException;
 
-  FlowResponse ImportFlow(String flowID, Flow flow, Screen screen) throws DescopeException;
+  FlowResponse importFlow(String flowID, Flow flow, Screen screen) throws DescopeException;
 
-  Theme ExportTheme() throws DescopeException;
+  Theme exportTheme() throws DescopeException;
 
-  Theme ImportTheme(Theme theme) throws DescopeException;
+  Theme importTheme(Theme theme) throws DescopeException;
 }

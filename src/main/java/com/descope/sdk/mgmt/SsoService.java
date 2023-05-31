@@ -3,11 +3,12 @@ package com.descope.sdk.mgmt;
 import com.descope.exception.DescopeException;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
+import com.descope.model.sso.SSOSettingsResponse;
 
 import java.util.List;
 
 public interface SsoService {
-  void getSettings(String tenantID) throws DescopeException;
+  SSOSettingsResponse getSettings(String tenantID) throws DescopeException;
 
   void deleteSettings(String tenantID) throws DescopeException;
 
