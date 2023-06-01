@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
-public class SsoServiceImpl extends ManagementsBase implements SsoService {
+class SsoServiceImpl extends ManagementsBase implements SsoService {
   SsoServiceImpl(Client client, ManagementParams managementParams) {
     super(client, managementParams);
   }

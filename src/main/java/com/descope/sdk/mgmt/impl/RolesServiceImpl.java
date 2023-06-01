@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
-public class RolesServiceImpl extends ManagementsBase implements RolesService {
+class RolesServiceImpl extends ManagementsBase implements RolesService {
 
   RolesServiceImpl(Client client, ManagementParams managementParams) {
     super(client, managementParams);
@@ -67,6 +67,7 @@ public class RolesServiceImpl extends ManagementsBase implements RolesService {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Role> loadAll() throws DescopeException {
     var apiProxy = getApiProxy();
     return (List<Role>) apiProxy.get(getUri(MANAGEMENT_ROLES_LOAD_ALL_LINK), List.class);

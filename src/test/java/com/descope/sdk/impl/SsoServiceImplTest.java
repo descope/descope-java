@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-public class SsoServiceImplTest {
+class SsoServiceImplTest {
 
   private SsoService ssoService;
 
@@ -182,11 +182,11 @@ public class SsoServiceImplTest {
   @Test
   void testConfigureMappingForEmptyTenantId() {
     var mockRoleMapping = Mockito.mock(RoleMapping.class);
-    var attribueMapping = Mockito.mock(AttributeMapping.class);
+    var attributeMapping = Mockito.mock(AttributeMapping.class);
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> ssoService.configureMapping("", List.of(mockRoleMapping), attribueMapping));
+            () -> ssoService.configureMapping("", List.of(mockRoleMapping), attributeMapping));
     assertNotNull(thrown);
     assertEquals("The TenantID argument is invalid", thrown.getMessage());
   }
@@ -194,12 +194,12 @@ public class SsoServiceImplTest {
   @Test
   void testConfigureMappingForSuccess() {
     var mockRoleMapping = Mockito.mock(RoleMapping.class);
-    var attribueMapping = Mockito.mock(AttributeMapping.class);
+    var attributeMapping = Mockito.mock(AttributeMapping.class);
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      ssoService.configureMapping("someTenantID", List.of(mockRoleMapping), attribueMapping);
+      ssoService.configureMapping("someTenantID", List.of(mockRoleMapping), attributeMapping);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }

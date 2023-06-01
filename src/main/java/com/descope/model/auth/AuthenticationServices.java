@@ -14,10 +14,10 @@ import lombok.Getter;
 @Builder
 public class AuthenticationServices {
   OTPService otpService;
-  MagicLinkService magicLinkService;
-  EnchantedLinkService enchantedLinkService;
+  SAMLService samlService;
   TOTPService totpService;
   OAuthService oAuthService;
-  SAMLService samlService;
   PasswordService passwordService;
+  MagicLinkService magicLinkService;
+  EnchantedLinkService enchantedLinkService;
 }

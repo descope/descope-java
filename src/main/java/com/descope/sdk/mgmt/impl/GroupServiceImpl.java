@@ -14,12 +14,13 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
-public class GroupServiceImpl extends ManagementsBase implements GroupService {
+class GroupServiceImpl extends ManagementsBase implements GroupService {
   GroupServiceImpl(Client client, ManagementParams managementParams) {
     super(client, managementParams);
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Group> loadAllGroups(String tenantID) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
@@ -30,21 +31,24 @@ public class GroupServiceImpl extends ManagementsBase implements GroupService {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Group> loadAllGroupsForMembers(
       String tenantID, List<String> userIDs, List<String> loginIDs) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
-    if (userIDs.size() == 0 && loginIDs.size() == 0) {
+    if (userIDs.isEmpty() && loginIDs.isEmpty()) {
       throw ServerCommonException.invalidArgument("userIDs and loginIDs");
     }
     Map<String, Object> request =
         Map.of("tenantId", tenantID, "loginIds", loginIDs, "userIds", userIDs);
     var apiProxy = getApiProxy();
-    return (List<Group>) apiProxy.post(getUri(LOAD_ALL_FOR_GROUP_MEMBERS_LINK), request, List.class);
+    return (List<Group>)
+        apiProxy.post(getUri(LOAD_ALL_FOR_GROUP_MEMBERS_LINK), request, List.class);
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Group> loadAllGroupMembers(String tenantID, String groupID) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");

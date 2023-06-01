@@ -24,7 +24,7 @@ import com.descope.sdk.auth.PasswordService;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
-public class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordService {
+class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordService {
   PasswordServiceImpl(Client client, AuthParams authParams) {
     super(client, authParams);
   }
@@ -45,7 +45,7 @@ public class PasswordServiceImpl extends AuthenticationServiceImpl implements Pa
             .password(password)
             .build();
     var apiProxy = getApiProxy();
-    JWTResponse jwtResponse =
+    var jwtResponse =
         apiProxy.post(getUri(SIGN_UP_PASSWORD_LINK), pwdSignUpRequest, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
@@ -62,7 +62,7 @@ public class PasswordServiceImpl extends AuthenticationServiceImpl implements Pa
             .password(password)
             .build();
     var apiProxy = getApiProxy();
-    JWTResponse jwtResponse =
+    var jwtResponse =
         apiProxy.post(getUri(SIGN_IN_PASSWORD_LINK), pwdSignInRequest, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }

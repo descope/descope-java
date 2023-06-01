@@ -24,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-public class FlowServiceImplTest {
+class FlowServiceImplTest {
 
   private FlowService flowService;
 

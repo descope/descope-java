@@ -140,6 +140,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<UserResponse> searchAll(UserSearchRequest request) throws DescopeException {
     if (Objects.isNull(request)) {
       request = UserSearchRequest.builder().limit(0).page(0).build();

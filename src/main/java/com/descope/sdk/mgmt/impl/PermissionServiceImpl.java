@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
-public class PermissionServiceImpl extends ManagementsBase implements PermissionService {
+class PermissionServiceImpl extends ManagementsBase implements PermissionService {
 
   PermissionServiceImpl(Client client, ManagementParams managementParams) {
     super(client, managementParams);
@@ -56,6 +56,7 @@ public class PermissionServiceImpl extends ManagementsBase implements Permission
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public List<Permission> loadAll() throws DescopeException {
     var apiProxy = getApiProxy();
     return (List<Permission>) apiProxy.get(getUri(MANAGEMENT_PERMISSION_LOAD_ALL_LINK), List.class);

@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-public class PermissionServiceImplTest {
+class PermissionServiceImplTest {
 
   private final Permission mockPermission =
       Permission.builder().name("someName").description("somneDesc").build();

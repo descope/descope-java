@@ -10,7 +10,7 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class PasswordFuncTest {
+class PasswordFuncTest {
 
   private PasswordService passwordService;
 

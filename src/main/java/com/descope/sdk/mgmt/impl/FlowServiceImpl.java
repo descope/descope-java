@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
-public class FlowServiceImpl extends ManagementsBase implements FlowService {
+class FlowServiceImpl extends ManagementsBase implements FlowService {
 
   FlowServiceImpl(Client client, ManagementParams managementParams) {
     super(client, managementParams);

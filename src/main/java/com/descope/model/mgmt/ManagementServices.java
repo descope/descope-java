@@ -1,7 +1,12 @@
 package com.descope.model.mgmt;
 
 import com.descope.sdk.mgmt.AccessKeyService;
+import com.descope.sdk.mgmt.FlowService;
+import com.descope.sdk.mgmt.GroupService;
 import com.descope.sdk.mgmt.JwtService;
+import com.descope.sdk.mgmt.PermissionService;
+import com.descope.sdk.mgmt.RolesService;
+import com.descope.sdk.mgmt.SsoService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import lombok.Builder;
@@ -14,4 +19,9 @@ public class ManagementServices {
   TenantService tenantService;
   UserService userService;
   AccessKeyService accessKeyService;
+  PermissionService permissionService;
+  RolesService rolesService;
+  SsoService ssoService;
+  FlowService flowService;
+  GroupService groupService;
 }

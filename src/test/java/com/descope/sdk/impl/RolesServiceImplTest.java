@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-public class RolesServiceImplTest {
+class RolesServiceImplTest {
 
   private final List<String> mockPermissionNames = List.of("permission1", "permission2");
   private final List<Role> mockRole =

@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-public class GroupServiceImplTest {
+class GroupServiceImplTest {
 
   private final Group mockGroup = Mockito.mock(Group.class);
   private final List<Group> groups = List.of(mockGroup);
