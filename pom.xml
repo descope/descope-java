@@ -80,7 +80,7 @@
       <artifactId>junit-jupiter</artifactId>
       <groupId>org.junit.jupiter</groupId>
       <scope>test</scope>
-      <version>5.9.2</version>
+      <version>5.9.3</version>
     </dependency>
     <dependency>
       <artifactId>mockito-junit-jupiter</artifactId>
