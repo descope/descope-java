@@ -1,8 +1,8 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.GROUP_LOAD_ALL;
-import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_FOR_GROUP_MEMBERS;
-import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_GROUP_MEMBERS;
+import static com.descope.literals.Routes.ManagementEndPoints.GROUP_LOAD_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_FOR_GROUP_MEMBERS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_GROUP_MEMBERS_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -26,7 +26,7 @@ public class GroupServiceImpl extends ManagementsBase implements GroupService {
     }
     Map<String, String> request = Map.of("tenantId", tenantID);
     var apiProxy = getApiProxy();
-    return (List<Group>) apiProxy.post(getUri(GROUP_LOAD_ALL), request, List.class);
+    return (List<Group>) apiProxy.post(getUri(GROUP_LOAD_ALL_LINK), request, List.class);
   }
 
   @Override
@@ -41,7 +41,7 @@ public class GroupServiceImpl extends ManagementsBase implements GroupService {
     Map<String, Object> request =
         Map.of("tenantId", tenantID, "loginIds", loginIDs, "userIds", userIDs);
     var apiProxy = getApiProxy();
-    return (List<Group>) apiProxy.post(getUri(LOAD_ALL_FOR_GROUP_MEMBERS), request, List.class);
+    return (List<Group>) apiProxy.post(getUri(LOAD_ALL_FOR_GROUP_MEMBERS_LINK), request, List.class);
   }
 
   @Override
@@ -54,6 +54,6 @@ public class GroupServiceImpl extends ManagementsBase implements GroupService {
     }
     Map<String, String> request = Map.of("tenantId", tenantID, "groupId", groupID);
     var apiProxy = getApiProxy();
-    return (List<Group>) apiProxy.post(getUri(LOAD_ALL_GROUP_MEMBERS), request, List.class);
+    return (List<Group>) apiProxy.post(getUri(LOAD_ALL_GROUP_MEMBERS_LINK), request, List.class);
   }
 }

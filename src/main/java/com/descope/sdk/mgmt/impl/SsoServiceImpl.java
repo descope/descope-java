@@ -1,10 +1,10 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_MAPPING;
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_METADATA;
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SETTINGS;
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTINGS;
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_MAPPING_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_METADATA_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SETTINGS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTINGS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -30,7 +30,7 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
     }
     Map<String, String> params = Map.of("tenantId", tenantID);
     var apiProxy = getApiProxy();
-    return apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS, params), SSOSettingsResponse.class);
+    return apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS_LINK, params), SSOSettingsResponse.class);
   }
 
   @Override
@@ -40,7 +40,7 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
     }
     Map<String, String> request = Map.of("tenantId", tenantID);
     var apiProxy = getApiProxy();
-    apiProxy.delete(getUri(SSO_DELETE_SETTINGS), request, Void.class);
+    apiProxy.delete(getUri(SSO_DELETE_SETTINGS_LINK), request, Void.class);
   }
 
   @Override
@@ -82,7 +82,7 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
             "domain",
             domain);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(SSO_CONFIGURE_SETTINGS), request, Void.class);
+    apiProxy.post(getUri(SSO_CONFIGURE_SETTINGS_LINK), request, Void.class);
   }
 
   @Override
@@ -95,7 +95,7 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
     }
     Map<String, String> request = Map.of("tenantId", tenantID, "idpMetadataURL", idpMetadataURL);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(SSO_CONFIGURE_METADATA), request, Void.class);
+    apiProxy.post(getUri(SSO_CONFIGURE_METADATA_LINK), request, Void.class);
   }
 
   @Override
@@ -114,6 +114,6 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
             "attributeMapping",
             attributeMapping);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(SSO_CONFIGURE_MAPPING), request, Void.class);
+    apiProxy.post(getUri(SSO_CONFIGURE_MAPPING_LINK), request, Void.class);
   }
 }

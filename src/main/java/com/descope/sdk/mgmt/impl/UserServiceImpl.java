@@ -1,23 +1,23 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.COMPOSE_OTP_FOR_TEST;
+import static com.descope.literals.Routes.ManagementEndPoints.COMPOSE_OTP_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_ALL_TEST_USERS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_USER_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.ENCHANTED_LINK_FOR_TEST;
+import static com.descope.literals.Routes.ManagementEndPoints.ENCHANTED_LINK_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_USER_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TEST;
+import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_CUSTOM_ATTRIBUTE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_PICTURE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_NAME;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_EXPIRE_PASSWORD;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD;
+import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_NAME_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_EXPIRE_PASSWORD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
@@ -396,7 +396,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   private URI composeSearchAllUri() {
-    return getUri(USER_SEARCH_ALL);
+    return getUri(USER_SEARCH_ALL_LINK);
   }
 
   private URI composeActivateUserUri() {
@@ -412,7 +412,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   private URI composeUpdateUserNameUri() {
-    return getUri(UPDATE_USER_NAME);
+    return getUri(UPDATE_USER_NAME_LINK);
   }
 
   private URI composeUpdateAttributesUri() {
@@ -424,46 +424,46 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   private URI composeAddRolesUri() {
-    return getUri(USER_ADD_ROLES);
+    return getUri(USER_ADD_ROLES_LINK);
   }
 
   private URI composeRemoveRolesUri() {
-    return getUri(USER_REMOVE_ROLES);
+    return getUri(USER_REMOVE_ROLES_LINK);
   }
 
   private URI composeAddTenantUri() {
-    return getUri(USER_ADD_TENANT);
+    return getUri(USER_ADD_TENANT_LINK);
   }
 
   private URI composeRemoveTenantUri() {
-    return getUri(USER_REMOVE_TENANT);
+    return getUri(USER_REMOVE_TENANT_LINK);
   }
 
   private URI composeAddTenantRolesUri() {
-    return getUri(USER_ADD_ROLES);
+    return getUri(USER_ADD_ROLES_LINK);
   }
 
   private URI composeRemoveTenantRolesUri() {
-    return getUri(USER_REMOVE_TENANT);
+    return getUri(USER_REMOVE_TENANT_LINK);
   }
 
   private URI composeOTPForTestUSerUri() {
-    return getUri(COMPOSE_OTP_FOR_TEST);
+    return getUri(COMPOSE_OTP_FOR_TEST_LINK);
   }
 
   private URI composeMaginLinkForTestUSerUri() {
-    return getUri(MAGIC_LINK_FOR_TEST);
+    return getUri(MAGIC_LINK_FOR_TEST_LINK);
   }
 
   private URI composeEnchantedLinkForTestUSerUri() {
-    return getUri(ENCHANTED_LINK_FOR_TEST);
+    return getUri(ENCHANTED_LINK_FOR_TEST_LINK);
   }
 
   private URI composeSetPasswordUri() {
-    return getUri(USER_SET_PASSWORD);
+    return getUri(USER_SET_PASSWORD_LINK);
   }
 
   private URI composeExpirePasswordUri() {
-    return getUri(USER_EXPIRE_PASSWORD);
+    return getUri(USER_EXPIRE_PASSWORD_LINK);
   }
 }

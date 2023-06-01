@@ -1,9 +1,9 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT;
-import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT;
-import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT;
-import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT;
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -31,7 +31,7 @@ public class FlowServiceImpl extends ManagementsBase implements FlowService {
     }
     Map<String, String> request = Map.of("flowId", flowID);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(FLOW_EXPORT), request, FlowResponse.class);
+    return apiProxy.post(getUri(FLOW_EXPORT_LINK), request, FlowResponse.class);
   }
 
   @Override
@@ -41,13 +41,13 @@ public class FlowServiceImpl extends ManagementsBase implements FlowService {
     }
     Map<String, Object> request = Map.of("flowId", flowID, "flow", flow, "screens", screen);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(FLOW_IMPORT), request, FlowResponse.class);
+    return apiProxy.post(getUri(FLOW_IMPORT_LINK), request, FlowResponse.class);
   }
 
   @Override
   public Theme exportTheme() throws DescopeException {
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(THEME_EXPORT), null, Theme.class);
+    return apiProxy.post(getUri(THEME_EXPORT_LINK), null, Theme.class);
   }
 
   @Override
@@ -57,6 +57,6 @@ public class FlowServiceImpl extends ManagementsBase implements FlowService {
     }
     Map<String, Object> request = Map.of("theme", theme);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(THEME_IMPORT), request, Theme.class);
+    return apiProxy.post(getUri(THEME_IMPORT_LINK), request, Theme.class);
   }
 }

@@ -1,9 +1,9 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_CREATE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_DELETE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_LOADALL;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_UPDATE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_CREATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_DELETE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_LOAD_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_UPDATE_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -30,7 +30,7 @@ public class RolesServiceImpl extends ManagementsBase implements RolesService {
     Map<String, Object> request =
         Map.of("name", name, "description", description, "permissionNames", permissionNames);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_ROLES_CREATE), request, Void.class);
+    apiProxy.post(getUri(MANAGEMENT_ROLES_CREATE_LINK), request, Void.class);
   }
 
   @Override
@@ -53,7 +53,7 @@ public class RolesServiceImpl extends ManagementsBase implements RolesService {
             "permissionNames",
             permissionNames);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_ROLES_UPDATE), request, Void.class);
+    apiProxy.post(getUri(MANAGEMENT_ROLES_UPDATE_LINK), request, Void.class);
   }
 
   @Override
@@ -63,12 +63,12 @@ public class RolesServiceImpl extends ManagementsBase implements RolesService {
     }
     Map<String, String> request = Map.of("name", name);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_ROLES_DELETE), request, Void.class);
+    apiProxy.post(getUri(MANAGEMENT_ROLES_DELETE_LINK), request, Void.class);
   }
 
   @Override
   public List<Role> loadAll() throws DescopeException {
     var apiProxy = getApiProxy();
-    return (List<Role>) apiProxy.get(getUri(MANAGEMENT_ROLES_LOADALL), List.class);
+    return (List<Role>) apiProxy.get(getUri(MANAGEMENT_ROLES_LOAD_ALL_LINK), List.class);
   }
 }

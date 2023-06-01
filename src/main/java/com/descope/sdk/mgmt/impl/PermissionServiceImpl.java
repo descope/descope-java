@@ -1,9 +1,9 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_CREATE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_DELETE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_LOADALL;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_UPDATE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_CREATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_DELETE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_LOAD_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_UPDATE_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -28,7 +28,7 @@ public class PermissionServiceImpl extends ManagementsBase implements Permission
     }
     Map<String, String> request = Map.of("name", name, "description", description);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_PERMISSION_CREATE), request, Void.class);
+    apiProxy.post(getUri(MANAGEMENT_PERMISSION_CREATE_LINK), request, Void.class);
   }
 
   @Override
@@ -42,7 +42,7 @@ public class PermissionServiceImpl extends ManagementsBase implements Permission
     Map<String, String> request =
         Map.of("name", name, "newName", newName, "description", description);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_PERMISSION_UPDATE), request, Void.class);
+    apiProxy.post(getUri(MANAGEMENT_PERMISSION_UPDATE_LINK), request, Void.class);
   }
 
   @Override
@@ -52,12 +52,12 @@ public class PermissionServiceImpl extends ManagementsBase implements Permission
     }
     Map<String, String> request = Map.of("name", name);
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_PERMISSION_DELETE), request, Void.class);
+    apiProxy.post(getUri(MANAGEMENT_PERMISSION_DELETE_LINK), request, Void.class);
   }
 
   @Override
   public List<Permission> loadAll() throws DescopeException {
     var apiProxy = getApiProxy();
-    return (List<Permission>) apiProxy.get(getUri(MANAGEMENT_PERMISSION_LOADALL), List.class);
+    return (List<Permission>) apiProxy.get(getUri(MANAGEMENT_PERMISSION_LOAD_ALL_LINK), List.class);
   }
 }

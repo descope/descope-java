@@ -1,11 +1,11 @@
 package com.descope.sdk.auth.impl;
 
-import static com.descope.literals.Routes.AuthEndPoints.PASSWORD_POLICY;
-import static com.descope.literals.Routes.AuthEndPoints.REPLACE_USER_PASSWORD;
-import static com.descope.literals.Routes.AuthEndPoints.SEND_RESET_PASSWORD;
-import static com.descope.literals.Routes.AuthEndPoints.SIGNIN_PASSWORD;
-import static com.descope.literals.Routes.AuthEndPoints.SIGNUP_PASSWORD;
-import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_PASSWORD;
+import static com.descope.literals.Routes.AuthEndPoints.PASSWORD_POLICY_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.REPLACE_USER_PASSWORD_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SEND_RESET_PASSWORD_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_IN_PASSWORD_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_PASSWORD_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_PASSWORD_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -46,7 +46,7 @@ public class PasswordServiceImpl extends AuthenticationServiceImpl implements Pa
             .build();
     var apiProxy = getApiProxy();
     JWTResponse jwtResponse =
-        apiProxy.post(getUri(SIGNUP_PASSWORD), pwdSignUpRequest, JWTResponse.class);
+        apiProxy.post(getUri(SIGN_UP_PASSWORD_LINK), pwdSignUpRequest, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
 
@@ -63,7 +63,7 @@ public class PasswordServiceImpl extends AuthenticationServiceImpl implements Pa
             .build();
     var apiProxy = getApiProxy();
     JWTResponse jwtResponse =
-        apiProxy.post(getUri(SIGNIN_PASSWORD), pwdSignInRequest, JWTResponse.class);
+        apiProxy.post(getUri(SIGN_IN_PASSWORD_LINK), pwdSignInRequest, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
 
@@ -79,7 +79,7 @@ public class PasswordServiceImpl extends AuthenticationServiceImpl implements Pa
             .redirectURL(redirectURL)
             .build();
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(SEND_RESET_PASSWORD), pwdResetRequest, Void.class);
+    apiProxy.post(getUri(SEND_RESET_PASSWORD_LINK), pwdResetRequest, Void.class);
   }
 
   @Override
@@ -93,7 +93,7 @@ public class PasswordServiceImpl extends AuthenticationServiceImpl implements Pa
             .newPassword(newPassword)
             .build();
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(UPDATE_USER_PASSWORD), pwdUpdateRequest, Void.class);
+    apiProxy.post(getUri(UPDATE_USER_PASSWORD_LINK), pwdUpdateRequest, Void.class);
   }
 
   @Override
@@ -109,12 +109,12 @@ public class PasswordServiceImpl extends AuthenticationServiceImpl implements Pa
             .newPassword(newPassword)
             .build();
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(REPLACE_USER_PASSWORD), pwdUpdateRequest, Void.class);
+    apiProxy.post(getUri(REPLACE_USER_PASSWORD_LINK), pwdUpdateRequest, Void.class);
   }
 
   @Override
   public PasswordPolicy getPasswordPolicy() throws DescopeException {
     var apiProxy = getApiProxy();
-    return apiProxy.get(getUri(PASSWORD_POLICY), PasswordPolicy.class);
+    return apiProxy.get(getUri(PASSWORD_POLICY_LINK), PasswordPolicy.class);
   }
 }

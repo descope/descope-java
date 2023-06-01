@@ -1,12 +1,12 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_ACTIVE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_CREATE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_DEACTIVE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_DELETE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_LOAD;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_SEARCH_ALL;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_UPDATE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_ACTIVE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_CREATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DEACTIVATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DELETE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_LOAD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_UPDATE_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -35,7 +35,7 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
     }
     AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESSKEY_CREATE), body, AccessKeyResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
   }
 
   @Override
@@ -45,14 +45,14 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
     }
     var apiProxy = getApiProxy();
     return apiProxy.get(
-        getQueryParamUri(MANAGEMENT_ACCESSKEY_LOAD, Map.of("id", id)), AccessKeyResponse.class);
+        getQueryParamUri(MANAGEMENT_ACCESS_KEY_LOAD_LINK, Map.of("id", id)), AccessKeyResponse.class);
   }
 
   @Override
   public AccessKeyResponse searchAll(List<String> tenantIDs) throws DescopeException {
     Map<String, List<String>> request = Map.of("tenantIds", tenantIDs);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESSKEY_SEARCH_ALL), request, AccessKeyResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK), request, AccessKeyResponse.class);
   }
 
   @Override
@@ -66,7 +66,7 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
 
     Map<String, String> request = Map.of("id", id, "name", name);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESSKEY_UPDATE), request, AccessKeyResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_UPDATE_LINK), request, AccessKeyResponse.class);
   }
 
   @Override
@@ -76,7 +76,7 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
     }
     Map<String, String> request = Map.of("id", id);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESSKEY_DEACTIVE), request, AccessKeyResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_DEACTIVATE_LINK), request, AccessKeyResponse.class);
   }
 
   @Override
@@ -86,7 +86,7 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
     }
     Map<String, String> request = Map.of("id", id);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESSKEY_ACTIVE), request, AccessKeyResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_ACTIVE_LINK), request, AccessKeyResponse.class);
   }
 
   @Override
@@ -96,7 +96,7 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
     }
     Map<String, String> request = Map.of("id", id);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESSKEY_DELETE), request, AccessKeyResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_DELETE_LINK), request, AccessKeyResponse.class);
   }
 
   private AccessKeyRequest createAccessKeyBody(
