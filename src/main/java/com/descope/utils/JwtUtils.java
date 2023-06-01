@@ -1,18 +1,17 @@
 package com.descope.utils;
 
+import static java.util.Objects.nonNull;
+
 import com.descope.model.jwt.Token;
 import com.descope.model.magiclink.LoginOptions;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
-import lombok.experimental.UtilityClass;
-
 import java.security.Key;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.Objects.nonNull;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class JwtUtils {

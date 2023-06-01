@@ -3,7 +3,6 @@ package com.descope.sdk.mgmt;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.mgmt.AccessKeyResponse;
-
 import java.util.List;
 
 public interface AccessKeyService {

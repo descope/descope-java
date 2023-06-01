@@ -1,19 +1,18 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.Routes.AuthEndPoints.COMPOSE_SAML_START_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_SAML_LINK;
+
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.sdk.auth.SAMLService;
-import org.apache.commons.lang3.StringUtils;
-
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.descope.literals.Routes.AuthEndPoints.COMPOSE_SAML_START_LINK;
-import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_SAML_LINK;
+import org.apache.commons.lang3.StringUtils;
 
 class SAMLServiceImpl extends AuthenticationServiceImpl implements SAMLService {
 
@@ -22,7 +21,8 @@ class SAMLServiceImpl extends AuthenticationServiceImpl implements SAMLService {
   }
 
   @Override
-  public String start(String tenant, String returnURL, LoginOptions loginOptions) throws DescopeException {
+  public String start(String tenant, String returnURL, LoginOptions loginOptions)
+      throws DescopeException {
     Map<String, String> request = new HashMap<>();
     request.put("provider", tenant);
     if (StringUtils.isNotBlank(returnURL)) {

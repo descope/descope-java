@@ -39,21 +39,20 @@ public class Routes {
     public static final String GET_KEYS_LINK = "/keys";
     public static final String REFRESH_TOKEN_LINK = "/auth/refresh";
     public static final String EXCHANGE_ACCESS_KEY_LINK = "/auth/accesskey/exchange";
-    //oauth
+    // oauth
     public static final String COMPOSE_OAUTH_LINK = "auth/oauth/authorize";
     public static final String EXCHANGE_OAUTH_LINK = "auth/oauth/exchange";
-    //SAML
+    // SAML
     public static final String COMPOSE_SAML_START_LINK = "auth/saml/authorize";
     public static final String EXCHANGE_SAML_LINK = "auth/saml/exchange";
 
-    //Password
+    // Password
     public static final String SIGNUP_PASSWORD = "auth/password/signup";
     public static final String SIGNIN_PASSWORD = "auth/password/signin";
     public static final String SEND_RESET_PASSWORD = "auth/password/reset";
     public static final String UPDATE_USER_PASSWORD = "auth/password/update";
     public static final String REPLACE_USER_PASSWORD = "auth/password/replace";
     public static final String PASSWORD_POLICY = "auth/password/policy";
-
   }
 
   @UtilityClass
@@ -86,7 +85,7 @@ public class Routes {
     public static final String DELETE_TENANT_LINK = "/mgmt/tenant/delete";
     public static final String LOAD_ALL_TENANTS_LINK = "/mgmt/tenant/all";
 
-    //SSO
+    // SSO
 
     public static final String SSO_GET_SETTINGS = "mgmt/sso/settings";
 
@@ -98,7 +97,7 @@ public class Routes {
 
     public static final String SSO_CONFIGURE_MAPPING = "mgmt/sso/mapping";
 
-    //Group
+    // Group
 
     public static final String GROUP_LOAD_ALL = "mgmt/group/all";
 
@@ -106,7 +105,7 @@ public class Routes {
 
     public static final String LOAD_ALL_GROUP_MEMBERS = "mgmt/group/members";
 
-    //FLOW
+    // FLOW
 
     public static final String FLOW_EXPORT = "mgmt/flow/export";
 
@@ -119,7 +118,7 @@ public class Routes {
     // JWT
     public static final String UPDATE_JWT_LINK = "/mgmt/jwt/update";
 
-    //Access key
+    // Access key
     public static final String MANAGEMENT_ACCESSKEY_CREATE = "mgmt/accesskey/create";
 
     public static final String MANAGEMENT_ACCESSKEY_LOAD = "mgmt/accesskey";
@@ -128,7 +127,7 @@ public class Routes {
     public static final String MANAGEMENT_ACCESSKEY_DEACTIVE = "mgmt/accesskey/deactivate";
     public static final String MANAGEMENT_ACCESSKEY_ACTIVE = "mgmt/accesskey/activate";
     public static final String MANAGEMENT_ACCESSKEY_DELETE = "mgmt/accesskey/delete";
-    //Permission
+    // Permission
 
     public static final String MANAGEMENT_PERMISSION_CREATE = "mgmt/permission/create";
 
@@ -138,7 +137,7 @@ public class Routes {
 
     public static final String MANAGEMENT_PERMISSION_LOADALL = "mgmt/permission/all";
 
-    //Roles
+    // Roles
     public static final String MANAGEMENT_ROLES_CREATE = "mgmt/role/create";
 
     public static final String MANAGEMENT_ROLES_UPDATE = "mgmt/role/update";
@@ -146,6 +145,5 @@ public class Routes {
     public static final String MANAGEMENT_ROLES_DELETE = "mgmt/role/delete";
 
     public static final String MANAGEMENT_ROLES_LOADALL = "mgmt/role/all";
-
   }
 }

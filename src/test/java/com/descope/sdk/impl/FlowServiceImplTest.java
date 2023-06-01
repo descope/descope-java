@@ -1,5 +1,14 @@
 package com.descope.sdk.impl;
 
+import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.flow.Flow;
@@ -15,15 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-
 public class FlowServiceImplTest {
 
   private FlowService flowService;
@@ -37,7 +37,8 @@ public class FlowServiceImplTest {
 
   @Test
   void testExportFlowForEmptyFlowID() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> flowService.exportFlow(""));
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> flowService.exportFlow(""));
     assertNotNull(thrown);
     assertEquals("The FlowID argument is invalid", thrown.getMessage());
   }
@@ -58,7 +59,8 @@ public class FlowServiceImplTest {
   void testImportFlowForEmptyFlowID() {
     var flow = mock(Flow.class);
     var screen = mock(Screen.class);
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> flowService.importFlow("", flow, screen));
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> flowService.importFlow("", flow, screen));
     assertNotNull(thrown);
     assertEquals("The FlowID argument is invalid", thrown.getMessage());
   }
@@ -91,7 +93,8 @@ public class FlowServiceImplTest {
 
   @Test
   void testImportThemeForEmptyTheme() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> flowService.importTheme(null));
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> flowService.importTheme(null));
     assertNotNull(thrown);
     assertEquals("The Theme argument is invalid", thrown.getMessage());
   }

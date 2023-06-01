@@ -16,5 +16,4 @@ public class Flow {
   private Object dsl;
   private boolean disabled;
   private String eTag;
-
 }

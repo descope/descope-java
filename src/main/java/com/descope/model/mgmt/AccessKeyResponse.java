@@ -1,10 +1,9 @@
 package com.descope.model.mgmt;
 
 import com.descope.model.auth.AssociatedTenant;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 @Builder

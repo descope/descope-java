@@ -1,19 +1,18 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.Routes.AuthEndPoints.COMPOSE_OAUTH_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_OAUTH_LINK;
+
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.sdk.auth.OAuthService;
-import org.apache.commons.lang3.StringUtils;
-
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.descope.literals.Routes.AuthEndPoints.COMPOSE_OAUTH_LINK;
-import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_OAUTH_LINK;
+import org.apache.commons.lang3.StringUtils;
 
 class OAuthServiceImpl extends AuthenticationServiceImpl implements OAuthService {
   OAuthServiceImpl(Client client, AuthParams authParams) {

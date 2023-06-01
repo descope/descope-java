@@ -1,20 +1,19 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_CREATE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_DELETE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_LOADALL;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_UPDATE;
+
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.permission.Permission;
 import com.descope.sdk.mgmt.PermissionService;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.List;
 import java.util.Map;
-
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_CREATE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_DELETE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_LOADALL;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_UPDATE;
+import org.apache.commons.lang3.StringUtils;
 
 public class PermissionServiceImpl extends ManagementsBase implements PermissionService {
 
@@ -40,7 +39,8 @@ public class PermissionServiceImpl extends ManagementsBase implements Permission
     if (StringUtils.isBlank(newName)) {
       throw ServerCommonException.invalidArgument("NewName");
     }
-    Map<String, String> request = Map.of("name", name, "newName", newName, "description", description);
+    Map<String, String> request =
+        Map.of("name", name, "newName", newName, "description", description);
     var apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_PERMISSION_UPDATE), request, Void.class);
   }

@@ -1,5 +1,18 @@
 package com.descope.sdk.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
@@ -16,28 +29,14 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.PasswordService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.utils.JwtUtils;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 public class PasswordServiceImplTest {
   public static final String MOCK_PROJECT_ID = "someProjectId";
@@ -86,7 +85,8 @@ public class PasswordServiceImplTest {
   void setUp() {
     var authParams = AuthParams.builder().projectId(MOCK_PROJECT_ID).build();
     var client = Client.builder().uri("https://api.descope.com/v1").build();
-    this.passwordService = AuthenticationServiceBuilder.buildServices(client, authParams).getPasswordService();
+    this.passwordService =
+        AuthenticationServiceBuilder.buildServices(client, authParams).getPasswordService();
   }
 
   @Test
@@ -96,7 +96,7 @@ public class PasswordServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
 
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[]{MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
@@ -133,8 +133,7 @@ public class PasswordServiceImplTest {
   void testSignupForEmptyLoginId() {
     ServerCommonException thrown =
         assertThrows(
-            ServerCommonException.class,
-            () -> passwordService.signUp("", new User(), MOCK_PWD));
+            ServerCommonException.class, () -> passwordService.signUp("", new User(), MOCK_PWD));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -145,7 +144,7 @@ public class PasswordServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
 
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[]{MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
@@ -181,9 +180,7 @@ public class PasswordServiceImplTest {
   @Test
   void testSignInForEmptyLoginId() {
     ServerCommonException thrown =
-        assertThrows(
-            ServerCommonException.class,
-            () -> passwordService.signIn("", MOCK_PWD));
+        assertThrows(ServerCommonException.class, () -> passwordService.signIn("", MOCK_PWD));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -203,8 +200,7 @@ public class PasswordServiceImplTest {
   void testSendPasswordResetForEmptyLoginId() {
     ServerCommonException thrown =
         assertThrows(
-            ServerCommonException.class,
-            () -> passwordService.sendPasswordReset("", MOCK_URL));
+            ServerCommonException.class, () -> passwordService.sendPasswordReset("", MOCK_URL));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -245,8 +241,7 @@ public class PasswordServiceImplTest {
   void testUpdateUserPasswordForEmptyLoginId() {
     ServerCommonException thrown =
         assertThrows(
-            ServerCommonException.class,
-            () -> passwordService.updateUserPassword("", MOCK_PWD));
+            ServerCommonException.class, () -> passwordService.updateUserPassword("", MOCK_PWD));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -254,9 +249,13 @@ public class PasswordServiceImplTest {
   @Test
   void testgetPasswordPolicy() {
     var apiProxy = mock(ApiProxy.class);
-    PasswordPolicy passwordPolicy = PasswordPolicy.builder()
-        .minLength(8).lowercase(false).nonAlphanumeric(false).number(true)
-        .build();
+    PasswordPolicy passwordPolicy =
+        PasswordPolicy.builder()
+            .minLength(8)
+            .lowercase(false)
+            .nonAlphanumeric(false)
+            .number(true)
+            .build();
     doReturn(passwordPolicy).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
@@ -265,5 +264,4 @@ public class PasswordServiceImplTest {
       Assertions.assertThat(response.isNumber()).isTrue();
     }
   }
-
 }

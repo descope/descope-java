@@ -1,10 +1,10 @@
 package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
-import com.descope.model.user.User;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.totp.TOTPResponse;
+import com.descope.model.user.User;
 
 public interface TOTPService {
 

@@ -1,5 +1,13 @@
 package com.descope.sdk.impl;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
@@ -14,30 +22,20 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.OAuthService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.utils.JwtUtils;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 public class OAuthServiceImplTest {
 
   public static final String MOCK_PROJECT_ID = "someProjectId";
   public static final String MOCK_URL = "https://www.domain.com";
   public static final String MOCK_EMAIL = "username@domain.com";
-
 
   public static final UserResponse MOCK_USER_RESPONSE =
       new UserResponse(
@@ -92,8 +90,7 @@ public class OAuthServiceImplTest {
     doReturn(MOCK_URL).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      String start =
-          oAuthService.start("provider", "returnurl", new LoginOptions());
+      String start = oAuthService.start("provider", "returnurl", new LoginOptions());
       Assertions.assertThat(start).isNotBlank().contains(MOCK_URL);
     }
   }
@@ -102,7 +99,7 @@ public class OAuthServiceImplTest {
   void testExchangeToken() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[]{MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
@@ -136,6 +133,4 @@ public class OAuthServiceImplTest {
     Assertions.assertThat(user.getUserId()).isNotBlank();
     Assertions.assertThat(user.getLoginIds()).isNotEmpty();
   }
-
-
 }

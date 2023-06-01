@@ -1,25 +1,5 @@
 package com.descope.sdk.mgmt.impl;
 
-import com.descope.enums.DeliveryMethod;
-import com.descope.exception.DescopeException;
-import com.descope.exception.ServerCommonException;
-import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
-import com.descope.model.user.request.EnchantedLinkTestUserRequest;
-import com.descope.model.user.request.MagicLinkTestUserRequest;
-import com.descope.model.user.request.OTPTestUserRequest;
-import com.descope.model.user.request.TestUserRequest;
-import com.descope.model.user.request.UserRequest;
-import com.descope.model.user.request.UserSearchRequest;
-import com.descope.model.user.response.UserResponse;
-import com.descope.sdk.mgmt.UserService;
-import org.apache.commons.lang3.StringUtils;
-
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import static com.descope.literals.Routes.ManagementEndPoints.COMPOSE_OTP_FOR_TEST;
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_ALL_TEST_USERS_LINK;
@@ -41,6 +21,25 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
+
+import com.descope.enums.DeliveryMethod;
+import com.descope.exception.DescopeException;
+import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.user.request.EnchantedLinkTestUserRequest;
+import com.descope.model.user.request.MagicLinkTestUserRequest;
+import com.descope.model.user.request.OTPTestUserRequest;
+import com.descope.model.user.request.TestUserRequest;
+import com.descope.model.user.request.UserRequest;
+import com.descope.model.user.request.UserSearchRequest;
+import com.descope.model.user.response.UserResponse;
+import com.descope.sdk.mgmt.UserService;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 
 class UserServiceImpl extends ManagementsBase implements UserService {
 
@@ -157,7 +156,6 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     return (List<UserResponse>) apiProxy.post(composeSearchAllUri, request, List.class);
   }
 
-
   @Override
   public UserResponse activate(String loginId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
@@ -187,7 +185,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updateEmailUri = composeUpdateEmailUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "email", email, "verified", isVerified);
+    Map<String, Object> request =
+        Map.of("loginId", loginId, "email", email, "verified", isVerified);
     var apiProxy = getApiProxy();
     return apiProxy.post(updateEmailUri, request, UserResponse.class);
   }
@@ -199,7 +198,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updatePhoneUri = composeUpdatePhoneUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "phone", phone, "verified", isVerified);
+    Map<String, Object> request =
+        Map.of("loginId", loginId, "phone", phone, "verified", isVerified);
     var apiProxy = getApiProxy();
     return apiProxy.post(updatePhoneUri, request, UserResponse.class);
   }
@@ -237,7 +237,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Key");
     }
     URI updateAttributesUri = composeUpdateAttributesUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "attributeKey", key, "attributeValue", value);
+    Map<String, Object> request =
+        Map.of("loginId", loginId, "attributeKey", key, "attributeValue", value);
     var apiProxy = getApiProxy();
     return apiProxy.post(updateAttributesUri, request, UserResponse.class);
   }
@@ -322,7 +323,6 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     Map<String, Object> request = Map.of("loginId", loginId, "password", password);
     var apiProxy = getApiProxy();
     apiProxy.post(setPasswordUri, request, Void.class);
-
   }
 
   @Override
@@ -337,7 +337,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public String generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod) throws DescopeException {
+  public String generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -349,13 +350,15 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public String generateMagicLinkForTestUser(String loginId, URI uri, DeliveryMethod deliveryMethod) throws DescopeException {
+  public String generateMagicLinkForTestUser(String loginId, URI uri, DeliveryMethod deliveryMethod)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI maginLinkForTestUSerUri = composeMaginLinkForTestUSerUri();
     TestUserRequest testUserRequest = new TestUserRequest(loginId);
-    MagicLinkTestUserRequest request = new MagicLinkTestUserRequest(testUserRequest, deliveryMethod, uri);
+    MagicLinkTestUserRequest request =
+        new MagicLinkTestUserRequest(testUserRequest, deliveryMethod, uri);
     var apiProxy = getApiProxy();
     return apiProxy.post(maginLinkForTestUSerUri, request, String.class);
   }

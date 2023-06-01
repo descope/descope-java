@@ -2,7 +2,6 @@ package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.permission.Permission;
-
 import java.util.List;
 
 public interface PermissionService {

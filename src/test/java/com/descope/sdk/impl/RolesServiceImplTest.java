@@ -1,20 +1,5 @@
 package com.descope.sdk.impl;
 
-import com.descope.exception.ServerCommonException;
-import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
-import com.descope.model.roles.Role;
-import com.descope.proxy.ApiProxy;
-import com.descope.proxy.impl.ApiProxyBuilder;
-import com.descope.sdk.mgmt.RolesService;
-import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
-import java.util.List;
-
 import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,23 +11,47 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.roles.Role;
+import com.descope.proxy.ApiProxy;
+import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.mgmt.RolesService;
+import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import java.util.List;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
 public class RolesServiceImplTest {
 
   private final List<String> mockPermissionNames = List.of("permission1", "permission2");
-  private final List<Role> mockRole = List.of(Role.builder().name("someName").permissionNames(mockPermissionNames)
-      .description("someDesc").createdTime(1245667L).build());
+  private final List<Role> mockRole =
+      List.of(
+          Role.builder()
+              .name("someName")
+              .permissionNames(mockPermissionNames)
+              .description("someDesc")
+              .createdTime(1245667L)
+              .build());
   private RolesService rolesService;
 
   @BeforeEach
   void setUp() {
     var authParams = ManagementParams.builder().projectId(MOCK_PROJECT_ID).build();
     var client = Client.builder().uri("https://api.descope.com/v1").build();
-    this.rolesService = ManagementServiceBuilder.buildServices(client, authParams).getRolesService();
+    this.rolesService =
+        ManagementServiceBuilder.buildServices(client, authParams).getRolesService();
   }
 
   @Test
   void testRolesForEmptyName() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> rolesService.create("", "someDesc", mockPermissionNames));
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> rolesService.create("", "someDesc", mockPermissionNames));
     assertNotNull(thrown);
     assertEquals("The Name argument is invalid", thrown.getMessage());
   }
@@ -60,7 +69,10 @@ public class RolesServiceImplTest {
 
   @Test
   void testUpdateForEmptyName() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> rolesService.update("", "", "", mockPermissionNames));
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> rolesService.update("", "", "", mockPermissionNames));
     assertNotNull(thrown);
     assertEquals("The Name argument is invalid", thrown.getMessage());
   }
@@ -78,14 +90,18 @@ public class RolesServiceImplTest {
 
   @Test
   void testUpdateForEmptyNewName() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> rolesService.update("krishna", "", "", mockPermissionNames));
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> rolesService.update("krishna", "", "", mockPermissionNames));
     assertNotNull(thrown);
     assertEquals("The NewName argument is invalid", thrown.getMessage());
   }
 
   @Test
   void testDeleteForEmptyName() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> rolesService.delete(""));
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> rolesService.delete(""));
     assertNotNull(thrown);
     assertEquals("The Name argument is invalid", thrown.getMessage());
   }

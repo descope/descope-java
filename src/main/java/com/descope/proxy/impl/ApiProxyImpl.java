@@ -1,14 +1,12 @@
 package com.descope.proxy.impl;
 
 import com.descope.proxy.ApiProxy;
-
 import java.net.URI;
 import java.util.function.Supplier;
 
 class ApiProxyImpl extends AbstractProxyImpl implements ApiProxy {
 
-  public ApiProxyImpl() {
-  }
+  public ApiProxyImpl() {}
 
   public ApiProxyImpl(Supplier<String> authHeaderSupplier) {
     setAuthHeader("Authorization", authHeaderSupplier);

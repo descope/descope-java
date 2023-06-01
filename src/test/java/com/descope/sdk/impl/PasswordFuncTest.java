@@ -18,13 +18,15 @@ public class PasswordFuncTest {
   void setUp() {
     var authParams = AuthParams.builder().projectId("P2OeA1IovZReU5JOxZ4oeC1U5MwX").build();
     var client = Client.builder().uri("https://api.descope.com/v1").build();
-    this.passwordService = AuthenticationServiceBuilder.buildServices(client, authParams).getPasswordService();
+    this.passwordService =
+        AuthenticationServiceBuilder.buildServices(client, authParams).getPasswordService();
   }
 
   @Test
   void signUpForPassword() {
     User user = new User("krishna teja", "krishna.teja@apptware.com", "+918143887765");
-    AuthenticationInfo signUp = passwordService.signUp("krishna.teja@apptware.com", user, "Test@12345");
+    AuthenticationInfo signUp =
+        passwordService.signUp("krishna.teja@apptware.com", user, "Test@12345");
     System.out.println(signUp);
   }
 
@@ -45,4 +47,3 @@ public class PasswordFuncTest {
     System.out.println(passwordPolicy);
   }
 }
-

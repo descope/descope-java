@@ -1,5 +1,10 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT;
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT;
+import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT;
+import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT;
+
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
@@ -9,15 +14,9 @@ import com.descope.model.flow.Screen;
 import com.descope.model.flow.Theme;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.FlowService;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Map;
 import java.util.Objects;
-
-import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT;
-import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT;
-import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT;
-import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT;
+import org.apache.commons.lang3.StringUtils;
 
 public class FlowServiceImpl extends ManagementsBase implements FlowService {
 
@@ -60,5 +59,4 @@ public class FlowServiceImpl extends ManagementsBase implements FlowService {
     var apiProxy = getApiProxy();
     return apiProxy.post(getUri(THEME_IMPORT), request, Theme.class);
   }
-
 }

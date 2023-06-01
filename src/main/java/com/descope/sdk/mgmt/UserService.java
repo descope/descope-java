@@ -5,13 +5,10 @@ import com.descope.exception.DescopeException;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.UserResponse;
-
 import java.net.URI;
 import java.util.List;
 
-/**
- * Provides functions for managing users in a project.
- */
+/** Provides functions for managing users in a project. */
 public interface UserService {
 
   /**
@@ -23,7 +20,7 @@ public interface UserService {
    * @param request request is optional, and if provided, all attributes within it are optional.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse create(String loginId, UserRequest request) throws DescopeException;
 
@@ -33,11 +30,11 @@ public interface UserService {
    * the monthly active users
    *
    * @param loginId The loginID is required and will determine what the user will use to sign in,
-   *                make sure the login id is unique for test.
+   *     make sure the login id is unique for test.
    * @param request request is optional, and if provided, all attributes within it are optional.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse createTestUser(String loginId, UserRequest request) throws DescopeException;
 
@@ -51,11 +48,11 @@ public interface UserService {
    * Descope console prior to calling the method.
    *
    * @param loginId The loginID is required and will determine what the user will use to sign in,
-   *                make sure the login id is unique for test.
+   *     make sure the login id is unique for test.
    * @param request request is optional, and if provided, all attributes within it are optional.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse invite(String loginId, UserRequest request) throws DescopeException;
 
@@ -66,11 +63,11 @@ public interface UserService {
    * user. Use carefully.
    *
    * @param loginId The loginID is required and will determine what the user will use to sign in,
-   *                make sure the login id is unique for test.
+   *     make sure the login id is unique for test.
    * @param request request is optional, and if provided, all attributes within it are optional.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse update(String loginId, UserRequest request) throws DescopeException;
 
@@ -81,7 +78,7 @@ public interface UserService {
    *
    * @param loginId The loginID is required.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   void delete(String loginId) throws DescopeException;
 
@@ -91,7 +88,7 @@ public interface UserService {
    * <p>IMPORTANT: This action is irreversible. Use carefully.
    *
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   void deleteAllTestUsers() throws DescopeException;
 
@@ -101,7 +98,7 @@ public interface UserService {
    * @param loginId The loginID is required and the user will be fetched according to it.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse load(String loginId) throws DescopeException;
 
@@ -111,7 +108,7 @@ public interface UserService {
    * @param userId The userID is required and the user will be fetched according to it.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse loadByUserId(String userId) throws DescopeException;
 
@@ -119,10 +116,10 @@ public interface UserService {
    * Search all users according to given filters
    *
    * @param request The options optional parameter allows to fine-tune the search filters and
-   *                results. Using nil will result in a filter-less query with a set amount of results.
+   *     results. Using nil will result in a filter-less query with a set amount of results.
    * @return {@link List<UserResponse> UserResponses}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   List<UserResponse> searchAll(UserSearchRequest request) throws DescopeException;
 
@@ -132,7 +129,7 @@ public interface UserService {
    * @param loginId The loginID is required.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse activate(String loginId) throws DescopeException;
 
@@ -142,20 +139,20 @@ public interface UserService {
    * @param loginId The loginID is required.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse deactivate(String loginId) throws DescopeException;
 
   /**
    * Update the email address for an existing user.
    *
-   * @param loginId    The loginID is required.
-   * @param email      The email parameter can be empty in which case the email will be removed.
+   * @param loginId The loginID is required.
+   * @param email The email parameter can be empty in which case the email will be removed.
    * @param isVerified The isVerified flag must be true for the user to be able to login with the
-   *                   email address.
+   *     email address.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse updateEmail(String loginId, String email, Boolean isVerified)
       throws DescopeException;
@@ -163,13 +160,13 @@ public interface UserService {
   /**
    * Update the email address for an existing user.
    *
-   * @param loginId    The loginID is required.
-   * @param phone      The phone parameter can be empty in which case the phone will be removed.
+   * @param loginId The loginID is required.
+   * @param phone The phone parameter can be empty in which case the phone will be removed.
    * @param isVerified The isVerified flag must be true for the user to be able to login with the
-   *                   email address.
+   *     email address.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse updatePhone(String loginId, String phone, Boolean isVerified)
       throws DescopeException;
@@ -177,12 +174,12 @@ public interface UserService {
   /**
    * Update an existing user's display name (i.e., their full name).
    *
-   * @param loginId     The loginID is required.
+   * @param loginId The loginID is required.
    * @param displayName The displayName parameter can be empty in which case the name will be
-   *                    removed.
+   *     removed.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse updateDisplayName(String loginId, String displayName) throws DescopeException;
 
@@ -193,7 +190,7 @@ public interface UserService {
    * @param picture The picture parameter can be empty in which case the picture will be removed.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse updatePicture(String loginId, String picture) throws DescopeException;
 
@@ -201,12 +198,12 @@ public interface UserService {
    * Update an existing user's custom attribute.
    *
    * @param loginId The loginID is required.
-   * @param key     key should be a custom attribute that was already declared in the Descope console
-   *                app.
-   * @param value   value should match the type of the declared attribute
+   * @param key key should be a custom attribute that was already declared in the Descope console
+   *     app.
+   * @param value value should match the type of the declared attribute
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse updateCustomAttributes(String loginId, String key, Object value)
       throws DescopeException;
@@ -216,10 +213,10 @@ public interface UserService {
    * a multi-tenant project.
    *
    * @param loginId The loginID is required.
-   * @param roles   User Roles
+   * @param roles User Roles
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse addRoles(String loginId, List<String> roles) throws DescopeException;
 
@@ -227,44 +224,44 @@ public interface UserService {
    * Remove roles from a user without tenant association.
    *
    * @param loginId The loginID is required.
-   * @param roles   Use RemoveTenantRoles for users that are part of a multi-tenant project.
+   * @param roles Use RemoveTenantRoles for users that are part of a multi-tenant project.
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse removeRoles(String loginId, List<String> roles) throws DescopeException;
 
   /**
    * Add a tenant association for an existing user.
    *
-   * @param loginId  The loginID is required.
+   * @param loginId The loginID is required.
    * @param tenantId Tenant ID
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse addTenant(String loginId, String tenantId) throws DescopeException;
 
   /**
    * Remove a tenant association from an existing user.
    *
-   * @param loginId  The loginID is required.
+   * @param loginId The loginID is required.
    * @param tenantId Tenant ID
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse removeTenant(String loginId, String tenantId) throws DescopeException;
 
   /**
    * Add roles for a user in a specific tenant.
    *
-   * @param loginId  The loginID is required.
+   * @param loginId The loginID is required.
    * @param tenantId Tenant ID
-   * @param roles    Tenant Roles
+   * @param roles Tenant Roles
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse addTenantRoles(String loginId, String tenantId, List<String> roles)
       throws DescopeException;
@@ -272,12 +269,12 @@ public interface UserService {
   /**
    * Remove roles for a user in a specific tenant.
    *
-   * @param loginId  The loginID is required.
+   * @param loginId The loginID is required.
    * @param tenantId Tenant ID
-   * @param roles    Tenant Roles
+   * @param roles Tenant Roles
    * @return {@link UserResponse UserResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   UserResponse removeTenantRoles(String loginId, String tenantId, List<String> roles)
       throws DescopeException;
@@ -287,10 +284,10 @@ public interface UserService {
    * The user will not be able to log-in with this password, and will be required to replace it on
    * next login.
    *
-   * @param loginId  The loginID is required.
+   * @param loginId The loginID is required.
    * @param password Password.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   void setPassword(String loginId, String password) throws DescopeException;
 
@@ -301,7 +298,7 @@ public interface UserService {
    *
    * @param loginId The loginID is required.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   void expirePassword(String loginId) throws DescopeException;
 
@@ -310,11 +307,11 @@ public interface UserService {
    * want to use 3rd party messaging services. The redirect URI is optional. If provided however, it
    * will be used instead of any global configuration.
    *
-   * @param loginId        The loginID is required.
+   * @param loginId The loginID is required.
    * @param deliveryMethod Choose the selected delivery method for verification.
    * @return It returns the code for the login (exactly as it sent via Email or SMS)
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   String generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
       throws DescopeException;
@@ -324,11 +321,11 @@ public interface UserService {
    * and don't want to use 3rd party messaging services. The redirect URI is optional. If provided
    * however, it will be used instead of any global configuration.
    *
-   * @param loginId        The loginID is required.
+   * @param loginId The loginID is required.
    * @param deliveryMethod Choose the selected delivery method for verification.
    * @return It returns the link for the login (exactly as it sent via Email)
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   String generateMagicLinkForTestUser(String loginId, URI uri, DeliveryMethod deliveryMethod)
       throws DescopeException;
@@ -340,9 +337,9 @@ public interface UserService {
    *
    * @param loginId loginId The loginID is required.
    * @return It returns the link for the login (exactly as it sent via Email) and pendingRef which
-   * is used to poll for a valid session
+   *     is used to poll for a valid session
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *                          thrown.
+   *     thrown.
    */
   String generateEnchantedLinkForTestUser(String loginId, URI uri) throws DescopeException;
 }

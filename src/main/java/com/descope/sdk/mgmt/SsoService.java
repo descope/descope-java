@@ -4,7 +4,6 @@ import com.descope.exception.DescopeException;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
 import com.descope.model.sso.SSOSettingsResponse;
-
 import java.util.List;
 
 public interface SsoService {

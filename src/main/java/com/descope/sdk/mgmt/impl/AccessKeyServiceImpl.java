@@ -1,5 +1,13 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_ACTIVE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_CREATE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_DEACTIVE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_DELETE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_LOAD;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_SEARCH_ALL;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_UPDATE;
+
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AssociatedTenant;
@@ -9,18 +17,9 @@ import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.utils.MgmtUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.List;
 import java.util.Map;
-
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_ACTIVE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_CREATE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_DEACTIVE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_DELETE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_LOAD;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_SEARCH_ALL;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESSKEY_UPDATE;
+import org.apache.commons.lang3.StringUtils;
 
 public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
   AccessKeyServiceImpl(Client client, ManagementParams managementParams) {
@@ -28,7 +27,9 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
   }
 
   @Override
-  public AccessKeyResponse create(String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants) throws DescopeException {
+  public AccessKeyResponse create(
+      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants)
+      throws DescopeException {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("Name");
     }
@@ -43,7 +44,8 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
       throw ServerCommonException.invalidArgument("Id");
     }
     var apiProxy = getApiProxy();
-    return apiProxy.get(getQueryParamUri(MANAGEMENT_ACCESSKEY_LOAD, Map.of("id", id)), AccessKeyResponse.class);
+    return apiProxy.get(
+        getQueryParamUri(MANAGEMENT_ACCESSKEY_LOAD, Map.of("id", id)), AccessKeyResponse.class);
   }
 
   @Override
@@ -97,10 +99,13 @@ public class AccessKeyServiceImpl extends ManagementsBase implements AccessKeySe
     return apiProxy.post(getUri(MANAGEMENT_ACCESSKEY_DELETE), request, AccessKeyResponse.class);
   }
 
-
-  private AccessKeyRequest createAccessKeyBody(String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants) {
-    return AccessKeyRequest.builder().name(name)
-        .expireTime(expireTime).roleNames(roleNames)
-        .keyTenants(MgmtUtils.createAssociatedTenantList(keyTenants)).build();
+  private AccessKeyRequest createAccessKeyBody(
+      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants) {
+    return AccessKeyRequest.builder()
+        .name(name)
+        .expireTime(expireTime)
+        .roleNames(roleNames)
+        .keyTenants(MgmtUtils.createAssociatedTenantList(keyTenants))
+        .build();
   }
 }

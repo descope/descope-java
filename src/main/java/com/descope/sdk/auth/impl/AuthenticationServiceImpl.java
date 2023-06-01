@@ -1,5 +1,7 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_ACCESS_KEY_LINK;
+
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
@@ -9,14 +11,11 @@ import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.sdk.auth.AuthenticationService;
+import java.net.URI;
+import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
-
-import java.net.URI;
-import java.util.List;
-
-import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_ACCESS_KEY_LINK;
 
 class AuthenticationServiceImpl extends AuthenticationsBase implements AuthenticationService {
 

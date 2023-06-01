@@ -1,5 +1,11 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_MAPPING;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_METADATA;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SETTINGS;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTINGS;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS;
+
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
@@ -8,16 +14,9 @@ import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
 import com.descope.model.sso.SSOSettingsResponse;
 import com.descope.sdk.mgmt.SsoService;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.List;
 import java.util.Map;
-
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_MAPPING;
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_METADATA;
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SETTINGS;
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTINGS;
-import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS;
+import org.apache.commons.lang3.StringUtils;
 
 public class SsoServiceImpl extends ManagementsBase implements SsoService {
   SsoServiceImpl(Client client, ManagementParams managementParams) {
@@ -45,7 +44,14 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
   }
 
   @Override
-  public void configureSettings(String tenantID, String idpURL, String idpCert, String entityID, String redirectURL, String domain) throws DescopeException {
+  public void configureSettings(
+      String tenantID,
+      String idpURL,
+      String idpCert,
+      String entityID,
+      String redirectURL,
+      String domain)
+      throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantID");
     }
@@ -61,10 +67,22 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
     if (StringUtils.isBlank(redirectURL)) {
       throw ServerCommonException.invalidArgument("RedirectURL");
     }
-    Map<String, String> request = Map.of("tenantId", tenantID, "idpURL", idpURL, "idpCert", idpCert, "entityId", entityID, "redirectURL", redirectURL, "domain", domain);
+    Map<String, String> request =
+        Map.of(
+            "tenantId",
+            tenantID,
+            "idpURL",
+            idpURL,
+            "idpCert",
+            idpCert,
+            "entityId",
+            entityID,
+            "redirectURL",
+            redirectURL,
+            "domain",
+            domain);
     var apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_SETTINGS), request, Void.class);
-
   }
 
   @Override
@@ -78,17 +96,24 @@ public class SsoServiceImpl extends ManagementsBase implements SsoService {
     Map<String, String> request = Map.of("tenantId", tenantID, "idpMetadataURL", idpMetadataURL);
     var apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_METADATA), request, Void.class);
-
   }
 
   @Override
-  public void configureMapping(String tenantID, List<RoleMapping> roleMapping, AttributeMapping attributeMapping) throws DescopeException {
+  public void configureMapping(
+      String tenantID, List<RoleMapping> roleMapping, AttributeMapping attributeMapping)
+      throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantID");
     }
-    Map<String, Object> request = Map.of("tenantId", tenantID, "roleMappings", roleMapping, "attributeMapping", attributeMapping);
+    Map<String, Object> request =
+        Map.of(
+            "tenantId",
+            tenantID,
+            "roleMappings",
+            roleMapping,
+            "attributeMapping",
+            attributeMapping);
     var apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_MAPPING), request, Void.class);
-
   }
 }

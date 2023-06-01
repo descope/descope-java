@@ -1,7 +1,6 @@
 package com.descope.utils;
 
 import com.descope.model.auth.AssociatedTenant;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +8,8 @@ import java.util.Map;
 
 public class MgmtUtils {
 
-  public static List<Map<String, Object>> createAssociatedTenantList(List<AssociatedTenant> tenants) {
+  public static List<Map<String, Object>> createAssociatedTenantList(
+      List<AssociatedTenant> tenants) {
     List<Map<String, Object>> associatedTenantList = new ArrayList<>();
     for (AssociatedTenant tenant : tenants) {
       Map<String, Object> map = new HashMap<>();
