@@ -2,9 +2,9 @@ package com.descope.sdk.auth;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
-import com.descope.model.user.User;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.user.User;
 import java.net.http.HttpRequest;
 
 public interface MagicLinkService {

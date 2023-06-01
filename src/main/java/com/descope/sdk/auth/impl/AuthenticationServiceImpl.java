@@ -5,6 +5,8 @@ import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_ACCESS_KEY_LINK
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
+import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -83,6 +85,16 @@ class AuthenticationServiceImpl extends AuthenticationsBase implements Authentic
       throws DescopeException {
     List<String> authorizationClaimItems = getAuthorizationClaimItems(token, tenant, roles);
     return CollectionUtils.isEqualCollection(authorizationClaimItems, roles);
+  }
+
+  AuthenticationInfo exchangeToken(String code, URI url) {
+    if (StringUtils.isBlank(code)) {
+      throw ServerCommonException.invalidArgument("Code");
+    }
+    ExchangeTokenRequest request = new ExchangeTokenRequest(code);
+    var apiProxy = getApiProxy();
+    var jwtResponse = apiProxy.post(url, request, JWTResponse.class);
+    return getAuthenticationInfo(jwtResponse);
   }
 
   private URI composeExchangeAccessKeyLinkURL() {

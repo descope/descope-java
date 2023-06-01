@@ -21,4 +21,9 @@ class ApiProxyImpl extends AbstractProxyImpl implements ApiProxy {
   public <R> R get(URI uri, Class<R> returnClz) {
     return super.get(uri, returnClz);
   }
+
+  @Override
+  public <B, R> R delete(URI uri, B body, Class<R> returnClz) {
+    return super.delete(uri, body, returnClz);
+  }
 }

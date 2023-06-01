@@ -85,7 +85,7 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
 
   @Override
   public AuthenticationInfo getSession(String pendingRef) throws DescopeException {
-    // TODO - Functional testing is pending same is not working on decope site also
+    // TODO - Functional testing is pending same is not working on descope site also
     URI getSessionURL = composeGetSession();
     var apiProxy = getApiProxy();
     var jwtResponse =

@@ -19,7 +19,7 @@ public class Config {
 
   // PublicKey (optional, "") - used to provide a management key that's required for using any of
   // the Management APIs. If empty, this value is retrieved from the DESCOPE_MANAGEMENT_KEY
-  // environement variable instead. If neither values are set then any Management API call with
+  // environment variable instead. If neither values are set then any Management API call with
   // fail.
   private String managementKey;
 

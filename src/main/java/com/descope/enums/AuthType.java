@@ -8,5 +8,5 @@ public enum AuthType {
   TOTP,
   SAML,
   PASSWORD,
-  API_KEY;
+  API_KEY
 }

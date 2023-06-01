@@ -10,9 +10,12 @@ public class AuthenticationServiceBuilder {
   public static AuthenticationServices buildServices(Client client, AuthParams authParams) {
     return AuthenticationServices.builder()
         .otpService(new OTPServiceImpl(client, authParams))
+        .samlService(new SAMLServiceImpl(client, authParams))
+        .totpService(new TOTPServiceImpl(client, authParams))
+        .oAuthService(new OAuthServiceImpl(client, authParams))
+        .passwordService(new PasswordServiceImpl(client, authParams))
         .magicLinkService(new MagicLinkServiceImpl(client, authParams))
         .enchantedLinkService(new EnchantedLinkServiceImpl(client, authParams))
-        .totpService(new TOTPServiceImpl(client, authParams))
         .build();
   }
 }

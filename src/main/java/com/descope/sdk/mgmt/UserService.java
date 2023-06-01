@@ -205,7 +205,7 @@ public interface UserService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  UserResponse updateCustomAttributes(String loginId, String key, String value)
+  UserResponse updateCustomAttributes(String loginId, String key, Object value)
       throws DescopeException;
 
   /**

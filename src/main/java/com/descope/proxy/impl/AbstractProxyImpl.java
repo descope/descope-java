@@ -71,6 +71,10 @@ abstract class AbstractProxyImpl {
     return exchange(uri, "GET", null, returnClz);
   }
 
+  protected <B, R> R delete(URI uri, B body, Class<R> returnClz) {
+    return exchange(uri, "DELETE", body, returnClz);
+  }
+
   private static class JsonBodyHandler<R> implements HttpResponse.BodyHandler<Supplier<R>> {
 
     private final Class<R> returnClz;
