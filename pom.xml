@@ -49,7 +49,7 @@
       <artifactId>lombok</artifactId>
       <groupId>org.projectlombok</groupId>
       <scope>provided</scope>
-      <version>1.18.26</version>
+      <version>1.18.28</version>
     </dependency>
 
     <!--  LOGGING  -->
@@ -80,7 +80,7 @@
       <artifactId>junit-jupiter</artifactId>
       <groupId>org.junit.jupiter</groupId>
       <scope>test</scope>
-      <version>5.9.2</version>
+      <version>5.9.3</version>
     </dependency>
     <dependency>
       <artifactId>mockito-junit-jupiter</artifactId>
