@@ -1,18 +1,5 @@
 package com.descope.sdk.impl;
 
-import static com.descope.literals.AppConstants.COOKIE;
-import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
@@ -30,22 +17,30 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.TOTPService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.utils.JwtUtils;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.security.Key;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
+import java.security.Key;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
 public class TotpServiceImplTest {
   public static final String MOCK_PROJECT_ID = "someProjectId";
   public static final String MOCK_EMAIL = "username@domain.com";
-  public static final String MOCK_DOMAIN = "https://www.domain.com";
-  public static final String MOCK_REFRESH_TOKEN = "2423r4gftrhtyu7i78ujuiy978";
 
   public static final UserResponse MOCK_USER_RESPONSE =
       new UserResponse(
@@ -103,7 +98,9 @@ public class TotpServiceImplTest {
     doReturn(mock(TOTPResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      TOTPResponse signUp = totpService.signUp(MOCK_EMAIL, user);
+      var response = totpService.signUp(MOCK_EMAIL, user);
+      Assertions.assertThat(response).isNotNull();
+
     }
   }
 
@@ -111,7 +108,7 @@ public class TotpServiceImplTest {
   void signInCode() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKey[]{MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
@@ -152,7 +149,7 @@ public class TotpServiceImplTest {
         assertThrows(ServerCommonException.class, () -> totpService.updateUser(null));
 
     assertNotNull(thrown);
-    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+    assertEquals("The loginId argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -161,11 +158,6 @@ public class TotpServiceImplTest {
     doReturn(mock(TOTPResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      HttpRequest httpRequest =
-          HttpRequest.newBuilder()
-              .header(COOKIE, REFRESH_COOKIE_NAME + "=" + MOCK_REFRESH_TOKEN)
-              .uri(URI.create(MOCK_DOMAIN))
-              .build();
       TOTPResponse updateUserEmail = totpService.updateUser(MOCK_EMAIL);
       assertNotNull(updateUserEmail);
     }
