@@ -13,6 +13,12 @@ public class ManagementServiceBuilder {
         .userService(new UserServiceImpl(client, managementParams))
         .tenantService(new TenantServiceImpl(client, managementParams))
         .accessKeyService(new AccessKeyServiceImpl(client, managementParams))
+        .permissionService(new PermissionServiceImpl(client, managementParams))
+        .rolesService(new RolesServiceImpl(client, managementParams))
+        .ssoService(new SsoServiceImpl(client, managementParams))
+        .flowService(new FlowServiceImpl(client, managementParams))
+        .groupService(new GroupServiceImpl(client, managementParams))
+        .userService(new UserServiceImpl(client, managementParams))
         .build();
   }
 }
