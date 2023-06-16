@@ -129,5 +129,8 @@ public class Routes {
     public static final String MANAGEMENT_ROLES_UPDATE_LINK = "mgmt/role/update";
     public static final String MANAGEMENT_ROLES_DELETE_LINK = "mgmt/role/delete";
     public static final String MANAGEMENT_ROLES_LOAD_ALL_LINK = "mgmt/role/all";
+
+    // Audit
+    public static final String MANAGEMENT_AUDIT_SEARCH_LINK = "mgmt/audit/search";
   }
 }
