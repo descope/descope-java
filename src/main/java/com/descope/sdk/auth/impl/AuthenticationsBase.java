@@ -5,7 +5,6 @@ import static com.descope.literals.AppConstants.BEARER_AUTHORIZATION_PREFIX;
 import static com.descope.literals.AppConstants.COOKIE;
 import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
 import static com.descope.literals.AppConstants.SESSION_COOKIE_NAME;
-import static com.descope.literals.Routes.AuthEndPoints.GET_KEYS_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
@@ -20,7 +19,6 @@ import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Provider;
-import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.Tokens;
@@ -33,15 +31,10 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.SdkServicesBase;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.utils.JwtUtils;
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +44,6 @@ import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
@@ -64,18 +56,6 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     this.authParams = authParams;
     this.provider =
         Provider.builder().client(client).authParams(authParams).keyMap(new HashMap<>()).build();
-  }
-
-  @SneakyThrows
-  // https://mojoauth.com/blog/jwt-validation-with-jwks-java/
-  private static PublicKey getPublicKey(SigningKey signingKey) {
-    byte[] exponentB = Base64.getUrlDecoder().decode(signingKey.getE());
-    byte[] modulusB = Base64.getUrlDecoder().decode(signingKey.getN());
-    BigInteger bigExponent = new BigInteger(1, exponentB);
-    BigInteger bigModulus = new BigInteger(1, modulusB);
-
-    return KeyFactory.getInstance(signingKey.getKty())
-        .generatePublic(new RSAPublicKeySpec(bigModulus, bigExponent));
   }
 
   ApiProxy getApiProxy() {
@@ -102,29 +82,9 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       return provider.getProvidedKey();
     }
 
-    // TODO - Cache keys | 18/04/23 | by keshavram
-
-    String projectId = authParams.getProjectId();
-    var apiProxy = getApiProxy();
-    var uri = composeGetKeysURI(projectId);
-    var signingKeys = apiProxy.get(uri, SigningKey[].class);
-
-    if (ArrayUtils.isEmpty(signingKeys)) {
-      // TODO - Throw valid Exception | 18/04/23 | by keshavram
-      throw new RuntimeException();
-    }
-
-    // TODO - Understand the concept | 18/04/23 | by keshavram
-    // Will have rotating keys
-    var signingKey = signingKeys[0];
-    var publicKey = getPublicKey(signingKey);
-
-    provider.setProvidedKey(publicKey);
-    return publicKey;
-  }
-
-  URI composeGetKeysURI(String projectId) {
-    return composeURI(GET_KEYS_LINK, projectId);
+    var key = KeyProvider.getKey(authParams.getProjectId(), client.getUri());
+    provider.setProvidedKey(key);
+    return key;
   }
 
   void verifyDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, User user) {
