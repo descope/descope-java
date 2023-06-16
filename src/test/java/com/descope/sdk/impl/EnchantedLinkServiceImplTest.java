@@ -1,16 +1,5 @@
 package com.descope.sdk.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
@@ -29,13 +18,26 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.auth.EnchantedLinkService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.utils.JwtUtils;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 public class EnchantedLinkServiceImplTest {
   public static final String MOCK_PROJECT_ID = "someProjectId";
@@ -106,22 +108,22 @@ public class EnchantedLinkServiceImplTest {
   @Test
   void signIn() {
     var apiProxy = mock(ApiProxy.class);
-    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      String signIn = String.valueOf(enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null));
+      var response = enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null);
+      Assertions.assertThat(response).isNotNull();
     }
   }
 
   @Test
   void testSignUpOrInForSuccess() {
     var apiProxy = mock(ApiProxy.class);
-    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      EnchantedLinkResponse signUpOrIn = enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN);
+      var response = enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN);
+      Assertions.assertThat(response).isNotNull();
     }
   }
 
@@ -188,7 +190,7 @@ public class EnchantedLinkServiceImplTest {
   void testGetSession() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKey[]{MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
@@ -229,7 +231,7 @@ public class EnchantedLinkServiceImplTest {
   void testVerify() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mock(EmptyResponse.class)).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKey[]{MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
