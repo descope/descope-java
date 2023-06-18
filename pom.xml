@@ -98,13 +98,13 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <groupId>org.mockito</groupId>
             <scope>test</scope>
-            <version>4.8.1</version>
+            <version>5.4.0</version>
         </dependency>
         <dependency>
             <artifactId>mockito-inline</artifactId>
             <groupId>org.mockito</groupId>
             <scope>test</scope>
-            <version>4.8.1</version>
+            <version>5.2.0</version>
         </dependency>
 
         <!--  UTILS  -->
