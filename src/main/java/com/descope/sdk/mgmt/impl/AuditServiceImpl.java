@@ -44,12 +44,14 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
     var apiProxy = getApiProxy();
     var actualReq = new ActualAuditSearchRequest(request.getUserIds(), request.getActions(), request.getExcludedActions(),
       request.getDevices(), request.getMethods(), request.getGeos(), request.getRemoteAddresses(), request.getLoginIds(), request.getTenants(),
-      request.isNoTenants(), request.getText(), request.getFrom().toEpochMilli(), request.getTo().toEpochMilli());
+      request.isNoTenants(), request.getText(),
+      request.getFrom() != null ? request.getFrom().toEpochMilli() : 0,
+      request.getTo() != null ? request.getTo().toEpochMilli() : 0);
     var resp = (List<ActualAuditRecord>) apiProxy.post(composeSearchUri, actualReq, List.class);
     var res = new ArrayList<AuditRecord>();
     for (var auditRecord : resp) {
       res.add(new AuditRecord(auditRecord.projectId, auditRecord.userId, auditRecord.action,
-      Instant.ofEpochMilli(Long.parseLong(auditRecord.occurred)), auditRecord.device, auditRecord.method,
+      Instant.ofEpochMilli(auditRecord.occurred != null ? Long.parseLong(auditRecord.occurred) : 0), auditRecord.device, auditRecord.method,
       auditRecord.geo, auditRecord.remoteAddress, auditRecord.externalIds, auditRecord.tenants, auditRecord.data));
     }
     return res;
@@ -61,7 +63,7 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
 
   @Data
   @AllArgsConstructor
-  private static class ActualAuditSearchRequest {
+  static class ActualAuditSearchRequest {
     List<String> userIds;
     List<String> actions;
     List<String> excludedActions;
@@ -79,7 +81,7 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
 
   @Data
   @AllArgsConstructor
-  private static class ActualAuditRecord {
+  static class ActualAuditRecord {
     String projectId;
     String userId;
     String action;
