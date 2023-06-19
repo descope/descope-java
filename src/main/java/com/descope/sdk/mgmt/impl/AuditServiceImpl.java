@@ -47,9 +47,10 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
       request.isNoTenants(), request.getText(), request.getFrom().toEpochMilli(), request.getTo().toEpochMilli());
     var resp = (List<ActualAuditRecord>) apiProxy.post(composeSearchUri, actualReq, List.class);
     var res = new ArrayList<AuditRecord>();
-    for (var a : resp) {
-      res.add(new AuditRecord(a.projectId, a.userId, a.action, Instant.ofEpochMilli(Long.parseLong(a.occurred)), a.device,
-        a.method, a.geo, a.remoteAddress, a.externalIds, a.tenants, a.data));
+    for (var auditRecord : resp) {
+      res.add(new AuditRecord(auditRecord.projectId, auditRecord.userId, auditRecord.action,
+      Instant.ofEpochMilli(Long.parseLong(auditRecord.occurred)), auditRecord.device, auditRecord.method,
+      auditRecord.geo, auditRecord.remoteAddress, auditRecord.externalIds, auditRecord.tenants, auditRecord.data));
     }
     return res;
   }
