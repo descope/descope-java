@@ -14,5 +14,5 @@ public class Screen {
   private String flowID;
   private Object inputs;
   private Object interactions;
-  private Object hTMLTemplate;
+  private Object htmlTemplate;
 }

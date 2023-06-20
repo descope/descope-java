@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-/** Configuration struct describes the configuration data for the authentication methods. */
+/* Configuration struct describes the configuration data for the authentication methods. */
 public class Config {
   // ProjectID (required, "") - used to validate and authenticate against descope services.
   private String projectId;

@@ -18,9 +18,7 @@ public class JwtUtils {
   private static final long SKEW_SECONDS = TimeUnit.SECONDS.toSeconds(5);
 
   public static Token getToken(String jwt, Key key) {
-    var jwtParser =
-        Jwts.parserBuilder().setSigningKey(key).setAllowedClockSkewSeconds(SKEW_SECONDS).build();
-    Jws<Claims> claimsJws = jwtParser.parseClaimsJws(jwt);
+    Jws<Claims> claimsJws = getClaimsJws(jwt, key);
     JwsHeader<?> header = claimsJws.getHeader();
     var claims = claimsJws.getBody();
 
@@ -32,6 +30,13 @@ public class JwtUtils {
         .refreshExpiration(claims.get("rexp", Date.class))
         .claims(claims)
         .build();
+  }
+
+  public static Jws<Claims> getClaimsJws(String jwt, Key key) {
+    var jwtParser =
+        Jwts.parserBuilder().setSigningKey(key).setAllowedClockSkewSeconds(SKEW_SECONDS).build();
+    Jws<Claims> claimsJws = jwtParser.parseClaimsJws(jwt);
+    return claimsJws;
   }
 
   public static boolean isJWTRequired(LoginOptions loginOptions) {
