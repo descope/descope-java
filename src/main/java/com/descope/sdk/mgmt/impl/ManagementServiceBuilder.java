@@ -18,6 +18,7 @@ public class ManagementServiceBuilder {
         .tenantService(new TenantServiceImpl(client, managementParams))
         .accessKeyService(new AccessKeyServiceImpl(client, managementParams))
         .permissionService(new PermissionServiceImpl(client, managementParams))
+        .auditService(new AuditServiceImpl(client, managementParams))
         .build();
   }
 }
