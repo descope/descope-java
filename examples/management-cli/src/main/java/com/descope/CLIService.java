@@ -2,7 +2,6 @@ package com.descope;
 
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
-import com.descope.sdk.mgmt.UserService;
 import lombok.Builder;
 
 @Builder
@@ -11,6 +10,8 @@ final class CLIService {
 
   public void createUser(String loginId, UserRequest userRequest) {
     var userService = managementServices.getUserService();
-    userService.create(loginId, userRequest);
+    var userResponse = userService.create(loginId, userRequest);
+    String userId = userResponse.getUserId();
+    System.out.printf("User with userId: %s was successfully created%n", userId);
   }
 }
