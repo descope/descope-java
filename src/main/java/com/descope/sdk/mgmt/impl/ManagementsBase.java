@@ -19,8 +19,10 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
 
   ApiProxy getApiProxy() {
     String projectId = managementParams.getProjectId();
+    String managementKey = managementParams.getManagementKey();
     if (StringUtils.isNotBlank(projectId)) {
-      return ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId);
+      return ApiProxyBuilder.buildProxy(
+          () -> String.format("Bearer %s:%s", projectId, managementKey));
     }
     return ApiProxyBuilder.buildProxy();
   }

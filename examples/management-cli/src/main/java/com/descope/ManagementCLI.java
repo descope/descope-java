@@ -13,11 +13,16 @@ public class ManagementCLI {
     final String DESCOPE_PROJECT_ID = System.getenv("DESCOPE_PROJECT_ID");
     final String DESCOPE_MANAGEMENT_KEY = System.getenv("DESCOPE_MANAGEMENT_KEY");
 
-    if (StringUtils.isAnyBlank(DESCOPE_PROJECT_ID, DESCOPE_MANAGEMENT_KEY, DESCOPE_BASE_URL)) {
-      throw new UnsupportedOperationException("Project ID / Management ID / Base URL is not set");
+    if (StringUtils.isAnyBlank(DESCOPE_PROJECT_ID, DESCOPE_MANAGEMENT_KEY)) {
+      throw new UnsupportedOperationException("Project ID / Management ID is not set");
     }
 
-    var client = Client.builder().uri(DESCOPE_BASE_URL).build();
+    Client.ClientBuilder clientBuilder = Client.builder();
+    if (StringUtils.isNoneBlank(DESCOPE_BASE_URL)) {
+      clientBuilder.uri(DESCOPE_BASE_URL);
+    }
+    var client = clientBuilder.build();
+
     var managementParams =
         ManagementParams.builder()
             .projectId(DESCOPE_PROJECT_ID)
