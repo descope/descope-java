@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccessKeyResponse {
-    private AccessKeyResponseDetails key;
+public class AccessKeyResponseList {
+    private List<AccessKeyResponseDetails> keys;
 }
 

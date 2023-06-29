@@ -1,15 +1,16 @@
-package com.descope.model.mgmt;
+package com.descope.model.roles;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class AccessKeyResponse {
-    private AccessKeyResponseDetails key;
+@AllArgsConstructor
+public class RoleResponse {
+    private List<Role> roles;
 }
-
