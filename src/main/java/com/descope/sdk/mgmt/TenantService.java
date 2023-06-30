@@ -15,7 +15,7 @@ public interface TenantService {
    * @param selfProvisioningDomains - Users authenticating from these domains will be associated
    *     with this tenant.
    * @return The tenant ID generated automatically for the tenant.
-   * @throws DescopeException
+   * @throws DescopeException in case of errors
    */
   String create(String name, List<String> selfProvisioningDomains) throws DescopeException;
 
@@ -27,7 +27,7 @@ public interface TenantService {
    * @param name - The tenant name must be unique per project.
    * @param selfProvisioningDomains - Users authenticating from these domains will be associated
    *     with this tenant.
-   * @throws DescopeException
+   * @throws DescopeException in case of errors
    */
   void createWithId(String id, String name, List<String> selfProvisioningDomains)
       throws DescopeException;
@@ -40,7 +40,7 @@ public interface TenantService {
    * @param name - The tenant name must be unique per project.
    * @param selfProvisioningDomains - Users authenticating from these domains will be associated
    *     with this tenant.
-   * @throws DescopeException
+   * @throws DescopeException in case of errors
    */
   void update(String id, String name, List<String> selfProvisioningDomains) throws DescopeException;
 
@@ -48,7 +48,7 @@ public interface TenantService {
    * Delete an existing tenant. IMPORTANT: This action is irreversible. Use carefully.
    *
    * @param id - Tenant ID
-   * @throws DescopeException
+   * @throws DescopeException in case of errors
    */
   void delete(String id) throws DescopeException;
 
@@ -56,7 +56,7 @@ public interface TenantService {
    * Load all project tenants.s
    *
    * @return {@link Tenant Tenant}
-   * @throws DescopeException
+   * @throws DescopeException in case of errors
    */
   List<Tenant> loadAll() throws DescopeException;
 }

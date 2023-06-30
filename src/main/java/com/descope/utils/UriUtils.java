@@ -7,10 +7,13 @@ import lombok.experimental.UtilityClass;
 public class UriUtils {
   public static URI addPath(URI uri, String path) {
     String newPath;
-    if (path.startsWith("/")) newPath = path.replaceAll("//+", "/");
-    else if (uri.getPath().endsWith("/")) newPath = uri.getPath() + path.replaceAll("//+", "/");
-    else newPath = uri.getPath() + "/" + path.replaceAll("//+", "/");
-
+    if (path.startsWith("/")) {
+      newPath = path.replaceAll("//+", "/");
+    } else if (uri.getPath().endsWith("/")) {
+      newPath = uri.getPath() + path.replaceAll("//+", "/");
+    } else {
+      newPath = uri.getPath() + "/" + path.replaceAll("//+", "/");
+    }
     return uri.resolve(newPath).normalize();
   }
 

@@ -20,15 +20,16 @@ class OAuthServiceImpl extends AuthenticationServiceImpl implements OAuthService
   }
 
   @Override
-  public String start(String provider, String redirectURL, LoginOptions loginOptions) throws DescopeException {
+  public String start(String provider, String redirectURL, LoginOptions loginOptions)
+      throws DescopeException {
     Map<String, String> request = new HashMap<>();
     request.put("provider", provider);
     if (StringUtils.isNotBlank(redirectURL)) {
       request.put("redirectURL", redirectURL);
     }
-    URI oAuthURL = composeOAuthURL();
+    URI oauthURL = composeOAuthURL();
     var apiProxy = getApiProxy();
-    return apiProxy.post(oAuthURL, request, String.class);
+    return apiProxy.post(oauthURL, request, String.class);
   }
 
   @Override

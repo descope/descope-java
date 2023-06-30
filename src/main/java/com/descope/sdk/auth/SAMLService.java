@@ -6,7 +6,7 @@ import com.descope.model.magiclink.LoginOptions;
 
 public interface SAMLService {
   /**
-   * tart will initiate a SAML login flow
+   * tart will initiate a SAML login flow.
    *
    * @param tenant       - tenant
    * @param returnURL    - return url
@@ -17,7 +17,7 @@ public interface SAMLService {
   String start(String tenant, String returnURL, LoginOptions loginOptions) throws DescopeException;
 
   /**
-   * ExchangeToken - Finalize SAML authentication
+   * ExchangeToken - Finalize SAML authentication.
    *
    * @param code - Code to be validated
    * @return Authentication info

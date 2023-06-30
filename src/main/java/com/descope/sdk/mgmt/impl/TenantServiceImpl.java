@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
+@SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
 class TenantServiceImpl extends ManagementsBase implements TenantService {
 
   TenantServiceImpl(Client client, ManagementParams managementParams) {
