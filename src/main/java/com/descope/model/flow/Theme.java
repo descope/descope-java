@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Theme {
   private String id;
-  private Object cSSTemplate;
+  private Object cssTemplate;
 }
 
