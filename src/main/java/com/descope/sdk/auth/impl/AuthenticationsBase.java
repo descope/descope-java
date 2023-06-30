@@ -224,9 +224,6 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   AuthenticationInfo getAuthenticationInfo(JWTResponse jwtResponse) {
     Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
     Token refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
-
-    // TODO - Set Cookies | 18/04/23 | by keshavram
-
     return new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
   }

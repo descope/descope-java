@@ -65,6 +65,7 @@ public class OAuthServiceImplTest {
           .jwt("someJwtToken")
           .claims(Map.of("someClaim", 1))
           .build();
+  @SuppressWarnings("checkstyle:LineLength")
   public static final SigningKey MOCK_SIGNING_KEY =
       SigningKey.builder()
           .e("AQAB")
@@ -74,14 +75,14 @@ public class OAuthServiceImplTest {
               "w8b3KRCep717H4MdVbwYHeb0vr891Ok1BL_TmC0XFUIKjRoKsWOcUZ9BFd6wR_5mnJuE7M8ZjVQRCbRlVgnh6AsEL3JA9Z6c1TpURTIXZxSE6NbeB7IMLMn5HWW7cjbnG4WO7E1PUCT6zCcBVz6EhA925GIJpyUxuY7oqJG-6NoOltI0Ocm6M2_7OIFMzFdw42RslqyX6l-SDdo_ZLq-XtcsCVRyj2YvmXUNF4Vq1x5syPOEQ-SezkvpBcb5Szi0ULpW5CvX2ieHAeHeQ2x8gkv6Dn2AW_dllQ--ZO-QH2QkxEXlMVqilwAdbA0k6BBtSkMC-7kD3A86bGGplpzz5Q")
           .build();
 
-  private OAuthService oAuthService;
+  private OAuthService oauthService;
 
   @BeforeEach
   void setUp() {
     var authParams = AuthParams.builder().projectId(MOCK_PROJECT_ID).build();
     var client = Client.builder().uri("https://api.descope.com/v1").build();
-    this.oAuthService =
-        AuthenticationServiceBuilder.buildServices(client, authParams).getOAuthService();
+    this.oauthService =
+        AuthenticationServiceBuilder.buildServices(client, authParams).getOauthService();
   }
 
   @Test
@@ -90,7 +91,7 @@ public class OAuthServiceImplTest {
     doReturn(MOCK_URL).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      String start = oAuthService.start("provider", "returnurl", new LoginOptions());
+      String start = oauthService.start("provider", "returnurl", new LoginOptions());
       Assertions.assertThat(start).isNotBlank().contains(MOCK_URL);
     }
   }
@@ -110,7 +111,7 @@ public class OAuthServiceImplTest {
 
       try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
         mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
-        authenticationInfo = oAuthService.exchangeToken("somecode");
+        authenticationInfo = oauthService.exchangeToken("somecode");
       }
     }
 
