@@ -44,7 +44,7 @@ public interface AuthenticationService {
    *
    * @param accessKey - Access Key
    * @return {@link Token Token}
-   * @throws DescopeException
+   * @throws DescopeException if there is an error
    */
   Token exchangeAccessKey(String accessKey) throws DescopeException;
 
@@ -55,7 +55,7 @@ public interface AuthenticationService {
    * @param token - {@link Token Token}
    * @param permissions - List of permissions.
    * @return is valid permissions.
-   * @throws DescopeException
+   * @throws DescopeException if there is an error
    */
   boolean validatePermissions(Token token, List<String> permissions) throws DescopeException;
 
@@ -67,7 +67,7 @@ public interface AuthenticationService {
    * @param tenant - Tenant ID.
    * @param permissions - List of permissions.
    * @return is valid permissions.
-   * @throws DescopeException
+   * @throws DescopeException if there is an error
    */
   boolean validatePermissions(Token token, String tenant, List<String> permissions)
       throws DescopeException;
@@ -79,7 +79,7 @@ public interface AuthenticationService {
    * @param token - {@link Token Token}
    * @param roles - List of roles.
    * @return is valid roles.
-   * @throws DescopeException
+   * @throws DescopeException if there is an error
    */
   boolean validateRoles(Token token, List<String> roles) throws DescopeException;
 
@@ -91,7 +91,7 @@ public interface AuthenticationService {
    * @param tenant - Tenant ID.
    * @param roles - List of roles.
    * @return is valid roles.
-   * @throws DescopeException
+   * @throws DescopeException if there is an error
    */
   boolean validateRoles(Token token, String tenant, List<String> roles) throws DescopeException;
 }

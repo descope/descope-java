@@ -51,8 +51,8 @@ public interface MagicLinkService {
    * with GetSession.
    *
    * @param token - Token
-   * @return
-   * @throws DescopeException
+   * @return {@link AuthenticationInfo}
+   * @throws DescopeException when error occurs
    */
   AuthenticationInfo verify(String token) throws DescopeException;
 
@@ -70,7 +70,7 @@ public interface MagicLinkService {
       throws DescopeException;
 
   /**
-   * Use to update email and validate via magiclink
+   * Use to update email and validate via magiclink.
    *
    * @param loginId - User login ID
    * @param email - User email
@@ -83,8 +83,8 @@ public interface MagicLinkService {
       throws DescopeException;
 
   /**
-   * Use to update phone and validate via magiclink allowed methods are phone based methods -
-   * whatsapp and SMS
+   * Use to update phone and validate via magiclink.
+   * Allowed methods are phone based methods - whatsapp and SMS
    *
    * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
    * @param loginId - User login ID

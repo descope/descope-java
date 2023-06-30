@@ -95,28 +95,26 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     switch (deliveryMethod) {
       case SMS:
       case WHATSAPP:
-        {
-          String phone = user.getPhone();
-          if (StringUtils.isBlank(phone)) {
-            phone = loginId;
-          }
-          if (!PHONE_PATTERN.matcher(phone).matches()) {
-            throw ServerCommonException.invalidArgument("user.phone");
-          }
-          break;
+        String phone = user.getPhone();
+        if (StringUtils.isBlank(phone)) {
+          phone = loginId;
         }
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
+          throw ServerCommonException.invalidArgument("user.phone");
+        }
+        break;
       case EMAIL:
-        {
-          String email = user.getEmail();
-          if (StringUtils.isBlank(email)) {
-            email = loginId;
-            user.setEmail(email);
-          }
-          if (!EMAIL_PATTERN.matcher(email).matches()) {
-            throw ServerCommonException.invalidArgument("user.email");
-          }
-          break;
+        String email = user.getEmail();
+        if (StringUtils.isBlank(email)) {
+          email = loginId;
+          user.setEmail(email);
         }
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+          throw ServerCommonException.invalidArgument("user.email");
+        }
+        break;
+      default:
+        throw ServerCommonException.invalidArgument("DeliveryMethod");
     }
   }
 
