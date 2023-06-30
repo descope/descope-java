@@ -51,6 +51,7 @@ abstract class AbstractProxyImpl {
 
     var httpClient = HttpClient.newHttpClient();
     JsonBodyHandler<R> bodyHandler = new JsonBodyHandler<>(returnClz);
+    log.debug(String.format("Sending %s request to %s", method, uri.toString()));
     Supplier<R> responseSupplier = httpClient.send(httpRequest, bodyHandler).body();
     return responseSupplier.get();
   }
