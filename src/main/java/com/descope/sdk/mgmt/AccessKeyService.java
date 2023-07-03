@@ -4,13 +4,12 @@ import com.descope.exception.DescopeException;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseList;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 
 public interface AccessKeyService {
 
-    JsonNode create(String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants)
+    AccessKeyResponse create(String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants)
             throws DescopeException;
 
     AccessKeyResponse load(String id) throws DescopeException;

@@ -10,7 +10,6 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +63,7 @@ class AccessKeyServiceImplTest {
         doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
         try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
             mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-            JsonNode response = accessKeyService.create("Test", 10, mockRoles, mockKeyTenants);
+            AccessKeyResponse response = accessKeyService.create("Test", 10, mockRoles, mockKeyTenants);
             assertNotNull(response);
         }
     }

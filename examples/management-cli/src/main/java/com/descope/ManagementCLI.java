@@ -5,6 +5,7 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.request.UserRequest;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
@@ -38,15 +39,19 @@ public class ManagementCLI {
         String operation = args[0];
         switch (operation) {
             case "user-create" -> {
-                String loginId = System.getProperty("loginId");
-                String email = System.getProperty("email");
-                String phone = System.getProperty("phone");
-                String name = System.getProperty("name");
 
-                if (StringUtils.isAnyBlank(loginId, email, phone, name)) {
-                    throw new IllegalArgumentException(
-                            "Login ID, Email, Phone and Name are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                Options options = new Options();
+                options.addOption(getOption("loginId", true, "User login id"));
+                options.addOption(getOption("email", true, "User email address"));
+                options.addOption(getOption("name", true, "User name"));
+                options.addOption(getOption("phone", true, "USer phone number"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String loginId = cmd.getOptionValue("loginId");
+                String email = cmd.getOptionValue("email");
+                String phone = cmd.getOptionValue("phone");
+                String name = cmd.getOptionValue("name");
 
                 var userRequest =
                         UserRequest.builder()
@@ -63,15 +68,20 @@ public class ManagementCLI {
             }
 
             case "user-update" -> {
-                String loginId = System.getProperty("loginId");
-                String email = System.getProperty("email");
-                String phone = System.getProperty("phone");
-                String name = System.getProperty("name");
 
-                if (StringUtils.isAnyBlank(loginId, email, phone, name)) {
-                    throw new IllegalArgumentException(
-                            "Login ID, Email, Phone and Name are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                Options options = new Options();
+
+                options.addOption(getOption("loginId", true, "User login id"));
+                options.addOption(getOption("email", true, "User email address"));
+                options.addOption(getOption("name", true, "User name"));
+                options.addOption(getOption("phone", true, "USer phone number"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String loginId = cmd.getOptionValue("loginId");
+                String email = cmd.getOptionValue("email");
+                String phone = cmd.getOptionValue("phone");
+                String name = cmd.getOptionValue("name");
 
                 var userRequest =
                         UserRequest.builder()
@@ -90,189 +100,234 @@ public class ManagementCLI {
             }
 
             case "user-delete" -> {
-                String loginId = System.getProperty("loginId");
 
-                if (StringUtils.isAnyBlank(loginId)) {
-                    throw new IllegalArgumentException(
-                            "Login ID is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                Options options = new Options();
+
+                options.addOption(getOption("loginId", true, "User login id"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String loginId = cmd.getOptionValue("loginId");
+
                 cliService.deleteUser(loginId);
             }
 
             case "user-load" -> {
-                String loginId = System.getProperty("loginId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(loginId)) {
-                    throw new IllegalArgumentException(
-                            "Login ID is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("loginId", true, "User login id"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String loginId = cmd.getOptionValue("loginId");
+
+
                 cliService.loadUser(loginId);
             }
             case "user-search-all" -> cliService.searchAllUsers();
-
+            //TODO: Testing pending as not getting success response for empty tenants
             case "access-key-create" -> {
-                String keyName = System.getProperty("keyName");
-                String expirationTime = System.getProperty("expirationTime");
 
-                if (StringUtils.isAnyBlank(keyName, expirationTime)) {
-                    throw new IllegalArgumentException(
-                            "Key Name and Expiration Time are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                Options options = new Options();
+
+                options.addOption(getOption("keyName", true, "Access Key Name"));
+                options.addOption(getOption("expirationTime", true, "Access Key ExpirationTime"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String keyName = cmd.getOptionValue("keyName");
+                String expirationTime = cmd.getOptionValue("expirationTime");
+
                 AssociatedTenant associatedTenant = new AssociatedTenant();
                 associatedTenant.setRoleNames(Collections.emptyList());
                 associatedTenant.setTenantId("");
                 cliService.createAccessKey(keyName, expirationTime, Collections.emptyList(), List.of(associatedTenant));
             }
             case "access-key-update" -> {
-                String keyId = System.getProperty("keyId");
-                String keyName = System.getProperty("keyName");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(keyId, keyName)) {
-                    throw new IllegalArgumentException(
-                            "Key ID, Key Name are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("keyId", true, "AccessKey Id"));
+                options.addOption(getOption("keyName", true, "AccessKey Name"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String keyId = cmd.getOptionValue("keyId");
+                String keyName = cmd.getOptionValue("keyName");
+
                 cliService.updateAccessKey(keyId, keyName);
             }
             case "access-key-delete" -> {
-                String keyId = System.getProperty("keyId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(keyId)) {
-                    throw new IllegalArgumentException(
-                            "Key ID is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("keyId", true, "Access Key Id"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String keyId = cmd.getOptionValue("keyId");
+
                 cliService.deleteAccessKey(keyId);
             }
             case "access-key-load" -> {
-                String keyId = System.getProperty("keyId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(keyId)) {
-                    throw new IllegalArgumentException(
-                            "Key ID is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("keyId", true, "AccessKey Id"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String keyId = cmd.getOptionValue("keyId");
+
                 cliService.loadAccessKey(keyId);
             }
             case "access-key-search-all" -> cliService.searchAllAccessKey();
 
             case "tenant-create" -> {
-                String tenantName = System.getProperty("tenantName");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(tenantName)) {
-                    throw new IllegalArgumentException(
-                            "Tenant Name is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("tenantName", true, "Tenant Name"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String tenantName = cmd.getOptionValue("tenantName");
+
                 cliService.createTenant(tenantName);
             }
             case "tenant-update" -> {
-                String tenantId = System.getProperty("tenantId");
-                String tenantName = System.getProperty("tenantName");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(tenantId, tenantName)) {
-                    throw new IllegalArgumentException(
-                            "Tenant ID, Tenant Name are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("tenantId", true, "TenantId"));
+                options.addOption(getOption("tenantName", true, "TenantName"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String tenantId = cmd.getOptionValue("tenantId");
+                String tenantName = cmd.getOptionValue("tenantName");
+
                 cliService.updateTenant(tenantId, tenantName);
             }
             case "tenant-delete" -> {
-                String tenantId = System.getProperty("tenantId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(tenantId)) {
-                    throw new IllegalArgumentException(
-                            "Tenant ID is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("tenantId", true, "TenantId"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String tenantId = cmd.getOptionValue("tenantId");
+
                 cliService.deleteTenant(tenantId);
             }
             case "tenant-search-all" -> cliService.searchAllTenant();
 
             case "group-all-for-tenant" -> {
-                String tenantId = System.getProperty("tenantId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(tenantId)) {
-                    throw new IllegalArgumentException(
-                            "Tenant Id is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("tenantId", true, "Group TenantId"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String tenantId = cmd.getOptionValue("tenantId");
+
                 cliService.groupAllForTenant(tenantId);
             }
 
             case "group-all-for-member" -> {
-                String tenantId = System.getProperty("tenantId");
-                String userIds = System.getProperty("userIds");
-                String loginIds = System.getProperty("loginIds");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(tenantId, userIds, loginIds)) {
-                    throw new IllegalArgumentException(
-                            "Tenant ID, userIds and loginIds are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("tenantId", true, "GroupTenantId"));
+                options.addOption(getOption("userIds", true, "GroupUserIds"));
+                options.addOption(getOption("loginIds", true, "GroupLoginIds"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String tenantId = cmd.getOptionValue("tenantId");
+                String userIds = cmd.getOptionValue("userIds");
+                String loginIds = cmd.getOptionValue("loginIds");
+
                 cliService.groupAllForMember(tenantId, userIds, loginIds);
             }
             case "group-members" -> {
-                String tenantId = System.getProperty("tenantId");
-                String groupId = System.getProperty("groupId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(tenantId, groupId)) {
-                    throw new IllegalArgumentException(
-                            "Tenant ID, Group Id are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("tenantId", true, "Group TenantId"));
+                options.addOption(getOption("groupId", true, "Group Id"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String tenantId = cmd.getOptionValue("tenantId");
+                String groupId = cmd.getOptionValue("groupId");
+
                 cliService.groupMembers(tenantId, groupId);
             }
 
             case "permission-create" -> {
-                String permissionName = System.getProperty("permissionName");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(permissionName)) {
-                    throw new IllegalArgumentException(
-                            "Permission Name Is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("permissionName", true, "PermissionName"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String permissionName = cmd.getOptionValue("permissionName");
 
                 cliService.createPermission(permissionName);
             }
             case "permission-update" -> {
-                String permissionName = System.getProperty("permissionName");
-                String permissionId = System.getProperty("permissionId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(permissionName, permissionId)) {
-                    throw new IllegalArgumentException(
-                            "Permission Name, Permission Id are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("permissionName", true, "PermissionName"));
+                options.addOption(getOption("permissionId", true, "PermissionId"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String permissionName = cmd.getOptionValue("permissionName");
+                String permissionId = cmd.getOptionValue("permissionId");
+
                 cliService.updatePermission(permissionName, permissionId);
             }
             case "permission-delete" -> {
-                String permissionId = System.getProperty("permissionId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(permissionId)) {
-                    throw new IllegalArgumentException(
-                            "Permission Id is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("permissionId", true, "PermissionId"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String permissionId = cmd.getOptionValue("permissionId");
+
                 cliService.deletePermission(permissionId);
             }
             case "permission-all" -> cliService.permissionAll();
 
             case "role-create" -> {
-                String roleName = System.getProperty("roleName");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(roleName)) {
-                    throw new IllegalArgumentException(
-                            "Role Name Is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("roleName", true, "RoleName"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String roleName = cmd.getOptionValue("roleName");
 
                 cliService.createRole(roleName);
             }
             case "role-update" -> {
-                String roleName = System.getProperty("roleName");
-                String roleId = System.getProperty("roleId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(roleId, roleName)) {
-                    throw new IllegalArgumentException(
-                            "Role Name, Role Id are Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("roleName", true, "RoleName"));
+                options.addOption(getOption("roleId", true, "RoleId"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String roleName = cmd.getOptionValue("roleName");
+                String roleId = cmd.getOptionValue("roleId");
+
                 cliService.updateRole(roleId, roleName);
             }
             case "role-delete" -> {
-                String roleId = System.getProperty("roleId");
+                Options options = new Options();
 
-                if (StringUtils.isAnyBlank(roleId)) {
-                    throw new IllegalArgumentException(
-                            "Role Id is Required. Please pass these arguments as `-D<key>=<value>`");
-                }
+                options.addOption(getOption("roleId", true, "RoleId"));
+
+                CommandLine cmd = getCmdParser(options, args);
+
+                String roleId = cmd.getOptionValue("roleId");
+
                 cliService.deleteRole(roleId);
             }
             case "role-all" -> cliService.roleAll();
@@ -280,5 +335,27 @@ public class ManagementCLI {
             default -> throw new UnsupportedOperationException(
                     "Invalid Operation %s".formatted(operation));
         }
+    }
+
+    private static Option getOption(String option, boolean hasArg, String desc) {
+        Option newOption = new Option(option, hasArg, desc);
+        newOption.setRequired(true);
+        return newOption;
+    }
+
+    private static CommandLine getCmdParser(Options options, String[] args) {
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;
+
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("utility-name", options);
+
+            System.exit(1);
+        }
+        return cmd;
     }
 }

@@ -10,7 +10,6 @@ import com.descope.model.mgmt.AccessKeyResponseList;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.utils.MgmtUtils;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -24,7 +23,7 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     }
 
     @Override
-    public JsonNode create(
+    public AccessKeyResponse create(
             String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants)
             throws DescopeException {
         if (StringUtils.isBlank(name)) {
@@ -32,7 +31,7 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
         }
         AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants);
         var apiProxy = getApiProxy();
-        return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, JsonNode.class);
+        return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
     }
 
     @Override

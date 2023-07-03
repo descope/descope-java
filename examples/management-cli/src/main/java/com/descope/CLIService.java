@@ -3,7 +3,6 @@ package com.descope;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
-import com.descope.model.user.response.UserResponse;
 import lombok.Builder;
 
 import java.util.Collections;
@@ -20,13 +19,13 @@ final class CLIService {
     public void createUser(String loginId, UserRequest userRequest) {
         var userService = managementServices.getUserService();
         var userResponse = userService.create(loginId, userRequest);
-        System.out.printf("User with userId: %s was successfully created%n", userResponse);
+        System.out.printf("User with userId: %s was successfully created%n", userResponse.getUser().getUserId());
     }
 
     public void updateUser(String loginId, UserRequest userRequest) {
         var userService = managementServices.getUserService();
         var userResponse = userService.update(loginId, userRequest);
-        System.out.printf("User with userId: %s was successfully updated%n", userResponse);
+        System.out.printf("User with userId: %s was successfully updated%n", userResponse.getUser().getUserId());
     }
 
     public void deleteUser(String loginId) {
@@ -44,7 +43,7 @@ final class CLIService {
 
     public void searchAllUsers() {
         var userService = managementServices.getUserService();
-        List<UserResponse> response = userService.searchAll(null);
+        var response = userService.searchAll(null);
         System.out.println(response);
     }
 
@@ -91,7 +90,7 @@ final class CLIService {
 
     public void createTenant(String tenantName) {
         var tenantService = managementServices.getTenantService();
-        var response = tenantService.create(tenantName, null);
+        var response = tenantService.create(tenantName, Collections.emptyList());
         System.out.printf("Tenant with Id: %s was successfully created%n", response);
     }
 
