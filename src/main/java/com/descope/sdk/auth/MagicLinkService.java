@@ -83,8 +83,8 @@ public interface MagicLinkService {
       throws DescopeException;
 
   /**
-   * Use to update phone and validate via magiclink.
-   * Allowed methods are phone based methods - whatsapp and SMS
+   * Use to update phone and validate via magiclink. Allowed methods are phone based methods -
+   * whatsapp and SMS
    *
    * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
    * @param loginId - User login ID

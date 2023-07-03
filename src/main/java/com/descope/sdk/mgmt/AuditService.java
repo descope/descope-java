@@ -8,15 +8,13 @@ import java.util.List;
 /** Provides audit records search capabilities. */
 public interface AuditService {
   /**
-   * Search the audit trail and retrieve audit records based on the given filter.
-   * All filter fields are optional and audit may search up to 30 days of history.
+   * Search the audit trail and retrieve audit records based on the given filter. All filter fields
+   * are optional and audit may search up to 30 days of history.
    *
-   * @param request request is optional, and if provided, all attributes within it
-   *                are optional.
+   * @param request request is optional, and if provided, all attributes within it are optional.
    * @return {@link List} of {@link AuditRecord}
-   * @throws DescopeException If there occurs any exception, a subtype of this
-   *                          exception will be
-   *                          thrown.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
    */
   List<AuditRecord> search(AuditSearchRequest request) throws DescopeException;
 }

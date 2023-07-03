@@ -65,6 +65,7 @@ public class OAuthServiceImplTest {
           .jwt("someJwtToken")
           .claims(Map.of("someClaim", 1))
           .build();
+
   @SuppressWarnings("checkstyle:LineLength")
   public static final SigningKey MOCK_SIGNING_KEY =
       SigningKey.builder()

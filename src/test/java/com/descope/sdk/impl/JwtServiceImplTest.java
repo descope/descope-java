@@ -1,5 +1,16 @@
 package com.descope.sdk.impl;
 
+import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Provider;
@@ -11,26 +22,14 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.mgmt.JwtService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
 import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 public class JwtServiceImplTest {
 
@@ -79,7 +78,7 @@ public class JwtServiceImplTest {
   void testUpdateJWTWithCustomClaims() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[]{MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
@@ -95,7 +94,8 @@ public class JwtServiceImplTest {
   void testupdateJWTWithCustomClaimsForEmptyJwt() {
     ServerCommonException thrown =
         assertThrows(
-            ServerCommonException.class, () -> jwtService.updateJWTWithCustomClaims("", mockCustomClaims));
+            ServerCommonException.class,
+            () -> jwtService.updateJWTWithCustomClaims("", mockCustomClaims));
     assertNotNull(thrown);
     assertEquals("The JWT argument is invalid", thrown.getMessage());
   }

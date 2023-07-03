@@ -14,5 +14,4 @@ public class AttributeMapping {
   private String email;
   private String phoneNumber;
   private String group;
-  
 }

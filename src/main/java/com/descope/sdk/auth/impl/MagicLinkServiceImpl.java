@@ -34,8 +34,7 @@ import java.net.http.HttpRequest;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
-class MagicLinkServiceImpl extends AuthenticationServiceImpl
-    implements MagicLinkService {
+class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLinkService {
 
   MagicLinkServiceImpl(Client client, AuthParams authParams) {
     super(client, authParams);
