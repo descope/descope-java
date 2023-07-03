@@ -8,25 +8,27 @@ import com.descope.exception.ClientSetupException;
 import com.descope.exception.ServerCommonException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 
 class DescopeClientTest {
 
   @Test
-  void testEnvVariables() {
-    String expectedProjectID = "someProjectId";
+  void testEnvVariables() throws Exception {
+    String expectedProjectID = "someProject";
     String expectedPublicKey = "somePublicKey";
     String expectedManagementKey = "someManagementKey";
-
-    System.setProperty(PROJECT_ID_ENV_VAR, expectedProjectID);
-    System.setProperty(PUBLIC_KEY_ENV_VAR, expectedPublicKey);
-    System.setProperty(MANAGEMENT_KEY_ENV_VAR, expectedManagementKey);
-
-    var descopeClient = new DescopeClient();
-    var config = descopeClient.getConfig();
-    Assertions.assertThat(config.getProjectId()).isEqualTo(expectedProjectID);
-    Assertions.assertThat(config.getPublicKey()).isEqualTo(expectedPublicKey);
-    Assertions.assertThat(descopeClient.getAuthenticationServices()).isNotNull();
-    Assertions.assertThat(descopeClient.getManagementServices()).isNotNull();
+    EnvironmentVariables env = new EnvironmentVariables(PROJECT_ID_ENV_VAR, expectedProjectID)
+        .and(PUBLIC_KEY_ENV_VAR, expectedPublicKey)
+        .and(MANAGEMENT_KEY_ENV_VAR, expectedManagementKey);
+    env.execute(() -> {
+      var descopeClient = new DescopeClient();
+      var config = descopeClient.getConfig();
+      Assertions.assertThat(config.getProjectId()).isEqualTo("someProject");
+      Assertions.assertThat(config.getPublicKey()).isEqualTo("somePublicKey");
+      Assertions.assertThat(config.getManagementKey()).isEqualTo("someManagementKey");
+      Assertions.assertThat(descopeClient.getAuthenticationServices()).isNotNull();
+      Assertions.assertThat(descopeClient.getManagementServices()).isNotNull();
+    });
   }
 
   // TODO - TestConcurrentClients | 17/04/23 | by keshavram
