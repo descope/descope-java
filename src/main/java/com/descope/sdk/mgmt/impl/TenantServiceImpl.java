@@ -15,6 +15,7 @@ import java.util.Map;
 
 import static com.descope.literals.Routes.ManagementEndPoints.*;
 
+@SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
 class TenantServiceImpl extends ManagementsBase implements TenantService {
 
     TenantServiceImpl(Client client, ManagementParams managementParams) {

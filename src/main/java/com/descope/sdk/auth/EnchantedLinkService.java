@@ -8,7 +8,7 @@ import com.descope.model.user.User;
 
 public interface EnchantedLinkService {
   /**
-   * Use to login a user based on an enchanted link that will be sent by email
+   * Use to login a user based on an enchanted link that will be sent by email.
    *
    * @param loginId      - User login ID
    * @param uri          - Base URI
@@ -35,7 +35,7 @@ public interface EnchantedLinkService {
       throws DescopeException;
 
   /**
-   * Use to login in using loginID, if user does not exist, a new user will be created
+   * Use to login in using loginID, if user does not exist, a new user will be created.
    *
    * @param loginId - User login ID
    * @param uri     - Base URI
@@ -63,7 +63,7 @@ public interface EnchantedLinkService {
   void verify(String token) throws DescopeException;
 
   /**
-   * Use to update email and validate via enchanted link
+   * Use to update email and validate via enchanted link.
    *
    * @param loginId - User login ID
    * @param email   - User email

@@ -57,7 +57,7 @@ public interface OTPService {
       throws DescopeException;
 
   /**
-   * Use to a update email, and verify via OTP
+   * Use to a update email, and verify via OTP.
    *
    * @param loginId - User login ID
    * @param email - User email
@@ -67,7 +67,7 @@ public interface OTPService {
   String updateUserEmail(String loginId, String email) throws DescopeException;
 
   /**
-   * Use to update phone and validate via OTP
+   * Use to update phone and validate via OTP.
    *
    * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
    * @param loginId - User login ID

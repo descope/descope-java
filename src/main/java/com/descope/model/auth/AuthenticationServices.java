@@ -16,7 +16,7 @@ public class AuthenticationServices {
   OTPService otpService;
   SAMLService samlService;
   TOTPService totpService;
-  OAuthService oAuthService;
+  OAuthService oauthService;
   PasswordService passwordService;
   MagicLinkService magicLinkService;
   EnchantedLinkService enchantedLinkService;

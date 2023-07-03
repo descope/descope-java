@@ -8,7 +8,8 @@ public interface GroupService {
 
   List<Group> loadAllGroups(String tenantID) throws DescopeException;
 
-  List<Group> loadAllGroupsForMembers(String tenantID, List<String> userIDs, List<String> loginIDs) throws DescopeException;
+  List<Group> loadAllGroupsForMembers(String tenantID, List<String> userIDs, List<String> loginIDs)
+      throws DescopeException;
 
   List<Group> loadAllGroupMembers(String tenantID, String groupID) throws DescopeException;
 }

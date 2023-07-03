@@ -11,10 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdatePhoneRequest {
-
-    private String phone;
-    private String loginId;
-    @JsonProperty("URI")
-    private String uri;
-    private boolean crossDevice;
+  private String phone;
+  private String loginId;
+  @JsonProperty("URI")
+  private String uri;
+  private boolean crossDevice;
 }

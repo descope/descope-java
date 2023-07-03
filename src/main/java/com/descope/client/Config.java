@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-/** Configuration struct describes the configuration data for the authentication methods. */
+/* Configuration struct describes the configuration data for the authentication methods. */
 public class Config {
   // ProjectID (required, "") - used to validate and authenticate against descope services.
   private String projectId;
@@ -50,15 +50,13 @@ public class Config {
     if (StringUtils.isBlank(this.projectId)) {
       this.projectId = EnvironmentUtils.getProjectId();
     }
-
-    return this.publicKey;
+    return this.projectId;
   }
 
   public String initializePublicKey() {
     if (StringUtils.isBlank(this.publicKey)) {
       this.publicKey = EnvironmentUtils.getPublicKey();
     }
-
     return this.publicKey;
   }
 
@@ -66,7 +64,6 @@ public class Config {
     if (StringUtils.isBlank(this.managementKey)) {
       this.managementKey = EnvironmentUtils.getManagementKey();
     }
-
     return this.managementKey;
   }
 }

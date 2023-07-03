@@ -27,7 +27,6 @@ import com.descope.model.magiclink.request.VerifyRequest;
 import com.descope.model.magiclink.response.Masked;
 import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
-import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.MagicLinkService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
@@ -36,7 +35,7 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 class MagicLinkServiceImpl extends AuthenticationServiceImpl
-    implements MagicLinkService, AuthenticationService {
+    implements MagicLinkService {
 
   MagicLinkServiceImpl(Client client, AuthParams authParams) {
     super(client, authParams);

@@ -3,6 +3,7 @@ package com.descope.utils;
 import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
 
+@SuppressWarnings("checkstyle:LineLength")
 @UtilityClass
 public class PatternUtils {
   public static final Pattern EMAIL_PATTERN =

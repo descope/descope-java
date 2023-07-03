@@ -9,7 +9,7 @@ import com.descope.model.user.User;
 public interface TOTPService {
 
   /**
-   * Create a new user, and create a seed for it
+   * Create a new user, and create a seed for it.
    *
    * @param loginId - User login ID
    * @param user    - {@link User User}
@@ -22,7 +22,7 @@ public interface TOTPService {
       throws DescopeException;
 
   /**
-   * Use to verify a SignIn/SignUp based on the given loginID
+   * Use to verify a SignIn/SignUp based on the given loginID.
    *
    * @param loginId      - User login ID
    * @param code         - code to verify
@@ -37,7 +37,7 @@ public interface TOTPService {
       throws DescopeException;
 
   /**
-   * Set a seed to an existing user, so the user can use an authenticator app
+   * Set a seed to an existing user, so the user can use an authenticator app.
    *
    * @param loginId - User login ID
    * @return TOTPResponse

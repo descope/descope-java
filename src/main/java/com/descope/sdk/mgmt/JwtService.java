@@ -3,7 +3,7 @@ package com.descope.sdk.mgmt;
 import com.descope.exception.DescopeException;
 import java.util.Map;
 
-/** Provide functions for manipulating valid JWT */
+/** Provide functions for manipulating valid JWT. */
 public interface JwtService {
 
   /**

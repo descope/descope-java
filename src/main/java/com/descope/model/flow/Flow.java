@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("checkstyle:MemberName")
 public class Flow {
   private String id;
   private String name;

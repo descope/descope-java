@@ -13,8 +13,8 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,17 +42,21 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
 
     URI composeSearchUri = composeSearchUri();
     var apiProxy = getApiProxy();
-    var actualReq = new ActualAuditSearchRequest(request.getUserIds(), request.getActions(), request.getExcludedActions(),
-      request.getDevices(), request.getMethods(), request.getGeos(), request.getRemoteAddresses(), request.getLoginIds(), request.getTenants(),
-      request.isNoTenants(), request.getText(),
-      request.getFrom() != null ? request.getFrom().toEpochMilli() : 0,
-      request.getTo() != null ? request.getTo().toEpochMilli() : 0);
+    var actualReq = new ActualAuditSearchRequest(request.getUserIds(), request.getActions(),
+        request.getExcludedActions(), request.getDevices(), request.getMethods(), request.getGeos(),
+        request.getRemoteAddresses(), request.getLoginIds(), request.getTenants(),
+        request.isNoTenants(), request.getText(),
+        request.getFrom() != null ? request.getFrom().toEpochMilli() : 0,
+        request.getTo() != null ? request.getTo().toEpochMilli() : 0);
     var resp = (List<ActualAuditRecord>) apiProxy.post(composeSearchUri, actualReq, List.class);
     var res = new ArrayList<AuditRecord>();
     for (var auditRecord : resp) {
       res.add(new AuditRecord(auditRecord.projectId, auditRecord.userId, auditRecord.action,
-      Instant.ofEpochMilli(auditRecord.occurred != null ? Long.parseLong(auditRecord.occurred) : 0), auditRecord.device, auditRecord.method,
-      auditRecord.geo, auditRecord.remoteAddress, auditRecord.externalIds, auditRecord.tenants, auditRecord.data));
+            Instant.ofEpochMilli(
+              auditRecord.occurred != null ? Long.parseLong(auditRecord.occurred) : 0),
+            auditRecord.device, auditRecord.method,
+            auditRecord.geo, auditRecord.remoteAddress, auditRecord.externalIds,
+            auditRecord.tenants, auditRecord.data));
     }
     return res;
   }

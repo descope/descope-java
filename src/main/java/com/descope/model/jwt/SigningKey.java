@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("checkstyle:MemberName")
 public class SigningKey {
   private String alg;
   private String e;
