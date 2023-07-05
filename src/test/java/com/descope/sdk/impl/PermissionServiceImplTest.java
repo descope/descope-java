@@ -1,20 +1,15 @@
 package com.descope.sdk.impl;
 
 import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.permission.Permission;
+import com.descope.model.permission.PermissionResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.mgmt.PermissionService;
@@ -30,6 +25,7 @@ class PermissionServiceImplTest {
   private final Permission mockPermission =
       Permission.builder().name("someName").description("somneDesc").build();
   private final List<Permission> mockPermissionList = List.of(mockPermission);
+  private final PermissionResponse permissionResponse = new PermissionResponse(mockPermissionList);
   private PermissionService permissionService;
 
   @BeforeEach
@@ -109,13 +105,14 @@ class PermissionServiceImplTest {
   @Test
   void testLoadAllForSuccess() {
     var apiProxy = mock(ApiProxy.class);
-    doReturn(mockPermissionList).when(apiProxy).get(any(), any());
+    doReturn(permissionResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      List<Permission> response = permissionService.loadAll();
-      Assertions.assertThat(response.size()).isEqualTo(1);
-      Assertions.assertThat(response.get(0).getName()).isEqualTo("someName");
-      Assertions.assertThat(response.get(0).getDescription()).isEqualTo("somneDesc");
+      PermissionResponse response = permissionService.loadAll();
+      Assertions.assertThat(response.getPermissions().size()).isEqualTo(1);
+      Assertions.assertThat(response.getPermissions().get(0).getName()).isEqualTo("someName");
+      Assertions.assertThat(response.getPermissions().get(0).getDescription())
+          .isEqualTo("somneDesc");
     }
   }
 }

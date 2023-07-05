@@ -14,6 +14,7 @@ import com.descope.model.flow.Screen;
 import com.descope.model.flow.Theme;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.FlowService;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
@@ -35,11 +36,12 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
   }
 
   @Override
-  public FlowResponse importFlow(String flowID, Flow flow, Screen screen) throws DescopeException {
+  public FlowResponse importFlow(String flowID, Flow flow, List<Screen> screens)
+      throws DescopeException {
     if (StringUtils.isBlank(flowID)) {
       throw ServerCommonException.invalidArgument("FlowID");
     }
-    Map<String, Object> request = Map.of("flowId", flowID, "flow", flow, "screens", screen);
+    Map<String, Object> request = Map.of("flowId", flowID, "flow", flow, "screens", screens);
     var apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_IMPORT_LINK), request, FlowResponse.class);
   }

@@ -33,7 +33,8 @@ import com.descope.model.user.request.OTPTestUserRequest;
 import com.descope.model.user.request.TestUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
-import com.descope.model.user.response.UserResponse;
+import com.descope.model.user.response.AllUsersResponseDetails;
+import com.descope.model.user.response.UserResponseDetails;
 import com.descope.sdk.mgmt.UserService;
 import java.net.URI;
 import java.util.List;
@@ -48,7 +49,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponse create(String loginId, UserRequest request) throws DescopeException {
+  public UserResponseDetails create(String loginId, UserRequest request) throws DescopeException {
     if (Objects.isNull(request)) {
       request = new UserRequest();
     }
@@ -58,11 +59,12 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
     URI createUserUri = composeCreateUserUri();
     var apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponse.class);
+    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse createTestUser(String loginId, UserRequest request) throws DescopeException {
+  public UserResponseDetails createTestUser(String loginId, UserRequest request)
+      throws DescopeException {
     if (Objects.isNull(request)) {
       request = new UserRequest();
     }
@@ -72,11 +74,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
     URI createUserUri = composeCreateUserUri();
     var apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponse.class);
+    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse invite(String loginId, UserRequest request) throws DescopeException {
+  public UserResponseDetails invite(String loginId, UserRequest request) throws DescopeException {
     if (Objects.isNull(request)) {
       request = new UserRequest();
     }
@@ -86,11 +88,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
     URI createUserUri = composeCreateUserUri();
     var apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponse.class);
+    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse update(String loginId, UserRequest request) throws DescopeException {
+  public UserResponseDetails update(String loginId, UserRequest request) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -99,7 +101,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     URI updateUserUri = composeUpdateUserUri();
     var apiProxy = getApiProxy();
-    return apiProxy.post(updateUserUri, request, UserResponse.class);
+    return apiProxy.post(updateUserUri, request, UserResponseDetails.class);
   }
 
   @Override
@@ -120,28 +122,29 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponse load(String loginId) throws DescopeException {
+  public UserResponseDetails load(String loginId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI loadUserUri = composeLoadUserUri(Map.of("loginId", loginId));
     var apiProxy = getApiProxy();
-    return apiProxy.get(loadUserUri, UserResponse.class);
+    return apiProxy.get(loadUserUri, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse loadByUserId(String userId) throws DescopeException {
+  public UserResponseDetails loadByUserId(String userId) throws DescopeException {
     if (StringUtils.isBlank(userId)) {
       throw ServerCommonException.invalidArgument("User ID");
     }
     URI loadUserUri = composeLoadUserUri(Map.of("userId", userId));
     var apiProxy = getApiProxy();
-    return apiProxy.get(loadUserUri, UserResponse.class);
+    return apiProxy.get(loadUserUri, UserResponseDetails.class);
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public List<UserResponse> searchAll(UserSearchRequest request) throws DescopeException {
+  public List<AllUsersResponseDetails> searchAll(UserSearchRequest request)
+      throws DescopeException {
     if (Objects.isNull(request)) {
       request = UserSearchRequest.builder().limit(0).page(0).build();
     }
@@ -154,33 +157,33 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
     URI composeSearchAllUri = composeSearchAllUri();
     var apiProxy = getApiProxy();
-    return (List<UserResponse>) apiProxy.post(composeSearchAllUri, request, List.class);
+    return (List<AllUsersResponseDetails>) apiProxy.post(composeSearchAllUri, request, List.class);
   }
 
   @Override
-  public UserResponse activate(String loginId) throws DescopeException {
+  public UserResponseDetails activate(String loginId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI activateUserUri = composeActivateUserUri();
     Map<String, String> request = Map.of("loginId", loginId, "status", "enabled");
     var apiProxy = getApiProxy();
-    return apiProxy.post(activateUserUri, request, UserResponse.class);
+    return apiProxy.post(activateUserUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse deactivate(String loginId) throws DescopeException {
+  public UserResponseDetails deactivate(String loginId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI activateUserUri = composeActivateUserUri();
     Map<String, String> request = Map.of("loginId", loginId, "status", "disabled");
     var apiProxy = getApiProxy();
-    return apiProxy.post(activateUserUri, request, UserResponse.class);
+    return apiProxy.post(activateUserUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse updateEmail(String loginId, String email, Boolean isVerified)
+  public UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -189,11 +192,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     Map<String, Object> request =
         Map.of("loginId", loginId, "email", email, "verified", isVerified);
     var apiProxy = getApiProxy();
-    return apiProxy.post(updateEmailUri, request, UserResponse.class);
+    return apiProxy.post(updateEmailUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse updatePhone(String loginId, String phone, Boolean isVerified)
+  public UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -202,11 +205,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     Map<String, Object> request =
         Map.of("loginId", loginId, "phone", phone, "verified", isVerified);
     var apiProxy = getApiProxy();
-    return apiProxy.post(updatePhoneUri, request, UserResponse.class);
+    return apiProxy.post(updatePhoneUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse updateDisplayName(String loginId, String displayName)
+  public UserResponseDetails updateDisplayName(String loginId, String displayName)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -214,22 +217,22 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI updateUserNameUri = composeUpdateUserNameUri();
     Map<String, Object> request = Map.of("loginId", loginId, "displayName", displayName);
     var apiProxy = getApiProxy();
-    return apiProxy.post(updateUserNameUri, request, UserResponse.class);
+    return apiProxy.post(updateUserNameUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse updatePicture(String loginId, String picture) throws DescopeException {
+  public UserResponseDetails updatePicture(String loginId, String picture) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updatePictureUri = composeUpdatePictureUri();
     Map<String, Object> request = Map.of("loginId", loginId, "picture", picture);
     var apiProxy = getApiProxy();
-    return apiProxy.post(updatePictureUri, request, UserResponse.class);
+    return apiProxy.post(updatePictureUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse updateCustomAttributes(String loginId, String key, Object value)
+  public UserResponseDetails updateCustomAttributes(String loginId, String key, Object value)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -241,55 +244,56 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     Map<String, Object> request =
         Map.of("loginId", loginId, "attributeKey", key, "attributeValue", value);
     var apiProxy = getApiProxy();
-    return apiProxy.post(updateAttributesUri, request, UserResponse.class);
+    return apiProxy.post(updateAttributesUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse addRoles(String loginId, List<String> roles) throws DescopeException {
+  public UserResponseDetails addRoles(String loginId, List<String> roles) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI addRolesUri = composeAddRolesUri();
     Map<String, Object> request = Map.of("loginId", loginId, "tenantId", "", "roleNames", roles);
     var apiProxy = getApiProxy();
-    return apiProxy.post(addRolesUri, request, UserResponse.class);
+    return apiProxy.post(addRolesUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse removeRoles(String loginId, List<String> roles) throws DescopeException {
+  public UserResponseDetails removeRoles(String loginId, List<String> roles)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI removeRolesUri = composeRemoveRolesUri();
     Map<String, Object> request = Map.of("loginId", loginId, "tenantId", "", "roleNames", roles);
     var apiProxy = getApiProxy();
-    return apiProxy.post(removeRolesUri, request, UserResponse.class);
+    return apiProxy.post(removeRolesUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse addTenant(String loginId, String tenantId) throws DescopeException {
+  public UserResponseDetails addTenant(String loginId, String tenantId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI addTenantUri = composeAddTenantUri();
     Map<String, Object> request = Map.of("loginId", loginId, "tenantId", tenantId);
     var apiProxy = getApiProxy();
-    return apiProxy.post(addTenantUri, request, UserResponse.class);
+    return apiProxy.post(addTenantUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse removeTenant(String loginId, String tenantId) throws DescopeException {
+  public UserResponseDetails removeTenant(String loginId, String tenantId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI removeTenantUri = composeRemoveTenantUri();
     Map<String, Object> request = Map.of("loginId", loginId, "tenantId", tenantId);
     var apiProxy = getApiProxy();
-    return apiProxy.post(removeTenantUri, request, UserResponse.class);
+    return apiProxy.post(removeTenantUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse addTenantRoles(String loginId, String tenantId, List<String> roles)
+  public UserResponseDetails addTenantRoles(String loginId, String tenantId, List<String> roles)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -297,11 +301,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI addTenantRolesUri = composeAddTenantRolesUri();
     Map<String, Object> request = Map.of("loginId", loginId, "tenantId", "", "roleNames", roles);
     var apiProxy = getApiProxy();
-    return apiProxy.post(addTenantRolesUri, request, UserResponse.class);
+    return apiProxy.post(addTenantRolesUri, request, UserResponseDetails.class);
   }
 
   @Override
-  public UserResponse removeTenantRoles(String loginId, String tenantId, List<String> roles)
+  public UserResponseDetails removeTenantRoles(String loginId, String tenantId, List<String> roles)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -309,7 +313,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI removeTenantRolesUri = composeRemoveTenantRolesUri();
     Map<String, Object> request = Map.of("loginId", loginId, "tenantId", "", "roleNames", roles);
     var apiProxy = getApiProxy();
-    return apiProxy.post(removeTenantRolesUri, request, UserResponse.class);
+    return apiProxy.post(removeTenantRolesUri, request, UserResponseDetails.class);
   }
 
   @Override

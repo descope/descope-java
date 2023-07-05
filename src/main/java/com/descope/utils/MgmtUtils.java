@@ -12,6 +12,9 @@ public class MgmtUtils {
 
   public static List<Map<String, Object>> createAssociatedTenantList(
       List<AssociatedTenant> tenants) {
+    if (tenants == null) {
+      return null;
+    }
     List<Map<String, Object>> associatedTenantList = new ArrayList<>();
     for (AssociatedTenant tenant : tenants) {
       Map<String, Object> map = new HashMap<>();

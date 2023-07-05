@@ -1,7 +1,7 @@
 package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
-import com.descope.model.roles.Role;
+import com.descope.model.roles.RoleResponse;
 import java.util.List;
 
 public interface RolesService {
@@ -14,5 +14,5 @@ public interface RolesService {
 
   void delete(String name) throws DescopeException;
 
-  List<Role> loadAll() throws DescopeException;
+  RoleResponse loadAll() throws DescopeException;
 }

@@ -1,5 +1,6 @@
-package com.descope.model.group;
+package com.descope.model.permission;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GroupMember {
-  private String loginID;
-  private String userID;
-  private String display;
+public class PermissionResponse {
+  List<Permission> permissions;
 }

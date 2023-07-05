@@ -65,7 +65,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
   private void update(Tenant tenant) {
     URI updateTenantUri = composeUpdateTenantUri();
     var apiProxy = getApiProxy();
-    apiProxy.post(updateTenantUri, tenant, String.class);
+    apiProxy.post(updateTenantUri, tenant, Void.class);
   }
 
   @Override
@@ -76,7 +76,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
 
     URI deleteTenantUri = composeDeleteTenantUri();
     var apiProxy = getApiProxy();
-    apiProxy.post(deleteTenantUri, Map.of("id", id), String.class);
+    apiProxy.post(deleteTenantUri, Map.of("id", id), Void.class);
   }
 
   @Override

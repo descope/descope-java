@@ -14,9 +14,11 @@ import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.AccessKeyRequest;
 import com.descope.model.mgmt.AccessKeyResponse;
+import com.descope.model.mgmt.AccessKeyResponseList;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.utils.MgmtUtils;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -50,11 +52,14 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
   }
 
   @Override
-  public AccessKeyResponse searchAll(List<String> tenantIDs) throws DescopeException {
-    Map<String, List<String>> request = Map.of("tenantIds", tenantIDs);
+  public AccessKeyResponseList searchAll(List<String> tenantIDs) throws DescopeException {
+    Map<String, List<String>> request =
+        tenantIDs == null
+            ? new HashMap<String, List<String>>()
+            : Map.of("tenantIds", tenantIDs);
     var apiProxy = getApiProxy();
     return apiProxy.post(
-        getUri(MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK), request, AccessKeyResponse.class);
+        getUri(MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK), request, AccessKeyResponseList.class);
   }
 
   @Override
@@ -95,14 +100,13 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
   }
 
   @Override
-  public AccessKeyResponse delete(String id) throws DescopeException {
+  public void delete(String id) throws DescopeException {
     if (StringUtils.isBlank(id)) {
       throw ServerCommonException.invalidArgument("Id");
     }
     Map<String, String> request = Map.of("id", id);
     var apiProxy = getApiProxy();
-    return apiProxy.post(
-        getUri(MANAGEMENT_ACCESS_KEY_DELETE_LINK), request, AccessKeyResponse.class);
+    apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_DELETE_LINK), request, Void.class);
   }
 
   private AccessKeyRequest createAccessKeyBody(

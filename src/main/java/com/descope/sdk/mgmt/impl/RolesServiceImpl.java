@@ -9,7 +9,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
-import com.descope.model.roles.Role;
+import com.descope.model.roles.RoleResponse;
 import com.descope.sdk.mgmt.RolesService;
 import java.util.List;
 import java.util.Map;
@@ -67,9 +67,8 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public List<Role> loadAll() throws DescopeException {
+  public RoleResponse loadAll() throws DescopeException {
     var apiProxy = getApiProxy();
-    return (List<Role>) apiProxy.get(getUri(MANAGEMENT_ROLES_LOAD_ALL_LINK), List.class);
+    return apiProxy.get(getUri(MANAGEMENT_ROLES_LOAD_ALL_LINK), RoleResponse.class);
   }
 }

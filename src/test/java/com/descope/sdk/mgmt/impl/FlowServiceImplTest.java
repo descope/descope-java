@@ -1,6 +1,5 @@
-package com.descope.sdk.impl;
+package com.descope.sdk.mgmt.impl;
 
-import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,15 +9,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
 import com.descope.exception.ServerCommonException;
-import com.descope.model.client.Client;
 import com.descope.model.flow.Flow;
 import com.descope.model.flow.FlowResponse;
 import com.descope.model.flow.Screen;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.mgmt.FlowService;
-import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,8 +27,8 @@ class FlowServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = ManagementParams.builder().projectId(MOCK_PROJECT_ID).build();
-    var client = Client.builder().uri("https://api.descope.com/v1").build();
+    var authParams = TestMgmtUtils.getManagementParams();
+    var client = TestMgmtUtils.getClient();
     this.flowService = ManagementServiceBuilder.buildServices(client, authParams).getFlowService();
   }
 
@@ -60,7 +57,8 @@ class FlowServiceImplTest {
     var flow = mock(Flow.class);
     var screen = mock(Screen.class);
     ServerCommonException thrown =
-        assertThrows(ServerCommonException.class, () -> flowService.importFlow("", flow, screen));
+        assertThrows(ServerCommonException.class,
+          () -> flowService.importFlow("", flow, List.of(screen)));
     assertNotNull(thrown);
     assertEquals("The FlowID argument is invalid", thrown.getMessage());
   }
@@ -74,7 +72,7 @@ class FlowServiceImplTest {
     doReturn(flowResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      var response = flowService.importFlow("someFlowID", flow, screen);
+      var response = flowService.importFlow("someFlowID", flow, List.of(screen));
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -110,4 +108,11 @@ class FlowServiceImplTest {
       Assertions.assertThat(response).isNotNull();
     }
   }
+
+  // @Test
+  // void testFunctionalFullCycleTheme() {
+  //   var theme = flowService.exportTheme();
+  //   Assertions.assertThat(theme).isNotNull();
+  //   Assertions.assertThat(theme.getId()).isNotBlank();
+  // }
 }

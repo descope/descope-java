@@ -8,7 +8,6 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
-.idea*
 *.iws
 *.iml
 *.ipr
@@ -37,6 +36,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-
-# Env variables for dotenv for local testing
-.env

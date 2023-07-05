@@ -1,5 +1,6 @@
 package com.descope.model.mgmt;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccessKeyResponse {
-  private AccessKeyResponseDetails key;
-  private String cleartext;
+public class AccessKeyResponseList {
+  private List<AccessKeyResponseDetails> keys;
 }
-

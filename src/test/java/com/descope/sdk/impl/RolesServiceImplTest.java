@@ -1,20 +1,15 @@
 package com.descope.sdk.impl;
 
 import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.roles.Role;
+import com.descope.model.roles.RoleResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.mgmt.RolesService;
@@ -36,6 +31,7 @@ class RolesServiceImplTest {
               .description("someDesc")
               .createdTime(1245667L)
               .build());
+  private final RoleResponse mockRoleResponse = new RoleResponse(mockRole);
   private RolesService rolesService;
 
   @BeforeEach
@@ -120,16 +116,18 @@ class RolesServiceImplTest {
   @Test
   void testLoadAllForSuccess() {
     var apiProxy = mock(ApiProxy.class);
-    doReturn(mockRole).when(apiProxy).get(any(), any());
+    doReturn(mockRoleResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      List<Role> response = rolesService.loadAll();
-      Assertions.assertThat(response.size()).isEqualTo(1);
-      Assertions.assertThat(response.get(0).getName()).isEqualTo("someName");
-      Assertions.assertThat(response.get(0).getDescription()).isEqualTo("someDesc");
-      Assertions.assertThat(response.get(0).getPermissionNames().size()).isEqualTo(2);
-      Assertions.assertThat(response.get(0).getPermissionNames().get(0)).isEqualTo("permission1");
-      Assertions.assertThat(response.get(0).getPermissionNames().get(1)).isEqualTo("permission2");
+      RoleResponse response = rolesService.loadAll();
+      Assertions.assertThat(response.getRoles().size()).isEqualTo(1);
+      Assertions.assertThat(response.getRoles().get(0).getName()).isEqualTo("someName");
+      Assertions.assertThat(response.getRoles().get(0).getDescription()).isEqualTo("someDesc");
+      Assertions.assertThat(response.getRoles().get(0).getPermissionNames().size()).isEqualTo(2);
+      Assertions.assertThat(response.getRoles().get(0).getPermissionNames().get(0))
+          .isEqualTo("permission1");
+      Assertions.assertThat(response.getRoles().get(0).getPermissionNames().get(1))
+          .isEqualTo("permission2");
     }
   }
 }
