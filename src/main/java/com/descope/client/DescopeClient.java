@@ -31,10 +31,7 @@ public class DescopeClient {
   private final AuthenticationServices authenticationServices;
 
   public DescopeClient() throws DescopeException {
-    var descopeClient = new DescopeClient(new Config());
-    this.config = descopeClient.config;
-    this.managementServices = descopeClient.managementServices;
-    this.authenticationServices = descopeClient.authenticationServices;
+    this(new Config());
   }
 
   public DescopeClient(Config config) throws DescopeException {

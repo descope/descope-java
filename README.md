@@ -17,7 +17,7 @@ Using [maven](https://maven.apache.org) add the following dependency to your pom
 <dependencies>
     ...
     <dependency>
-        <artifactId>descope-java-sdk</artifactId>
+        <artifactId>java-sdk</artifactId>
         <groupId>com.descope</groupId>
         <version>1.0</version>
     </dependency>
@@ -31,12 +31,13 @@ A Descope `Project ID` is required to initialize the SDK. Find it on the
 [project page in the Descope Console](https://app.descope.com/settings/project).
 
 ```java
+import com.descope.client;
 
-// Initialized after setting the DESCOPE_PROJECT_ID env var
-descopeClient := client.New()
+// Initialized after setting the DESCOPE_PROJECT_ID env var (and optionally DESCOPE_MANAGEMENT_KEY)
+var descopeClient = new DescopeClient();
 
 // ** Or directly **
-descopeClient := client.NewWithConfig(&client.Config{ProjectID: projectID})
+var descopeClient = new DescopeClient(Config.builder().projectId("Your-project").build());
 ```
 
 ## Authentication Functions
@@ -85,37 +86,30 @@ Send a user a one-time password (OTP) using your preferred delivery method (_ema
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
-```go
+```java
 // Every user must have a loginID. All other user information is optional
-loginID := "desmond@descope.com"
-user := &descope.User{
-    Name: "Desmond Copeland",
-    Phone: "212-555-1234",
-    Email: loginID,
-}
-maskedAddress, err := descopeClient.Auth.OTP().SignUp(descope.MethodEmail, loginID, user)
-if err != nil {
-    if errors.Is(err, descope.ErrUserAlreadyExists) {
-        // user already exists with this loginID
-    }
-    // handle other error cases
+String loginId = "desmond@descope.com"
+User user = User.builder()
+    .name("Desmond Copeland")
+    .phone("212-555-1234")
+    .email(loginId)
+    .build();
+
+try {
+  String maskedAddress = descopeClient.getAuthenticationServices().getOTPService().signUp(DeliveryMethod.EMAIL, loginId, user);
+} catch (DescopeException de) {
+  // Handle the error
 }
 ```
 
 The user will receive a code using the selected delivery method. Verify that code using:
 
-```go
-// The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
-// Otherwise they're available via authInfo
-authInfo, err := descopeClient.Auth.OTP().VerifyCode(descope.MethodEmail, loginID, code, w)
-if err != nil {
-    if errors.Is(err, descope.ErrInvalidOneTimeCode) {
-        // the code was invalid
-    }
-    if descope.IsUnauthorizedError(err) {
-        // login failed for some other reason
-    }
-    // handle other error cases
+```java
+// Will throw DescopeException if there is an error with update
+try {
+  AuthenticationInfo info = descopeClient.getAuthenticationServices().getOTPService().verifyCode(DeliveryMethod.EMAIL, loginId, code);    
+} catch (DescopeException de) {
+  // Handle the error
 }
 ```
 
@@ -129,13 +123,27 @@ This redirection can be configured in code, or globally in the [Descope Console]
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
-```go
+```java
 // If configured globally, the redirect URI is optional. If provided however, it will be used
 // instead of any global configuration
 maskedAddress, err := descopeClient.Auth.MagicLink().SignUpOrIn(descope.MethodEmail, "desmond@descope.com", "http://myapp.com/verify-magic-link")
 if err {
     // handle error
 }
+// Every user must have a loginID. All other user information is optional
+String loginId = "desmond@descope.com"
+User user = User.builder()
+    .name("Desmond Copeland")
+    .phone("212-555-1234")
+    .email(loginId)
+    .build();
+
+try {
+  String maskedAddress = descopeClient.getAuthenticationServices().getMagicLinkService().signUp(DeliveryMethod.EMAIL, loginId, user);
+} catch (DescopeException de) {
+  // Handle the error
+}
+
 ```
 
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
