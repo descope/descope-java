@@ -111,6 +111,13 @@
             <version>2.20.0</version>
         </dependency>
 
+        <!--  DOTENV-->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
         <!--  TESTING  -->
         <dependency>
             <artifactId>assertj-core</artifactId>

@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AccessKeyResponse {
   private AccessKeyResponseDetails key;
+  private String cleartext;
 }
 
