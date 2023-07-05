@@ -1,6 +1,9 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.*;
+import static com.descope.literals.Routes.ManagementEndPoints.CREATE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.DELETE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;

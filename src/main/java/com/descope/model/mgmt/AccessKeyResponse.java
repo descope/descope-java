@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccessKeyResponse {
-    private AccessKeyResponseDetails key;
+  private AccessKeyResponseDetails key;
 }
 

@@ -12,12 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccessKeyResponseDetails {
-    private String id;
-    private String name;
-    private List<String> roleNames;
-    private List<AssociatedTenant> keyTenants;
-    private String status;
-    private long createdTime;
-    private long expireTime;
-    private String createdBy;
+  private String id;
+  private String name;
+  private List<String> roleNames;
+  private List<AssociatedTenant> keyTenants;
+  private String status;
+  private long createdTime;
+  private long expireTime;
+  private String createdBy;
 }

@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserResponseDetails {
-    private UserResponse user;
+  private UserResponse user;
 }

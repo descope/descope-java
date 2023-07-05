@@ -1,6 +1,12 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.*;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_ACTIVE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_CREATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DEACTIVATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DELETE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_LOAD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_UPDATE_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;

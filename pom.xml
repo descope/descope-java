@@ -165,7 +165,7 @@
     </dependencies>
 
     <groupId>com.descope</groupId>
-    <artifactId>descope-java-sdk</artifactId>
+    <artifactId>java-sdk</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <version>1.0</version>
 

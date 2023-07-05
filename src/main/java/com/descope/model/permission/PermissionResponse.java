@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PermissionResponse {
-
-    List<Permission> permissions;
+  List<Permission> permissions;
 }
