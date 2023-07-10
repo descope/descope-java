@@ -1,5 +1,6 @@
 package com.descope.model.auth;
 
+import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.EnchantedLinkService;
 import com.descope.sdk.auth.MagicLinkService;
 import com.descope.sdk.auth.OAuthService;
@@ -13,6 +14,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class AuthenticationServices {
+  AuthenticationService authService;
   OTPService otpService;
   SAMLService samlService;
   TOTPService totpService;
