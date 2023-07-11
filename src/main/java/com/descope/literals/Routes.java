@@ -7,6 +7,9 @@ public class Routes {
 
   @UtilityClass
   public static class AuthEndPoints {
+    // Log out
+    public static final String LOG_OUT_LINK = "/auth/logout";
+    public static final String LOG_OUT_ALL_LINK = "/auth/logoutall";
 
     // MagicLink
     public static final String SIGN_IN_MAGIC_LINK = "/auth/magiclink/signin";

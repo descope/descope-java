@@ -94,4 +94,22 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error
    */
   boolean validateRoles(Token token, String tenant, List<String> roles) throws DescopeException;
+
+  /**
+   * Used to log out of current device session
+   * 
+   * @param token - {@link Token Token}
+   * @return {@link Token token}
+   * @throws DescopeException
+   */
+  Token logout(String refreshToken) throws DescopeException;
+
+  /**
+   * Used to log out of all device sessions
+   * 
+   * @param token - {@link Token Token}
+   * @return {@link Token token}
+   * @throws DescopeException
+   */
+  Token logoutAll(String refreshToken) throws DescopeException;
 }
