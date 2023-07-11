@@ -21,4 +21,8 @@ public abstract class DescopeException extends RuntimeException {
   protected DescopeException(Throwable cause) {
     super(cause);
   }
+
+  public boolean isErrorLimitException() {
+    return ErrorCode.RATE_LIMIT_EXCEEDED.equals(code);
+  }
 }

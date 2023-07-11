@@ -96,7 +96,7 @@ User user = User.builder()
     .build();
 
 try {
-  String maskedAddress = descopeClient.getAuthenticationServices().getOTPService().signUp(DeliveryMethod.EMAIL, loginId, user);
+  String maskedAddress = descopeClient.getAuthenticationServices(config, client).getOTPService().signUp(DeliveryMethod.EMAIL, loginId, user);
 } catch (DescopeException de) {
   // Handle the error
 }
@@ -107,7 +107,7 @@ The user will receive a code using the selected delivery method. Verify that cod
 ```java
 // Will throw DescopeException if there is an error with update
 try {
-  AuthenticationInfo info = descopeClient.getAuthenticationServices().getOTPService().verifyCode(DeliveryMethod.EMAIL, loginId, code);    
+  AuthenticationInfo info = descopeClient.getAuthenticationServices(config, client).getOTPService().verifyCode(DeliveryMethod.EMAIL, loginId, code);    
 } catch (DescopeException de) {
   // Handle the error
 }
@@ -126,10 +126,7 @@ The user can either `sign up`, `sign in` or `sign up or in`
 ```java
 // If configured globally, the redirect URI is optional. If provided however, it will be used
 // instead of any global configuration
-maskedAddress, err := descopeClient.Auth.MagicLink().SignUpOrIn(descope.MethodEmail, "desmond@descope.com", "http://myapp.com/verify-magic-link")
-if err {
-    // handle error
-}
+
 // Every user must have a loginID. All other user information is optional
 String loginId = "desmond@descope.com"
 User user = User.builder()
@@ -138,23 +135,28 @@ User user = User.builder()
     .email(loginId)
     .build();
 
+MagicLinkService mls = descopeClient.getAuthenticationServices(config, client).getMagicLinkService();
+
 try {
-  String maskedAddress = descopeClient.getAuthenticationServices().getMagicLinkService().signUp(DeliveryMethod.EMAIL, loginId, user);
+    String uri = "http://myapp.com/verify-magic-link";
+    String maskedAddress = mls.signUp(DeliveryMethod.EMAIL, loginId, uri, user);
 } catch (DescopeException de) {
-  // Handle the error
+    // Handle the error
 }
 
 ```
 
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
-```go
+```java
 // The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
 // Otherwise they're available via authInfo
-authInfo, err := descopeClient.Auth.MagicLink().Verify(token, w)
-if err != nil {
-    // handle error
+try {
+    AuthenticationInfo info = mls.verify(token);
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
@@ -178,50 +180,54 @@ This redirection can be configured in code per request, or set globally in the [
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
-```go
+```java
 // If configured globally, the redirect URI is optional. If provided however, it will be used
 // instead of any global configuration.
-res, err := descopeClient.Auth.EnchantedLink().SignIn(loginID, "http://myapp.com/verify-enchanted-link", nil, nil)
-if err != nil {
-    // handle error
+
+EnchantedLinkResponse res = new EnchantedLinkResponse();
+try {
+    String uri = "http://myapp.com/verify-enchanted-link";
+    res = descopeClient.getAuthenticationServices(config, client).getEnchantedLinkService().signUp(loginId, uri, user);
+} catch (DescopeException de) {
+    // Handle the error
 }
-res.LinkID // should be displayed to the user so they can click the corresponding link in the email
-res.PendingRef // Used to poll for a valid session
+
 ```
 
 After sending the link, you must poll to receive a valid session using the `PendingRef` from
 the previous step. A valid session will be returned only after the user clicks the right link.
 
-```go
+```java
 // Poll for a certain number of tries / time frame
-for i := retriesCount; i > 0; i-- {
-    authInfo, err := descopeClient.Auth.EnchantedLink().GetSession(res.PendingRef, w)
-    if err == nil {
-        // The user successfully authenticated using the correct link
-        // The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
-        // Otherwise they're available via authInfo
-        break
-    }
-    if errors.Is(err, descope.ErrEnchantedLinkUnauthorized) && i > 1 {
-        // poll again after X seconds
-        time.Sleep(time.Second * time.Duration(retryInterval))
-        continue
-    }
-    if err != nil {
-        // handle error
-        break
+for (int i = retriesCount; i > 0; i--) {
+    try {
+        EnchantedLinkService els = descopeClient.getAuthenticationServices(config, client).getEnchantedLinkService();
+        AuthenticationInfo info = els.getSession(res.getPendingRef());
+    } catch (DescopeException de) {
+        if (i > 1) {
+            // Poll again after X seconds
+            TimeUnit.SECONDS.sleep(retryInterval);
+            continue;
+        }
+        else {
+            // Handle the error
+            break;
+        }
     }
 }
+
 ```
 
 To verify an enchanted link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`). Once the token is verified, the session polling will receive a valid response.
 
-```go
-if err := descopeClient.Auth.EnchantedLink().Verify(token); err != nil {
-    // token is invalid
-} else {
-    // token is valid
+```java
+
+try {
+    descopeClient.getAuthenticationServices(config, client).getEnchantedLinkService().verify(token);
+} catch (DescopeException de) {
+    // Token is invalid, handle the error
 }
+
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
@@ -230,26 +236,32 @@ The session and refresh JWTs should be returned to the caller, and passed with e
 
 Users can authenticate using their social logins, using the OAuth protocol. Configure your OAuth settings on the [Descope console](https://app.descope.com/settings/authentication/social). To start a flow call:
 
-```go
+```java
 // Choose an oauth provider out of the supported providers
 // If configured globally, the return URL is optional. If provided however, it will be used
 // instead of any global configuration.
 // Redirect the user to the returned URL to start the OAuth redirect chain
-url, err := descopeClient.Auth.OAuth().Start("google", "https://my-app.com/handle-oauth", nil, nil, w)
-if err != nil {
-    // handle error
+OAuthService oas = descopeClient.getAuthenticationServices(config, client).getOAuthService();
+
+try {
+    String returnUrl = "https://my-app.com/handle-oauth";
+    oas.start("google", returnUrl, loginOptions);
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
-```go
-// The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
-// Otherwise they're available via authInfo
-authInfo, err := descopeClient.Auth.OAuth().ExchangeToken(code, w)
-if err != nil {
-    // handle error
+```java
+
+try {
+    AuthenticationInfo info = oas.exchangeToken(code);
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
@@ -258,26 +270,31 @@ The session and refresh JWTs should be returned to the caller, and passed with e
 
 Users can authenticate to a specific tenant using SAML or Single Sign On. Configure your SSO/SAML settings on the [Descope console](https://app.descope.com/settings/authentication/sso). To start a flow call:
 
-```go
+```java
 // Choose which tenant to log into
-// If configured globally, the return URL is optional. If provided however, it will be used
-// instead of any global configuration.
 // Redirect the user to the returned URL to start the SSO/SAML redirect chain
-url, err := descopeClient.Auth.SAML().Start("my-tenant-ID", "https://my-app.com/handle-saml", nil, nil, w)
-if err != nil {
-    // handle error
+SAMLService ss = descopeClient.getAuthenticationServices(config, client).getSAMLService();
+
+try {
+    String returnURL = "https://my-app.com/handle-saml";
+    String url = ss.start("my-tenant-ID", returnURL, loginOptions);
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
-```go
+```java
 // The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
 // Otherwise they're available via authInfo
-authInfo, err := descopeClient.Auth.SAML().ExchangeToken(code, w)
-if err != nil {
-    // handle error
+try {
+    String url = ss.exchangeToken(code);
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
@@ -292,22 +309,27 @@ on the link provided by the `ProvisioningURL`.
 
 Existing users can add TOTP using the `update` function.
 
-```go
+```java
 // Every user must have a loginID. All other user information is optional
-loginID := "desmond@descope.com"
-user := &descope.User{
-    Name: "Desmond Copeland",
-    Phone: "212-555-1234",
-    Email: loginID,
+String loginId = "desmond@descope.com"
+User user = User.builder()
+    .name("Desmond Copeland")
+    .phone("212-555-1234")
+    .email(loginId)
+    .build();
+
+TOTPService ts = descopeClient.getAuthenticationServices(config, client).getTOTPService();
+
+try {
+    TOTPResponse resp = ts.signUp(loginId, user);
+} catch (DescopeException de) {
+    // Handle the error
 }
-totpResponse, err := descopeClient.Auth.TOTP().SignUp(loginID, user)
-if err != nil {
-    // handle error
-}
+
 // Use one of the provided options to have the user add their credentials to the authenticator
-// totpResponse.ProvisioningURL
-// totpResponse.Image
-// totpResponse.Key
+// resp.getProvisioningURL()
+// resp.getImage()
+// resp.getKey()
 ```
 
 There are 3 different ways to allow the user to save their credentials in
@@ -315,13 +337,15 @@ their authenticator app - either by clicking the provisioning URL, scanning the 
 image or inserting the key manually. After that, signing in is done using the code
 the app produces.
 
-```go
+```java
 // The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
 // Otherwise they're available via authInfo
-authInfo, err := descopeClient.Auth.TOTP().SignInCode(loginID, code, nil, nil, w)
-if err != nil {
-    // handle error
+try {
+    AuthenticationInfo info = ts.signInCode(loginId, code, loginOptions);
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
@@ -333,29 +357,35 @@ prefer passwordless authentication methods if possible. Sign up requires the
 caller to provide a valid password that meets all the requirements configured
 for the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope console.
 
-```go
+```java
 // Every user must have a loginID. All other user information is optional
-loginID := "desmond@descope.com"
-password := "qYlvi65KaX"
-user := &descope.User{
-    Name: "Desmond Copeland",
-    Email: loginID,
+String loginId = "desmond@descope.com";
+User user = User.builder()
+    .name("Desmond Copeland")
+    .phone("212-555-1234")
+    .email(loginId)
+    .build();
+String password = "qYlvi65KaX";
+
+PasswordService ps = descopeClient.getAuthenticationServices(config, client).getPasswordService();
+
+try {
+    AuthenticationInfo info = ps.signUp(loginId, user, password);
+} catch (DescopeException de) {
+    // Handle the error
 }
-authInfo, err := descopeClient.Auth.Password().SignUp(loginID, user, password, nil)
-if err != nil {
-    // handle error
-}
+
 ```
 
 The user can later sign in using the same loginID and password.
 
-```go
-// The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
-// Otherwise they're available via authInfo
-authInfo, err := descopeClient.Auth.Password().SignIn(loginID, password, w)
-if err != nil {
-    // handle error
+```java
+try {
+    AuthenticationInfo info = ps.signIn(loginId, password);
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
@@ -368,75 +398,78 @@ _NOTE: SendPasswordReset will only work if the user has a validated email addres
 
 In the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope console, it is possible to define which alternative authentication method can be used in order to authenticate the user, in order to reset and update their password.
 
-```go
+```java
 // Start the reset process by sending a password reset prompt. In this example we'll assume
 // that magic link is configured as the reset method. The optional redirect URL is used in the
 // same way as in regular magic link authentication.
-loginID := "desmond@descope.com"
-redirectURL := "https://myapp.com/password-reset"
-err := descopeClient.Auth.Password().SendPasswordReset(loginID, redirectURL)
+PasswordService ps = descopeClient.getAuthenticationServices(config, client).getPasswordService();
+String loginId = "desmond@descope.com";
+String redirectUrl = "https://myapp.com/password-reset";
+try {
+    ps.sendPasswordReset(loginId, redirectUrl);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details). However, after verifying the user, it is expected
 to allow them to provide a new password instead of the old one. Since the user is now authenticated, this is possible via:
 
-```go
+```java
 // The request (r) is required to make sure the user is authenticated.
-err := descopeClient.Auth.Password().UpdateUserPassword(loginID, newPassword, r)
+try {
+    ps.updateUserPassword(loginId, newPassword);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 `UpdateUserPassword` can always be called when the user is authenticated and has a valid session.
 
 Alternatively, it is also possible to replace an existing active password with a new one.
 
-```go
+```java
 // Replaces the user's current password with a new one
-err := descopeClient.Auth.Password().ReplaceUserPassword(loginID, oldPassword, newPassword)
+try {
+    ps.replaceUserPassword(loginId, oldPassword, newPassword);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ### Session Validation
 
-Every secure request performed between your client and server needs to be validated. The client sends
-the session and refresh tokens with every request, and they are validated using one of the following:
+Every secure request performed between your client and server needs to be validated.
 
-When using cookies you can call:
+Tokens can be validated directly:
 
-```go
+```java
 // Validate the session. Will return an error if expired
-if authorized, sessionToken, err := descopeClient.Auth.ValidateSessionWithRequest(r, w); !authorized {
-    // unauthorized error
+AuthenticationService as = descopeClient.getAuthenticationServices(config, client).getAuthenticationService();
+try {
+    Token t = as.validateSessionWithToken(sessionToken);
+} catch (DescopeException de) {
+    // Handle the unauthorized error
 }
 
 // If ValidateSessionWithRequest raises an exception, you will need to refresh the session using
-if authorized, sessionToken, err := descopeClient.Auth.RefreshSessionWithRequest(r, w); !authorized {
-    // unauthorized error
+try {
+    Token t = as.refreshSessionWithToken(refreshToken);
+} catch (DescopeException de) {
+    // Handle the unauthorized error
 }
 
 // Alternatively, you could combine the two and
 // have the session validated and automatically refreshed when expired
-if authorized, sessionToken, err := descopeClient.Auth.ValidateAndRefreshSessionWithRequest(r, w); !authorized {
-    // unauthorized error
-}
-```
-
-Alternatively, tokens can be validated directly:
-
-```go
-// Validate the session. Will return an error if expired
-if authorized, sessionToken, err := descopeClient.Auth.ValidateSessionWithToken(sessionToken); !authorized {
+try {
+    Token t = as.validateAndRefreshSessionWithTokens(sessionToken, refreshToken);
+} catch (DescopeException de) {
     // unauthorized error
 }
 
-// If ValidateSessionWithRequest raises an exception, you will need to refresh the session using
-if authorized, sessionToken, err := descopeClient.Auth.RefreshSessionWithToken(refreshToken); !authorized {
-    // unauthorized error
-}
-
-// Alternatively, you could combine the two and
-// have the session validated and automatically refreshed when expired
-if authorized, sessionToken, err := descopeClient.Auth.ValidateAndRefreshSessionWithTokens(sessionToken, refreshToken); !authorized {
-    // unauthorized error
-}
 ```
 
 Choose the right session validation and refresh combination that suits your needs.
@@ -472,30 +505,50 @@ received by the [session validation](#session-validation), call the following fu
 
 For multi-tenant uses:
 
-```go
+```java
 // You can validate specific permissions
-if !descopeClient.Auth.ValidateTenantPermissions(sessionToken, "my-tenant-ID", []string{"Permission to validate"}) {
-    // Deny access
+AuthenticationService as = descopeClient.getAuthenticationServices(config, client).getAuthenticationService();
+try {
+    if (!as.validatePermissions(sessionToken, "my-tenant-ID", Arrays.asList("Permission to validate"))) {
+        // Deny access
+    }
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 // Or validate roles directly
-if !descopeClient.Auth.ValidateTenantRoles(sessionToken, "my-tenant-ID", []string{"Role to validate"}) {
-    // Deny access
+try {
+    if (!as.validateRoles(sessionToken, "my-tenant-ID", Arrays.asList("Role to validate"))) {
+        // Deny access
+    }
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 When not using tenants use:
 
-```go
+```java
 // You can validate specific permissions
-if !descopeClient.Auth.ValidatePermissions(sessionToken, []string{"Permission to validate"}) {
-    // Deny access
+AuthenticationService as = descopeClient.getAuthenticationServices(config, client).getAuthenticationService();
+try {
+    if (!as.validatePermissions(sessionToken, Arrays.asList("Permission to validate"))) {
+        // Deny access
+    }
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 // Or validate roles directly
-if !descopeClient.Auth.ValidateRoles(sessionToken, []string{"Role to validate"}) {
-    // Deny access
+try {
+    if (!as.validateRoles(sessionToken, Arrays.asList("Role to validate"))) {
+        // Deny access
+    }
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 ### Logging Out
@@ -504,19 +557,30 @@ You can log out a user from an active session by providing their `refreshToken` 
 After calling this function, you must invalidate or remove any cookies you have created. Providing
 a `http.ResponseWriter` will do this automatically.
 
-```go
+```java
+AuthenticationService as = descopeClient.getAuthenticationServices(config, client).getAuthenticationService();
 // Refresh token will be taken from the request header or cookies automatically
-// If provided, the optional `w http.ResponseWriter` will empty out the session cookies automatically.
-descopeClient.Auth.Logout(request, w)
+
+try {
+    as.logout(refreshToken);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 It is also possible to sign the user out of all the devices they are currently signed-in with. Calling `logoutAll` will
 invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have created.
 
-```go
+```java
 // Refresh token will be taken from the request header or cookies automatically
-// If provided, the optional `w http.ResponseWriter` will empty out the session cookies automatically.
-descopeClient.Auth.LogoutAll(request, w)
+
+try {
+    as.logoutAll(refreshToken);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ## Management Functions
@@ -530,102 +594,157 @@ in nature. Please use responsibly.
 To use the management API you'll need a `Management Key` along with your `Project ID`.
 Create one in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
 
-```go
-import "github.com/descope/go-sdk/descope/client"
+```java
+import com.descope.client;
 
-// Initialized after setting the DESCOPE_PROJECT_ID and the DESCOPE_MANAGEMENT_KEY env vars
-descopeClient := client.New()
+// Initialized after setting the DESCOPE_PROJECT_ID env var (and optionally DESCOPE_MANAGEMENT_KEY)
+var descopeClient = new DescopeClient();
 
 // ** Or directly **
-descopeClient := client.NewWithConfig(&client.Config{
-    ProjectID: "project-ID",
-    ManagementKey: "management-key",
-})
+var descopeClient = new DescopeClient(Config.builder()
+        .projectId("Your-project")
+        .managementKey("management-key")
+        .build());
+
 ```
 
 ### Manage Tenants
 
 You can create, update, delete or load tenants:
 
-```go
+```java
+TenantService ts = descopeClient.getManagementServices(config, projectId, client).getTenantService();
 // The self provisioning domains or optional. If given they'll be used to associate
 // Users logging in to this tenant
-err := descopeClient.Management.Tenant().Create("My Tenant", []string{"domain.com"})
+try {
+    ts.create("My Tenant", Arrays.asList("domain.com"));
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // You can optionally set your own ID when creating a tenant
-err := descopeClient.Management.Tenant().CreateWithID("my-custom-id", "My Tenant", []string{"domain.com"})
+try {
+    ts.createWithId("my-custom-id", "My Tenant", Arrays.asList("domain.com"));
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Update will override all fields as is. Use carefully.
-err := descopeClient.Management.Tenant().Update("my-custom-id", "My Tenant", []string{"domain.com", "another-domain.com"})
+try {
+    ts.update("my-custom-id", "My Tenant", Arrays.asList("domain.com", "another-domain.com"));
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Tenant deletion cannot be undone. Use carefully.
-err := descopeClient.Management.Tenant().Delete("my-custom-id")
+try {
+    ts.delete("my-custom-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Load all tenants
-res, err := descopeClient.Management.Tenant().LoadAll()
-if err == nil {
-    for _, tenant := range res {
+try {
+    List<Tenant> tenants = ts.loadAll();
+    for (Tenant t : tenants) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 ### Manage Users
 
 You can create, update, delete or load users, as well as search according to filters:
 
-```go
+```java
 // A user must have a loginID, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-userReq := &descope.UserRequest{}
-userReq.Email = "desmond@descope.com"
-userReq.Name = "Desmond Copeland"
-userReq.Tenants = []*descope.AssociatedTenant{
-    {TenantID: "tenant-ID1", Roles: []string{"role-name1"}},
-    {TenantID: "tenant-ID2"},
+UserService us = descopeClient.getManagementServices(config, projectId, client).getUserService();
+try {
+    us.create("desmond@descope.com", UserRequest.builder()
+            .email("desmond@descope.com")
+            .displayName("Desmond Copeland")
+            .tenants(Arrays.asList(
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID1")
+                    .roleNames(Arrays.asList("role-name1"),
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID2")))));
+} catch (DescopeException de) {
+    // Handle the error
 }
-user, err := descopeClient.Management.User().Create("desmond@descope.com", userReq)
 
 // Alternatively, a user can be created and invited via an email message.
 // Make sure to configure the invite URL in the Descope console prior to using this function,
 // and that an email address is provided in the information.
-userReqInvite := &descope.UserRequest{}
-userReqInvite.Email = "desmond@descope.com"
-userReqInvite.Name = "Desmond Copeland"
-userReqInvite.Tenants = []*descope.AssociatedTenant{
-    {TenantID: "tenant-ID1", Roles: []string{"role-name1"}},
-    {TenantID: "tenant-ID2"},
+try {
+    us.invite("desmond@descope.com", UserRequest.builder()
+            .email("desmond@descope.com")
+            .displayName("Desmond Copeland")
+            .tenants(Arrays.asList(
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID1")
+                    .roleNames(Arrays.asList("role-name1"),
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID2")))));
+} catch (DescopeException de) {
+    // Handle the error
 }
-err := descopeClient.Management.User().Invite("desmond@descope.com", userReqInvite)
 
 // Update will override all fields as is. Use carefully.
-userReqUpdate := &descope.UserRequest{}
-userReqUpdate.Email = "desmond@descope.com"
-userReqUpdate.Name = "Desmond Copeland"
-userReqUpdate.Tenants = []*descope.AssociatedTenant{
-    {TenantID: "tenant-ID1", Roles: []string{"role-name1"}},
-    {TenantID: "tenant-ID2"},
+try {
+    us.update("desmond@descope.com", UserRequest.builder()
+            .email("desmond@descope.com")
+            .displayName("Desmond Copeland")
+            .tenants(Arrays.asList(
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID1")
+                    .roleNames(Arrays.asList("role-name1"),
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID2")))));
+} catch (DescopeException de) {
+    // Handle the error
 }
-err := descopeClient.Management.User().Update("desmond@descope.com", userReqUpdate)
 
 // User deletion cannot be undone. Use carefully.
-err := descopeClient.Management.User().Delete("desmond@descope.com")
+try {
+    us.delete("desmond@descope.com");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Load specific user
-userRes, err := descopeClient.Management.User().Load("desmond@descope.com")
+try {
+    us.load("desmond@descope.com");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // If needed, users can be loaded using their ID as well
-userRes, err := descopeClient.Management.User().LoadByUserID("<user-id>")
+try {
+    us.loadByUserId("<user-id>");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
-usersResp, err := descopeClient.Management.User().SearchAll(&descope.UserSearchOptions{TenantIDs: []string{"my-tenant-id"}})
-if err == nil {
-    for _, user := range usersResp {
+try {
+    List<AllUsersResponsibleDetails> users = us.searchAll(UserRequest.builder()
+            .tenants(Arrays.asList(
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID1"),
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID2"))));
+    for (AllUsersResponsibleDetails u : users) {
         // Do something
     }
 }
+
 ```
 
 #### Set or Expire User Password
@@ -634,91 +753,145 @@ You can set or expire a user's password.
 Note: When setting a password, it will automatically be set as expired.
 The user will not be able log-in using an expired password, and will be required replace it on next login.
 
-```go
+```java
+UserService us = descopeClient.getManagementServices(config, projectId, client).getUserService();
+
 // Set a user's password
-err := descopeClient.Management.User().SetPassword("<login-id>", "<some-password>")
+try {
+    us.setPassword("my-custom-id", "some-password");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Or alternatively, expire a user password
-err := descopeClient.Management.User().ExpirePassword("<login-id>")
+try {
+    us.expirePassword("my-custom-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Later, if the user is signing in with an expired password, the returned error will be ErrPasswordExpired
-authInfo, err := descopeClient.Auth.Password().SignIn("<login-id>", "<some-password>", w)
-if err != nil {
-     if errors.Is(err, descope.ErrPasswordExpired) {
-        // Handle a case when the error is expired, the user should replace/reset the password
-        // Use descopeClient.Auth.Password().ReplaceUserPassword("<login-id>", "<some-password>", "<new-password>")
-     }
-     // Handle other errors
+PasswordService ps = descopeClient.getAuthenticationServices(config, client).getPasswordService();
+try {
+    AuthenticationInfo info = ps.signIn("my-custom-id", "some-password");
+} catch (DescopeException de) {
+    // Handle the error
+    // Handle a case when the error is expired, the user should replace/reset the password
 }
+
 ```
 
 ### Manage Access Keys
 
 You can create, update, delete or load access keys, as well as search according to filters:
 
-```go
-// An access key must have a name and expireTime, other fields are optional.
+```java
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-res, err := descopeClient.Management.AccessKey().Create("access-key-1", 0, nil, []*descope.AssociatedTenant{
-    {TenantID: "tenant-ID1", RoleNames: []string{"role-name1"}},
-    {TenantID: "tenant-ID2"},
-})
+AccessKeyService aks = descopeClient.getManagementServices(config, projectId, client).getAccessKeyService();
+try {
+    // Create a new access key with a name, delay time, and tenant
+    AccessKeyResponse resp = aks.create("access-key-1", 0, 
+            Arrays.asList("Role names"), 
+            Arrays.asList(
+                new Tenant("tenant-ID1", 
+                    "Key Tenant", 
+                    Arrays.asList(new AssociatedTenant("tenant-ID2", Arrays.asList("Role names"))))));
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Load specific user
-res, err := descopeClient.Management.AccessKey().Load("access-key-id")
+try {
+    AccessKeyResponse resp = aks.load("access-key-1");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Search all users, optionally according to tenant and/or role filter
-accessKeysResp = err := descopeClient.Management.AccessKey().SearchAll([]string{"my-tenant-id"})
-if err == nil {
-    for _, accessKey := range accessKeysResp {
+try {
+    AccessKeyResponseList resp = aks.searchAll(Arrays.asList("Tenant IDs"));
+    for (AccessKeyResponse r : aks.getKeys()) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 // Update will override all fields as is. Use carefully.
-res, err := descopeClient.Management.AccessKey().Update("access-key-id", "updated-name")
+try {
+    AccessKeyResponse resp = aks.update("access-key-1", "updated-name");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Access keys can be deactivated to prevent usage. This can be undone using "activate".
-err := descopeClient.Management.AccessKey().Deactivate("access-key-id")
+try {
+    AccessKeyResponse resp = aks.deactivate("access-key-1");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Disabled access keys can be activated once again.
-err := descopeClient.Management.AccessKey().Activate("access-key-id")
+try {
+    AccessKeyResponse resp = aks.activate("access-key-1");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Access key deletion cannot be undone. Use carefully.
-err := descopeClient.Management.AccessKey().Delete("access-key-id")
+try {
+    aks.delete("access-key-1");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ### Manage SSO Setting
 
 You can manage SSO settings and map SSO group roles and user attributes.
 
-```go
+```java
+SsoService ss = descopeClient.getManagementServices(config, projectId, client).getSsoService();
 // You can get SSO settings for a specific tenant ID
-ssoSettings, err := descopeClient.Management.SSO().GetSettings("tenant-id")
+try {
+    SSOSettingsResponse resp = ss.getSettings("tenant-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // You can configure SSO settings manually by setting the required fields directly
-tenantID := "tenant-id" // Which tenant this configuration is for
-idpURL := "https://idp.com"
-entityID := "my-idp-entity-id"
-idpCert := "<your-cert-here>"
-redirectURL := "https://my-app.com/handle-saml" // Global redirect URL for SSO/SAML
-domain := "domain.com" // Users logging in from this domain will be logged in to this tenant
-err := descopeClient.Management.SSO().ConfigureSettings(tenantID, idpURL, entityID, idpCert, redirectURL, domain)
+String tenantId = "tenant-id"; // Which tenant this configuration is for
+String idpUrl = "https://idp.com";
+String entityId = "my-idp-entity-id";
+String idpCert = "<your-cert-here>";
+String redirectUrl = "https://my-app.com/handle-saml"; // Global redirect URL for SSO/SAML
+String domain = "domain.com"; // Users logging in from this domain will be logged in to this tenant
+
+try {
+    ss.configureSettings(tenantId, idpUrl, idpCert, entityId, redirectUrl, domain);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Alternatively, configure using an SSO metadata URL
-err := descopeClient.Management.SSO().ConfigureMetadata(tenantID, "https://idp.com/my-idp-metadata")
+try {
+    ss.configureMetadata(tenantId, "https://idp.com/my-idp-metadata");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Map IDP groups to Descope roles, or map user attributes.
 // This function overrides any previous mapping (even when empty). Use carefully.
-roleMapping := []*descope.RoleMapping{
-    {Groups: []string{"IDP_ADMIN"}, Role: "Tenant Admin"},
+List<RoleMapping> rm = Arrays.asList(new RoleMapping(Arrays.asList("Groups"), "Tenant Role"));
+AttributeMapping am = new AttributeMapping("Tenant Name", "Tenant Email", "Tenant Phone Num", "Tenant Group");
+try {
+    ss.configureMapping(tenantId, rm, am);
+} catch (DescopeException de) {
+    // Handle the error
 }
-attributeMapping := &descope.AttributeMapping {
-    Name: "IDP_NAME",
-    PhoneNumber: "IDP_PHONE",
-}
-err := descopeClient.Management.SSO().ConfigureMapping(tenantID, roleMapping, attributeMapping)
+
 ```
 
 Note: Certificates should have a similar structure to:
@@ -736,169 +909,241 @@ err := descopeClient.Management.SSO().DeleteSettings("tenant-id")
 
 You can create, update, delete or load permissions:
 
-```go
+```java
 // You can optionally set a description for a permission.
-name := "My Permission"
-description := "Optional description to briefly explain what this permission allows."
-err := descopeClient.Management.Permission().create(name, description)
+PermissionService ps = descopeClient.getManagementServices(config, projectId, client).getPermissionService();
+
+String name = "My Permission";
+String description = "Optional description to briefly explain what this permission allows.";
+
+try {
+    ps.create(name, description);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Update will override all fields as is. Use carefully.
-newName := "My Updated Permission"
-description = "A revised description",
-err := descopeClient.Management.Permission().Update(name, newName, description)
+String newName = "My Updated Permission";
+description = "A revised description";
+
+try {
+    ps.update(name, newName, description);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Permission deletion cannot be undone. Use carefully.
-descopeClient.Management.Permission().Delete(newName)
+try {
+    ps.delete(newName);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Load all permissions
-res, err := descopeClient.Management.Permission().LoadAll()
-if err == nil {
-    for _, permission := range res {
+try {
+    PermissionResponse resp = ps.loadAll();
+    for (Permission p : resp.getPermissions()) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 ### Manage Roles
 
 You can create, update, delete or load roles:
 
-```go
+```java
 // You can optionally set a description and associated permission for a roles.
-name := "My Role"
-description := "Optional description to briefly explain what this role allows."
-permissionNames := []string{"My Updated Permission"},
-descopeClient.Management.Role().Create(name, description, permissionNames)
+RolesService rs = descopeClient.getManagementServices(config, projectId, client).getRolesService();
+
+String name = "My Role";
+String description = "Optional description to briefly explain what this role allows.";
+List<String> permissionNames = Arrays.asList("My Updated Permission");
+
+try {
+    rs.create(name, description, permissionNames);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Update will override all fields as is. Use carefully.
-newName := "My Updated Role"
-description = "A revised description",
-permissionNames = append(permissionNames, "Another Permission")
-descopeClient.Management.Role().Update(name, newName, description, permissionNames)
+String newName = "My Updated Role";
+description = "A revised description";
+permissionNames.add("Another Permission");
+
+try {
+    rs.update(name, newName, description, permissionNames);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Role deletion cannot be undone. Use carefully.
-descopeClient.Management.Role().Delete(newName)
+try {
+    rs.delete(newName);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Load all roles
-res, err := descopeClient.Management.Role().LoadAll()
-if err == nil {
-    for _, permission := range res {
+try {
+    RoleResponse resp = rs.loadAll();
+    for (Role r : resp.getRoles()) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 ### Query SSO Groups
 
 You can query SSO groups:
 
-```go
+```java
 // Load all groups for a given tenant id
-res, err := descopeClient.Management.Group().LoadAllGroups("tenant-id")
-if err == nil {
-    for _, group := range res {
+GroupService gs = descopeClient.getManagementServices(config, projectId, client).getGroupService();
+try {
+    List<Group> groups = gs.loadAllGroups("tenant-id");
+    for (Group g : groups) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
 }
 
-// Load all groups for the given user IDs (can be found in the user's JWT)
-res, err := descopeClient.Management.Group().LoadAllGroupsForMembers("tenant-id", []string{"user-id-1", "user-id-2"}, nil)
-if err == nil {
-    for _, group := range res {
+// Load all groups for the given user/login IDs (can be found in the user's JWT, used for sign-in)
+try {
+    List<Group> groups = gs.loadAllGroupsForMembers("tenant-id", 
+            Arrays.asList("user-id-1", "user-id-2"), 
+            Arrays.asList("login-id-1", "login-id-2"));
+    for (Group g : groups) {
         // Do something
     }
-}
-
-// Load all groups for the given user's loginIDs (used for sign-in)
-res, err := descopeClient.Management.Group().LoadAllGroupsForMembers("tenant-id", nil, []string{"login-id-1", "login-id-2"})
-if err == nil {
-    for _, group := range res {
-        // Do something
-    }
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 // Load all group's members by the given group id
-res, err := descopeClient.Management.Group().LoadAllGroupMembers("tenant-id", "group-id")
-if err == nil {
-    for _, group := range res {
-        // Do something with group.members
+try {
+    List<Group> groups = gs.loadAllGroupMembers("tenant-id", "group-id");
+    for (Group g : groups) {
+        // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 ### Manage Flows
 
 You can list, import and export flows and screens, or the project theme:
 
-```go
+```java
+FlowService fs = descopeClient.getManagementServices(config, projectId, client).getFlowService();
+
 // List all your flows
-res, err := descopeClient.Management.Flow().ListFlows()
-if err == nil {
-    fmt.Println(res.Total)
-    fmt.Println(res.Flows[0].ID)
+try {
+    List<Flow> flows = fs.listFlows();
+    for (Flow f : flows) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 // Export the flow and it's matching screens based on the given id
-res, err := descopeClient.Management.Flow().ExportFlow("sign-up")
-if err == nil {
-    fmt.Println(res.Flow)
-    fmt.Println(res.Screens)
+try {
+    FlowResponse resp = fs.exportFlow("sign-up");
+    Flow flow = resp.getFlow();
+    List<Screen> screens = resp.getScreens();
+    for (Screen s : screens) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 // Import the given flow and screens as the given id
-res, err := descopeClient.Management.Group().ImportFlow("sign-up", flow, screens)
-if err == nil {
-    fmt.Println(res.Flow)
-    fmt.Println(res.Screens)
+try {
+    FlowResponse resp = fs.importFlow("sign-up", flow, screens);
+    Flow flow = resp.getFlow();
+    List<Screen> screens = resp.getScreens();
+    for (Screen s : screens) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 // Export the current theme of the project
-res, err := descopeClient.Management.Group().ExportTheme()
-if err == nil {
-    fmt.Println(res)
+try {
+    Theme t = fs.exportTheme();
+    System.out.println(t.getId());
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 // Import the given theme to the project
-res, err := descopeClient.Management.Group().ImportTheme(theme)
-if err == nil {
-    fmt.Println(res)
+try {
+    Theme theme = fs.importTheme(t);
+    System.out.println(theme.getId());
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 ### Manage JWTs
 
 You can add custom claims to a valid JWT.
 
-```go
-updatedJWT, err := descopeClient.Management.JWT().UpdateJWTWithCustomClaims("original-jwt", map[string]any{
-    "custom-key1": "custom-value1",
-    "custom-key2": "custom-value2",
-})
-if err != nil {
-    // handle error
+```java
+JwtService jwts = descopeClient.getManagementServices(config, projectId, client).getJwtService();
+try {
+    String res = jwts.updateJWTWithCustomClaims("original-jwt", 
+            new HashMap<String, Object>() {{
+                put("custom-key1", "custom-value1");
+                put("custom-key2", "custom-value2");
+            }});
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 ### Search Audit
 
 You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
 
-```go
+```java
+AuditService as = descopeClient.getManagementServices(config, projectId, client).getAuditService();
 // Full text search on the last 10 days
-res, err := descopeClient.Management.Audit().Search(&descope.AuditSearchOptions{From: time.Now().AddDate(0, 0, -10), Text: "some-text"})
-if err == nil {
-    fmt.Println(res)
+try {
+    AuditSearchResponse resp = as.search(AuditSearchRequest.builder()
+            .from(Instant.now().minus(Duration.ofDays(10))));
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 // Search successful logins in the last 30 days
-res, err := descopeClient.Management.Audit().Search(&descope.AuditSearchOptions{Actions: []string{"LoginSucceed"}})
-if err == nil {
-    fmt.Println(res)
+try {
+    AuditSearchResponse resp = as.search(AuditSearchRequest.builder()
+            .from(Instant.now().minus(Duration.ofDays(30)))
+            .actions(Arrays.asList("LoginSucceed")));
+} catch (DescopeException de) {
+    // Handle the error
 }
+
 ```
 
 ## Code Examples
 
-You can find various usage examples in the [examples folder](https://github.com/descope/go-sdk/blob/main/examples).
+You can find various usage examples in the [examples folder](https://github.com/descope/java-sdk/blob/main/examples).
 
 ### Setup
 
@@ -910,29 +1155,26 @@ Find your Project ID in the [Descope console](https://app.descope.com/settings/p
 export DESCOPE_PROJECT_ID=<ProjectID>
 ```
 
+TODO: alternative configuration
+
 ### Run an example
 
 1. Run this command in your project to build the examples.
 
    ```bash
-   make build
+   mvn package
    ```
 
 2. Run a specific example
 
    ```bash
-   # Gin web app
-   make run-gin-example
-
-   # Gorilla Mux web app
-   make run-example
+   # CLI example
+   java -jar target/management-cli.jar command-name -option1 -option2
    ```
 
 ### Using Visual Studio Code
 
-To run Run and Debug using Visual Studio Code "Run Example: Gorilla Mux Web App" or "Run Example: Gin Web App"
-
-The examples run on TLS at the following URL: [https://localhost:8085](https://localhost:8085).
+To run Run and Debug using Visual Studio Code open the examples folder and run the ManagementCLI class
 
 ## Unit Testing and Data Mocks
 
@@ -984,33 +1226,56 @@ assert.EqualValues(t, updateJWTWithCustomClaimsResponse, res)
 To ease your e2e tests, we exposed dedicated management methods,
 that way, you don't need to use 3rd party messaging services in order to receive sign-in/up Emails or SMS, and avoid the need of parsing the code and token from them.
 
-```go
+```java
 // User for test can be created, this user will be able to generate code/link without
 // the need of 3rd party messaging services.
 // Test user must have a loginID, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-user, err := descopeClient.Management.User().CreateTestUser("desmond@descope.com", "desmond@descope.com", "", "Desmond Copeland", nil, []*descope.AssociatedTenant{
-    {TenantID: "tenant-ID1", RoleNames: []string{"role-name1"}},
-    {TenantID: "tenant-ID2"},
-})
+UserService us = descopeClient.getManagementServices(config, projectId, client).getUserService();
+try {
+    UserResponseDetails resp = us.createTestUser("desmond@descope.com", UserRequest.builder()
+            .email("desmond@descope.com")
+            .displayName("Desmond Copeland")
+            .tenants(Arrays.asList(
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID1")
+                    .roleNames(Arrays.asList("role-name1"),
+                AssociatedTenant.builder()
+                    .tenantId("tenant-ID2")))));
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Now test user got created, and this user will be available until you delete it,
 // you can use any management operation for test user CRUD.
 // You can also delete all test users.
-err = descopeClient.Management.User().DeleteAllTestUsers()
+try {
+    us.deleteAllTestUsers();
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // OTP code can be generated for test user, for example:
-code, err := descopeClient.Management.User().GenerateOTPForTestUser(descope.MethodEmail, "desmond@descope.com")
-// Now you can verify the code is valid (using descopeClient.Auth.OTP().VerifyCode for example)
+try {
+    String code = us.generateOtpForTestUser("desmond@descope.com", DeliveryMethod.EMAIL);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Same as OTP, magic link can be generated for test user, for example:
-link, err := descopeClient.Management.User().GenerateMagicLinkForTestUser(descope.MethodEmail, "desmond@descope.com", "")
-// Now you can verify the link is valid (using descopeClient.Auth.MagicLink().Verify for example)
+try {
+    us.generateMagicLinkForTestUser("desmond@descope.com", "", DeliveryMethod.EMAIL);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Enchanted link can be generated for test user, for example:
-link, pendingRef, err := descopeClient.Management.User().GenerateEnchantedLinkForTestUser("desmond@descope.com", "")
-// Now you can verify the link is valid (using descopeClient.Auth.EnchantedLink().Verify for example)
+try {
+    us.generateEnchantedLinkForTestUser("desmond@descope.com", "");
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 // Note 1: The generate code/link methods, work only for test users, will not work for regular users.
 // Note 2: In case of testing sign-in / sign-up methods with test users, need to make sure to generate the code prior calling the sign-in / sign-up methods (such as: descopeClient.Auth.MagicLink().SignUpOrIn)
@@ -1020,18 +1285,17 @@ link, pendingRef, err := descopeClient.Management.User().GenerateEnchantedLinkFo
 
 Handle API rate limits by comparing the error to the ErrRateLimitExceeded error, which includes the Info map with the key "RateLimitExceededRetryAfter." This key indicates how many seconds until the next valid API call can take place.
 
-```go
-err := descopeClient.Auth.MagicLink().SignUpOrIn(descope.MethodEmail, "desmond@descope.com", "http://myapp.com/verify-magic-link")
-if err != nil {
-    if errors.Is(err, descope.ErrRateLimitExceeded) {
-        if rateLimitErr, ok := err.(*descope.Error); ok {
-            if retryAfterSeconds, ok := rateLimitErr.Info[descope.ErrorInfoKeys.RateLimitExceededRetryAfter].(int); ok {
-                // This variable indicates how many seconds until the next valid API call can take place.
-            }
-        }
+```java
+MagicLinkService mls = descopeClient.getAuthenticationServices(config, client).getMagicLinkService();
+try {
+    mls.signUpOrIn(DeliveryMethod.EMAIL, "desmond@descope.com", "http://myapp.com/verify-magic-link");
+} catch (DescopeException de) {
+    if (de.isErrorLimitException()) {
+        // TODO: How many seconds until next valid API call can take place
+        // Handle the error
     }
-     // handle other error cases
 }
+
 ```
 
 ## Learn More
