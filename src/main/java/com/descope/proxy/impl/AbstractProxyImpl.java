@@ -1,5 +1,7 @@
 package com.descope.proxy.impl;
 
+import com.descope.exception.ErrorCode;
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -82,6 +84,9 @@ abstract class AbstractProxyImpl {
 
   private static class JsonBodyHandler<R> implements HttpResponse.BodyHandler<Supplier<R>> {
 
+    private static final String RETRY_AFTER_HEADER = "Retry-After";
+    private static final long DEFAULT_RETRY = 60;
+
     private final Class<R> returnClz;
 
     public JsonBodyHandler(Class<R> returnClz) {
@@ -105,6 +110,12 @@ abstract class AbstractProxyImpl {
           if (responseInfo.statusCode() < 200 || responseInfo.statusCode() > 299) {
             var errorDetails = objectMapper.readValue(stream, JsonBodyHandler.ErrorDetails.class);
             log.error(errorDetails.getActualMessage());
+            if (ErrorCode.RATE_LIMIT_EXCEEDED.equals(errorDetails.errorCode)) {
+              throw new RateLimitExceededException(
+                errorDetails.getActualMessage(),
+                errorDetails.getErrorCode(),
+                responseInfo.headers().firstValueAsLong(RETRY_AFTER_HEADER).orElse(DEFAULT_RETRY));
+            }
             throw ServerCommonException.genericServerError(
               errorDetails.getActualMessage(), errorDetails.getErrorCode());
           }

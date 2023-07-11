@@ -41,13 +41,21 @@ public class OAuthServiceImplTest {
       new UserResponse(
           "someUserId",
           List.of(MOCK_EMAIL),
+          "someEmail@descope.com",
           true,
+          "+1-555-555-5555",
           false,
+          "someName",
           Collections.emptyList(),
           Collections.emptyList(),
           "enabled",
           "",
-          false);
+          false,
+          0L,
+          Collections.emptyMap(),
+          false,
+          false,
+          Collections.emptyMap());
   public static final JWTResponse MOCK_JWT_RESPONSE =
       new JWTResponse(
           "someSessionJwt",
