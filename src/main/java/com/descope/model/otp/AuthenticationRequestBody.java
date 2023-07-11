@@ -13,5 +13,4 @@ import lombok.NoArgsConstructor;
 public class AuthenticationRequestBody {
   private String loginId;
   private LoginOptions loginOptions;
-
 }

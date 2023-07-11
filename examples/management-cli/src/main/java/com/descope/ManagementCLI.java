@@ -326,7 +326,7 @@ public class ManagementCLI {
         cliService.deleteRole(roleId);
       }
       case "role-all" -> cliService.roleAll();
-
+      case "audit" -> cliService.audit();
       default -> throw new UnsupportedOperationException(
           "Invalid Operation %s".formatted(operation));
     }

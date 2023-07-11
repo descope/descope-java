@@ -2,9 +2,12 @@ package com.descope;
 
 import static java.lang.Integer.parseInt;
 
+import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -155,6 +158,27 @@ final class CLIService {
     var roleService = managementServices.getRolesService();
     var roleResponse = roleService.loadAll();
     System.out.println(roleResponse);
+  }
+
+  public void audit() {
+    AuditSearchRequest auditSearchRequest =
+        AuditSearchRequest.builder()
+            .from(Instant.now().minus(Duration.ofDays(0)))
+            .to(Instant.now().minus(Duration.ofDays(0)))
+            .userIds(Collections.emptyList())
+            .actions(Collections.emptyList())
+            .devices(Collections.emptyList())
+            .methods(Collections.emptyList())
+            .geos(Collections.emptyList())
+            .remoteAddresses(Collections.emptyList())
+            .tenants(Collections.emptyList())
+            .noTenants(false)
+            .text("")
+            .excludedActions(Collections.emptyList())
+            .build();
+    var auditService = managementServices.getAuditService();
+    var response = auditService.search(auditSearchRequest);
+    System.out.println(response);
   }
 
   public void groupAllForTenant(String tenantId) {
