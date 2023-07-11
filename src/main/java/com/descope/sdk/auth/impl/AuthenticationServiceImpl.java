@@ -1,8 +1,8 @@
 package com.descope.sdk.auth.impl;
 
 import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_ACCESS_KEY_LINK;
-import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_ALL_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
