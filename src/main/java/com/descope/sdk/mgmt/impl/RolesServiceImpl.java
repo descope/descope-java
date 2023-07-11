@@ -28,7 +28,10 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
       throw ServerCommonException.invalidArgument("Name");
     }
     Map<String, Object> request =
-        Map.of("name", name, "description", description, "permissionNames", permissionNames);
+        Map.of("name", name, "description", description);
+    if (permissionNames != null) {
+      request.put("permissionNames", permissionNames);
+    }
     var apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_CREATE_LINK), request, Void.class);
   }
