@@ -118,11 +118,11 @@ public interface UserService {
    *
    * @param request The options optional parameter allows to fine-tune the search filters and
    *     results. Using nil will result in a filter-less query with a set amount of results.
-   * @return {@link List} of {@link UserResponseDetails}
+   * @return {@link AllUsersResponseDetails}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  List<AllUsersResponseDetails> searchAll(UserSearchRequest request) throws DescopeException;
+  AllUsersResponseDetails searchAll(UserSearchRequest request) throws DescopeException;
 
   /**
    * Activate an existing user.

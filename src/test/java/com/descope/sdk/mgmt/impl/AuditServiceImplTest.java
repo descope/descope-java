@@ -12,10 +12,12 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.audit.AuditSearchRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.sdk.mgmt.AuditService;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,13 +25,16 @@ import org.mockito.MockedStatic;
 
 public class AuditServiceImplTest {
   private AuditService auditService;
+  // Used to generate a few audit rows
+  private AccessKeyService accessKeyService;
 
   @BeforeEach
   void setUp() {
     var authParams = TestMgmtUtils.getManagementParams();
     var client = TestMgmtUtils.getClient();
-    this.auditService =
-        ManagementServiceBuilder.buildServices(client, authParams).getAuditService();
+    var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    this.auditService = mgmtServices.getAuditService();
+    this.accessKeyService = mgmtServices.getAccessKeyService();
   }
 
   @Test
@@ -81,7 +86,13 @@ public class AuditServiceImplTest {
   }
 
   @Test
+  @SneakyThrows
   void testFunctionalFullCycle() {
+    var createResult = accessKeyService.create(
+        TestMgmtUtils.getRandomName("ak-"), 0, null, null);
+    accessKeyService.delete(createResult.getKey().getId());
+    // Wait for the audit
+    Thread.sleep(60000);
     var searchRes = auditService.search(AuditSearchRequest.builder().noTenants(true).build());
     Assertions.assertThat(searchRes.getAudits()).isNotEmpty();
   }

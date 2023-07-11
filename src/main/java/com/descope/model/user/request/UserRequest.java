@@ -15,7 +15,9 @@ import lombok.NoArgsConstructor;
 public class UserRequest {
   String loginId;
   String email;
+  Boolean verifiedEmail;
   String phone;
+  Boolean verifiedPhone;
   String displayName;
   List<String> roleNames;
   List<AssociatedTenant> tenants;
