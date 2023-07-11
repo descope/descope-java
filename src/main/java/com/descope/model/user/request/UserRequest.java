@@ -20,7 +20,7 @@ public class UserRequest {
   Boolean verifiedPhone;
   String displayName;
   List<String> roleNames;
-  List<AssociatedTenant> tenants;
+  List<AssociatedTenant> userTenants;
   Map<String, Object> customAttributes;
   String picture;
   Boolean invite;

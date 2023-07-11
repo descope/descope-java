@@ -1,10 +1,10 @@
-package com.descope.sdk.impl;
+package com.descope.sdk.mgmt.impl;
 
-import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -13,14 +13,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.descope.exception.ServerCommonException;
-import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.mgmt.TenantService;
-import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,8 +37,8 @@ public class TenantServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = ManagementParams.builder().projectId(MOCK_PROJECT_ID).build();
-    var client = Client.builder().uri("https://api.descope.com/v1").build();
+    var authParams = TestMgmtUtils.getManagementParams();
+    var client = TestMgmtUtils.getClient();
     this.tenantService =
         ManagementServiceBuilder.buildServices(client, authParams).getTenantService();
   }
@@ -137,5 +134,35 @@ public class TenantServiceImplTest {
       var response = tenantService.loadAll();
       assertThat(response.size()).isEqualTo(1);
     }
+  }
+
+  @Test
+  void testFunctionalFullCycle() {
+    String name = TestMgmtUtils.getRandomName("t-");
+    String tenantId = tenantService.create(name, List.of(name + ".com", name + "1.com"));
+    assertThat(tenantId).isNotBlank();
+    var tenants = tenantService.loadAll();
+    assertThat(tenants).isNotEmpty();
+    boolean found = false;
+    for (var t : tenants) {
+      if (t.getId().equals(tenantId)) {
+        found = true;
+        assertEquals(name, t.getName());
+        assertThat(t.getSelfProvisioningDomains()).containsOnly(name + ".com", name + "1.com");
+      }
+    }
+    assertTrue(found);
+    tenantService.update(tenantId, name + "1", List.of(name + ".com"));
+    tenants = tenantService.loadAll();
+    assertThat(tenants).isNotEmpty();
+    found = false;
+    for (var t : tenants) {
+      if (t.getId().equals(tenantId)) {
+        found = true;
+        assertEquals(name + "1", t.getName());
+        assertThat(t.getSelfProvisioningDomains()).containsOnly(name + ".com");
+      }
+    }
+    tenantService.delete(tenantId);
   }
 }
