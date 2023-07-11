@@ -114,11 +114,11 @@ public interface UserService {
   UserResponseDetails loadByUserId(String userId) throws DescopeException;
 
   /**
-   * Search all users according to given filters
+   * Search all users according to given filters.
    *
    * @param request The options optional parameter allows to fine-tune the search filters and
    *     results. Using nil will result in a filter-less query with a set amount of results.
-   * @return {@link List<UserResponseDetails> UserResponseDetailss}
+   * @return {@link List} of {@link UserResponseDetails}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */

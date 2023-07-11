@@ -6,9 +6,11 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.audit.AuditRecord;
 import com.descope.model.audit.AuditSearchRequest;
+import com.descope.model.audit.AuditSearchResponse;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.AuditService;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -18,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 class AuditServiceImpl extends ManagementsBase implements AuditService {
 
@@ -27,7 +30,7 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
 
   @Override
   @SuppressWarnings("unchecked")
-  public List<AuditRecord> search(AuditSearchRequest request) throws DescopeException {
+  public AuditSearchResponse search(AuditSearchRequest request) throws DescopeException {
     if (Objects.isNull(request)) {
       request = new AuditSearchRequest();
     }
@@ -57,9 +60,11 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
             request.getText(),
             request.getFrom() != null ? request.getFrom().toEpochMilli() : 0,
             request.getTo() != null ? request.getTo().toEpochMilli() : 0);
-    var resp = (List<ActualAuditRecord>) apiProxy.post(composeSearchUri, actualReq, List.class);
+    var resp =
+        (ActualAuditSearchResponse)
+            apiProxy.post(composeSearchUri, actualReq, ActualAuditSearchResponse.class);
     var res = new ArrayList<AuditRecord>();
-    for (var auditRecord : resp) {
+    for (var auditRecord : resp.getAudits()) {
       res.add(
           new AuditRecord(
               auditRecord.projectId,
@@ -75,7 +80,7 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
               auditRecord.tenants,
               auditRecord.data));
     }
-    return res;
+    return new AuditSearchResponse(res);
   }
 
   private URI composeSearchUri() {
@@ -101,7 +106,9 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
   }
 
   @Data
+  @NoArgsConstructor
   @AllArgsConstructor
+  @JsonIgnoreProperties(ignoreUnknown = true)
   static class ActualAuditRecord {
     String projectId;
     String userId;
@@ -114,5 +121,12 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
     List<String> externalIds;
     List<String> tenants;
     Map<String, Object> data;
+  }
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  static class ActualAuditSearchResponse {
+    List<ActualAuditRecord> audits;
   }
 }

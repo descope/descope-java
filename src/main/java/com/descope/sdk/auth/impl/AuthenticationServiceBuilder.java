@@ -9,6 +9,7 @@ import lombok.experimental.UtilityClass;
 public class AuthenticationServiceBuilder {
   public static AuthenticationServices buildServices(Client client, AuthParams authParams) {
     return AuthenticationServices.builder()
+        .authService(new AuthenticationServiceImpl(client, authParams))
         .otpService(new OTPServiceImpl(client, authParams))
         .samlService(new SAMLServiceImpl(client, authParams))
         .totpService(new TOTPServiceImpl(client, authParams))

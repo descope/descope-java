@@ -2,12 +2,9 @@ package com.descope;
 
 import static java.lang.Integer.parseInt;
 
-import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;

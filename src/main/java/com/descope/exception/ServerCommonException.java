@@ -4,6 +4,9 @@ import static com.descope.exception.ErrorCode.ERR_MISSING_ARGUMENTS;
 import static com.descope.exception.ErrorCode.ERR_REFRESH_TOKEN;
 import static com.descope.exception.ErrorCode.INVALID_ARGUMENT;
 
+import lombok.ToString;
+
+@ToString
 public class ServerCommonException extends DescopeException {
 
   protected ServerCommonException(String message, String code) {
@@ -22,5 +25,9 @@ public class ServerCommonException extends DescopeException {
 
   public static ServerCommonException missingArguments(String error) {
     return new ServerCommonException(error, ERR_MISSING_ARGUMENTS);
+  }
+
+  public static ServerCommonException genericServerError(String message, String code) {
+    return new ServerCommonException(message, code);
   }
 }

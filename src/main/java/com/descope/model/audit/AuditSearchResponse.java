@@ -1,5 +1,6 @@
-package com.descope.model.mgmt;
+package com.descope.model.audit;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccessKeyResponse {
-  private AccessKeyResponseDetails key;
-  private String cleartext;
+public class AuditSearchResponse {
+  private List<AuditRecord> audits;
 }
-

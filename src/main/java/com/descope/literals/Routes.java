@@ -102,10 +102,10 @@ public class Routes {
     public static final String LOAD_ALL_GROUP_MEMBERS_LINK = "/v1/mgmt/group/members";
 
     // FLOW
-    public static final String FLOW_EXPORT_LINK = "/mgmt/flow/export";
-    public static final String FLOW_IMPORT_LINK = "/mgmt/flow/import";
-    public static final String THEME_EXPORT_LINK = "/mgmt/theme/export";
-    public static final String THEME_IMPORT_LINK = "/mgmt/theme/import";
+    public static final String FLOW_EXPORT_LINK = "/v1/mgmt/flow/export";
+    public static final String FLOW_IMPORT_LINK = "/v1/mgmt/flow/import";
+    public static final String THEME_EXPORT_LINK = "/v1/mgmt/theme/export";
+    public static final String THEME_IMPORT_LINK = "/v1/mgmt/theme/import";
 
     // JWT
     public static final String UPDATE_JWT_LINK = "/mgmt/jwt/update";
@@ -133,6 +133,6 @@ public class Routes {
     public static final String MANAGEMENT_ROLES_LOAD_ALL_LINK = "/v1/mgmt/role/all";
 
     // Audit
-    public static final String MANAGEMENT_AUDIT_SEARCH_LINK = "/mgmt/audit/search";
+    public static final String MANAGEMENT_AUDIT_SEARCH_LINK = "/v1/mgmt/audit/search";
   }
 }

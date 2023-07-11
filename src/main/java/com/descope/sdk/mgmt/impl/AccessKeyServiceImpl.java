@@ -1,6 +1,12 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.*;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_ACTIVE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_CREATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DEACTIVATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DELETE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_LOAD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_UPDATE_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -12,6 +18,7 @@ import com.descope.model.mgmt.AccessKeyResponseList;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.utils.MgmtUtils;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -46,7 +53,8 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
 
   @Override
   public AccessKeyResponseList searchAll(List<String> tenantIDs) throws DescopeException {
-    Map<String, List<String>> request = Map.of("tenantIds", tenantIDs);
+    Map<String, List<String>> request =
+        tenantIDs == null ? new HashMap<String, List<String>>() : Map.of("tenantIds", tenantIDs);
     var apiProxy = getApiProxy();
     return apiProxy.post(
         getUri(MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK), request, AccessKeyResponseList.class);

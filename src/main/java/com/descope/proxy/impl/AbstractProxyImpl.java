@@ -1,5 +1,6 @@
 package com.descope.proxy.impl;
 
+import com.descope.exception.ServerCommonException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +13,9 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 import java.util.function.Supplier;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -84,18 +88,26 @@ abstract class AbstractProxyImpl {
       this.returnClz = returnClz;
     }
 
-    private static <R> HttpResponse.BodySubscriber<Supplier<R>> asJson(Class<R> returnClz) {
+    private static <R> HttpResponse.BodySubscriber<Supplier<R>> asJson(
+        HttpResponse.ResponseInfo responseInfo, Class<R> returnClz) {
       HttpResponse.BodySubscriber<InputStream> upstream =
           HttpResponse.BodySubscribers.ofInputStream();
 
       return HttpResponse.BodySubscribers.mapping(
-          upstream, inputStream -> toSupplierOfType(inputStream, returnClz));
+          upstream, inputStream -> toSupplierOfType(inputStream, responseInfo, returnClz));
     }
 
-    private static <R> Supplier<R> toSupplierOfType(InputStream inputStream, Class<R> returnClz) {
+    private static <R> Supplier<R> toSupplierOfType(
+        InputStream inputStream, HttpResponse.ResponseInfo responseInfo, Class<R> returnClz) {
       return () -> {
         try (InputStream stream = inputStream) {
           ObjectMapper objectMapper = new ObjectMapper();
+          if (responseInfo.statusCode() < 200 || responseInfo.statusCode() > 299) {
+            var errorDetails = objectMapper.readValue(stream, JsonBodyHandler.ErrorDetails.class);
+            log.error(errorDetails.getActualMessage());
+            throw ServerCommonException.genericServerError(
+                errorDetails.getActualMessage(), errorDetails.getErrorCode());
+          }
           return objectMapper.readValue(stream, returnClz);
         } catch (IOException e) {
           throw new UncheckedIOException(e);
@@ -105,7 +117,21 @@ abstract class AbstractProxyImpl {
 
     @Override
     public HttpResponse.BodySubscriber<Supplier<R>> apply(HttpResponse.ResponseInfo responseInfo) {
-      return asJson(returnClz);
+      return asJson(responseInfo, returnClz);
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    static class ErrorDetails {
+      private String errorCode;
+      private String errorDescription;
+      private String errorMessage;
+      private String message;
+
+      String getActualMessage() {
+        return errorMessage == null ? message : errorMessage;
+      }
     }
   }
 }

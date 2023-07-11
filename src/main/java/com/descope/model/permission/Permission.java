@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Permission {
-    private String name;
-    private String description;
-    private boolean systemDefault;
+  private String name;
+  private String description;
+  private boolean systemDefault;
 }

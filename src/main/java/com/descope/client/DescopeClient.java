@@ -31,10 +31,7 @@ public class DescopeClient {
   private final AuthenticationServices authenticationServices;
 
   public DescopeClient() throws DescopeException {
-    var descopeClient = new DescopeClient(new Config());
-    this.config = descopeClient.config;
-    this.managementServices = descopeClient.managementServices;
-    this.authenticationServices = descopeClient.authenticationServices;
+    this(new Config());
   }
 
   public DescopeClient(Config config) throws DescopeException {
@@ -113,7 +110,12 @@ public class DescopeClient {
   private static SdkInfo getSdkInfo() {
     String name = "java";
     var javaVersion = Runtime.version();
-    // TODO - Version & SHA | 10/04/23 | by keshavram
-    return SdkInfo.builder().name(name).javaVersion(javaVersion.toString()).build();
+
+    // TODO - SHA
+    return SdkInfo.builder()
+        .name(name)
+        .javaVersion(javaVersion.toString())
+        .version(new SdkInfo().getClass().getPackage().getImplementationVersion())
+        .build();
   }
 }
