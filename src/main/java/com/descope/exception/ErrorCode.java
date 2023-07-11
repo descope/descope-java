@@ -17,4 +17,7 @@ public class ErrorCode {
   // client functional errors
   public static final String INVALID_TOKEN = "G030002";
   public static final String ERR_MISSING_ARGUMENTS = "E011002";
+
+  // rate limit
+  public static final String RATE_LIMIT_EXCEEDED = "E130429";
 }
