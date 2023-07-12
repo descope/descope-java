@@ -57,8 +57,7 @@ These sections show how to use the SDK to perform various authentication/authori
 
 ## Management Functions
 
-These sections show how to use the SDK to perform API management functions. Before using any of them, you will need to
-create a Management Key. The instructions for this can be found under [Setup](#setup-1).
+These sections show how to use the SDK to perform API management functions. Before using any of them, you will need to create a Management Key. The instructions for this can be found under [Setup](#setup-1).
 
 1. [Manage Tenants](#manage-tenants)
 2. [Manage Users](#manage-users)
@@ -73,12 +72,9 @@ create a Management Key. The instructions for this can be found under [Setup](#s
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
-If you're developing unit tests, see how you can use our mocks package underneath
-the [Unit Testing and Data Mocks](#unit-testing-and-data-mocks) section.
+If you're developing unit tests, see how you can use our mocks package underneath the [Unit Testing and Data Mocks](#unit-testing-and-data-mocks) section.
 
-If you're performing end-to-end testing, check out
-the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests)
-section. You will need to use the `descopeClient` object created under [Setup](#setup-1) guide.
+If you're performing end-to-end testing, check out the [Utils for your end to end (e2e) tests and integration tests](#utils-for-your-end-to-end-e2e-tests-and-integration-tests) section. You will need to use the `descopeClient` object created under [Setup](#setup-1) guide.
 
 For rate limiting information, please confer to the [API Rate Limits](#api-rate-limits) section.
 
@@ -86,8 +82,7 @@ For rate limiting information, please confer to the [API Rate Limits](#api-rate-
 
 ### OTP Authentication
 
-Send a user a one-time password (OTP) using your preferred delivery method (_email / SMS_). An email address or phone
-number must be provided accordingly.
+Send a user a one-time password (OTP) using your preferred delivery method (_email / SMS_). An email address or phone number must be provided accordingly.
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
@@ -118,15 +113,13 @@ try {
 }
 ```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more
-on [session validation](#session-validation)
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### Magic Link
 
 Send a user a Magic Link using your preferred delivery method (_email / SMS_).
 The Magic Link will redirect the user to page where the its token needs to be verified.
-This redirection can be configured in code, or globally in
-the [Descope Console](https://app.descope.com/settings/authentication/magiclink)
+This redirection can be configured in code, or globally in the [Descope Console](https://app.descope.com/settings/authentication/magiclink)
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
@@ -153,8 +146,7 @@ try {
 
 ```
 
-To verify a magic link, your redirect page must call the validation function on the token (`t`)
-parameter (`https://your-redirect-address.com/verify?t=<token>`):
+To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```java
 // The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
@@ -167,8 +159,7 @@ try {
 
 ```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more
-on [session validation](#session-validation)
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### Enchanted Link
 
@@ -185,8 +176,7 @@ This method is similar to [Magic Link](#magic-link) but differs in two major way
   like a computer, while clicking the link on another device, for instance a mobile phone.
 
 The Enchanted Link will redirect the user to page where the its token needs to be verified.
-This redirection can be configured in code per request, or set globally in
-the [Descope Console](https://app.descope.com/settings/authentication/enchantedlink).
+This redirection can be configured in code per request, or set globally in the [Descope Console](https://app.descope.com/settings/authentication/enchantedlink).
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
@@ -228,9 +218,7 @@ for (int i = retriesCount; i > 0; i--) {
 
 ```
 
-To verify an enchanted link, your redirect page must call the validation function on the token (`t`)
-parameter (`https://your-redirect-address.com/verify?t=<token>`). Once the token is verified, the session polling will
-receive a valid response.
+To verify an enchanted link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`). Once the token is verified, the session polling will receive a valid response.
 
 ```java
 
@@ -242,13 +230,11 @@ try {
 
 ```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more
-on [session validation](#session-validation)
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### OAuth
 
-Users can authenticate using their social logins, using the OAuth protocol. Configure your OAuth settings on
-the [Descope console](https://app.descope.com/settings/authentication/social). To start a flow call:
+Users can authenticate using their social logins, using the OAuth protocol. Configure your OAuth settings on the [Descope console](https://app.descope.com/settings/authentication/social). To start a flow call:
 
 ```java
 // Choose an oauth provider out of the supported providers
@@ -266,8 +252,7 @@ try {
 
 ```
 
-The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an
-appended `code` HTTP URL parameter. Exchange it to validate the user:
+The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```java
 
@@ -279,13 +264,11 @@ try {
 
 ```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more
-on [session validation](#session-validation)
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### SSO/SAML
 
-Users can authenticate to a specific tenant using SAML or Single Sign On. Configure your SSO/SAML settings on
-the [Descope console](https://app.descope.com/settings/authentication/sso). To start a flow call:
+Users can authenticate to a specific tenant using SAML or Single Sign On. Configure your SSO/SAML settings on the [Descope console](https://app.descope.com/settings/authentication/sso). To start a flow call:
 
 ```java
 // Choose which tenant to log into
@@ -301,8 +284,7 @@ try {
 
 ```
 
-The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to
-the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
+The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```java
 // The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
@@ -315,8 +297,7 @@ try {
 
 ```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more
-on [session validation](#session-validation)
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### TOTP Authentication
 
@@ -367,16 +348,14 @@ try {
 
 ```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more
-on [session validation](#session-validation)
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### Passwords
 
 The user can also authenticate with a password, though it's recommended to
 prefer passwordless authentication methods if possible. Sign up requires the
 caller to provide a valid password that meets all the requirements configured
-for the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope
-console.
+for the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope console.
 
 ```java
 // Every user must have a loginID. All other user information is optional
@@ -409,20 +388,15 @@ try {
 
 ```
 
-The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more
-on [session validation](#session-validation)
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
-In case the user needs to update their password, one of two methods are available: Resetting their password or replacing
-their password
+In case the user needs to update their password, one of two methods are available: Resetting their password or replacing their password
 
 **Changing Passwords**
 
-_NOTE: SendPasswordReset will only work if the user has a validated email address. Otherwise password reset prompts
-cannot be sent._
+_NOTE: SendPasswordReset will only work if the user has a validated email address. Otherwise password reset prompts cannot be sent._
 
-In the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope
-console, it is possible to define which alternative authentication method can be used in order to authenticate the user,
-in order to reset and update their password.
+In the [password authentication method](https://app.descope.com/settings/authentication/password) in the Descope console, it is possible to define which alternative authentication method can be used in order to authenticate the user, in order to reset and update their password.
 
 ```java
 // Start the reset process by sending a password reset prompt. In this example we'll assume
@@ -439,10 +413,8 @@ try {
 
 ```
 
-The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link)
-for more details). However, after verifying the user, it is expected
-to allow them to provide a new password instead of the old one. Since the user is now authenticated, this is possible
-via:
+The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details). However, after verifying the user, it is expected
+to allow them to provide a new password instead of the old one. Since the user is now authenticated, this is possible via:
 
 ```java
 // The request (r) is required to make sure the user is authenticated.
@@ -508,16 +480,14 @@ Make sure to return the session token from the response to the client if tokens 
 Usually, the tokens can be passed in and out via HTTP headers or via a cookie.
 The implementation can defer according to your implementation. See our [examples](#code-examples) for a few examples.
 
-If Roles & Permissions are used, validate them immediately after validating the session. See
-the [next section](#roles--permission-validation)
+If Roles & Permissions are used, validate them immediately after validating the session. See the [next section](#roles--permission-validation)
 for more information.
 
 #### Session Validation Using Middleware
 
 Alternatively, you can validate the session using any supported builtin Go middleware (for example Chi or Mux)
 instead of using the ValidateSessions function. This middleware will automatically detect the cookies from the
-request and save the current user ID in the context for further usage. On failure, it will respond
-with `401 Unauthorized`.
+request and save the current user ID in the context for further usage. On failure, it will respond with `401 Unauthorized`.
 
 ```go
 import "github.com/descope/go-sdk/descope/sdk"
@@ -600,8 +570,7 @@ try {
 ```
 
 It is also possible to sign the user out of all the devices they are currently signed-in with. Calling `logoutAll` will
-invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have
-created.
+invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have created.
 
 ```java
 // Refresh token will be taken from the request header or cookies automatically
@@ -1149,8 +1118,7 @@ try {
 
 ### Search Audit
 
-You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to
-the last 30 days.
+You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
 
 ```java
 AuditService as = descopeClient.getManagementServices(config, projectId, client).getAuditService();
@@ -1210,17 +1178,14 @@ To run Run and Debug using Visual Studio Code open the examples folder and run t
 
 ## Unit Testing and Data Mocks
 
-Simplify your unit testing by using our mocks package for testing your app without the need of going out to Descope
-services. By that, you can simply mock responses and errors and have assertion for the incoming data of each SDK method.
-You can find all mocks [here](https://github.com/descope/go-sdk/blob/main/descope/tests/mocks).
+Simplify your unit testing by using our mocks package for testing your app without the need of going out to Descope services. By that, you can simply mock responses and errors and have assertion for the incoming data of each SDK method. You can find all mocks [here](https://github.com/descope/go-sdk/blob/main/descope/tests/mocks).
 
 Mock usage examples:
 
 - [Authentication](https://github.com/descope/go-sdk/blob/main/descope/tests/mocks/auth/authenticationmock_test.go)
 - [Management](https://github.com/descope/go-sdk/blob/main/descope/tests/mocks/mgmt/managementmock_test.go)
 
-In the following snippet we mocked the Descope Authentication and Management SDKs, and have assertions to check the
-actual inputs passed to the SDK:
+In the following snippet we mocked the Descope Authentication and Management SDKs, and have assertions to check the actual inputs passed to the SDK:
 
 ```go
 updateJWTWithCustomClaimsCalled := false
@@ -1259,8 +1224,7 @@ assert.EqualValues(t, updateJWTWithCustomClaimsResponse, res)
 ### Utils for your end to end (e2e) tests and integration tests
 
 To ease your e2e tests, we exposed dedicated management methods,
-that way, you don't need to use 3rd party messaging services in order to receive sign-in/up Emails or SMS, and avoid the
-need of parsing the code and token from them.
+that way, you don't need to use 3rd party messaging services in order to receive sign-in/up Emails or SMS, and avoid the need of parsing the code and token from them.
 
 ```java
 // User for test can be created, this user will be able to generate code/link without
@@ -1319,18 +1283,16 @@ try {
 
 # API Rate Limits
 
-Handle API rate limits by comparing the error to the ErrRateLimitExceeded error, which includes the Info map with the
-key "RateLimitExceededRetryAfter." This key indicates how many seconds until the next valid API call can take place.
+Handle API rate limits by comparing the error to the ErrRateLimitExceeded error, which includes the Info map with the key "RateLimitExceededRetryAfter." This key indicates how many seconds until the next valid API call can take place.
 
 ```java
 MagicLinkService mls = descopeClient.getAuthenticationServices(config, client).getMagicLinkService();
 try {
     mls.signUpOrIn(DeliveryMethod.EMAIL, "desmond@descope.com", "http://myapp.com/verify-magic-link");
+} catch (RateLimitExceededException re) {
+    // Use re.getRetryAfterSeconds() to determine time until retry
 } catch (DescopeException de) {
-    if (de.isErrorLimitException()) {
-        // TODO: How many seconds until next valid API call can take place
-        // Handle the error
-    }
+    // Handle the error
 }
 
 ```
@@ -1345,5 +1307,4 @@ If you need help you can email [Descope Support](mailto:support@descope.com)
 
 ## License
 
-The Descope SDK for Java is licensed for use under the terms and conditions of
-the [MIT license Agreement](https://github.com/descope/java-sdk/blob/main/LICENSE).
+The Descope SDK for Java is licensed for use under the terms and conditions of the [MIT license Agreement](https://github.com/descope/java-sdk/blob/main/LICENSE).
