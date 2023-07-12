@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -20,6 +22,8 @@ import com.descope.model.user.response.UserResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.mgmt.RolesService;
+import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import java.net.URI;
 import java.util.List;
@@ -33,12 +37,17 @@ public class UserServiceImplTest {
   private final List<String> mockRoles = List.of("role1", "role2");
   private final String mockUrl = "http://localhost.com";
   private UserService userService;
+  private TenantService tenantService;
+  private RolesService roleService;
 
   @BeforeEach
   void setUp() {
     var authParams = TestMgmtUtils.getManagementParams();
     var client = TestMgmtUtils.getClient();
-    this.userService = ManagementServiceBuilder.buildServices(client, authParams).getUserService();
+    var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    this.userService = mgmtServices.getUserService();
+    this.tenantService = mgmtServices.getTenantService();
+    this.roleService = mgmtServices.getRolesService();
   }
 
   @Test
@@ -735,5 +744,44 @@ public class UserServiceImplTest {
     assertTrue(found);
     // Delete
     userService.deleteAllTestUsers();
+  }
+
+  @Test
+  void testFunctionalUserWithTenantAndRole() {
+    String tenantName = TestMgmtUtils.getRandomName("t-");
+    String tenantId = tenantService.create(tenantName, List.of(tenantName + ".com"));
+    assertThat(tenantId).isNotBlank();
+    String roleName = TestMgmtUtils.getRandomName("r-").substring(0, 20);
+    roleService.create(roleName, "", null);
+    String loginId = TestMgmtUtils.getRandomName("u-");
+    String email = TestMgmtUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    // Create
+    var createResponse = userService.create(loginId,
+        UserRequest.builder()
+          .loginId(loginId)
+          .email(email)
+          .verifiedEmail(true)
+          .phone(phone)
+          .verifiedPhone(true)
+          .displayName("Testing Test")
+          .invite(false)
+          .userTenants(List.of(new AssociatedTenant(tenantId, List.of(roleName))))
+          .build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains(loginId);
+    assertEquals(email, user.getEmail());
+    assertEquals("+15555555555", user.getPhone());
+    assertEquals(true, user.getVerifiedEmail());
+    assertEquals(true, user.getVerifiedPhone());
+    assertEquals("Testing Test", user.getName());
+    assertEquals("invited", user.getStatus());
+    assertThat(user.getUserTenants()).containsExactly(
+      new AssociatedTenant(tenantId, List.of(roleName)));
+    // Delete
+    userService.delete(loginId);
+    tenantService.delete(tenantId);
+    roleService.delete(roleName);
   }
 }
