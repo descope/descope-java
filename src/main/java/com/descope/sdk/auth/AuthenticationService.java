@@ -97,7 +97,7 @@ public interface AuthenticationService {
 
   /**
    * Used to log out of current device session.
-   * 
+   *
    * @param refreshToken - token
    * @return - log out token {@link Token token}
    * @throws DescopeException if there is an error
@@ -106,7 +106,7 @@ public interface AuthenticationService {
 
   /**
    * Used to log out of all device sessions.
-   * 
+   *
    * @param refreshToken - token
    * @return - log out token {@link Token token}
    * @throws DescopeException if there is an error
