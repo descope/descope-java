@@ -14,5 +14,4 @@ public class RoleMapping {
 
   private List<String> groups;
   private String role;
-
 }

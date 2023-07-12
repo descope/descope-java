@@ -57,8 +57,8 @@ class FlowServiceImplTest {
     var flow = mock(Flow.class);
     var screen = mock(Screen.class);
     ServerCommonException thrown =
-        assertThrows(ServerCommonException.class,
-          () -> flowService.importFlow("", flow, List.of(screen)));
+        assertThrows(
+            ServerCommonException.class, () -> flowService.importFlow("", flow, List.of(screen)));
     assertNotNull(thrown);
     assertEquals("The FlowID argument is invalid", thrown.getMessage());
   }

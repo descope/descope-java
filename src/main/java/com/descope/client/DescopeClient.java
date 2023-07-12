@@ -110,7 +110,7 @@ public class DescopeClient {
   private static SdkInfo getSdkInfo() {
     String name = "java";
     var javaVersion = Runtime.version();
-    
+
     // TODO - SHA
     return SdkInfo.builder()
         .name(name)

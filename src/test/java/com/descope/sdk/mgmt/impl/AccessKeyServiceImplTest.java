@@ -24,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-
 class AccessKeyServiceImplTest {
   private final List<String> mockRoles = List.of("Test");
   private final AssociatedTenant associatedTenant = new AssociatedTenant("test", mockRoles);

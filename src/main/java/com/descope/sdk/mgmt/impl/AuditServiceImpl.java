@@ -60,8 +60,9 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
             request.getText(),
             request.getFrom() != null ? request.getFrom().toEpochMilli() : 0,
             request.getTo() != null ? request.getTo().toEpochMilli() : 0);
-    var resp = (ActualAuditSearchResponse) apiProxy.post(
-        composeSearchUri, actualReq, ActualAuditSearchResponse.class);
+    var resp =
+        (ActualAuditSearchResponse)
+            apiProxy.post(composeSearchUri, actualReq, ActualAuditSearchResponse.class);
     var res = new ArrayList<AuditRecord>();
     for (var auditRecord : resp.getAudits()) {
       res.add(

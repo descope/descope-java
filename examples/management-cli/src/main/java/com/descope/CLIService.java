@@ -157,6 +157,27 @@ final class CLIService {
     System.out.println(roleResponse);
   }
 
+  public void audit() {
+    AuditSearchRequest auditSearchRequest =
+        AuditSearchRequest.builder()
+            .from(Instant.now().minus(Duration.ofDays(0)))
+            .to(Instant.now().minus(Duration.ofDays(0)))
+            .userIds(Collections.emptyList())
+            .actions(Collections.emptyList())
+            .devices(Collections.emptyList())
+            .methods(Collections.emptyList())
+            .geos(Collections.emptyList())
+            .remoteAddresses(Collections.emptyList())
+            .tenants(Collections.emptyList())
+            .noTenants(false)
+            .text("")
+            .excludedActions(Collections.emptyList())
+            .build();
+    var auditService = managementServices.getAuditService();
+    var response = auditService.search(auditSearchRequest);
+    System.out.println(response);
+  }
+
   public void groupAllForTenant(String tenantId) {
     var groupService = managementServices.getGroupService();
     var response = groupService.loadAllGroups(tenantId);

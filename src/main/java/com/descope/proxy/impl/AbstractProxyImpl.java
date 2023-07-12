@@ -117,7 +117,7 @@ abstract class AbstractProxyImpl {
                 responseInfo.headers().firstValueAsLong(RETRY_AFTER_HEADER).orElse(DEFAULT_RETRY));
             }
             throw ServerCommonException.genericServerError(
-              errorDetails.getActualMessage(), errorDetails.getErrorCode());
+                errorDetails.getActualMessage(), errorDetails.getErrorCode());
           }
           return objectMapper.readValue(stream, returnClz);
         } catch (IOException e) {
@@ -141,9 +141,7 @@ abstract class AbstractProxyImpl {
       private String message;
 
       String getActualMessage() {
-        return errorMessage == null
-            ? message
-            : errorMessage;
+        return errorMessage == null ? message : errorMessage;
       }
     }
   }

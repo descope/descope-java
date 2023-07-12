@@ -7,7 +7,13 @@ import com.descope.model.user.request.UserRequest;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 
 public class ManagementCLI {
@@ -326,7 +332,7 @@ public class ManagementCLI {
         cliService.deleteRole(roleId);
       }
       case "role-all" -> cliService.roleAll();
-
+      case "audit" -> cliService.audit();
       default -> throw new UnsupportedOperationException(
           "Invalid Operation %s".formatted(operation));
     }
