@@ -1,9 +1,10 @@
-package com.descope.sdk.impl;
+package com.descope.sdk.mgmt.impl;
 
-import static com.descope.sdk.impl.PasswordServiceImplTest.MOCK_PROJECT_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -12,59 +13,48 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.descope.exception.ServerCommonException;
-import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
-import com.descope.model.roles.Role;
-import com.descope.model.roles.RoleResponse;
+import com.descope.model.permission.Permission;
+import com.descope.model.permission.PermissionResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
-import com.descope.sdk.mgmt.RolesService;
-import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.descope.sdk.mgmt.PermissionService;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
-class RolesServiceImplTest {
+class PermissionServiceImplTest {
 
-  private final List<String> mockPermissionNames = List.of("permission1", "permission2");
-  private final List<Role> mockRole =
-      List.of(
-          Role.builder()
-              .name("someName")
-              .permissionNames(mockPermissionNames)
-              .description("someDesc")
-              .createdTime(1245667L)
-              .build());
-  private final RoleResponse mockRoleResponse = new RoleResponse(mockRole);
-  private RolesService rolesService;
+  private final Permission mockPermission =
+      Permission.builder().name("someName").description("someDesc").build();
+  private final List<Permission> mockPermissionList = List.of(mockPermission);
+  private final PermissionResponse permissionResponse = new PermissionResponse(mockPermissionList);
+  private PermissionService permissionService;
 
   @BeforeEach
   void setUp() {
-    var authParams = ManagementParams.builder().projectId(MOCK_PROJECT_ID).build();
-    var client = Client.builder().uri("https://api.descope.com/v1").build();
-    this.rolesService =
-        ManagementServiceBuilder.buildServices(client, authParams).getRolesService();
+    var authParams = TestMgmtUtils.getManagementParams();
+    var client = TestMgmtUtils.getClient();
+    this.permissionService =
+        ManagementServiceBuilder.buildServices(client, authParams).getPermissionService();
   }
 
   @Test
-  void testRolesForEmptyName() {
+  void testPermissionForEmptyName() {
     ServerCommonException thrown =
-        assertThrows(
-            ServerCommonException.class,
-            () -> rolesService.create("", "someDesc", mockPermissionNames));
+        assertThrows(ServerCommonException.class, () -> permissionService.create("", ""));
     assertNotNull(thrown);
     assertEquals("The Name argument is invalid", thrown.getMessage());
   }
 
   @Test
-  void testRolesCreateSuccess() {
+  void testPermissionCreateSuccess() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      rolesService.create("krishna", "", mockPermissionNames);
+      permissionService.create("someName", "someDesc");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
@@ -72,9 +62,7 @@ class RolesServiceImplTest {
   @Test
   void testUpdateForEmptyName() {
     ServerCommonException thrown =
-        assertThrows(
-            ServerCommonException.class,
-            () -> rolesService.update("", "", "", mockPermissionNames));
+        assertThrows(ServerCommonException.class, () -> permissionService.update("", "", ""));
     assertNotNull(thrown);
     assertEquals("The Name argument is invalid", thrown.getMessage());
   }
@@ -85,7 +73,7 @@ class RolesServiceImplTest {
     doReturn(void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      rolesService.update("Test", "name", "10", mockPermissionNames);
+      permissionService.update("Test", "name", "10");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
@@ -94,8 +82,7 @@ class RolesServiceImplTest {
   void testUpdateForEmptyNewName() {
     ServerCommonException thrown =
         assertThrows(
-            ServerCommonException.class,
-            () -> rolesService.update("krishna", "", "", mockPermissionNames));
+            ServerCommonException.class, () -> permissionService.update("krishna", "", ""));
     assertNotNull(thrown);
     assertEquals("The NewName argument is invalid", thrown.getMessage());
   }
@@ -103,7 +90,7 @@ class RolesServiceImplTest {
   @Test
   void testDeleteForEmptyName() {
     ServerCommonException thrown =
-        assertThrows(ServerCommonException.class, () -> rolesService.delete(""));
+        assertThrows(ServerCommonException.class, () -> permissionService.delete(""));
     assertNotNull(thrown);
     assertEquals("The Name argument is invalid", thrown.getMessage());
   }
@@ -114,7 +101,7 @@ class RolesServiceImplTest {
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      rolesService.delete("someName");
+      permissionService.delete("someName");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
@@ -122,18 +109,41 @@ class RolesServiceImplTest {
   @Test
   void testLoadAllForSuccess() {
     var apiProxy = mock(ApiProxy.class);
-    doReturn(mockRoleResponse).when(apiProxy).get(any(), any());
+    doReturn(permissionResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
-      RoleResponse response = rolesService.loadAll();
-      Assertions.assertThat(response.getRoles().size()).isEqualTo(1);
-      Assertions.assertThat(response.getRoles().get(0).getName()).isEqualTo("someName");
-      Assertions.assertThat(response.getRoles().get(0).getDescription()).isEqualTo("someDesc");
-      Assertions.assertThat(response.getRoles().get(0).getPermissionNames().size()).isEqualTo(2);
-      Assertions.assertThat(response.getRoles().get(0).getPermissionNames().get(0))
-          .isEqualTo("permission1");
-      Assertions.assertThat(response.getRoles().get(0).getPermissionNames().get(1))
-          .isEqualTo("permission2");
+      PermissionResponse response = permissionService.loadAll();
+      Assertions.assertThat(response.getPermissions().size()).isEqualTo(1);
+      Assertions.assertThat(response.getPermissions().get(0).getName()).isEqualTo("someName");
+      Assertions.assertThat(response.getPermissions().get(0).getDescription())
+          .isEqualTo("someDesc");
     }
+  }
+
+  @Test
+  void testFunctionalFullCycle() {
+    String p = TestMgmtUtils.getRandomName("p-").substring(0, 20);
+    permissionService.create(p, "ttt");
+    var permissions = permissionService.loadAll();
+    assertThat(permissions.getPermissions()).isNotEmpty();
+    boolean found = false;
+    for (var perm : permissions.getPermissions()) {
+      if (perm.getName().equals(p)) {
+        found = true;
+        assertEquals("ttt", perm.getDescription());
+      }
+    }
+    assertTrue(found);
+    permissionService.update(p, p + "1", "zzz");
+    permissions = permissionService.loadAll();
+    assertThat(permissions.getPermissions()).isNotEmpty();
+    found = false;
+    for (var perm : permissions.getPermissions()) {
+      if (perm.getName().equals(p + "1")) {
+        found = true;
+        assertEquals("zzz", perm.getDescription());
+      }
+    }
+    permissionService.delete(p + "1");
   }
 }
