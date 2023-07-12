@@ -1,6 +1,8 @@
 package com.descope.sdk.auth.impl;
 
 import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_ACCESS_KEY_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_ALL_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -86,6 +88,26 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     return CollectionUtils.isEqualCollection(authorizationClaimItems, roles);
   }
 
+  @Override
+  public void logout(String refreshToken) throws DescopeException {
+    if (Strings.isEmpty(refreshToken)) {
+      throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
+    }
+    var apiProxy = getApiProxy(refreshToken);
+    URI logOutURL = composeLogOutLinkURL(); 
+    apiProxy.post(logOutURL, null, JWTResponse.class);
+  }
+
+  @Override
+  public void logoutAll(String refreshToken) throws DescopeException {
+    if (Strings.isEmpty(refreshToken)) {
+      throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
+    }
+    var apiProxy = getApiProxy(refreshToken);
+    URI logOutAllURL = composeLogOutAllLinkURL();
+    apiProxy.post(logOutAllURL, null, JWTResponse.class);
+  }
+
   AuthenticationInfo exchangeToken(String code, URI url) {
     if (StringUtils.isBlank(code)) {
       throw ServerCommonException.invalidArgument("Code");
@@ -98,5 +120,13 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   private URI composeExchangeAccessKeyLinkURL() {
     return getUri(EXCHANGE_ACCESS_KEY_LINK);
+  }
+
+  private URI composeLogOutLinkURL() {
+    return getUri(LOG_OUT_LINK);
+  }
+
+  private URI composeLogOutAllLinkURL() {
+    return getUri(LOG_OUT_ALL_LINK);
   }
 }

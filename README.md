@@ -1289,11 +1289,10 @@ Handle API rate limits by comparing the error to the ErrRateLimitExceeded error,
 MagicLinkService mls = descopeClient.getAuthenticationServices(config, client).getMagicLinkService();
 try {
     mls.signUpOrIn(DeliveryMethod.EMAIL, "desmond@descope.com", "http://myapp.com/verify-magic-link");
+} catch (RateLimitExceededException re) {
+    // Use re.getRetryAfterSeconds() to determine time until retry
 } catch (DescopeException de) {
-    if (de.isErrorLimitException()) {
-        // TODO: How many seconds until next valid API call can take place
-        // Handle the error
-    }
+    // Handle the error
 }
 
 ```
