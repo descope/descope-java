@@ -11,6 +11,8 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.roles.RoleResponse;
 import com.descope.sdk.mgmt.RolesService;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -27,8 +29,12 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("Name");
     }
-    Map<String, Object> request =
-        Map.of("name", name, "description", description, "permissionNames", permissionNames);
+    Map<String, Object> request = new HashMap<>();
+    request.put("name", name);
+    request.put("description", description);
+    if (permissionNames != null) {
+      request.put("permissionNames", permissionNames);
+    }
     var apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_CREATE_LINK), request, Void.class);
   }

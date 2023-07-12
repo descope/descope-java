@@ -47,13 +47,21 @@ public class PasswordServiceImplTest {
       new UserResponse(
           "someUserId",
           List.of(MOCK_EMAIL),
+          "someEmail@descope.com",
           true,
+          "+1-555-555-5555",
           false,
+          "someName",
           Collections.emptyList(),
           Collections.emptyList(),
           "enabled",
           "",
-          false);
+          false,
+          0L,
+          Collections.emptyMap(),
+          false,
+          false,
+          Collections.emptyMap());
   public static final JWTResponse MOCK_JWT_RESPONSE =
       new JWTResponse(
           "someSessionJwt",
@@ -71,6 +79,7 @@ public class PasswordServiceImplTest {
           .jwt("someJwtToken")
           .claims(Map.of("someClaim", 1))
           .build();
+  @SuppressWarnings("checkstyle:LineLength")
   public static final SigningKey MOCK_SIGNING_KEY =
       SigningKey.builder()
           .e("AQAB")

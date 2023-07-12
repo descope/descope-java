@@ -118,7 +118,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   public void deleteAllTestUsers() throws DescopeException {
     URI deleteAllTestUsersUri = composeDeleteAllTestUsersUri();
     var apiProxy = getApiProxy();
-    apiProxy.post(deleteAllTestUsersUri, null, Void.class);
+    apiProxy.delete(deleteAllTestUsersUri, null, Void.class);
   }
 
   @Override
@@ -143,7 +143,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   @SuppressWarnings("unchecked")
-  public List<AllUsersResponseDetails> searchAll(UserSearchRequest request)
+  public AllUsersResponseDetails searchAll(UserSearchRequest request)
       throws DescopeException {
     if (Objects.isNull(request)) {
       request = UserSearchRequest.builder().limit(0).page(0).build();
@@ -157,7 +157,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
     URI composeSearchAllUri = composeSearchAllUri();
     var apiProxy = getApiProxy();
-    return (List<AllUsersResponseDetails>) apiProxy.post(composeSearchAllUri, request, List.class);
+    return apiProxy.post(composeSearchAllUri, request, AllUsersResponseDetails.class);
   }
 
   @Override

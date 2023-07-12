@@ -14,9 +14,11 @@ import lombok.NoArgsConstructor;
 public class UserSearchRequest {
   List<String> tenantIds;
   List<String> roles;
-  Integer limit;
-  Integer page;
-  Boolean withTestUsers;
+  @Builder.Default
+  Integer limit = 0;
+  @Builder.Default
+  Integer page = 0;
+  Boolean withTestUser;
   Boolean testUsersOnly;
   Map<String, Object> customAttributes;
 }
