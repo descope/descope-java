@@ -99,17 +99,15 @@ public interface AuthenticationService {
    * Used to log out of current device session.
    *
    * @param refreshToken - token
-   * @return - log out token {@link Token token}
    * @throws DescopeException if there is an error
    */
-  Token logout(String refreshToken) throws DescopeException;
+  void logout(String refreshToken) throws DescopeException;
 
   /**
    * Used to log out of all device sessions.
    *
    * @param refreshToken - token
-   * @return - log out token {@link Token token}
    * @throws DescopeException if there is an error
    */
-  Token logoutAll(String refreshToken) throws DescopeException;
+  void logoutAll(String refreshToken) throws DescopeException;
 }

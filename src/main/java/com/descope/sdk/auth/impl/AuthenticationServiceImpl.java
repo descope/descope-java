@@ -89,31 +89,23 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   }
 
   @Override
-  public Token logout(String refreshToken) throws DescopeException {
+  public void logout(String refreshToken) throws DescopeException {
     if (Strings.isEmpty(refreshToken)) {
       throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
     }
-    
     var apiProxy = getApiProxy(refreshToken);
-    URI logOutURL = composeLogOutLinkURL();
-    
-    var jwtResponse = apiProxy.post(logOutURL, null, JWTResponse.class);
-    var authenticationInfo = getAuthenticationInfo(jwtResponse);
-    return authenticationInfo.getToken();
+    URI logOutURL = composeLogOutLinkURL(); 
+    apiProxy.post(logOutURL, null, JWTResponse.class);
   }
 
   @Override
-  public Token logoutAll(String refreshToken) throws DescopeException {
+  public void logoutAll(String refreshToken) throws DescopeException {
     if (Strings.isEmpty(refreshToken)) {
       throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
     }
-
     var apiProxy = getApiProxy(refreshToken);
     URI logOutAllURL = composeLogOutAllLinkURL();
-    
-    var jwtResponse = apiProxy.post(logOutAllURL, null, JWTResponse.class);
-    var authenticationInfo = getAuthenticationInfo(jwtResponse);
-    return authenticationInfo.getToken();
+    apiProxy.post(logOutAllURL, null, JWTResponse.class);
   }
 
   AuthenticationInfo exchangeToken(String code, URI url) {
