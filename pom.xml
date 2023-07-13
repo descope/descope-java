@@ -125,7 +125,7 @@
         <dependency>
             <artifactId>commons-collections4</artifactId>
             <groupId>org.apache.commons</groupId>
-            <version>4.3</version>
+            <version>4.4</version>
         </dependency>
         <dependency>
             <artifactId>jackson-databind</artifactId>
