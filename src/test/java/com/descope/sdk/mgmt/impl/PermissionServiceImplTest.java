@@ -17,6 +17,7 @@ import com.descope.model.permission.Permission;
 import com.descope.model.permission.PermissionResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.PermissionService;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -35,7 +36,7 @@ class PermissionServiceImplTest {
   @BeforeEach
   void setUp() {
     var authParams = TestMgmtUtils.getManagementParams();
-    var client = TestMgmtUtils.getClient();
+    var client = TestUtils.getClient();
     this.permissionService =
         ManagementServiceBuilder.buildServices(client, authParams).getPermissionService();
   }
@@ -53,7 +54,8 @@ class PermissionServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       permissionService.create("someName", "someDesc");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -72,7 +74,8 @@ class PermissionServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       permissionService.update("Test", "name", "10");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -100,7 +103,8 @@ class PermissionServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       permissionService.delete("someName");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -111,7 +115,8 @@ class PermissionServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(permissionResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       PermissionResponse response = permissionService.loadAll();
       Assertions.assertThat(response.getPermissions().size()).isEqualTo(1);
       Assertions.assertThat(response.getPermissions().get(0).getName()).isEqualTo("someName");
@@ -122,7 +127,7 @@ class PermissionServiceImplTest {
 
   @Test
   void testFunctionalFullCycle() {
-    String p = TestMgmtUtils.getRandomName("p-").substring(0, 20);
+    String p = TestUtils.getRandomName("p-").substring(0, 20);
     permissionService.create(p, "ttt");
     var permissions = permissionService.loadAll();
     assertThat(permissions.getPermissions()).isNotEmpty();

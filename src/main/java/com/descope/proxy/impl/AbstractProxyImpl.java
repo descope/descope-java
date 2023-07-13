@@ -3,6 +3,7 @@ package com.descope.proxy.impl;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.client.SdkInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,7 @@ abstract class AbstractProxyImpl {
 
   private String authHeaderKey;
   private Supplier<String> authHeaderSupplier; // supplies value of AUTHORIZATION header
+  private SdkInfo sdkInfo;
 
   @SneakyThrows
   private static <B> BodyPublisher getBodyPublisher(B body) {
@@ -43,6 +45,10 @@ abstract class AbstractProxyImpl {
       this.authHeaderKey = null;
       this.authHeaderSupplier = null;
     }
+  }
+
+  protected void setSdkInfo(SdkInfo sdkInfo) {
+    this.sdkInfo = sdkInfo;
   }
 
   @SneakyThrows
@@ -67,6 +73,20 @@ abstract class AbstractProxyImpl {
     if (StringUtils.isNotBlank(authHeaderKey)) {
       String authHeaderVal = authHeaderSupplier.get();
       httpRequestBuilder.header(authHeaderKey, authHeaderVal);
+    }
+    if (sdkInfo != null) {
+      if (StringUtils.isNotBlank(sdkInfo.getJavaVersion())) {
+        httpRequestBuilder.header("x-descope-sdk-java-version", sdkInfo.getJavaVersion());
+      }
+      if (StringUtils.isNotBlank(sdkInfo.getName())) {
+        httpRequestBuilder.header("x-descope-sdk-name", sdkInfo.getName());
+      }
+      if (StringUtils.isNotBlank(sdkInfo.getVersion())) {
+        httpRequestBuilder.header("x-descope-sdk-version", sdkInfo.getVersion());
+      }
+      if (StringUtils.isNotBlank(sdkInfo.getSha())) {
+        httpRequestBuilder.header("x-descope-sdk-sha", sdkInfo.getSha());
+      }
     }
   }
 

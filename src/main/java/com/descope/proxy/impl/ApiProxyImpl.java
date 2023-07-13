@@ -1,15 +1,19 @@
 package com.descope.proxy.impl;
 
+import com.descope.model.client.SdkInfo;
 import com.descope.proxy.ApiProxy;
 import java.net.URI;
 import java.util.function.Supplier;
 
 class ApiProxyImpl extends AbstractProxyImpl implements ApiProxy {
 
-  public ApiProxyImpl() {}
+  public ApiProxyImpl(SdkInfo sdkInfo) {
+    setSdkInfo(sdkInfo);
+  }
 
-  public ApiProxyImpl(Supplier<String> authHeaderSupplier) {
+  public ApiProxyImpl(Supplier<String> authHeaderSupplier, SdkInfo sdkInfo) {
     setAuthHeader("Authorization", authHeaderSupplier);
+    setSdkInfo(sdkInfo);
   }
 
   @Override

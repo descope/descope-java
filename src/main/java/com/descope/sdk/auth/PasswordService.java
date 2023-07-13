@@ -13,7 +13,8 @@ public interface PasswordService {
 
   void sendPasswordReset(String loginId, String redirectURL) throws DescopeException;
 
-  void updateUserPassword(String loginId, String newPassword) throws DescopeException;
+  void updateUserPassword(String loginId, String newPassword, String refreshToken)
+      throws DescopeException;
 
   void replaceUserPassword(String loginId, String oldPassword, String newPassword)
       throws DescopeException;

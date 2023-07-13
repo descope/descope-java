@@ -83,16 +83,20 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
   }
 
   @Override
-  public void updateUserPassword(String loginId, String newPassword) throws DescopeException {
+  public void updateUserPassword(String loginId, String newPassword, String refreshToken)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
     }
     var pwdUpdateRequest =
         AuthenticationPasswordUpdateRequestBody.builder()
             .loginId(loginId)
             .newPassword(newPassword)
             .build();
-    var apiProxy = getApiProxy();
+    var apiProxy = getApiProxy(refreshToken);
     apiProxy.post(getUri(UPDATE_USER_PASSWORD_LINK), pwdUpdateRequest, Void.class);
   }
 

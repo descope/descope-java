@@ -1,6 +1,5 @@
 package com.descope.model.user.request;
 
-import java.net.URI;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("checkstyle:MemberName")
 public class EnchantedLinkTestUserRequest {
-  private TestUserRequest testUserRequest;
-  private URI uri;
+  private String loginId;
+  private String URI;
 }

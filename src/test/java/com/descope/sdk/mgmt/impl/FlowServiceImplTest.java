@@ -14,6 +14,7 @@ import com.descope.model.flow.FlowResponse;
 import com.descope.model.flow.Screen;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.FlowService;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -28,7 +29,7 @@ class FlowServiceImplTest {
   @BeforeEach
   void setUp() {
     var authParams = TestMgmtUtils.getManagementParams();
-    var client = TestMgmtUtils.getClient();
+    var client = TestUtils.getClient();
     this.flowService = ManagementServiceBuilder.buildServices(client, authParams).getFlowService();
   }
 
@@ -46,7 +47,8 @@ class FlowServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(flowResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = flowService.exportFlow("someFlowID");
       Assertions.assertThat(response).isNotNull();
     }
@@ -71,7 +73,8 @@ class FlowServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(flowResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = flowService.importFlow("someFlowID", flow, List.of(screen));
       Assertions.assertThat(response).isNotNull();
     }
@@ -83,7 +86,8 @@ class FlowServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(theme).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = flowService.exportTheme();
       Assertions.assertThat(response).isNotNull();
     }
@@ -103,7 +107,8 @@ class FlowServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(theme).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = flowService.importTheme(theme);
       Assertions.assertThat(response).isNotNull();
     }

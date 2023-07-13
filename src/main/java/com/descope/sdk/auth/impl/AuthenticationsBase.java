@@ -61,19 +61,19 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   ApiProxy getApiProxy() {
     String projectId = authParams.getProjectId();
     if (StringUtils.isNotBlank(projectId)) {
-      return ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId);
+      return ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId, client.getSdkInfo());
     }
-    return ApiProxyBuilder.buildProxy();
+    return ApiProxyBuilder.buildProxy(client.getSdkInfo());
   }
 
   ApiProxy getApiProxy(String refreshToken) {
     String projectId = authParams.getProjectId();
-    if (StringUtils.isBlank(refreshToken) || StringUtils.isNotBlank(projectId)) {
+    if (StringUtils.isBlank(refreshToken) || StringUtils.isBlank(projectId)) {
       return getApiProxy();
     }
 
     String token = String.format("Bearer %s:%s", projectId, refreshToken);
-    return ApiProxyBuilder.buildProxy(() -> token);
+    return ApiProxyBuilder.buildProxy(() -> token, client.getSdkInfo());
   }
 
   @SneakyThrows
@@ -82,7 +82,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       return provider.getProvidedKey();
     }
 
-    var key = KeyProvider.getKey(authParams.getProjectId(), client.getUri());
+    var key = KeyProvider.getKey(authParams.getProjectId(), client.getUri(), client.getSdkInfo());
     provider.setProvidedKey(key);
     return key;
   }

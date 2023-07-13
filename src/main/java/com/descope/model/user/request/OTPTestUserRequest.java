@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OTPTestUserRequest {
-  private TestUserRequest testUserRequest;
+  private String loginId;
   private DeliveryMethod deliveryMethod;
 }

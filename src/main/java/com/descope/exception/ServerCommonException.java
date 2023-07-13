@@ -3,6 +3,7 @@ package com.descope.exception;
 import static com.descope.exception.ErrorCode.ERR_MISSING_ARGUMENTS;
 import static com.descope.exception.ErrorCode.ERR_REFRESH_TOKEN;
 import static com.descope.exception.ErrorCode.INVALID_ARGUMENT;
+import static com.descope.exception.ErrorCode.INVALID_SIGNING_KEY;
 
 import lombok.ToString;
 
@@ -25,6 +26,10 @@ public class ServerCommonException extends DescopeException {
 
   public static ServerCommonException missingArguments(String error) {
     return new ServerCommonException(error, ERR_MISSING_ARGUMENTS);
+  }
+
+  public static ServerCommonException invalidSigningKey(String error) {
+    return new ServerCommonException(error, INVALID_SIGNING_KEY);
   }
 
   public static ServerCommonException genericServerError(String message, String code) {
