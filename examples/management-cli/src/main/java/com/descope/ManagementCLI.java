@@ -40,17 +40,16 @@ public class ManagementCLI {
         String phone = cmd.getOptionValue("phone");
         String name = cmd.getOptionValue("name");
 
-        var userRequest =
-            UserRequest.builder()
-                .loginId(loginId)
-                .email(email)
-                .phone(phone)
-                .displayName(name)
-                .roleNames(Collections.emptyList())
-                .userTenants(Collections.emptyList())
-                .customAttributes(Collections.emptyMap())
-                .picture("")
-                .build();
+        var userRequest = UserRequest.builder()
+            .loginId(loginId)
+            .email(email)
+            .phone(phone)
+            .displayName(name)
+            .roleNames(Collections.emptyList())
+            .userTenants(Collections.emptyList())
+            .customAttributes(Collections.emptyMap())
+            .picture("")
+            .build();
         cliService.createUser(loginId, userRequest);
       }
 
@@ -69,19 +68,18 @@ public class ManagementCLI {
         String phone = cmd.getOptionValue("phone");
         String name = cmd.getOptionValue("name");
 
-        var userRequest =
-            UserRequest.builder()
-                .loginId(loginId)
-                .email(email)
-                .phone(phone)
-                .displayName(name)
-                .roleNames(Collections.emptyList())
-                .userTenants(Collections.emptyList())
-                .customAttributes(Collections.emptyMap())
-                .picture("")
-                .invite(false)
-                .test(false)
-                .build();
+        var userRequest = UserRequest.builder()
+            .loginId(loginId)
+            .email(email)
+            .phone(phone)
+            .displayName(name)
+            .roleNames(Collections.emptyList())
+            .userTenants(Collections.emptyList())
+            .customAttributes(Collections.emptyMap())
+            .picture("")
+            .invite(false)
+            .test(false)
+            .build();
         cliService.updateUser(loginId, userRequest);
       }
 
@@ -109,7 +107,7 @@ public class ManagementCLI {
         cliService.loadUser(loginId);
       }
       case "user-search-all" -> cliService.searchAllUsers();
-        // TODO: Testing pending as not getting success response for empty tenants
+      // TODO: Testing pending as not getting success response for empty tenants
       case "access-key-create" -> {
         Options options = new Options();
 

@@ -24,4 +24,3 @@ public class SSOSettingsResponse {
   private String redirectURL;
   private String domain;
 }
-

@@ -48,11 +48,11 @@ public class UriUtils {
     }
 
     return Arrays.stream(url.getQuery().split("&"))
-            .map(UriUtils::splitQueryParameter)
-            .collect(Collectors.groupingBy(
-                SimpleImmutableEntry::getKey,
-                LinkedHashMap::new,
-                Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
+        .map(UriUtils::splitQueryParameter)
+        .collect(Collectors.groupingBy(
+            SimpleImmutableEntry::getKey,
+            LinkedHashMap::new,
+            Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
   }
 
   public static SimpleImmutableEntry<String, String> splitQueryParameter(String it) {
@@ -61,7 +61,6 @@ public class UriUtils {
     final String value = idx > 0 && it.length() > idx + 1 ? it.substring(idx + 1) : null;
     return new SimpleImmutableEntry<>(
         URLDecoder.decode(key, StandardCharsets.UTF_8),
-        URLDecoder.decode(value, StandardCharsets.UTF_8)
-    );
+        URLDecoder.decode(value, StandardCharsets.UTF_8));
   }
 }

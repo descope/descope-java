@@ -57,10 +57,9 @@ final class CLIService {
       List<String> roleNames,
       List<AssociatedTenant> keyTenants) {
 
-    var accessKeyResponse =
-        managementServices
-            .getAccessKeyService()
-            .create(keyName, parseInt(expirationTime), roleNames, keyTenants);
+    var accessKeyResponse = managementServices
+        .getAccessKeyService()
+        .create(keyName, parseInt(expirationTime), roleNames, keyTenants);
     System.out.printf("Access key with Id: %s was successfully Created%n", accessKeyResponse);
   }
 
@@ -161,10 +160,9 @@ final class CLIService {
   }
 
   public void audit() {
-    AuditSearchRequest auditSearchRequest =
-        AuditSearchRequest.builder()
-            .from(Instant.now().minus(Duration.ofDays(3)))
-            .build();
+    AuditSearchRequest auditSearchRequest = AuditSearchRequest.builder()
+        .from(Instant.now().minus(Duration.ofDays(3)))
+        .build();
     var auditService = managementServices.getAuditService();
     var response = auditService.search(auditSearchRequest);
     System.out.println(response);
@@ -178,8 +176,7 @@ final class CLIService {
 
   public void groupAllForMember(String tenantId, String userIds, String loginIds) {
     var groupService = managementServices.getGroupService();
-    var response =
-        groupService.loadAllGroupsForMembers(tenantId, getValues(userIds), getValues(loginIds));
+    var response = groupService.loadAllGroupsForMembers(tenantId, getValues(userIds), getValues(loginIds));
     System.out.println(response);
   }
 

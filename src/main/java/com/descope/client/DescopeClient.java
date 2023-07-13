@@ -58,41 +58,37 @@ public class DescopeClient {
 
   private static ManagementServices getManagementServices(
       Config config, String projectId, Client client) {
-    var managementParams =
-        ManagementParams.builder()
-            .projectId(projectId)
-            .managementKey(config.getManagementKey())
-            .build();
+    var managementParams = ManagementParams.builder()
+        .projectId(projectId)
+        .managementKey(config.getManagementKey())
+        .build();
     return ManagementServiceBuilder.buildServices(client, managementParams);
   }
 
   private static AuthenticationServices getAuthenticationServices(Config config, Client client) {
-    var authParams =
-        AuthParams.builder()
-            .projectId(config.getProjectId())
-            .publicKey(config.getPublicKey())
-            .sessionJwtViaCookie(config.isSessionJWTViaCookie())
-            .cookieDomain(config.getSessionJWTCookieDomain())
-            .build();
+    var authParams = AuthParams.builder()
+        .projectId(config.getProjectId())
+        .publicKey(config.getPublicKey())
+        .sessionJwtViaCookie(config.isSessionJWTViaCookie())
+        .cookieDomain(config.getSessionJWTCookieDomain())
+        .build();
     return AuthenticationServiceBuilder.buildServices(client, authParams);
   }
 
   private static Client getClient(Config config) {
-    var clientParams =
-        ClientParams.builder()
-            .projectId(config.getProjectId())
-            .baseUrl(config.getDescopeBaseUrl())
-            .customDefaultHeaders(config.getCustomDefaultHeaders())
-            .build();
+    var clientParams = ClientParams.builder()
+        .projectId(config.getProjectId())
+        .baseUrl(config.getDescopeBaseUrl())
+        .customDefaultHeaders(config.getCustomDefaultHeaders())
+        .build();
     return getClient(clientParams);
   }
 
   private static Client getClient(ClientParams params) {
     Map<String, String> customDefaultHeaders = params.getCustomDefaultHeaders();
-    Map<String, String> defaultHeaders =
-        Collections.isEmpty(customDefaultHeaders)
-            ? new HashMap<>()
-            : new HashMap<>(customDefaultHeaders);
+    Map<String, String> defaultHeaders = Collections.isEmpty(customDefaultHeaders)
+        ? new HashMap<>()
+        : new HashMap<>(customDefaultHeaders);
 
     if (StringUtils.isBlank(params.getBaseUrl())) {
       params.setBaseUrl(DEFAULT_BASE_URL);

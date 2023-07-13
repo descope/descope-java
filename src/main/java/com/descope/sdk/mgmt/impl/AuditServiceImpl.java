@@ -45,24 +45,21 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
 
     URI composeSearchUri = composeSearchUri();
     var apiProxy = getApiProxy();
-    var actualReq =
-        new ActualAuditSearchRequest(
-            request.getUserIds(),
-            request.getActions(),
-            request.getExcludedActions(),
-            request.getDevices(),
-            request.getMethods(),
-            request.getGeos(),
-            request.getRemoteAddresses(),
-            request.getLoginIds(),
-            request.getTenants(),
-            request.isNoTenants(),
-            request.getText(),
-            request.getFrom() != null ? request.getFrom().toEpochMilli() : 0,
-            request.getTo() != null ? request.getTo().toEpochMilli() : 0);
-    var resp =
-        (ActualAuditSearchResponse)
-            apiProxy.post(composeSearchUri, actualReq, ActualAuditSearchResponse.class);
+    var actualReq = new ActualAuditSearchRequest(
+        request.getUserIds(),
+        request.getActions(),
+        request.getExcludedActions(),
+        request.getDevices(),
+        request.getMethods(),
+        request.getGeos(),
+        request.getRemoteAddresses(),
+        request.getLoginIds(),
+        request.getTenants(),
+        request.isNoTenants(),
+        request.getText(),
+        request.getFrom() != null ? request.getFrom().toEpochMilli() : 0,
+        request.getTo() != null ? request.getTo().toEpochMilli() : 0);
+    var resp = (ActualAuditSearchResponse) apiProxy.post(composeSearchUri, actualReq, ActualAuditSearchResponse.class);
     var res = new ArrayList<AuditRecord>();
     for (var auditRecord : resp.getAudits()) {
       res.add(

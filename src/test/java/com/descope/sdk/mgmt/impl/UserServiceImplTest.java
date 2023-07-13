@@ -56,7 +56,7 @@ public class UserServiceImplTest {
   @Test
   void testCreateForSuccess() {
     var userResponseDetails = mock(UserResponseDetails.class);
-    var userRequest = mock(com.descope.model.user.request.UserRequest.class);
+    var userRequest = mock(UserRequest.class);
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -70,7 +70,7 @@ public class UserServiceImplTest {
   @Test
   void testCreateTestUserForSuccess() {
     var userResponseDetails = mock(UserResponseDetails.class);
-    var userRequest = mock(com.descope.model.user.request.UserRequest.class);
+    var userRequest = mock(UserRequest.class);
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -84,7 +84,7 @@ public class UserServiceImplTest {
   @Test
   void testInviteForSuccess() {
     var userResponseDetails = mock(UserResponseDetails.class);
-    var userRequest = mock(com.descope.model.user.request.UserRequest.class);
+    var userRequest = mock(UserRequest.class);
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -106,7 +106,7 @@ public class UserServiceImplTest {
   @Test
   void testUpdateForSuccess() {
     var userResponseDetails = mock(UserResponseDetails.class);
-    var userRequest = mock(com.descope.model.user.request.UserRequest.class);
+    var userRequest = mock(UserRequest.class);
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
