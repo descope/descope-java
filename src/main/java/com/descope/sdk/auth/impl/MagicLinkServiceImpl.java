@@ -31,7 +31,6 @@ import com.descope.sdk.auth.MagicLinkService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLinkService {
@@ -69,7 +68,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
   @Override
   public String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user)
       throws DescopeException {
-    if (Objects.isNull(user)) {
+    if (user == null) {
       user = new User();
     }
 

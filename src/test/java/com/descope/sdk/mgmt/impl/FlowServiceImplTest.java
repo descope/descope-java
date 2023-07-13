@@ -115,10 +115,10 @@ class FlowServiceImplTest {
     }
   }
 
-  // @Test
-  // void testFunctionalFullCycleTheme() {
-  //   var theme = flowService.exportTheme();
-  //   Assertions.assertThat(theme).isNotNull();
-  //   Assertions.assertThat(theme.getId()).isNotBlank();
-  // }
+  @Test
+  void testFunctionalFullCycleTheme() {
+    var theme = flowService.exportTheme();
+    Assertions.assertThat(theme).isNotNull();
+    Assertions.assertThat(theme.getId()).isNotBlank();
+  }
 }

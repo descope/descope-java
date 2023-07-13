@@ -54,7 +54,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
 
   @Override
   public Theme importTheme(Theme theme) throws DescopeException {
-    if (Objects.isNull(theme)) {
+    if (theme == null) {
       throw ServerCommonException.invalidArgument("Theme");
     }
     Map<String, Object> request = Map.of("theme", theme);

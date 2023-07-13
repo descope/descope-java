@@ -17,7 +17,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,15 +30,15 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
   @Override
   @SuppressWarnings("unchecked")
   public AuditSearchResponse search(AuditSearchRequest request) throws DescopeException {
-    if (Objects.isNull(request)) {
+    if (request == null) {
       request = new AuditSearchRequest();
     }
     var now = Instant.now();
     var oldest = now.minus(Duration.ofDays(30));
-    if (!Objects.isNull(request.getFrom()) && request.getFrom().isBefore(oldest)) {
+    if (request.getFrom() != null && request.getFrom().isBefore(oldest)) {
       throw ServerCommonException.invalidArgument("from");
     }
-    if (!Objects.isNull(request.getTo()) && now.isBefore(request.getTo())) {
+    if (request.getTo() != null && now.isBefore(request.getTo())) {
       throw ServerCommonException.invalidArgument("to");
     }
 

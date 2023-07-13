@@ -8,7 +8,6 @@ import static com.descope.literals.AppConstants.SESSION_COOKIE_NAME;
 import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -34,7 +33,6 @@ import java.net.http.HttpRequest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -120,7 +118,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   Tokens provideTokens(HttpRequest request) {
-    if (isNull(request)) {
+    if (request == null) {
       return Tokens.builder().build();
     }
 
@@ -203,11 +201,9 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   List<String> getAuthorizationClaimItems(Token token, String tenant, List<String> permissions) {
-    if (Objects.isNull(tenant) || MapUtils.isEmpty(token.getClaims())) {
+    if (tenant == null || MapUtils.isEmpty(token.getClaims())) {
       return Collections.emptyList();
     }
-
-    // TODO - Understand Tenant Roles | 08/05/23 | by keshavram
 
     return token.getClaims().keySet().stream()
         .filter(permissions::contains)
