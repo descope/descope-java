@@ -5,6 +5,9 @@
     <artifactId>java-sdk</artifactId>
     <modelVersion>4.0.0</modelVersion>
     <version>1.0</version>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>Java library used to integrate with Descope.</description>
+    <url>https://github.com/descope/descope-java</url>
     <properties>
         <org.projectlombok.version>1.18.28</org.projectlombok.version>
         <maven.compiler.source>11</maven.compiler.source>
@@ -153,23 +156,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.openrewrite.maven</groupId>
-                <artifactId>rewrite-maven-plugin</artifactId>
-                <version>5.2.6</version>
-                <configuration>
-                    <activeRecipes>
-                        <recipe>org.openrewrite.staticanalysis.CodeCleanup</recipe>
-                    </activeRecipes>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.openrewrite.recipe</groupId>
-                        <artifactId>rewrite-static-analysis</artifactId>
-                        <version>1.0.2</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
