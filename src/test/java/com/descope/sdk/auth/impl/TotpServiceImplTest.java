@@ -1,10 +1,10 @@
 package com.descope.sdk.auth.impl;
 
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_EMAIL;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_JWT_RESPONSE;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_SIGNING_KEY;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_TOKEN;
-import static com.descope.sdk.auth.impl.TestAuthUtils.PROJECT_ID;
+import static com.descope.sdk.TestUtils.MOCK_EMAIL;
+import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
+import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
+import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,7 +43,7 @@ public class TotpServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestAuthUtils.getAuthParams();
+    var authParams = TestUtils.getAuthParams();
     var client = TestUtils.getClient();
     this.totpService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getTotpService();

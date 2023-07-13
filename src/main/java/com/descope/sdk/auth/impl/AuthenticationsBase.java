@@ -13,12 +13,10 @@ import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.descope.enums.DeliveryMethod;
-import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.Tokens;
@@ -33,15 +31,12 @@ import com.descope.sdk.auth.AuthenticationService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.security.Key;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,13 +44,10 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 abstract class AuthenticationsBase extends SdkServicesBase implements AuthenticationService {
   private final AuthParams authParams;
-  private final Provider provider;
 
   AuthenticationsBase(Client client, AuthParams authParams) {
-    super(client);
+    super(client, authParams.getProjectId());
     this.authParams = authParams;
-    this.provider =
-        Provider.builder().client(client).authParams(authParams).keyMap(new HashMap<>()).build();
   }
 
   ApiProxy getApiProxy() {
@@ -74,17 +66,6 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
 
     String token = String.format("Bearer %s:%s", projectId, refreshToken);
     return ApiProxyBuilder.buildProxy(() -> token, client.getSdkInfo());
-  }
-
-  @SneakyThrows
-  Key requestKeys() {
-    if (Objects.nonNull(provider.getProvidedKey())) {
-      return provider.getProvidedKey();
-    }
-
-    var key = KeyProvider.getKey(authParams.getProjectId(), client.getUri(), client.getSdkInfo());
-    provider.setProvidedKey(key);
-    return key;
   }
 
   void verifyDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, User user) {
@@ -128,13 +109,6 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       default:
         throw new IllegalStateException("Unexpected value: " + deliveryMethod);
     }
-  }
-
-  Token validateAndCreateToken(String jwt) {
-    if (StringUtils.isBlank(jwt)) {
-      throw ClientFunctionalException.invalidToken();
-    }
-    return JwtUtils.getToken(jwt, requestKeys());
   }
 
   String getValidRefreshToken(HttpRequest request) {

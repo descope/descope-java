@@ -2,18 +2,18 @@ package com.descope.sdk.auth.impl;
 
 import static com.descope.literals.AppConstants.COOKIE;
 import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_DOMAIN;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_EMAIL;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_JWT_RESPONSE;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_MASKED_EMAIL;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_MASKED_PHONE;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_PHONE;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_REFRESH_TOKEN;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_SIGNING_KEY;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_TOKEN;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_URL;
-import static com.descope.sdk.auth.impl.TestAuthUtils.PROJECT_ID;
-import static com.descope.sdk.auth.impl.TestAuthUtils.UPDATE_MOCK_EMAIL;
+import static com.descope.sdk.TestUtils.MOCK_DOMAIN;
+import static com.descope.sdk.TestUtils.MOCK_EMAIL;
+import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
+import static com.descope.sdk.TestUtils.MOCK_MASKED_EMAIL;
+import static com.descope.sdk.TestUtils.MOCK_MASKED_PHONE;
+import static com.descope.sdk.TestUtils.MOCK_PHONE;
+import static com.descope.sdk.TestUtils.MOCK_REFRESH_TOKEN;
+import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
+import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.MOCK_URL;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
+import static com.descope.sdk.TestUtils.UPDATE_MOCK_EMAIL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -43,7 +43,6 @@ import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.MagicLinkService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
-import com.descope.sdk.mgmt.impl.TestMgmtUtils;
 import com.descope.utils.JwtUtils;
 import com.descope.utils.UriUtils;
 import java.net.URI;
@@ -62,11 +61,11 @@ class MagicLinkServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestAuthUtils.getAuthParams();
+    var authParams = TestUtils.getAuthParams();
     var client = TestUtils.getClient();
     this.magicLinkService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getMagicLinkService();
-    var mgmtParams = TestMgmtUtils.getManagementParams();
+    var mgmtParams = TestUtils.getManagementParams();
     this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 

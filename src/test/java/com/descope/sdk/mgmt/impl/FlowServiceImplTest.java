@@ -29,7 +29,7 @@ class FlowServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestMgmtUtils.getManagementParams();
+    var authParams = TestUtils.getManagementParams();
     var client = TestUtils.getClient();
     this.flowService = ManagementServiceBuilder.buildServices(client, authParams).getFlowService();
   }
