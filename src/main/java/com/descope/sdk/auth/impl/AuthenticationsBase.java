@@ -8,7 +8,6 @@ import static com.descope.literals.AppConstants.SESSION_COOKIE_NAME;
 import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
-import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.descope.enums.DeliveryMethod;
@@ -143,7 +142,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
                 .map(String::trim)
                 .findAny()
                 .orElse(null);
-        if (nonNull(sessionCookie)) {
+        if (sessionCookie != null) {
           tokens.setSessionToken(sessionCookie.split("=")[1]);
         }
 
@@ -152,7 +151,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
                 .filter(cookie -> cookie.contains(REFRESH_COOKIE_NAME))
                 .findAny()
                 .orElse(null);
-        if (nonNull(refreshCookie)) {
+        if (refreshCookie != null) {
           tokens.setRefreshToken(refreshCookie.split("=")[1]);
         }
       }

@@ -41,7 +41,6 @@ import com.descope.sdk.mgmt.UserService;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 class UserServiceImpl extends ManagementsBase implements UserService {
