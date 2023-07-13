@@ -25,7 +25,6 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.jwt.Provider;
-import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.response.MaskedEmailRes;
@@ -155,7 +154,7 @@ public class EnchantedLinkServiceImplTest {
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String updateUserEmail =
           enchantedLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
-      org.assertj.core.api.Assertions.assertThat(updateUserEmail).isNotBlank().contains("*");
+      assertThat(updateUserEmail).isNotBlank().contains("*");
     }
   }
 
@@ -223,7 +222,7 @@ public class EnchantedLinkServiceImplTest {
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
-        loginId, UserRequest.builder().email(loginId + "@descope.com").loginId(loginId).build());
+        loginId, UserRequest.builder().email(loginId + "@descope.com").build());
     var response = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
     assertThat(response.getLink()).isNotBlank();
     assertThat(response.getPendingRef()).isNotBlank();

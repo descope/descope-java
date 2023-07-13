@@ -352,10 +352,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    URI otpForTestUSerUri = composeOTPForTestUserUri();
-    OTPTestUserRequest request = new OTPTestUserRequest(loginId, deliveryMethod);
+    URI otpForTestUserUri = composeOTPForTestUserUri();
+    OTPTestUserRequest request = new OTPTestUserRequest(loginId, deliveryMethod.getValue());
     var apiProxy = getApiProxy();
-    return apiProxy.post(otpForTestUSerUri, request, OTPTestUserResponse.class);
+    return apiProxy.post(otpForTestUserUri, request, OTPTestUserResponse.class);
   }
 
   @Override
@@ -365,11 +365,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    URI maginLinkForTestUSerUri = composeMaginLinkForTestUserUri();
+    URI maginLinkForTestUserUri = composeMaginLinkForTestUserUri();
     MagicLinkTestUserRequest request =
-        new MagicLinkTestUserRequest(loginId, deliveryMethod, uri);
+        new MagicLinkTestUserRequest(loginId, deliveryMethod.getValue(), uri);
     var apiProxy = getApiProxy();
-    return apiProxy.post(maginLinkForTestUSerUri, request, MagicLinkTestUserResponse.class);
+    return apiProxy.post(maginLinkForTestUserUri, request, MagicLinkTestUserResponse.class);
   }
 
   @Override
@@ -378,10 +378,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    URI enchantedLinkForTestUSerUri = composeEnchantedLinkForTestUserUri();
+    URI enchantedLinkForTestUserUri = composeEnchantedLinkForTestUserUri();
     EnchantedLinkTestUserRequest request = new EnchantedLinkTestUserRequest(loginId, uri);
     var apiProxy = getApiProxy();
-    return apiProxy.post(enchantedLinkForTestUSerUri, request, EnchantedLinkTestUserResponse.class);
+    return apiProxy.post(enchantedLinkForTestUserUri, request, EnchantedLinkTestUserResponse.class);
   }
 
   private URI composeCreateUserUri() {
