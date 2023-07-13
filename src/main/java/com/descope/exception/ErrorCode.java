@@ -20,4 +20,7 @@ public class ErrorCode {
 
   // rate limit
   public static final String RATE_LIMIT_EXCEEDED = "E130429";
+
+  // No keys
+  public static final String INVALID_SIGNING_KEY = "J010001";
 }

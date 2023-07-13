@@ -12,6 +12,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.audit.AuditSearchRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.sdk.mgmt.AuditService;
 import java.time.Duration;
@@ -31,7 +32,7 @@ public class AuditServiceImplTest {
   @BeforeEach
   void setUp() {
     var authParams = TestMgmtUtils.getManagementParams();
-    var client = TestMgmtUtils.getClient();
+    var client = TestUtils.getClient();
     var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
     this.auditService = mgmtServices.getAuditService();
     this.accessKeyService = mgmtServices.getAccessKeyService();
@@ -48,7 +49,8 @@ public class AuditServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(auditResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = auditService.search(auditSearchRequest);
       Assertions.assertThat(response.getAudits().size()).isEqualTo(1);
       Assertions.assertThat(response.getAudits().get(0).getOccurred().toEpochMilli())
@@ -89,10 +91,10 @@ public class AuditServiceImplTest {
   @SneakyThrows
   void testFunctionalFullCycle() {
     var createResult = accessKeyService.create(
-        TestMgmtUtils.getRandomName("ak-"), 0, null, null);
+        TestUtils.getRandomName("ak-"), 0, null, null);
     accessKeyService.delete(createResult.getKey().getId());
     // Wait for the audit
-    Thread.sleep(60000);
+    Thread.sleep(10000);
     var searchRes = auditService.search(AuditSearchRequest.builder().noTenants(true).build());
     Assertions.assertThat(searchRes.getAudits()).isNotEmpty();
   }

@@ -17,6 +17,7 @@ import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.TenantService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +39,7 @@ public class TenantServiceImplTest {
   @BeforeEach
   void setUp() {
     var authParams = TestMgmtUtils.getManagementParams();
-    var client = TestMgmtUtils.getClient();
+    var client = TestUtils.getClient();
     this.tenantService =
         ManagementServiceBuilder.buildServices(client, authParams).getTenantService();
   }
@@ -57,7 +58,8 @@ public class TenantServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = tenantService.create("someName", selfProvisioningDomains);
       assertThat(response).isEqualTo("id");
     }
@@ -78,7 +80,8 @@ public class TenantServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       tenantService.createWithId("someLoginId", "someName", selfProvisioningDomains);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -99,7 +102,8 @@ public class TenantServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       tenantService.update("someLoginId", "someName", selfProvisioningDomains);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -118,7 +122,8 @@ public class TenantServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       tenantService.delete("someId");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -130,7 +135,8 @@ public class TenantServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockTenantsResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = tenantService.loadAll();
       assertThat(response.size()).isEqualTo(1);
     }
@@ -138,7 +144,7 @@ public class TenantServiceImplTest {
 
   @Test
   void testFunctionalFullCycle() {
-    String name = TestMgmtUtils.getRandomName("t-");
+    String name = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(name, List.of(name + ".com", name + "1.com"));
     assertThat(tenantId).isNotBlank();
     var tenants = tenantService.loadAll();

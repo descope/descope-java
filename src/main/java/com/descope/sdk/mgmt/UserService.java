@@ -5,6 +5,9 @@ import com.descope.exception.DescopeException;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
+import com.descope.model.user.response.EnchantedLinkTestUserResponse;
+import com.descope.model.user.response.MagicLinkTestUserResponse;
+import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import java.net.URI;
 import java.util.List;
@@ -314,7 +317,7 @@ public interface UserService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  String generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
+  OTPTestUserResponse generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
       throws DescopeException;
 
   /**
@@ -328,8 +331,8 @@ public interface UserService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  String generateMagicLinkForTestUser(String loginId, URI uri, DeliveryMethod deliveryMethod)
-      throws DescopeException;
+  MagicLinkTestUserResponse generateMagicLinkForTestUser(
+      String loginId, String uri, DeliveryMethod deliveryMethod) throws DescopeException;
 
   /**
    * Generate Enchanted Link for the given login ID of a test user. This is useful when running
@@ -342,5 +345,6 @@ public interface UserService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  String generateEnchantedLinkForTestUser(String loginId, URI uri) throws DescopeException;
+  EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(String loginId, String uri)
+        throws DescopeException;
 }

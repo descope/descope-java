@@ -17,6 +17,7 @@ import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseDetails;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.AccessKeyService;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -43,7 +44,7 @@ class AccessKeyServiceImplTest {
   @BeforeEach
   void setUp() {
     var authParams = TestMgmtUtils.getManagementParams();
-    var client = TestMgmtUtils.getClient();
+    var client = TestUtils.getClient();
     this.accessKeyService =
         ManagementServiceBuilder.buildServices(client, authParams).getAccessKeyService();
   }
@@ -63,7 +64,8 @@ class AccessKeyServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       AccessKeyResponse response = accessKeyService.create("Test", 10, mockRoles, mockKeyTenants);
       assertNotNull(response);
     }
@@ -82,7 +84,8 @@ class AccessKeyServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       AccessKeyResponse response = accessKeyService.load("Id");
       Assertions.assertThat(response.getKey().getId()).isNotBlank();
     }
@@ -101,7 +104,8 @@ class AccessKeyServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       AccessKeyResponse response = accessKeyService.update("Test", "name");
       Assertions.assertThat(response.getKey().getId()).isNotBlank();
     }
@@ -128,7 +132,8 @@ class AccessKeyServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       AccessKeyResponse response = accessKeyService.deactivate("Test");
       Assertions.assertThat(response.getKey().getId()).isNotBlank();
     }
@@ -147,7 +152,8 @@ class AccessKeyServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       AccessKeyResponse response = accessKeyService.activate("Test");
       Assertions.assertThat(response.getKey().getId()).isNotBlank();
     }
@@ -166,7 +172,8 @@ class AccessKeyServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       accessKeyService.delete("Test");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -174,7 +181,7 @@ class AccessKeyServiceImplTest {
 
   @Test
   void testFunctionalFullCycle() {
-    String name = TestMgmtUtils.getRandomName("ak-");
+    String name = TestUtils.getRandomName("ak-");
     var createResult = accessKeyService.create(name, 0, null, null);
     Assertions.assertThat(createResult).isNotNull();
     Assertions.assertThat(createResult.getCleartext()).isNotBlank();

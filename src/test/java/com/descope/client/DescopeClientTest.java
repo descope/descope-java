@@ -36,10 +36,15 @@ class DescopeClientTest {
   // TODO - TestConcurrentClients | 17/04/23 | by keshavram
 
   @Test
-  void testEmptyProjectID() {
-    Assertions.assertThatThrownBy(DescopeClient::new)
-        .isInstanceOf(ClientSetupException.class)
-        .hasMessage("Missing project ID");
+  void testEmptyProjectID() throws Exception {
+    EnvironmentVariables env =
+        new EnvironmentVariables(PROJECT_ID_ENV_VAR, "");
+    env.execute(
+        () -> {
+          Assertions.assertThatThrownBy(DescopeClient::new)
+              .isInstanceOf(ClientSetupException.class)
+              .hasMessage("Missing project ID");
+        });
   }
 
   @Test
@@ -48,6 +53,4 @@ class DescopeClientTest {
         .isInstanceOf(ServerCommonException.class)
         .hasMessage("The Config argument is invalid");
   }
-
-  // TODO - TestDescopeSDKMock | 17/04/23 | by keshavram
 }

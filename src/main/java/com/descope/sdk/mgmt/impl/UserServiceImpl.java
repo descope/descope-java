@@ -30,10 +30,12 @@ import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.request.EnchantedLinkTestUserRequest;
 import com.descope.model.user.request.MagicLinkTestUserRequest;
 import com.descope.model.user.request.OTPTestUserRequest;
-import com.descope.model.user.request.TestUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
+import com.descope.model.user.response.EnchantedLinkTestUserResponse;
+import com.descope.model.user.response.MagicLinkTestUserResponse;
+import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.sdk.mgmt.UserService;
 import java.net.URI;
@@ -53,7 +55,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (Objects.isNull(request)) {
       request = new UserRequest();
     }
-
+    request.setLoginId(loginId);
     request.setInvite(false);
     request.setTest(false);
 
@@ -69,6 +71,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       request = new UserRequest();
     }
 
+    request.setLoginId(loginId);
     request.setInvite(false);
     request.setTest(true);
 
@@ -83,6 +86,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       request = new UserRequest();
     }
 
+    request.setLoginId(loginId);
     request.setInvite(true);
     request.setTest(false);
 
@@ -99,6 +103,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (Objects.isNull(request)) {
       request = new UserRequest();
     }
+    request.setLoginId(loginId);
     URI updateUserUri = composeUpdateUserUri();
     var apiProxy = getApiProxy();
     return apiProxy.post(updateUserUri, request, UserResponseDetails.class);
@@ -342,42 +347,41 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public String generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
+  public OTPTestUserResponse generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    URI otpForTestUSerUri = composeOTPForTestUSerUri();
-    TestUserRequest testUserRequest = new TestUserRequest(loginId);
-    OTPTestUserRequest request = new OTPTestUserRequest(testUserRequest, deliveryMethod);
+    URI otpForTestUSerUri = composeOTPForTestUserUri();
+    OTPTestUserRequest request = new OTPTestUserRequest(loginId, deliveryMethod);
     var apiProxy = getApiProxy();
-    return apiProxy.post(otpForTestUSerUri, request, String.class);
+    return apiProxy.post(otpForTestUSerUri, request, OTPTestUserResponse.class);
   }
 
   @Override
-  public String generateMagicLinkForTestUser(String loginId, URI uri, DeliveryMethod deliveryMethod)
+  public MagicLinkTestUserResponse generateMagicLinkForTestUser(
+      String loginId, String uri, DeliveryMethod deliveryMethod)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    URI maginLinkForTestUSerUri = composeMaginLinkForTestUSerUri();
-    TestUserRequest testUserRequest = new TestUserRequest(loginId);
+    URI maginLinkForTestUSerUri = composeMaginLinkForTestUserUri();
     MagicLinkTestUserRequest request =
-        new MagicLinkTestUserRequest(testUserRequest, deliveryMethod, uri);
+        new MagicLinkTestUserRequest(loginId, deliveryMethod, uri);
     var apiProxy = getApiProxy();
-    return apiProxy.post(maginLinkForTestUSerUri, request, String.class);
+    return apiProxy.post(maginLinkForTestUSerUri, request, MagicLinkTestUserResponse.class);
   }
 
   @Override
-  public String generateEnchantedLinkForTestUser(String loginId, URI uri) throws DescopeException {
+  public EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(
+      String loginId, String uri) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    URI enchantedLinkForTestUSerUri = composeEnchantedLinkForTestUSerUri();
-    TestUserRequest testUserRequest = new TestUserRequest(loginId);
-    EnchantedLinkTestUserRequest request = new EnchantedLinkTestUserRequest(testUserRequest, uri);
+    URI enchantedLinkForTestUSerUri = composeEnchantedLinkForTestUserUri();
+    EnchantedLinkTestUserRequest request = new EnchantedLinkTestUserRequest(loginId, uri);
     var apiProxy = getApiProxy();
-    return apiProxy.post(enchantedLinkForTestUSerUri, request, String.class);
+    return apiProxy.post(enchantedLinkForTestUSerUri, request, EnchantedLinkTestUserResponse.class);
   }
 
   private URI composeCreateUserUri() {
@@ -452,15 +456,15 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     return getUri(USER_REMOVE_TENANT_LINK);
   }
 
-  private URI composeOTPForTestUSerUri() {
+  private URI composeOTPForTestUserUri() {
     return getUri(COMPOSE_OTP_FOR_TEST_LINK);
   }
 
-  private URI composeMaginLinkForTestUSerUri() {
+  private URI composeMaginLinkForTestUserUri() {
     return getUri(MAGIC_LINK_FOR_TEST_LINK);
   }
 
-  private URI composeEnchantedLinkForTestUSerUri() {
+  private URI composeEnchantedLinkForTestUserUri() {
     return getUri(ENCHANTED_LINK_FOR_TEST_LINK);
   }
 

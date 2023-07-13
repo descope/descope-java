@@ -17,6 +17,7 @@ import com.descope.model.roles.Role;
 import com.descope.model.roles.RoleResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.PermissionService;
 import com.descope.sdk.mgmt.RolesService;
 import java.util.List;
@@ -43,7 +44,7 @@ class RolesServiceImplTest {
   @BeforeEach
   void setUp() {
     var authParams = TestMgmtUtils.getManagementParams();
-    var client = TestMgmtUtils.getClient();
+    var client = TestUtils.getClient();
     var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
     this.rolesService = mgmtServices.getRolesService();
     this.permissionService = mgmtServices.getPermissionService();
@@ -64,7 +65,8 @@ class RolesServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       rolesService.create("krishna", "", mockPermissionNames);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -85,7 +87,8 @@ class RolesServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       rolesService.update("Test", "name", "10", mockPermissionNames);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -114,7 +117,8 @@ class RolesServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       rolesService.delete("someName");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -125,7 +129,8 @@ class RolesServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockRoleResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       RoleResponse response = rolesService.loadAll();
       Assertions.assertThat(response.getRoles().size()).isEqualTo(1);
       Assertions.assertThat(response.getRoles().get(0).getName()).isEqualTo("someName");
@@ -140,9 +145,9 @@ class RolesServiceImplTest {
 
   @Test
   void testFunctionalFullCycle() {
-    String p1 = TestMgmtUtils.getRandomName("p-").substring(0, 20);
-    String p2 = TestMgmtUtils.getRandomName("p-").substring(0, 20);
-    String r1 = TestMgmtUtils.getRandomName("r-").substring(0, 20);
+    String p1 = TestUtils.getRandomName("p-").substring(0, 20);
+    String p2 = TestUtils.getRandomName("p-").substring(0, 20);
+    String r1 = TestUtils.getRandomName("r-").substring(0, 20);
     permissionService.create(p1, "p1");
     permissionService.create(p2, "p2");
     rolesService.create(r1, "ttt", List.of(p1, p2));

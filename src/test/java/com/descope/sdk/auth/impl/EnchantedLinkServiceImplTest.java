@@ -1,5 +1,14 @@
-package com.descope.sdk.impl;
+package com.descope.sdk.auth.impl;
 
+import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_DOMAIN;
+import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_EMAIL;
+import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_JWT_RESPONSE;
+import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_MASKED_EMAIL;
+import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_SIGNING_KEY;
+import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_TOKEN;
+import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_URL;
+import static com.descope.sdk.auth.impl.TestAuthUtils.PROJECT_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -12,92 +21,44 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
-import com.descope.model.client.Client;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
-import com.descope.model.jwt.response.JWTResponse;
+import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.response.MaskedEmailRes;
 import com.descope.model.user.User;
+import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.EnchantedLinkService;
-import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
+import com.descope.sdk.mgmt.UserService;
+import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.descope.sdk.mgmt.impl.TestMgmtUtils;
 import com.descope.utils.JwtUtils;
+import com.descope.utils.UriUtils;
 import java.security.Key;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 public class EnchantedLinkServiceImplTest {
-  public static final String MOCK_PROJECT_ID = "someProjectId";
-  public static final String MOCK_EMAIL = "username@domain.com";
-  public static final String MOCK_MASKED_EMAIL = "u*******@domain.com";
-  public static final String MOCK_DOMAIN = "https://www.domain.com";
-
-  public static final UserResponse MOCK_USER_RESPONSE =
-      new UserResponse(
-          "someUserId",
-          List.of(MOCK_EMAIL),
-          "someEmail@descope.com",
-          true,
-          "+1-555-555-5555",
-          false,
-          "someName",
-          Collections.emptyList(),
-          Collections.emptyList(),
-          "enabled",
-          "",
-          false,
-          0L,
-          Collections.emptyMap(),
-          false,
-          false,
-          Collections.emptyMap());
-  public static final JWTResponse MOCK_JWT_RESPONSE =
-      new JWTResponse(
-          "someSessionJwt",
-          "someRefreshJwt",
-          "",
-          "/",
-          1234567,
-          1234567890,
-          MOCK_USER_RESPONSE,
-          true);
-  public static final Token MOCK_TOKEN =
-      Token.builder()
-          .id("1")
-          .projectId(MOCK_PROJECT_ID)
-          .jwt("someJwtToken")
-          .claims(Map.of("someClaim", 1))
-          .build();
-  @SuppressWarnings("checkstyle:LineLength")
-  public static final SigningKey MOCK_SIGNING_KEY =
-      SigningKey.builder()
-          .e("AQAB")
-          .kid(MOCK_PROJECT_ID)
-          .kty("RSA")
-          .n(
-              "w8b3KRCep717H4MdVbwYHeb0vr891Ok1BL_TmC0XFUIKjRoKsWOcUZ9BFd6wR_5mnJuE7M8ZjVQRCbRlVgnh6AsEL3JA9Z6c1TpURTIXZxSE6NbeB7IMLMn5HWW7cjbnG4WO7E1PUCT6zCcBVz6EhA925GIJpyUxuY7oqJG-6NoOltI0Ocm6M2_7OIFMzFdw42RslqyX6l-SDdo_ZLq-XtcsCVRyj2YvmXUNF4Vq1x5syPOEQ-SezkvpBcb5Szi0ULpW5CvX2ieHAeHeQ2x8gkv6Dn2AW_dllQ--ZO-QH2QkxEXlMVqilwAdbA0k6BBtSkMC-7kD3A86bGGplpzz5Q")
-          .build();
-
   private EnchantedLinkService enchantedLinkService;
+  private UserService userService;
 
   @BeforeEach
   void setUp() {
-    var authParams = AuthParams.builder().projectId(MOCK_PROJECT_ID).build();
-    var client = Client.builder().uri("https://api.descope.com/v1").build();
+    var authParams = TestAuthUtils.getAuthParams();
+    var client = TestUtils.getClient();
     this.enchantedLinkService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getEnchantedLinkService();
+    var mgmtParams = TestMgmtUtils.getManagementParams();
+    this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 
   @Test
@@ -107,7 +68,8 @@ public class EnchantedLinkServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(),
+        any())).thenReturn(apiProxy);
       EnchantedLinkResponse signUp = enchantedLinkService.signUp(MOCK_EMAIL, MOCK_DOMAIN, user);
       assertNotNull(signUp);
     }
@@ -118,9 +80,10 @@ public class EnchantedLinkServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null);
-      Assertions.assertThat(response).isNotNull();
+      assertThat(response).isNotNull();
     }
   }
 
@@ -129,9 +92,10 @@ public class EnchantedLinkServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN);
-      Assertions.assertThat(response).isNotNull();
+      assertThat(response).isNotNull();
     }
   }
 
@@ -187,7 +151,8 @@ public class EnchantedLinkServiceImplTest {
     var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String updateUserEmail =
           enchantedLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
       org.assertj.core.api.Assertions.assertThat(updateUserEmail).isNotBlank().contains("*");
@@ -198,14 +163,16 @@ public class EnchantedLinkServiceImplTest {
   void testGetSession() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
+    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+      .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
 
       try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
         mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
@@ -213,44 +180,59 @@ public class EnchantedLinkServiceImplTest {
       }
     }
 
-    org.assertj.core.api.Assertions.assertThat(authenticationInfo).isNotNull();
+    assertThat(authenticationInfo).isNotNull();
 
     Token sessionToken = authenticationInfo.getToken();
-    org.assertj.core.api.Assertions.assertThat(sessionToken).isNotNull();
-    org.assertj.core.api.Assertions.assertThat(sessionToken.getJwt()).isNotBlank();
-    org.assertj.core.api.Assertions.assertThat(sessionToken.getClaims()).isNotEmpty();
-    org.assertj.core.api.Assertions.assertThat(sessionToken.getProjectId())
-        .isEqualTo(MOCK_PROJECT_ID);
+    assertThat(sessionToken).isNotNull();
+    assertThat(sessionToken.getJwt()).isNotBlank();
+    assertThat(sessionToken.getClaims()).isNotEmpty();
+    assertThat(sessionToken.getProjectId()).isEqualTo(PROJECT_ID);
 
     Token refreshToken = authenticationInfo.getRefreshToken();
-    org.assertj.core.api.Assertions.assertThat(refreshToken).isNotNull();
-    org.assertj.core.api.Assertions.assertThat(refreshToken.getJwt()).isNotBlank();
-    org.assertj.core.api.Assertions.assertThat(refreshToken.getClaims()).isNotEmpty();
-    org.assertj.core.api.Assertions.assertThat(refreshToken.getProjectId())
-        .isEqualTo(MOCK_PROJECT_ID);
+    assertThat(refreshToken).isNotNull();
+    assertThat(refreshToken.getJwt()).isNotBlank();
+    assertThat(refreshToken.getClaims()).isNotEmpty();
+    assertThat(refreshToken.getProjectId()).isEqualTo(PROJECT_ID);
 
     UserResponse user = authenticationInfo.getUser();
-    org.assertj.core.api.Assertions.assertThat(user).isNotNull();
-    org.assertj.core.api.Assertions.assertThat(user.getUserId()).isNotBlank();
-    org.assertj.core.api.Assertions.assertThat(user.getLoginIds()).isNotEmpty();
+    assertThat(user).isNotNull();
+    assertThat(user.getUserId()).isNotBlank();
+    assertThat(user.getLoginIds()).isNotEmpty();
   }
 
   @Test
   void testVerify() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mock(EmptyResponse.class)).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[] {MOCK_SIGNING_KEY}).when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
 
       try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
         mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
         enchantedLinkService.verify("token");
       }
     }
+  }
+
+  @Test
+  void testFunctionalFullCycle() {
+    String loginId = TestUtils.getRandomName("u-");
+    userService.createTestUser(
+        loginId, UserRequest.builder().email(loginId + "@descope.com").loginId(loginId).build());
+    var response = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
+    assertThat(response.getLink()).isNotBlank();
+    assertThat(response.getPendingRef()).isNotBlank();
+    var params = UriUtils.splitQuery("https://kuku.com" + response.getLink());
+    assertThat(params.get("t").size()).isEqualTo(1);
+    enchantedLinkService.verify(params.get("t").get(0));
+    var authInfo = enchantedLinkService.getSession(response.getPendingRef());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    userService.delete(loginId);
   }
 }
