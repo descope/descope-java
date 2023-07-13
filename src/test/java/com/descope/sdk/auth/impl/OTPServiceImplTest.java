@@ -8,6 +8,7 @@ import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_PHONE;
 import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_TOKEN;
 import static com.descope.sdk.auth.impl.TestAuthUtils.PROJECT_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,15 +29,18 @@ import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.response.MaskedEmailRes;
 import com.descope.model.magiclink.response.MaskedPhoneRes;
 import com.descope.model.user.User;
+import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.OTPService;
+import com.descope.sdk.mgmt.UserService;
+import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.descope.sdk.mgmt.impl.TestMgmtUtils;
 import com.descope.utils.JwtUtils;
 import java.security.Key;
 import java.util.List;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -44,6 +48,7 @@ import org.mockito.MockedStatic;
 public class OTPServiceImplTest {
 
   private OTPService otpService;
+  private UserService userService;
 
   @BeforeEach
   void setUp() {
@@ -51,6 +56,8 @@ public class OTPServiceImplTest {
     var client = TestUtils.getClient();
     this.otpService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getOtpService();
+    var mgmtParams = TestMgmtUtils.getManagementParams();
+    this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 
   @Test
@@ -64,7 +71,7 @@ public class OTPServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String signUp = otpService.signUp(DeliveryMethod.EMAIL, MOCK_EMAIL, user);
-      Assertions.assertThat(signUp).isNotBlank().contains("*");
+      assertThat(signUp).isNotBlank().contains("*");
     }
   }
 
@@ -77,7 +84,7 @@ public class OTPServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String signIn = otpService.signIn(DeliveryMethod.EMAIL, MOCK_EMAIL, null);
-      Assertions.assertThat(signIn).isNotBlank().contains("*");
+      assertThat(signIn).isNotBlank().contains("*");
     }
   }
 
@@ -90,7 +97,7 @@ public class OTPServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String signUpOrIn = otpService.signUpOrIn(DeliveryMethod.EMAIL, MOCK_EMAIL);
-      Assertions.assertThat(signUpOrIn).isNotBlank().contains("*");
+      assertThat(signUpOrIn).isNotBlank().contains("*");
     }
   }
 
@@ -135,7 +142,7 @@ public class OTPServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String updateUserEmail = otpService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL);
-      Assertions.assertThat(updateUserEmail).isNotBlank().contains("*");
+      assertThat(updateUserEmail).isNotBlank().contains("*");
     }
   }
 
@@ -189,7 +196,7 @@ public class OTPServiceImplTest {
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String updateUserPhone =
           otpService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE);
-      Assertions.assertThat(updateUserPhone).isNotBlank().contains("X");
+      assertThat(updateUserPhone).isNotBlank().contains("X");
     }
   }
 
@@ -214,23 +221,36 @@ public class OTPServiceImplTest {
       }
     }
 
-    Assertions.assertThat(authenticationInfo).isNotNull();
+    assertThat(authenticationInfo).isNotNull();
 
     Token sessionToken = authenticationInfo.getToken();
-    Assertions.assertThat(sessionToken).isNotNull();
-    Assertions.assertThat(sessionToken.getJwt()).isNotBlank();
-    Assertions.assertThat(sessionToken.getClaims()).isNotEmpty();
-    Assertions.assertThat(sessionToken.getProjectId()).isEqualTo(PROJECT_ID);
+    assertThat(sessionToken).isNotNull();
+    assertThat(sessionToken.getJwt()).isNotBlank();
+    assertThat(sessionToken.getClaims()).isNotEmpty();
+    assertThat(sessionToken.getProjectId()).isEqualTo(PROJECT_ID);
 
     Token refreshToken = authenticationInfo.getRefreshToken();
-    Assertions.assertThat(refreshToken).isNotNull();
-    Assertions.assertThat(refreshToken.getJwt()).isNotBlank();
-    Assertions.assertThat(refreshToken.getClaims()).isNotEmpty();
-    Assertions.assertThat(refreshToken.getProjectId()).isEqualTo(PROJECT_ID);
+    assertThat(refreshToken).isNotNull();
+    assertThat(refreshToken.getJwt()).isNotBlank();
+    assertThat(refreshToken.getClaims()).isNotEmpty();
+    assertThat(refreshToken.getProjectId()).isEqualTo(PROJECT_ID);
 
     UserResponse user = authenticationInfo.getUser();
-    Assertions.assertThat(user).isNotNull();
-    Assertions.assertThat(user.getUserId()).isNotBlank();
-    Assertions.assertThat(user.getLoginIds()).isNotEmpty();
+    assertThat(user).isNotNull();
+    assertThat(user.getUserId()).isNotBlank();
+    assertThat(user.getLoginIds()).isNotEmpty();
+  }
+
+  @Test
+  void testFunctionalFullCycle() {
+    String loginId = TestUtils.getRandomName("u-");
+    userService.createTestUser(
+        loginId, UserRequest.builder().email(loginId + "@descope.com").build());
+    var response = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    assertThat(response.getCode()).isNotBlank();
+    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    userService.delete(loginId);
   }
 }

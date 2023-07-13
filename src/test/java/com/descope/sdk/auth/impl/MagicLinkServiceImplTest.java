@@ -11,8 +11,10 @@ import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_PHONE;
 import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_REFRESH_TOKEN;
 import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_TOKEN;
+import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_URL;
 import static com.descope.sdk.auth.impl.TestAuthUtils.PROJECT_ID;
 import static com.descope.sdk.auth.impl.TestAuthUtils.UPDATE_MOCK_EMAIL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -33,18 +35,22 @@ import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.response.MaskedEmailRes;
 import com.descope.model.magiclink.response.MaskedPhoneRes;
 import com.descope.model.user.User;
+import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.MagicLinkService;
+import com.descope.sdk.mgmt.UserService;
+import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.descope.sdk.mgmt.impl.TestMgmtUtils;
 import com.descope.utils.JwtUtils;
+import com.descope.utils.UriUtils;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.security.Key;
 import java.util.List;
 import lombok.SneakyThrows;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -52,6 +58,7 @@ import org.mockito.MockedStatic;
 class MagicLinkServiceImplTest {
 
   private MagicLinkService magicLinkService;
+  private UserService userService;
 
   @BeforeEach
   void setUp() {
@@ -59,6 +66,8 @@ class MagicLinkServiceImplTest {
     var client = TestUtils.getClient();
     this.magicLinkService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getMagicLinkService();
+    var mgmtParams = TestMgmtUtils.getManagementParams();
+    this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 
   @Test
@@ -72,7 +81,7 @@ class MagicLinkServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String signUp = magicLinkService.signUp(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN, user);
-      Assertions.assertThat(signUp).isNotBlank().contains("*");
+      assertThat(signUp).isNotBlank().contains("*");
     }
   }
 
@@ -98,24 +107,24 @@ class MagicLinkServiceImplTest {
       }
     }
 
-    Assertions.assertThat(authenticationInfo).isNotNull();
+    assertThat(authenticationInfo).isNotNull();
 
     Token sessionToken = authenticationInfo.getToken();
-    Assertions.assertThat(sessionToken).isNotNull();
-    Assertions.assertThat(sessionToken.getJwt()).isNotBlank();
-    Assertions.assertThat(sessionToken.getClaims()).isNotEmpty();
-    Assertions.assertThat(sessionToken.getProjectId()).isEqualTo(PROJECT_ID);
+    assertThat(sessionToken).isNotNull();
+    assertThat(sessionToken.getJwt()).isNotBlank();
+    assertThat(sessionToken.getClaims()).isNotEmpty();
+    assertThat(sessionToken.getProjectId()).isEqualTo(PROJECT_ID);
 
     Token refreshToken = authenticationInfo.getRefreshToken();
-    Assertions.assertThat(refreshToken).isNotNull();
-    Assertions.assertThat(refreshToken.getJwt()).isNotBlank();
-    Assertions.assertThat(refreshToken.getClaims()).isNotEmpty();
-    Assertions.assertThat(refreshToken.getProjectId()).isEqualTo(PROJECT_ID);
+    assertThat(refreshToken).isNotNull();
+    assertThat(refreshToken.getJwt()).isNotBlank();
+    assertThat(refreshToken.getClaims()).isNotEmpty();
+    assertThat(refreshToken.getProjectId()).isEqualTo(PROJECT_ID);
 
     UserResponse user = authenticationInfo.getUser();
-    Assertions.assertThat(user).isNotNull();
-    Assertions.assertThat(user.getUserId()).isNotBlank();
-    Assertions.assertThat(user.getLoginIds()).isNotEmpty();
+    assertThat(user).isNotNull();
+    assertThat(user.getUserId()).isNotBlank();
+    assertThat(user.getLoginIds()).isNotEmpty();
   }
 
   @Test
@@ -128,7 +137,7 @@ class MagicLinkServiceImplTest {
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String signIn =
           magicLinkService.signIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN, null, null);
-      Assertions.assertThat(signIn).isNotBlank().contains("*");
+      assertThat(signIn).isNotBlank().contains("*");
     }
   }
 
@@ -142,7 +151,7 @@ class MagicLinkServiceImplTest {
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String signUpOrIn =
           magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
-      Assertions.assertThat(signUpOrIn).isNotBlank().contains("*");
+      assertThat(signUpOrIn).isNotBlank().contains("*");
     }
   }
 
@@ -208,7 +217,7 @@ class MagicLinkServiceImplTest {
               .build();
       String updateUserEmail =
           magicLinkService.updateUserEmail(MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN, httpRequest);
-      Assertions.assertThat(updateUserEmail).isNotBlank().contains("*");
+      assertThat(updateUserEmail).isNotBlank().contains("*");
     }
   }
 
@@ -302,7 +311,24 @@ class MagicLinkServiceImplTest {
       String updateUserPhone =
           magicLinkService.updateUserPhone(
             DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, httpRequest);
-      Assertions.assertThat(updateUserPhone).isNotBlank().contains("X");
+      assertThat(updateUserPhone).isNotBlank().contains("X");
     }
   }
+
+  @Test
+  void testFunctionalFullCycle() {
+    String loginId = TestUtils.getRandomName("u-");
+    userService.createTestUser(
+        loginId, UserRequest.builder().email(loginId + "@descope.com").build());
+    var response = userService.generateMagicLinkForTestUser(
+        loginId, MOCK_URL, DeliveryMethod.EMAIL);
+    assertThat(response.getLink()).isNotBlank();
+    var params = UriUtils.splitQuery("https://kuku.com" + response.getLink());
+    assertThat(params.get("t").size()).isEqualTo(1);
+    var authInfo = magicLinkService.verify(params.get("t").get(0));
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    userService.delete(loginId);
+  }
+
 }
