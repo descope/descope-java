@@ -75,16 +75,14 @@ public class Routes {
     public static final String USER_UPDATE_PHONE_LINK = "/v1/mgmt/user/update/phone";
     public static final String UPDATE_USER_NAME_LINK = "/v1/mgmt/user/update/name";
     public static final String UPDATE_PICTURE_LINK = "/v1/mgmt/user/update/picture";
-    public static final String UPDATE_CUSTOM_ATTRIBUTE_LINK =
-        "/v1/mgmt/user/update/customAttribute";
+    public static final String UPDATE_CUSTOM_ATTRIBUTE_LINK = "/v1/mgmt/user/update/customAttribute";
     public static final String USER_ADD_ROLES_LINK = "/v1/mgmt/user/update/role/add";
     public static final String USER_REMOVE_ROLES_LINK = "/v1/mgmt/user/update/role/remove";
     public static final String USER_ADD_TENANT_LINK = "/v1/mgmt/user/update/tenant/add";
     public static final String USER_REMOVE_TENANT_LINK = "/v1/mgmt/user/update/tenant/remove";
     public static final String COMPOSE_OTP_FOR_TEST_LINK = "/v1/mgmt/tests/generate/otp";
     public static final String MAGIC_LINK_FOR_TEST_LINK = "/v1/mgmt/tests/generate/magiclink";
-    public static final String ENCHANTED_LINK_FOR_TEST_LINK =
-        "/v1/mgmt/tests/generate/enchantedlink";
+    public static final String ENCHANTED_LINK_FOR_TEST_LINK = "/v1/mgmt/tests/generate/enchantedlink";
     public static final String USER_SET_PASSWORD_LINK = "/v1/mgmt/user/password/set";
     public static final String USER_EXPIRE_PASSWORD_LINK = "/v1/mgmt/user/password/expire";
 
@@ -120,8 +118,7 @@ public class Routes {
     public static final String MANAGEMENT_ACCESS_KEY_LOAD_LINK = "/v1/mgmt/accesskey";
     public static final String MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK = "/v1/mgmt/accesskey/search";
     public static final String MANAGEMENT_ACCESS_KEY_UPDATE_LINK = "/v1/mgmt/accesskey/update";
-    public static final String MANAGEMENT_ACCESS_KEY_DEACTIVATE_LINK =
-        "/v1/mgmt/accesskey/deactivate";
+    public static final String MANAGEMENT_ACCESS_KEY_DEACTIVATE_LINK = "/v1/mgmt/accesskey/deactivate";
     public static final String MANAGEMENT_ACCESS_KEY_ACTIVE_LINK = "/v1/mgmt/accesskey/activate";
     public static final String MANAGEMENT_ACCESS_KEY_DELETE_LINK = "/v1/mgmt/accesskey/delete";
 

@@ -13,4 +13,3 @@ public class AccessKeyResponse {
   private AccessKeyResponseDetails key;
   private String cleartext;
 }
-

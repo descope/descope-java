@@ -12,6 +12,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.flow.Flow;
 import com.descope.model.flow.FlowResponse;
 import com.descope.model.flow.Screen;
+import com.descope.model.flow.Theme;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -82,7 +83,7 @@ class FlowServiceImplTest {
 
   @Test
   void testExportThemeForSuccess() {
-    var theme = mock(com.descope.model.flow.Theme.class);
+    var theme = mock(Theme.class);
     var apiProxy = mock(ApiProxy.class);
     doReturn(theme).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -103,7 +104,7 @@ class FlowServiceImplTest {
 
   @Test
   void testImportThemeForSuccess() {
-    var theme = mock(com.descope.model.flow.Theme.class);
+    var theme = mock(Theme.class);
     var apiProxy = mock(ApiProxy.class);
     doReturn(theme).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {

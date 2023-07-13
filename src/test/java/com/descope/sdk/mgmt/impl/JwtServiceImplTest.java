@@ -42,7 +42,7 @@ public class JwtServiceImplTest {
   void testUpdateJWTWithCustomClaims() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[] {MOCK_SIGNING_KEY})
+    doReturn(new SigningKey[]{MOCK_SIGNING_KEY})
       .when(apiProxy).get(any(), eq(SigningKey[].class));
 
     var provider = mock(Provider.class);

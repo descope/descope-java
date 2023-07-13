@@ -7,7 +7,8 @@ public enum DeliveryMethod {
   SMS("sms"),
   WHATSAPP("whatsapp");
 
-  @Getter private final String value;
+  @Getter
+  private final String value;
 
   DeliveryMethod(String value) {
     this.value = value;
