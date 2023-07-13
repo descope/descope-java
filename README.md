@@ -1,4 +1,4 @@
-[![CI](https://github.com/descope/descope-java/actions/workflows/ci.yml/badge.svg)](https://github.com/descope/descope-java/actions/workflows/ci.yml)
+[![CI](https://github.com/descope/descope-java/actions/workflows/ci.yaml/badge.svg)](https://github.com/descope/descope-java/actions/workflows/ci.yaml)
 
 # Descope SDK for Java
 
@@ -34,6 +34,7 @@ A Descope `Project ID` is required to initialize the SDK. Find it on the
 import com.descope.client;
 
 // Initialized after setting the DESCOPE_PROJECT_ID env var (and optionally DESCOPE_MANAGEMENT_KEY)
+// We can also take these variables from .env file in the running directory
 var descopeClient = new DescopeClient();
 
 // ** Or directly **
@@ -94,9 +95,9 @@ User user = User.builder()
     .phone("212-555-1234")
     .email(loginId)
     .build();
-
+OTPService otps = descopeClient.getAuthenticationServices().getOTPService();
 try {
-  String maskedAddress = descopeClient.getAuthenticationServices(config, client).getOTPService().signUp(DeliveryMethod.EMAIL, loginId, user);
+  String maskedAddress = otps.signUp(DeliveryMethod.EMAIL, loginId, user);
 } catch (DescopeException de) {
   // Handle the error
 }
@@ -107,7 +108,7 @@ The user will receive a code using the selected delivery method. Verify that cod
 ```java
 // Will throw DescopeException if there is an error with update
 try {
-  AuthenticationInfo info = descopeClient.getAuthenticationServices(config, client).getOTPService().verifyCode(DeliveryMethod.EMAIL, loginId, code);
+  AuthenticationInfo info = otps.verifyCode(DeliveryMethod.EMAIL, loginId, code);
 } catch (DescopeException de) {
   // Handle the error
 }
@@ -135,7 +136,7 @@ User user = User.builder()
     .email(loginId)
     .build();
 
-MagicLinkService mls = descopeClient.getAuthenticationServices(config, client).getMagicLinkService();
+MagicLinkService mls = descopeClient.getAuthenticationServices().getMagicLinkService();
 
 try {
     String uri = "http://myapp.com/verify-magic-link";
@@ -149,8 +150,6 @@ try {
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```java
-// The optional `w http.ResponseWriter` adds the session and refresh cookies to the response automatically.
-// Otherwise they're available via authInfo
 try {
     AuthenticationInfo info = mls.verify(token);
 } catch (DescopeException de) {
@@ -184,10 +183,11 @@ The user can either `sign up`, `sign in` or `sign up or in`
 // If configured globally, the redirect URI is optional. If provided however, it will be used
 // instead of any global configuration.
 
-EnchantedLinkResponse res = new EnchantedLinkResponse();
+EnchantedLinkService els = descopeClient.getAuthenticationServices().getEnchantedLinkService();
+EnchantedLinkResponse res = null;
 try {
     String uri = "http://myapp.com/verify-enchanted-link";
-    res = descopeClient.getAuthenticationServices(config, client).getEnchantedLinkService().signUp(loginId, uri, user);
+    res = els.signUp(loginId, uri, user);
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -201,7 +201,6 @@ the previous step. A valid session will be returned only after the user clicks t
 // Poll for a certain number of tries / time frame
 for (int i = retriesCount; i > 0; i--) {
     try {
-        EnchantedLinkService els = descopeClient.getAuthenticationServices(config, client).getEnchantedLinkService();
         AuthenticationInfo info = els.getSession(res.getPendingRef());
     } catch (DescopeException de) {
         if (i > 1) {
@@ -223,7 +222,7 @@ To verify an enchanted link, your redirect page must call the validation functio
 ```java
 
 try {
-    descopeClient.getAuthenticationServices(config, client).getEnchantedLinkService().verify(token);
+    els.verify(token);
 } catch (DescopeException de) {
     // Token is invalid, handle the error
 }
@@ -241,7 +240,7 @@ Users can authenticate using their social logins, using the OAuth protocol. Conf
 // If configured globally, the return URL is optional. If provided however, it will be used
 // instead of any global configuration.
 // Redirect the user to the returned URL to start the OAuth redirect chain
-OAuthService oas = descopeClient.getAuthenticationServices(config, client).getOAuthService();
+OAuthService oas = descopeClient.getAuthenticationServices().getOAuthService();
 
 try {
     String returnUrl = "https://my-app.com/handle-oauth";
@@ -273,7 +272,7 @@ Users can authenticate to a specific tenant using SAML or Single Sign On. Config
 ```java
 // Choose which tenant to log into
 // Redirect the user to the returned URL to start the SSO/SAML redirect chain
-SAMLService ss = descopeClient.getAuthenticationServices(config, client).getSAMLService();
+SAMLService ss = descopeClient.getAuthenticationServices().getSAMLService();
 
 try {
     String returnURL = "https://my-app.com/handle-saml";
@@ -318,7 +317,7 @@ User user = User.builder()
     .email(loginId)
     .build();
 
-TOTPService ts = descopeClient.getAuthenticationServices(config, client).getTOTPService();
+TOTPService ts = descopeClient.getAuthenticationServices().getTOTPService();
 
 try {
     TOTPResponse resp = ts.signUp(loginId, user);
@@ -367,7 +366,7 @@ User user = User.builder()
     .build();
 String password = "qYlvi65KaX";
 
-PasswordService ps = descopeClient.getAuthenticationServices(config, client).getPasswordService();
+PasswordService ps = descopeClient.getAuthenticationServices().getPasswordService();
 
 try {
     AuthenticationInfo info = ps.signUp(loginId, user, password);
@@ -402,7 +401,7 @@ In the [password authentication method](https://app.descope.com/settings/authent
 // Start the reset process by sending a password reset prompt. In this example we'll assume
 // that magic link is configured as the reset method. The optional redirect URL is used in the
 // same way as in regular magic link authentication.
-PasswordService ps = descopeClient.getAuthenticationServices(config, client).getPasswordService();
+PasswordService ps = descopeClient.getAuthenticationServices().getPasswordService();
 String loginId = "desmond@descope.com";
 String redirectUrl = "https://myapp.com/password-reset";
 try {
@@ -413,13 +412,13 @@ try {
 
 ```
 
-The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details). However, after verifying the user, it is expected
-to allow them to provide a new password instead of the old one. Since the user is now authenticated, this is possible via:
+The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details).
+However, after verifying the user, it is expected to allow them to provide a new password instead of the old one.
+Since the user is now authenticated, this is possible with the refresh token received from the verify:
 
 ```java
-// The request (r) is required to make sure the user is authenticated.
 try {
-    ps.updateUserPassword(loginId, newPassword);
+    ps.updateUserPassword(loginId, newPassword, refreshToken);
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -448,7 +447,7 @@ Tokens can be validated directly:
 
 ```java
 // Validate the session. Will return an error if expired
-AuthenticationService as = descopeClient.getAuthenticationServices(config, client).getAuthenticationService();
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthenticationService();
 try {
     Token t = as.validateSessionWithToken(sessionToken);
 } catch (DescopeException de) {
@@ -485,17 +484,7 @@ for more information.
 
 #### Session Validation Using Middleware
 
-Alternatively, you can validate the session using any supported builtin Go middleware (for example Chi or Mux)
-instead of using the ValidateSessions function. This middleware will automatically detect the cookies from the
-request and save the current user ID in the context for further usage. On failure, it will respond with `401 Unauthorized`.
-
-```go
-import "github.com/descope/go-sdk/descope/sdk"
-
-// ...
-
-r.Use(sdk.AuthenticationMiddleware(descopeClient.Auth, nil, nil))
-```
+Alternatively, you can validate the session using Spring Framework middleware. See example using [java-spring](https://github.com/descope/java-spring).
 
 ### Roles & Permission Validation
 
@@ -507,7 +496,7 @@ For multi-tenant uses:
 
 ```java
 // You can validate specific permissions
-AuthenticationService as = descopeClient.getAuthenticationServices(config, client).getAuthenticationService();
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthenticationService();
 try {
     if (!as.validatePermissions(sessionToken, "my-tenant-ID", Arrays.asList("Permission to validate"))) {
         // Deny access
@@ -531,7 +520,7 @@ When not using tenants use:
 
 ```java
 // You can validate specific permissions
-AuthenticationService as = descopeClient.getAuthenticationServices(config, client).getAuthenticationService();
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthenticationService();
 try {
     if (!as.validatePermissions(sessionToken, Arrays.asList("Permission to validate"))) {
         // Deny access
@@ -554,13 +543,10 @@ try {
 ### Logging Out
 
 You can log out a user from an active session by providing their `refreshToken` for that session.
-After calling this function, you must invalidate or remove any cookies you have created. Providing
-a `http.ResponseWriter` will do this automatically.
+After calling this function, you must invalidate or remove any cookies you have created.
 
 ```java
-AuthenticationService as = descopeClient.getAuthenticationServices(config, client).getAuthenticationService();
-// Refresh token will be taken from the request header or cookies automatically
-
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthenticationService();
 try {
     as.logout(refreshToken);
 } catch (DescopeException de) {
@@ -573,8 +559,6 @@ It is also possible to sign the user out of all the devices they are currently s
 invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have created.
 
 ```java
-// Refresh token will be taken from the request header or cookies automatically
-
 try {
     as.logoutAll(refreshToken);
 } catch (DescopeException de) {
@@ -613,7 +597,7 @@ var descopeClient = new DescopeClient(Config.builder()
 You can create, update, delete or load tenants:
 
 ```java
-TenantService ts = descopeClient.getManagementServices(config, projectId, client).getTenantService();
+TenantService ts = descopeClient.getManagementServices().getTenantService();
 // The self provisioning domains or optional. If given they'll be used to associate
 // Users logging in to this tenant
 try {
@@ -661,9 +645,8 @@ You can create, update, delete or load users, as well as search according to fil
 
 ```java
 // A user must have a loginID, other fields are optional.
-// Roles should be set directly if no tenants exist, otherwise set
-// on a per-tenant basis.
-UserService us = descopeClient.getManagementServices(config, projectId, client).getUserService();
+// Roles should be set directly if no tenants exist, otherwise set on a per-tenant basis.
+UserService us = descopeClient.getManagementServices().getUserService();
 try {
     us.create("desmond@descope.com", UserRequest.builder()
             .email("desmond@descope.com")
@@ -754,7 +737,7 @@ Note: When setting a password, it will automatically be set as expired.
 The user will not be able log-in using an expired password, and will be required replace it on next login.
 
 ```java
-UserService us = descopeClient.getManagementServices(config, projectId, client).getUserService();
+UserService us = descopeClient.getManagementServices().getUserService();
 
 // Set a user's password
 try {
@@ -771,7 +754,7 @@ try {
 }
 
 // Later, if the user is signing in with an expired password, the returned error will be ErrPasswordExpired
-PasswordService ps = descopeClient.getAuthenticationServices(config, client).getPasswordService();
+PasswordService ps = descopeClient.getAuthenticationServices().getPasswordService();
 try {
     AuthenticationInfo info = ps.signIn("my-custom-id", "some-password");
 } catch (DescopeException de) {
@@ -788,7 +771,7 @@ You can create, update, delete or load access keys, as well as search according 
 ```java
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-AccessKeyService aks = descopeClient.getManagementServices(config, projectId, client).getAccessKeyService();
+AccessKeyService aks = descopeClient.getManagementServices().getAccessKeyService();
 try {
     // Create a new access key with a name, delay time, and tenant
     AccessKeyResponse resp = aks.create("access-key-1", 0,
@@ -853,7 +836,7 @@ try {
 You can manage SSO settings and map SSO group roles and user attributes.
 
 ```java
-SsoService ss = descopeClient.getManagementServices(config, projectId, client).getSsoService();
+SsoService ss = descopeClient.getManagementServices().getSsoService();
 // You can get SSO settings for a specific tenant ID
 try {
     SSOSettingsResponse resp = ss.getSettings("tenant-id");
@@ -902,8 +885,14 @@ Certifcate contents
 -----END CERTIFICATE-----
 ```
 
+```java
 // To delete SSO settings, call the following method
-err := descopeClient.Management.SSO().DeleteSettings("tenant-id")
+try {
+    ss.deleteSettings(tenantId);
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
 
 ### Manage Permissions
 
@@ -911,7 +900,7 @@ You can create, update, delete or load permissions:
 
 ```java
 // You can optionally set a description for a permission.
-PermissionService ps = descopeClient.getManagementServices(config, projectId, client).getPermissionService();
+PermissionService ps = descopeClient.getManagementServices().getPermissionService();
 
 String name = "My Permission";
 String description = "Optional description to briefly explain what this permission allows.";
@@ -957,7 +946,7 @@ You can create, update, delete or load roles:
 
 ```java
 // You can optionally set a description and associated permission for a roles.
-RolesService rs = descopeClient.getManagementServices(config, projectId, client).getRolesService();
+RolesService rs = descopeClient.getManagementServices().getRolesService();
 
 String name = "My Role";
 String description = "Optional description to briefly explain what this role allows.";
@@ -1005,7 +994,7 @@ You can query SSO groups:
 
 ```java
 // Load all groups for a given tenant id
-GroupService gs = descopeClient.getManagementServices(config, projectId, client).getGroupService();
+GroupService gs = descopeClient.getManagementServices().getGroupService();
 try {
     List<Group> groups = gs.loadAllGroups("tenant-id");
     for (Group g : groups) {
@@ -1044,7 +1033,7 @@ try {
 You can list, import and export flows and screens, or the project theme:
 
 ```java
-FlowService fs = descopeClient.getManagementServices(config, projectId, client).getFlowService();
+FlowService fs = descopeClient.getManagementServices().getFlowService();
 
 // List all your flows
 try {
@@ -1103,7 +1092,7 @@ try {
 You can add custom claims to a valid JWT.
 
 ```java
-JwtService jwts = descopeClient.getManagementServices(config, projectId, client).getJwtService();
+JwtService jwts = descopeClient.getManagementServices().getJwtService();
 try {
     String res = jwts.updateJWTWithCustomClaims("original-jwt",
             new HashMap<String, Object>() {{
@@ -1121,7 +1110,7 @@ try {
 You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
 
 ```java
-AuditService as = descopeClient.getManagementServices(config, projectId, client).getAuditService();
+AuditService as = descopeClient.getManagementServices().getAuditService();
 // Full text search on the last 10 days
 try {
     AuditSearchResponse resp = as.search(AuditSearchRequest.builder()
@@ -1143,7 +1132,7 @@ try {
 
 ## Code Examples
 
-You can find various usage examples in the [examples folder](https://github.com/descope/descope-java/blob/main/examples).
+You can find various usage examples in the [examples folder](https://github.com/descope/java-sdk/blob/main/examples).
 
 ### Setup
 
@@ -1155,7 +1144,11 @@ Find your Project ID in the [Descope console](https://app.descope.com/settings/p
 export DESCOPE_PROJECT_ID=<ProjectID>
 ```
 
-TODO: alternative configuration
+Alternatively, you can create a `.env` file in the working folder with your project ID and management key.
+```
+DESCOPE_PROJECT_ID=<ProjectID>
+DESCOPE_MANAGEMENT_KEY=<ManagementKey>
+```
 
 ### Run an example
 
@@ -1178,53 +1171,41 @@ To run Run and Debug using Visual Studio Code open the examples folder and run t
 
 ## Unit Testing and Data Mocks
 
-Simplify your unit testing by using our mocks package for testing your app without the need of going out to Descope services. By that, you can simply mock responses and errors and have assertion for the incoming data of each SDK method. You can find all mocks [here](https://github.com/descope/go-sdk/blob/main/descope/tests/mocks).
-
-Mock usage examples:
-
-- [Authentication](https://github.com/descope/go-sdk/blob/main/descope/tests/mocks/auth/authenticationmock_test.go)
-- [Management](https://github.com/descope/go-sdk/blob/main/descope/tests/mocks/mgmt/managementmock_test.go)
-
-In the following snippet we mocked the Descope Authentication and Management SDKs, and have assertions to check the actual inputs passed to the SDK:
-
-```go
-updateJWTWithCustomClaimsCalled := false
-validateSessionResponse := "test1"
-updateJWTWithCustomClaimsResponse := "test2"
-api := DescopeClient{
-    Auth: &mocksauth.MockAuthentication{
-        MockSession: mocksauth.MockSession{
-            ValidateSessionResponseSuccess: false,
-            ValidateSessionResponse:        &descope.Token{JWT: validateSessionResponse},
-            ValidateSessionError:           descope.ErrPublicKey,
-        },
-    },
-    Management: &mocksmgmt.MockManagement{
-        MockJWT: &mocksmgmt.MockJWT{
-            UpdateJWTWithCustomClaimsResponse: updateJWTWithCustomClaimsResponse,
-            UpdateJWTWithCustomClaimsAssert: func(jwt string, customClaims map[string]any) {
-                updateJWTWithCustomClaimsCalled = true
-                assert.EqualValues(t, "some jwt", jwt)
-            },
-        },
-    },
+Java provides a very simple way to mock services and objects using the Mockito package.
+Here is a simple example of how you can mock a magic link verify response.
+```java
+User user = new User("someUserName", MOCK_EMAIL, "+1-555-555-5555");
+var apiProxy = mock(ApiProxy.class); // Mock the proxy that actually sends the HTTP requests
+var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL); // Define expected response
+doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any()); // When post is called, return mock response
+try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) { // Mock proxy builder
+    mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy); // to return our mock proxy
+    String signUp = magicLinkService.signUp(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN, user); // call the service as you usually would
 }
-ok, info, err := api.Auth.ValidateAndRefreshSessionWithRequest(nil, nil)
-assert.False(t, ok)
-assert.NotEmpty(t, info)
-assert.EqualValues(t, validateSessionResponse, info.JWT)
-assert.ErrorIs(t, err, descope.ErrPublicKey)
 
-res, err := api.Management.JWT().UpdateJWTWithCustomClaims("some jwt", nil)
-require.NoError(t, err)
-assert.True(t, updateJWTWithCustomClaimsCalled)
-assert.EqualValues(t, updateJWTWithCustomClaimsResponse, res)
+// Now mock the verify
+var apiProxy = mock(ApiProxy.class);
+doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any()); // Return the mock JWT response
+doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY))).when(apiProxy).get(any(), eq(SigningKeysResponse.class)); // Return mock key
+var provider = mock(Provider.class);
+when(provider.getProvidedKey()).thenReturn(mock(Key.class));
+
+AuthenticationInfo authenticationInfo;
+try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+    mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy); // Return proxy when building
+    try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+        mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN); // Return mock token instead of parsing
+        authenticationInfo = magicLinkService.verify("SomeToken");
+    }
+}
+
 ```
 
 ### Utils for your end to end (e2e) tests and integration tests
 
-To ease your e2e tests, we exposed dedicated management methods,
-that way, you don't need to use 3rd party messaging services in order to receive sign-in/up Emails or SMS, and avoid the need of parsing the code and token from them.
+To ease your e2e tests, we exposed dedicated management methods.
+That way, you don't need to use 3rd party messaging services in order to receive sign-in/up Emails or SMS,
+and avoid the need of parsing the code and token from them.
 
 ```java
 // User for test can be created, this user will be able to generate code/link without
@@ -1232,7 +1213,7 @@ that way, you don't need to use 3rd party messaging services in order to receive
 // Test user must have a loginID, other fields are optional.
 // Roles should be set directly if no tenants exist, otherwise set
 // on a per-tenant basis.
-UserService us = descopeClient.getManagementServices(config, projectId, client).getUserService();
+UserService us = descopeClient.getManagementServices().getUserService();
 try {
     UserResponseDetails resp = us.createTestUser("desmond@descope.com", UserRequest.builder()
             .email("desmond@descope.com")
@@ -1258,35 +1239,45 @@ try {
 
 // OTP code can be generated for test user, for example:
 try {
-    String code = us.generateOtpForTestUser("desmond@descope.com", DeliveryMethod.EMAIL);
+    OTPTestUserResponse res = us.generateOtpForTestUser("desmond@descope.com", DeliveryMethod.EMAIL);
+    // Use res.getCode() for verify and establishing a session
 } catch (DescopeException de) {
     // Handle the error
 }
 
 // Same as OTP, magic link can be generated for test user, for example:
 try {
-    us.generateMagicLinkForTestUser("desmond@descope.com", "", DeliveryMethod.EMAIL);
+    MagicLinkTestUserResponse res = us.generateMagicLinkForTestUser("desmond@descope.com", "", DeliveryMethod.EMAIL);
+    // Use res.getLink() to get the generated link. To get the actual token, use:
+    // var params = UriUtils.splitQuery("https://example.com" + res.getLink());
+    // var authInfo = magicLinkService.verify(params.get("t").get(0));
+
 } catch (DescopeException de) {
     // Handle the error
 }
 
 // Enchanted link can be generated for test user, for example:
 try {
-    us.generateEnchantedLinkForTestUser("desmond@descope.com", "");
+    EnchantedLinkTestUserResponse res = us.generateEnchantedLinkForTestUser("desmond@descope.com", "");
+    // Use res.getLink() to get the generated link. To get the actual token, use:
+    // var params = UriUtils.splitQuery("https://example.com" + res.getLink());
+    // enchantedLinkService.verify(params.get("t").get(0));
+    // var authInfo = enchantedLinkService.getSession(res.getPendingRef());
 } catch (DescopeException de) {
     // Handle the error
 }
 
 // Note 1: The generate code/link methods, work only for test users, will not work for regular users.
-// Note 2: In case of testing sign-in / sign-up methods with test users, need to make sure to generate the code prior calling the sign-in / sign-up methods (such as: descopeClient.Auth.MagicLink().SignUpOrIn)
+// Note 2: In case of testing sign-in / sign-up methods with test users, need to make sure to generate the code prior calling the sign-in / sign-up methods
 ```
 
 # API Rate Limits
 
-Handle API rate limits by comparing the error to the ErrRateLimitExceeded error, which includes the Info map with the key "RateLimitExceededRetryAfter." This key indicates how many seconds until the next valid API call can take place.
+Handle API rate limits by catching the RateLimitExceededException.
+The exception includes the number of seconds until the next valid API call can take place.
 
 ```java
-MagicLinkService mls = descopeClient.getAuthenticationServices(config, client).getMagicLinkService();
+MagicLinkService mls = descopeClient.getAuthenticationServices().getMagicLinkService();
 try {
     mls.signUpOrIn(DeliveryMethod.EMAIL, "desmond@descope.com", "http://myapp.com/verify-magic-link");
 } catch (RateLimitExceededException re) {
