@@ -9,7 +9,6 @@ import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponseDetails;
-import java.net.URI;
 import java.util.List;
 
 /** Provides functions for managing users in a project. */

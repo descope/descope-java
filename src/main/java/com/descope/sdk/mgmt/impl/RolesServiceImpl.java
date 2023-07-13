@@ -11,7 +11,6 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.roles.RoleResponse;
 import com.descope.sdk.mgmt.RolesService;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

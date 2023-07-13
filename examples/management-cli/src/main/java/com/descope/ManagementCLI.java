@@ -1,5 +1,6 @@
 package com.descope;
 
+import com.descope.client.DescopeClient;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
@@ -19,26 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 public class ManagementCLI {
 
   public static void main(String[] args) {
-    final String DESCOPE_BASE_URL = System.getenv("DESCOPE_BASE_URL");
-    final String DESCOPE_PROJECT_ID = System.getenv("DESCOPE_PROJECT_ID");
-    final String DESCOPE_MANAGEMENT_KEY = System.getenv("DESCOPE_MANAGEMENT_KEY");
-
-    if (StringUtils.isAnyBlank(DESCOPE_PROJECT_ID, DESCOPE_MANAGEMENT_KEY)) {
-      throw new UnsupportedOperationException("Project ID / Management ID is not set");
-    }
-
-    Client.ClientBuilder clientBuilder = Client.builder();
-    if (StringUtils.isNoneBlank(DESCOPE_BASE_URL)) {
-      clientBuilder.uri(DESCOPE_BASE_URL);
-    }
-    var client = clientBuilder.build();
-
-    var managementParams =
-        ManagementParams.builder()
-            .projectId(DESCOPE_PROJECT_ID)
-            .managementKey(DESCOPE_MANAGEMENT_KEY)
-            .build();
-    var managementServices = ManagementServiceBuilder.buildServices(client, managementParams);
+    var client = new DescopeClient();
+    var managementServices = client.getManagementServices();
     var cliService = CLIService.builder().managementServices(managementServices).build();
 
     String operation = args[0];
@@ -64,7 +47,7 @@ public class ManagementCLI {
                 .phone(phone)
                 .displayName(name)
                 .roleNames(Collections.emptyList())
-                .tenants(Collections.emptyList())
+                .userTenants(Collections.emptyList())
                 .customAttributes(Collections.emptyMap())
                 .picture("")
                 .build();
@@ -93,7 +76,7 @@ public class ManagementCLI {
                 .phone(phone)
                 .displayName(name)
                 .roleNames(Collections.emptyList())
-                .tenants(Collections.emptyList())
+                .userTenants(Collections.emptyList())
                 .customAttributes(Collections.emptyMap())
                 .picture("")
                 .invite(false)
