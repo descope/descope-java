@@ -1,4 +1,4 @@
-[![CI](https://github.com/descope/java-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/descope/java-sdk/actions/workflows/ci.yml)
+[![CI](https://github.com/descope/descope-java/actions/workflows/ci.yaml/badge.svg)](https://github.com/descope/descope-java/actions/workflows/ci.yaml)
 
 # Descope SDK for Java
 
