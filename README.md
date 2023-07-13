@@ -1,4 +1,4 @@
-[![CI](https://github.com/descope/java-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/descope/java-sdk/actions/workflows/ci.yml)
+[![CI](https://github.com/descope/descope-java/actions/workflows/ci.yml/badge.svg)](https://github.com/descope/descope-java/actions/workflows/ci.yml)
 
 # Descope SDK for Java
 
@@ -107,7 +107,7 @@ The user will receive a code using the selected delivery method. Verify that cod
 ```java
 // Will throw DescopeException if there is an error with update
 try {
-  AuthenticationInfo info = descopeClient.getAuthenticationServices(config, client).getOTPService().verifyCode(DeliveryMethod.EMAIL, loginId, code);    
+  AuthenticationInfo info = descopeClient.getAuthenticationServices(config, client).getOTPService().verifyCode(DeliveryMethod.EMAIL, loginId, code);
 } catch (DescopeException de) {
   // Handle the error
 }
@@ -791,11 +791,11 @@ You can create, update, delete or load access keys, as well as search according 
 AccessKeyService aks = descopeClient.getManagementServices(config, projectId, client).getAccessKeyService();
 try {
     // Create a new access key with a name, delay time, and tenant
-    AccessKeyResponse resp = aks.create("access-key-1", 0, 
-            Arrays.asList("Role names"), 
+    AccessKeyResponse resp = aks.create("access-key-1", 0,
+            Arrays.asList("Role names"),
             Arrays.asList(
-                new Tenant("tenant-ID1", 
-                    "Key Tenant", 
+                new Tenant("tenant-ID1",
+                    "Key Tenant",
                     Arrays.asList(new AssociatedTenant("tenant-ID2", Arrays.asList("Role names"))))));
 } catch (DescopeException de) {
     // Handle the error
@@ -1017,8 +1017,8 @@ try {
 
 // Load all groups for the given user/login IDs (can be found in the user's JWT, used for sign-in)
 try {
-    List<Group> groups = gs.loadAllGroupsForMembers("tenant-id", 
-            Arrays.asList("user-id-1", "user-id-2"), 
+    List<Group> groups = gs.loadAllGroupsForMembers("tenant-id",
+            Arrays.asList("user-id-1", "user-id-2"),
             Arrays.asList("login-id-1", "login-id-2"));
     for (Group g : groups) {
         // Do something
@@ -1105,7 +1105,7 @@ You can add custom claims to a valid JWT.
 ```java
 JwtService jwts = descopeClient.getManagementServices(config, projectId, client).getJwtService();
 try {
-    String res = jwts.updateJWTWithCustomClaims("original-jwt", 
+    String res = jwts.updateJWTWithCustomClaims("original-jwt",
             new HashMap<String, Object>() {{
                 put("custom-key1", "custom-value1");
                 put("custom-key2", "custom-value2");
@@ -1143,7 +1143,7 @@ try {
 
 ## Code Examples
 
-You can find various usage examples in the [examples folder](https://github.com/descope/java-sdk/blob/main/examples).
+You can find various usage examples in the [examples folder](https://github.com/descope/descope-java/blob/main/examples).
 
 ### Setup
 
@@ -1307,4 +1307,4 @@ If you need help you can email [Descope Support](mailto:support@descope.com)
 
 ## License
 
-The Descope SDK for Java is licensed for use under the terms and conditions of the [MIT license Agreement](https://github.com/descope/java-sdk/blob/main/LICENSE).
+The Descope SDK for Java is licensed for use under the terms and conditions of the [MIT license Agreement](https://github.com/descope/descope-java/blob/main/LICENSE).
