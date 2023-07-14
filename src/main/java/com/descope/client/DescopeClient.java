@@ -15,7 +15,6 @@ import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import io.jsonwebtoken.lang.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +34,7 @@ public class DescopeClient {
   }
 
   public DescopeClient(Config config) throws DescopeException {
-    if (Objects.isNull(config)) {
+    if (config == null) {
       throw ServerCommonException.invalidArgument("Config");
     }
 

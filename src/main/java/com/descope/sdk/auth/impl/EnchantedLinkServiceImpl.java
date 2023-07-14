@@ -29,7 +29,6 @@ import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.EnchantedLinkService;
 import java.net.URI;
-import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements EnchantedLinkService {
@@ -53,7 +52,7 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public EnchantedLinkResponse signUp(String loginId, String uri, User user)
       throws DescopeException {
-    if (Objects.isNull(user)) {
+    if (user == null) {
       user = new User();
     }
 

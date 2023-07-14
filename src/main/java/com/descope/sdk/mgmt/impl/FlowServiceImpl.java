@@ -16,7 +16,6 @@ import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.FlowService;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 class FlowServiceImpl extends ManagementsBase implements FlowService {
@@ -54,7 +53,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
 
   @Override
   public Theme importTheme(Theme theme) throws DescopeException {
-    if (Objects.isNull(theme)) {
+    if (theme == null) {
       throw ServerCommonException.invalidArgument("Theme");
     }
     Map<String, Object> request = Map.of("theme", theme);

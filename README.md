@@ -1098,7 +1098,7 @@ try {
             new HashMap<String, Object>() {{
                 put("custom-key1", "custom-value1");
                 put("custom-key2", "custom-value2");
-            }});
+            }}).getJwt();
 } catch (DescopeException de) {
     // Handle the error
 }

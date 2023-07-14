@@ -43,7 +43,7 @@ class RolesServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestMgmtUtils.getManagementParams();
+    var authParams = TestUtils.getManagementParams();
     var client = TestUtils.getClient();
     var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
     this.rolesService = mgmtServices.getRolesService();

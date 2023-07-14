@@ -1,10 +1,10 @@
 package com.descope.sdk.auth.impl;
 
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_JWT_RESPONSE;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_SIGNING_KEY;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_TOKEN;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_URL;
-import static com.descope.sdk.auth.impl.TestAuthUtils.PROJECT_ID;
+import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
+import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
+import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.MOCK_URL;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,7 +37,7 @@ public class OAuthServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestAuthUtils.getAuthParams();
+    var authParams = TestUtils.getAuthParams();
     var client = TestUtils.getClient();
     this.oauthService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getOauthService();

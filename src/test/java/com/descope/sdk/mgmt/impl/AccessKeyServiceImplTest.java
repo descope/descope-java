@@ -43,7 +43,7 @@ class AccessKeyServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestMgmtUtils.getManagementParams();
+    var authParams = TestUtils.getManagementParams();
     var client = TestUtils.getClient();
     this.accessKeyService =
         ManagementServiceBuilder.buildServices(client, authParams).getAccessKeyService();

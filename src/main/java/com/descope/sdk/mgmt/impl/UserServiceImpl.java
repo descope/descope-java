@@ -41,7 +41,6 @@ import com.descope.sdk.mgmt.UserService;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 class UserServiceImpl extends ManagementsBase implements UserService {
@@ -52,7 +51,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   public UserResponseDetails create(String loginId, UserRequest request) throws DescopeException {
-    if (Objects.isNull(request)) {
+    if (request == null) {
       request = new UserRequest();
     }
     request.setLoginId(loginId);
@@ -67,7 +66,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   @Override
   public UserResponseDetails createTestUser(String loginId, UserRequest request)
       throws DescopeException {
-    if (Objects.isNull(request)) {
+    if (request == null) {
       request = new UserRequest();
     }
 
@@ -82,7 +81,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   public UserResponseDetails invite(String loginId, UserRequest request) throws DescopeException {
-    if (Objects.isNull(request)) {
+    if (request == null) {
       request = new UserRequest();
     }
 
@@ -100,7 +99,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    if (Objects.isNull(request)) {
+    if (request == null) {
       request = new UserRequest();
     }
     request.setLoginId(loginId);
@@ -150,13 +149,13 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   @SuppressWarnings("unchecked")
   public AllUsersResponseDetails searchAll(UserSearchRequest request)
       throws DescopeException {
-    if (Objects.isNull(request)) {
+    if (request == null) {
       request = UserSearchRequest.builder().limit(0).page(0).build();
     }
-    if (Objects.isNull(request.getLimit()) || request.getLimit() < 0) {
+    if (request.getLimit() == null || request.getLimit() < 0) {
       throw ServerCommonException.invalidArgument("limit");
     }
-    if (Objects.isNull(request.getPage()) || request.getPage() < 0) {
+    if (request.getPage() == null || request.getPage() < 0) {
       throw ServerCommonException.invalidArgument("page");
     }
 

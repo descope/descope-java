@@ -31,7 +31,7 @@ public class AuditServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestMgmtUtils.getManagementParams();
+    var authParams = TestUtils.getManagementParams();
     var client = TestUtils.getClient();
     var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
     this.auditService = mgmtServices.getAuditService();

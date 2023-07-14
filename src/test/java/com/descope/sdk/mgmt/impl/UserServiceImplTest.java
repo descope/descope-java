@@ -45,7 +45,7 @@ public class UserServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestMgmtUtils.getManagementParams();
+    var authParams = TestUtils.getManagementParams();
     var client = TestUtils.getClient();
     var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
     this.userService = mgmtServices.getUserService();

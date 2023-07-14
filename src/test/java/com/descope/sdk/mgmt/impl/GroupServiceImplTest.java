@@ -30,7 +30,7 @@ class GroupServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestMgmtUtils.getManagementParams();
+    var authParams = TestUtils.getManagementParams();
     var client = TestUtils.getClient();
     this.groupService =
         ManagementServiceBuilder.buildServices(client, authParams).getGroupService();

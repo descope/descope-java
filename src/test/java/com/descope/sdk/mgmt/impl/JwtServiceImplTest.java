@@ -1,59 +1,37 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_JWT_RESPONSE;
-import static com.descope.sdk.auth.impl.TestAuthUtils.MOCK_SIGNING_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
+import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.jwt.Provider;
-import com.descope.model.jwt.SigningKey;
-import com.descope.proxy.ApiProxy;
-import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.model.user.request.UserRequest;
 import com.descope.sdk.TestUtils;
+import com.descope.sdk.auth.OTPService;
+import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.JwtService;
-import java.security.Key;
+import com.descope.sdk.mgmt.UserService;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 public class JwtServiceImplTest {
 
   private final Map<String, Object> mockCustomClaims = Map.of("test", "claim");
   private JwtService jwtService;
+  private UserService userService;
+  private OTPService otpService;
 
   @BeforeEach
   void setUp() {
-    var authParams = TestMgmtUtils.getManagementParams();
+    var authParams = TestUtils.getManagementParams();
     var client = TestUtils.getClient();
-    this.jwtService = ManagementServiceBuilder.buildServices(client, authParams).getJwtService();
-  }
-
-  @Test
-  void testUpdateJWTWithCustomClaims() {
-    var apiProxy = mock(ApiProxy.class);
-    doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKey[]{MOCK_SIGNING_KEY})
-      .when(apiProxy).get(any(), eq(SigningKey[].class));
-
-    var provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
-
-    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = jwtService.updateJWTWithCustomClaims("someJwt", mockCustomClaims);
-      Assertions.assertThat(response).isEqualTo("someSessionJwt");
-    }
+    var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    this.jwtService = mgmtServices.getJwtService();
+    this.userService = mgmtServices.getUserService();
+    this.otpService = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams()).getOtpService();
   }
 
   @Test
@@ -64,5 +42,19 @@ public class JwtServiceImplTest {
             () -> jwtService.updateJWTWithCustomClaims("", mockCustomClaims));
     assertNotNull(thrown);
     assertEquals("The JWT argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testFunctionalFullCycle() {
+    String loginId = TestUtils.getRandomName("u-") + "@descope.com";
+    userService.createTestUser(loginId, UserRequest.builder().email(loginId).verifiedEmail(true).build());
+    var code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
+    assertNotNull(authInfo.getToken());
+    Assertions.assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    var newJwt = jwtService.updateJWTWithCustomClaims(authInfo.getToken().getJwt(), mockCustomClaims);
+    assertNotNull(newJwt.getClaims());
+    assertEquals(newJwt.getClaims().get("test"), "claim");
+    userService.deleteAllTestUsers();
   }
 }

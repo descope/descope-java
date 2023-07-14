@@ -21,7 +21,6 @@ import com.descope.model.password.AuthenticationPasswordUpdateRequestBody;
 import com.descope.model.password.PasswordPolicy;
 import com.descope.model.user.User;
 import com.descope.sdk.auth.PasswordService;
-import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 
 class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordService {
@@ -35,7 +34,7 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    if (Objects.isNull(user)) {
+    if (user == null) {
       user = new User();
     }
     var pwdSignUpRequest =

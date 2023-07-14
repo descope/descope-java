@@ -13,7 +13,7 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
   private final ManagementParams managementParams;
 
   ManagementsBase(Client client, ManagementParams managementParams) {
-    super(client);
+    super(client, managementParams.getProjectId());
     this.managementParams = managementParams;
   }
 

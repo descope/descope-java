@@ -1,6 +1,7 @@
 package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
+import com.descope.model.jwt.Token;
 import java.util.Map;
 
 /** Provide functions for manipulating valid JWT. */
@@ -13,6 +14,6 @@ public interface JwtService {
    * @param customClaims - Custom Claims
    * @return - New JWT
    */
-  String updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims)
+  Token updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims)
       throws DescopeException;
 }

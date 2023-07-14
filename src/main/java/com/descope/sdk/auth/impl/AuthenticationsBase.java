@@ -8,17 +8,13 @@ import static com.descope.literals.AppConstants.SESSION_COOKIE_NAME;
 import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.descope.enums.DeliveryMethod;
-import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.Tokens;
@@ -33,15 +29,11 @@ import com.descope.sdk.auth.AuthenticationService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.security.Key;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,13 +41,10 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 abstract class AuthenticationsBase extends SdkServicesBase implements AuthenticationService {
   private final AuthParams authParams;
-  private final Provider provider;
 
   AuthenticationsBase(Client client, AuthParams authParams) {
-    super(client);
+    super(client, authParams.getProjectId());
     this.authParams = authParams;
-    this.provider =
-        Provider.builder().client(client).authParams(authParams).keyMap(new HashMap<>()).build();
   }
 
   ApiProxy getApiProxy() {
@@ -74,17 +63,6 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
 
     String token = String.format("Bearer %s:%s", projectId, refreshToken);
     return ApiProxyBuilder.buildProxy(() -> token, client.getSdkInfo());
-  }
-
-  @SneakyThrows
-  Key requestKeys() {
-    if (Objects.nonNull(provider.getProvidedKey())) {
-      return provider.getProvidedKey();
-    }
-
-    var key = KeyProvider.getKey(authParams.getProjectId(), client.getUri(), client.getSdkInfo());
-    provider.setProvidedKey(key);
-    return key;
   }
 
   void verifyDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, User user) {
@@ -130,13 +108,6 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     }
   }
 
-  Token validateAndCreateToken(String jwt) {
-    if (StringUtils.isBlank(jwt)) {
-      throw ClientFunctionalException.invalidToken();
-    }
-    return JwtUtils.getToken(jwt, requestKeys());
-  }
-
   String getValidRefreshToken(HttpRequest request) {
     Tokens tokens = provideTokens(request);
     if (isEmpty(tokens.getRefreshToken())) {
@@ -146,7 +117,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   Tokens provideTokens(HttpRequest request) {
-    if (isNull(request)) {
+    if (request == null) {
       return Tokens.builder().build();
     }
 
@@ -171,7 +142,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
                 .map(String::trim)
                 .findAny()
                 .orElse(null);
-        if (nonNull(sessionCookie)) {
+        if (sessionCookie != null) {
           tokens.setSessionToken(sessionCookie.split("=")[1]);
         }
 
@@ -180,7 +151,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
                 .filter(cookie -> cookie.contains(REFRESH_COOKIE_NAME))
                 .findAny()
                 .orElse(null);
-        if (nonNull(refreshCookie)) {
+        if (refreshCookie != null) {
           tokens.setRefreshToken(refreshCookie.split("=")[1]);
         }
       }
@@ -229,11 +200,9 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   List<String> getAuthorizationClaimItems(Token token, String tenant, List<String> permissions) {
-    if (Objects.isNull(tenant) || MapUtils.isEmpty(token.getClaims())) {
+    if (tenant == null || MapUtils.isEmpty(token.getClaims())) {
       return Collections.emptyList();
     }
-
-    // TODO - Understand Tenant Roles | 08/05/23 | by keshavram
 
     return token.getClaims().keySet().stream()
         .filter(permissions::contains)

@@ -1,7 +1,5 @@
 package com.descope.utils;
 
-import static java.util.Objects.nonNull;
-
 import com.descope.model.jwt.Token;
 import com.descope.model.magiclink.LoginOptions;
 import io.jsonwebtoken.Claims;
@@ -40,6 +38,6 @@ public class JwtUtils {
   }
 
   public static boolean isJWTRequired(LoginOptions loginOptions) {
-    return nonNull(loginOptions) && (loginOptions.isStepUp() || loginOptions.isMfa());
+    return loginOptions != null && (loginOptions.isStepUp() || loginOptions.isMfa());
   }
 }

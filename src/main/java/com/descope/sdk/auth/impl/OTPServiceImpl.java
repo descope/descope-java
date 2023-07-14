@@ -11,7 +11,6 @@ import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OTP_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.VERIFY_OTP_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
-import static java.util.Objects.isNull;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
@@ -63,7 +62,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   @Override
   public String signUp(DeliveryMethod deliveryMethod, String loginId, User user)
       throws DescopeException {
-    if (isNull(user)) {
+    if (user == null) {
       user = new User();
     }
     verifyDeliveryMethod(deliveryMethod, loginId, user);
@@ -105,7 +104,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     } else if (EMAIL_PATTERN.matcher(loginId).matches()) {
       deliveryMethod = EMAIL;
     }
-    if (isNull(deliveryMethod)) {
+    if (deliveryMethod == null) {
       throw ServerCommonException.invalidArgument("Method");
     }
     var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code);

@@ -5,8 +5,9 @@ import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_JWT_LINK;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.UpdateJwtRequest;
-import com.descope.model.jwt.response.JWTResponse;
+import com.descope.model.jwt.response.UpdateJwtResponse;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
@@ -20,7 +21,7 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   }
 
   @Override
-  public String updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims)
+  public Token updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims)
       throws DescopeException {
     if (StringUtils.isBlank(jwt)) {
       throw ServerCommonException.invalidArgument("JWT");
@@ -32,8 +33,8 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     URI updateJwtUri = composeUpdateJwtUri();
     var apiProxy = getApiProxy();
 
-    var jwtResponse = apiProxy.post(updateJwtUri, updateJwtRequest, JWTResponse.class);
-    return jwtResponse.getSessionJwt();
+    var jwtResponse = apiProxy.post(updateJwtUri, updateJwtRequest, UpdateJwtResponse.class);
+    return validateAndCreateToken(jwtResponse.getJwt());
   }
 
   private URI composeUpdateJwtUri() {
