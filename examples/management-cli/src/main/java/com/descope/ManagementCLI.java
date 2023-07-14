@@ -30,7 +30,7 @@ import picocli.CommandLine.Option;
   RoleLoadAll.class,
   AuditSearch.class
 })
-public class ManagementCLI implements Callable<Integer>{
+public class ManagementCLI implements Callable<Integer> {
   @Option(names = { "-h", "--help"}, usageHelp = true, description = "show this help message and exit")
   boolean help;
 
