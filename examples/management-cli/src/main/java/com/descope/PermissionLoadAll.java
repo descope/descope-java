@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "permission-load-all", description = "List all available permissions")
-public class PermissionLoadAll extends HelpBase implements Callable<Integer>{
+public class PermissionLoadAll extends HelpBase implements Callable<Integer> {
 
   @Override
   public Integer call() throws JsonProcessingException {

@@ -7,7 +7,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "permission-create", description = "Create a Descope permission")
-public class PermissionCreate extends PermissionBase implements Callable<Integer>{
+public class PermissionCreate extends PermissionBase implements Callable<Integer> {
 
   @Option(names = { "-d", "--description"}, description = "Permission description")
   String desc;

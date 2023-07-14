@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "user-delete", description = "Delete a Descope user")
-public class UserDelete extends UserBase implements Callable<Integer>{
+public class UserDelete extends UserBase implements Callable<Integer> {
 
   @Override
   public Integer call() {

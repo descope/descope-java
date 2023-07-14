@@ -1,14 +1,14 @@
 package com.descope;
 
-import java.util.concurrent.Callable;
 import com.descope.client.DescopeClient;
 import com.descope.exception.DescopeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "tenant-load-all", description = "Load a Descope tenant")
-public class TenantLoad extends HelpBase implements Callable<Integer>{
+public class TenantLoad extends HelpBase implements Callable<Integer> {
 
   @Override
   public Integer call() throws JsonProcessingException {

@@ -10,7 +10,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "access-key-search-all", description = "Search Descope access keys")
-public class AccessKeySearch extends HelpBase implements Callable<Integer>{
+public class AccessKeySearch extends HelpBase implements Callable<Integer> {
 
   @Option(names = { "-t", "--tenant"}, description = "Optional tenant ids. Multiple tenants supported.")
   List<String> tenants;

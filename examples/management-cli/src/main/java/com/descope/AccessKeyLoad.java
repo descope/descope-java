@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "access-key-load", description = "Load Descope access key details")
-public class AccessKeyLoad extends AccessKeyBase implements Callable<Integer>{
+public class AccessKeyLoad extends AccessKeyBase implements Callable<Integer> {
 
   @Override
   public Integer call() throws JsonProcessingException {

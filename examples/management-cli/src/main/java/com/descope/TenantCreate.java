@@ -9,7 +9,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "tenant-create", description = "Create a Descope tenant")
-public class TenantCreate extends HelpBase implements Callable<Integer>{
+public class TenantCreate extends HelpBase implements Callable<Integer> {
 
   @Option(names = { "-i", "--tenantId" }, description = "Optional tenant id")
   String tenantId;

@@ -11,11 +11,11 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "user-search-all", description = "Search Descope users")
-public class UserSearch extends HelpBase implements Callable<Integer>{
+public class UserSearch extends HelpBase implements Callable<Integer> {
 
   @Option(names = { "-p", "--page" }, defaultValue = "0", description = "Page number of users to retrieve")
   int page;
-  @Option(names = { "-l", "--limit" }, defaultValue = "0", description = "Max number of users to retrieve. 0 is unlimited.")
+  @Option(names = { "-l", "--limit" }, defaultValue = "0", description = "Max number of users. 0 is unlimited.")
   int limit;
   @Option(names = { "-t", "--test" }, description = "Retrieve test only users")
   boolean testOnly;

@@ -8,7 +8,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "permission-update", description = "Update a Descope permission")
-public class PermissionUpdate extends PermissionBase implements Callable<Integer>{
+public class PermissionUpdate extends PermissionBase implements Callable<Integer> {
 
   @Option(names = { "-d", "--description"}, description = "Permission description")
   String desc;

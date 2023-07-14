@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "permission-delete", description = "Delete a Descope permission")
-public class PermissionDelete extends PermissionBase implements Callable<Integer>{
+public class PermissionDelete extends PermissionBase implements Callable<Integer> {
 
   @Override
   public Integer call() {

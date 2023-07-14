@@ -8,7 +8,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "user-create", description = "Create a Descope user with validated email and phone")
-public class UserCreate extends UserChangeBase implements Callable<Integer>{
+public class UserCreate extends UserChangeBase implements Callable<Integer> {
 
   @Option(names = { "-t", "--test"}, description = "if provided, this will be a test user")
   boolean test;

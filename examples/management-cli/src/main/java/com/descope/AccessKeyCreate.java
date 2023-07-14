@@ -11,7 +11,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "access-key-create", description = "Create a Descope access key")
-public class AccessKeyCreate extends HelpBase implements Callable<Integer>{
+public class AccessKeyCreate extends HelpBase implements Callable<Integer> {
 
   @Option(names = { "-n", "--name"}, description = "Access key name")
   String name;

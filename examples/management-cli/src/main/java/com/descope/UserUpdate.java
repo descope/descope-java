@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "user-update", description = "Update a Descope user with validated email and phone")
-public class UserUpdate extends UserChangeBase implements Callable<Integer>{
+public class UserUpdate extends UserChangeBase implements Callable<Integer> {
 
   @Override
   public Integer call() {

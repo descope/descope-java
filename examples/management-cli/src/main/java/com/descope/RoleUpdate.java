@@ -9,7 +9,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "role-update", description = "Update a Descope role")
-public class RoleUpdate extends RoleBase implements Callable<Integer>{
+public class RoleUpdate extends RoleBase implements Callable<Integer> {
 
   @Option(names = { "-d", "--description"}, description = "Role description")
   String desc;

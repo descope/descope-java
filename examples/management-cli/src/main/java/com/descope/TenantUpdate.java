@@ -8,7 +8,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "tenant-update", description = "Update a Descope tenant")
-public class TenantUpdate extends TenantBase implements Callable<Integer>{
+public class TenantUpdate extends TenantBase implements Callable<Integer> {
 
   @Option(names = { "-n", "--name"}, description = "Tenant name")
   String name;

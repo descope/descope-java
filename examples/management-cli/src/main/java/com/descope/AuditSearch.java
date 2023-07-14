@@ -14,7 +14,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "audit-search", description = "Search audit trail")
-public class AuditSearch extends HelpBase implements Callable<Integer>{
+public class AuditSearch extends HelpBase implements Callable<Integer> {
   
   @Option(names = { "-f", "--from"}, description = "Search last number of days")
   int from;
@@ -30,8 +30,6 @@ public class AuditSearch extends HelpBase implements Callable<Integer>{
   public Integer call() throws JsonProcessingException {
     int exitCode = 0;
     try {
-      var client = new DescopeClient();
-      var auditService = client.getManagementServices().getAuditService();
       var builder = AuditSearchRequest.builder();
       if (from != 0) {
         builder = builder.from(Instant.now().minus(Duration.ofDays(from)));
@@ -42,6 +40,8 @@ public class AuditSearch extends HelpBase implements Callable<Integer>{
       if (StringUtils.isNotBlank(text)) {
         builder = builder.text(text);
       }
+      var client = new DescopeClient();
+      var auditService = client.getManagementServices().getAuditService();
       var res = auditService.search(builder.build());
       ObjectMapper objectMapper = new ObjectMapper();
       objectMapper.registerModule(new JavaTimeModule());

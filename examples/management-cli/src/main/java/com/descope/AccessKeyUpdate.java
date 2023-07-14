@@ -7,7 +7,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "access-key-update", description = "Update a Descope access key")
-public class AccessKeyUpdate extends AccessKeyBase implements Callable<Integer>{
+public class AccessKeyUpdate extends AccessKeyBase implements Callable<Integer> {
 
   @Option(names = { "-n", "--name"}, description = "Access key name")
   String name;

@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "user-load", description = "Load Descope user details")
-public class UserLoad extends UserBase implements Callable<Integer>{
+public class UserLoad extends UserBase implements Callable<Integer> {
 
   @Override
   public Integer call() throws JsonProcessingException {

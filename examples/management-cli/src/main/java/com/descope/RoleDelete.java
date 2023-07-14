@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "role-delete", description = "Delete a Descope role")
-public class RoleDelete extends RoleBase implements Callable<Integer>{
+public class RoleDelete extends RoleBase implements Callable<Integer> {
 
   @Override
   public Integer call() {

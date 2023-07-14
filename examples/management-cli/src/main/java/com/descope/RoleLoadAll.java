@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 
 @Command(name = "role-load-all", description = "List all available roles")
-public class RoleLoadAll extends HelpBase implements Callable<Integer>{
+public class RoleLoadAll extends HelpBase implements Callable<Integer> {
 
   @Override
   public Integer call() throws JsonProcessingException {
