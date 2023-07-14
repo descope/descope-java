@@ -1,12 +1,12 @@
 package com.descope;
 
+import com.descope.client.DescopeClient;
+import com.descope.exception.DescopeException;
+import com.descope.model.auth.AssociatedTenant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
-import com.descope.client.DescopeClient;
-import com.descope.exception.DescopeException;
-import com.descope.model.auth.AssociatedTenant;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

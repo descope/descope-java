@@ -1,12 +1,12 @@
 package com.descope;
 
-import java.util.List;
-import java.util.concurrent.Callable;
 import com.descope.client.DescopeClient;
 import com.descope.exception.DescopeException;
 import com.descope.model.user.request.UserSearchRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

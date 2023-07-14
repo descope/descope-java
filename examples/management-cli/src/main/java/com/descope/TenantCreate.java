@@ -1,10 +1,10 @@
 package com.descope;
 
+import com.descope.client.DescopeClient;
+import com.descope.exception.DescopeException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.apache.commons.lang3.StringUtils;
-import com.descope.client.DescopeClient;
-import com.descope.exception.DescopeException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

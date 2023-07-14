@@ -146,7 +146,6 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public AllUsersResponseDetails searchAll(UserSearchRequest request)
       throws DescopeException {
     if (request == null) {
