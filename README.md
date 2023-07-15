@@ -1136,12 +1136,13 @@ You can find various usage examples in the [examples folder](https://github.com/
 
 ### Setup
 
-To run the examples, set your `Project ID` by setting the `DESCOPE_PROJECT_ID` env var or directly
-in the sample code.
+To run the examples, set your `Project ID` and `Management Key` by setting the `DESCOPE_PROJECT_ID` and `DESCOPE_MANAGEMENT_KEY` env vars or directly in the sample code.
 Find your Project ID in the [Descope console](https://app.descope.com/settings/project).
+Find your management key in the [Descope console](https://app.descope.com/settings/company/managementkeys).
 
 ```bash
 export DESCOPE_PROJECT_ID=<ProjectID>
+export DESCOPE_MANAGEMENT_KEY=<ManagementKey>
 ```
 
 Alternatively, you can create a `.env` file in the working folder with your project ID and management key.
@@ -1152,17 +1153,23 @@ DESCOPE_MANAGEMENT_KEY=<ManagementKey>
 
 ### Run an example
 
-1. Run this command in your project to build the examples.
+1. Make sure that the main Descope java-sdk is installed in the local MVN. Run this in the main folder.
+   ```bash
+   mvn install
+   ```
+2. Run this command in your project to build the examples.
 
    ```bash
    mvn package
    ```
 
-2. Run a specific example
+3. Run a specific example
 
    ```bash
    # CLI example
-   java -jar target/management-cli.jar command-name -option1 -option2
+   java -jar target/management-cli-1.0.jar command-name -option1 -option2
+   # For example to display 10 users:
+   java -jar target/management-cli-1.0.jar user-search-all -l 10
    ```
 
 ### Using Visual Studio Code
