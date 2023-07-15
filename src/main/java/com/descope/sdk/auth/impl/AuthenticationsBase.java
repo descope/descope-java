@@ -179,17 +179,14 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   Token refreshSession(String refreshToken) {
-    var token = validateJWT(refreshToken);
+    validateJWT(refreshToken);
     var apiProxy = getApiProxy(refreshToken);
     URI refreshTokenLinkURL = composeRefreshTokenLinkURL();
 
     var jwtResponse = apiProxy.post(refreshTokenLinkURL, null, JWTResponse.class);
     var authenticationInfo = getAuthenticationInfo(jwtResponse);
 
-    Token sessionToken = authenticationInfo.getToken();
-    sessionToken.setExpiration(token.getExpiration());
-
-    return sessionToken;
+    return authenticationInfo.getToken();
   }
 
   AuthenticationInfo getAuthenticationInfo(JWTResponse jwtResponse) {

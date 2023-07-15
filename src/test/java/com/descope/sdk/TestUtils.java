@@ -2,6 +2,7 @@ package com.descope.sdk;
 
 import com.descope.model.auth.AuthParams;
 import com.descope.model.client.Client;
+import com.descope.model.client.ClientParams;
 import com.descope.model.client.SdkInfo;
 import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
@@ -95,7 +96,12 @@ public class TestUtils {
   }
 
   public static Client getClient() {
-    return Client.builder().uri("https://api.descope.com").sdkInfo(getSdkInfo()).build();
+    String baseUrl = "https://api.descope.com";
+    return Client.builder()
+        .uri(baseUrl)
+        .sdkInfo(getSdkInfo())
+        .params(ClientParams.builder().baseUrl(baseUrl).projectId(EnvironmentUtils.getProjectId()).build())
+        .build();
   }
 
   public static String getRandomName(String prefix) {

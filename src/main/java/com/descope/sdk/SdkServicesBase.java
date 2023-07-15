@@ -20,12 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 
 public abstract class SdkServicesBase {
   protected final Client client;
-  protected final Provider provider;
 
   protected SdkServicesBase(Client client, String projectId) {
     this.client = client;
-    this.provider =
-        Provider.builder().client(client).projectId(projectId).keyMap(new HashMap<>()).build();
   }
 
   protected URI composeURI(String base, String path) {
@@ -51,12 +48,13 @@ public abstract class SdkServicesBase {
 
   @SneakyThrows
   protected Key requestKeys() {
-    if (provider.getProvidedKey() != null) {
-      return provider.getProvidedKey();
+    var key = client.getProvidedKey();
+    if (key != null) {
+      return client.getProvidedKey();
     }
 
-    var key = KeyProvider.getKey(provider.getProjectId(), client.getUri(), client.getSdkInfo());
-    provider.setProvidedKey(key);
+    key = KeyProvider.getKey(client.getParams().getProjectId(), client.getUri(), client.getSdkInfo());
+    client.setProvidedKey(key);
     return key;
   }
 
