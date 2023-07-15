@@ -28,7 +28,6 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public AuditSearchResponse search(AuditSearchRequest request) throws DescopeException {
     if (request == null) {
       request = new AuditSearchRequest();

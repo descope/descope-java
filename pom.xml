@@ -46,10 +46,10 @@
             <version>0.11.5</version>
         </dependency>
         <dependency>
-            <artifactId>bcprov-jdk15on</artifactId>
+            <artifactId>bcprov-jdk18on</artifactId>
             <groupId>org.bouncycastle</groupId>
             <scope>runtime</scope>
-            <version>1.70</version>
+            <version>1.75</version>
         </dependency>
 
         <!--  LOMBOK  -->
