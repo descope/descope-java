@@ -5,14 +5,12 @@ import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 import com.descope.exception.ClientFunctionalException;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.sdk.auth.impl.KeyProvider;
 import com.descope.utils.JwtUtils;
 import com.descope.utils.UriUtils;
 import java.net.URI;
 import java.security.Key;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
