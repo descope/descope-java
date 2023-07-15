@@ -1153,11 +1153,11 @@ DESCOPE_MANAGEMENT_KEY=<ManagementKey>
 
 ### Run an example
 
-1. Make sure that the main Descope java-sdk is installed in the local MVN. Run this in the main folder.
+1. Make sure that the main Descope java-sdk is installed in the local Maven. Run this in the main folder.
    ```bash
    mvn install
    ```
-2. Run this command in your project to build the examples.
+2. Run this command in your project to build the example in the `examples/management-cli` folder.
 
    ```bash
    mvn package
@@ -1170,6 +1170,9 @@ DESCOPE_MANAGEMENT_KEY=<ManagementKey>
    java -jar target/management-cli-1.0.jar command-name -option1 -option2
    # For example to display 10 users:
    java -jar target/management-cli-1.0.jar user-search-all -l 10
+   # Help is available on all commands and within the command itself:
+   java -jar target/management-cli-1.0.jar -h
+   java -jar target/management-cli-1.0.jar user-search-all -h
    ```
 
 ### Using Visual Studio Code
