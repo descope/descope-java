@@ -33,6 +33,9 @@ abstract class AbstractProxyImpl {
 
   @SneakyThrows
   private static <B> BodyPublisher getBodyPublisher(B body) {
+    if (body == null) {
+      return BodyPublishers.ofString("");
+    }
     var objectMapper = new ObjectMapper();
     String requestBody = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(body);
     return BodyPublishers.ofString(requestBody);
