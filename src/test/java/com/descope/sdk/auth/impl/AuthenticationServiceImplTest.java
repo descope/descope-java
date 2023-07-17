@@ -41,9 +41,9 @@ public class AuthenticationServiceImplTest {
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     Token token = authenticationService.validateSessionWithToken(authInfo.getToken().getJwt());
     assertThat(token.getJwt()).isNotBlank();
-    // token = authenticationService.refreshSessionWithToken(authInfo.getRefreshToken().getJwt());
-    // assertThat(token.getJwt()).isNotBlank();
-    // authenticationService.logout(authInfo.getRefreshToken().getJwt());
+    token = authenticationService.refreshSessionWithToken(authInfo.getRefreshToken().getJwt());
+    assertThat(token.getJwt()).isNotBlank();
+    authenticationService.logout(authInfo.getRefreshToken().getJwt());
     userService.delete(loginId);
   }
 }
