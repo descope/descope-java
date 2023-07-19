@@ -6,6 +6,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.SdkInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -22,6 +23,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.input.TeeInputStream;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
@@ -126,24 +128,38 @@ abstract class AbstractProxyImpl {
           upstream, inputStream -> toSupplierOfType(inputStream, responseInfo, returnClz));
     }
 
+    @SuppressWarnings({"resource"})
     private static <R> Supplier<R> toSupplierOfType(
         InputStream inputStream, HttpResponse.ResponseInfo responseInfo, Class<R> returnClz) {
       return () -> {
         try (InputStream stream = inputStream) {
           ObjectMapper objectMapper = new ObjectMapper();
+          ByteArrayOutputStream bs = new ByteArrayOutputStream();
+          TeeInputStream tee = new TeeInputStream(stream, bs, true);
           if (responseInfo.statusCode() < 200 || responseInfo.statusCode() > 299) {
-            var errorDetails = objectMapper.readValue(stream, JsonBodyHandler.ErrorDetails.class);
-            log.error(errorDetails.getActualMessage());
-            if (ErrorCode.RATE_LIMIT_EXCEEDED.equals(errorDetails.errorCode)) {
-              throw new RateLimitExceededException(
-                errorDetails.getActualMessage(),
-                errorDetails.getErrorCode(),
-                responseInfo.headers().firstValueAsLong(RETRY_AFTER_HEADER).orElse(DEFAULT_RETRY));
+            try {
+              var errorDetails = objectMapper.readValue(tee, JsonBodyHandler.ErrorDetails.class);
+              log.error(errorDetails.getActualMessage());
+              if (ErrorCode.RATE_LIMIT_EXCEEDED.equals(errorDetails.errorCode)) {
+                throw new RateLimitExceededException(
+                  errorDetails.getActualMessage(),
+                  errorDetails.getErrorCode(),
+                  responseInfo.headers().firstValueAsLong(RETRY_AFTER_HEADER).orElse(DEFAULT_RETRY));
+              }
+              throw ServerCommonException.genericServerError(
+                  errorDetails.getActualMessage(), errorDetails.getErrorCode());
+            } catch (IOException e) {
+              throw ServerCommonException.genericServerError(
+                  bs.toString(), String.valueOf(responseInfo.statusCode()));
             }
-            throw ServerCommonException.genericServerError(
-                errorDetails.getActualMessage(), errorDetails.getErrorCode());
           }
-          return objectMapper.readValue(stream, returnClz);
+          var res = objectMapper.readValue(tee, returnClz);
+          if (log.isDebugEnabled()) {
+            String resStr = bs.toString();
+            log.debug(String.format("Received response %s",
+                resStr.substring(0, resStr.length() > 10000 ? 10000 : resStr.length())));
+          }
+          return res;
         } catch (IOException e) {
           throw new UncheckedIOException(e);
         }

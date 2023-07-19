@@ -116,14 +116,27 @@ class FlowServiceImplTest {
   }
 
   @Test
-  void testFunctionalFullCycleTheme() {
-    // String flowId = "sign-up-or-in";
-    // var flowResponse = flowService.exportFlow(flowId);
+  void testFunctionalFullCycleTheme() throws Exception {
+    var flows = flowService.listFlows();
+    assertNotNull(flows.getFlows());
+    Assertions.assertThat(flows.getFlows().size()).isGreaterThan(0);
+    for (var f : flows.getFlows()) {
+      Assertions.assertThat(f.getId()).isNotBlank();
+    }
+    String flowId = "sign-up-or-in";
+    var flowResponse = flowService.exportFlow(flowId);
+    Assertions.assertThat(flowResponse.getScreens().size()).isGreaterThan(0);
+    assertNotNull(flowResponse.getFlow());
+    // flowResponse = flowService.importFlow(flowId, flowResponse.getFlow(), flowResponse.getScreens());
     // Assertions.assertThat(flowResponse.getScreens().size()).isGreaterThan(0);
     // assertNotNull(flowResponse.getFlow());
-    // flowService.importFlow(flowId, flowResponse.getFlow(), flowResponse.getScreens());
-    // var theme = flowService.exportTheme();
-    // Assertions.assertThat(theme).isNotNull();
-    // Assertions.assertThat(theme.getId()).isNotBlank();
+    var theme = flowService.exportTheme();
+    assertNotNull(theme);
+    Assertions.assertThat(theme.getId()).isNotBlank();
+    assertNotNull(theme.getCssTemplate());
+    theme = flowService.importTheme(theme);
+    assertNotNull(theme);
+    Assertions.assertThat(theme.getId()).isNotBlank();
+    assertNotNull(theme.getCssTemplate());
   }
 }

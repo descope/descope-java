@@ -11,11 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Flow {
-  private String id;
-  private String name;
-  private String description;
-  private Object dsl;
-  private boolean disabled;
-  private String etag;
+public class ThemeResponse {
+  private Theme theme;
 }

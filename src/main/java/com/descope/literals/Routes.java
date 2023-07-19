@@ -105,6 +105,7 @@ public class Routes {
     public static final String LOAD_ALL_GROUP_MEMBERS_LINK = "/v1/mgmt/group/members";
 
     // FLOW
+    public static final String FLOW_LIST_LINK = "/v1/mgmt/flow/list";
     public static final String FLOW_EXPORT_LINK = "/v1/mgmt/flow/export";
     public static final String FLOW_IMPORT_LINK = "/v1/mgmt/flow/import";
     public static final String THEME_EXPORT_LINK = "/v1/mgmt/theme/export";
