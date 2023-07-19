@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_LIST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT_LINK;
 
@@ -10,8 +11,10 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.flow.Flow;
 import com.descope.model.flow.FlowResponse;
+import com.descope.model.flow.FlowsResponse;
 import com.descope.model.flow.Screen;
 import com.descope.model.flow.Theme;
+import com.descope.model.flow.ThemeResponse;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.sdk.mgmt.FlowService;
 import java.util.List;
@@ -22,6 +25,12 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
 
   FlowServiceImpl(Client client, ManagementParams managementParams) {
     super(client, managementParams);
+  }
+
+  @Override
+  public FlowsResponse listFlows() throws DescopeException {
+    var apiProxy = getApiProxy();
+    return apiProxy.post(getUri(FLOW_LIST_LINK), null, FlowsResponse.class);
   }
 
   @Override
@@ -48,7 +57,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
   @Override
   public Theme exportTheme() throws DescopeException {
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(THEME_EXPORT_LINK), null, Theme.class);
+    return apiProxy.post(getUri(THEME_EXPORT_LINK), null, ThemeResponse.class).getTheme();
   }
 
   @Override
@@ -58,6 +67,6 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
     }
     Map<String, Object> request = Map.of("theme", theme);
     var apiProxy = getApiProxy();
-    return apiProxy.post(getUri(THEME_IMPORT_LINK), request, Theme.class);
+    return apiProxy.post(getUri(THEME_IMPORT_LINK), request, ThemeResponse.class).getTheme();
   }
 }

@@ -7,7 +7,7 @@ import static com.descope.exception.ErrorCode.INVALID_SIGNING_KEY;
 
 import lombok.ToString;
 
-@ToString
+@ToString(callSuper = true, includeFieldNames = true)
 public class ServerCommonException extends DescopeException {
 
   protected ServerCommonException(String message, String code) {

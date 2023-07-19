@@ -1,6 +1,7 @@
 package com.descope.model.flow;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,11 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Flow {
-  private String id;
-  private String name;
-  private String description;
-  private Object dsl;
-  private boolean disabled;
-  private String etag;
+public class FlowsResponse {
+  private List<FlowMetadata> flows;
 }
