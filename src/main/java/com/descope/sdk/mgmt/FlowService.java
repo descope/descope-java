@@ -9,8 +9,6 @@ import com.descope.model.flow.Theme;
 import java.util.List;
 
 public interface FlowService {
-  // TODO: Add List Flows
-
   
   FlowsResponse listFlows() throws DescopeException;
 
