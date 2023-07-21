@@ -62,12 +62,16 @@ public class TestUtils {
           1234567890,
           MOCK_USER_RESPONSE,
           true);
+  public static final Map<String, Object> TENANTS_AUTHZ =
+      Map.of("permissions", List.of("tp1", "tp2"), "roles", List.of("tr1", "tr2"));
   public static final Token MOCK_TOKEN =
       Token.builder()
           .id("1")
           .projectId(PROJECT_ID)
           .jwt("someJwtToken")
-          .claims(Map.of("someClaim", 1))
+          .claims(Map.of("someClaim", 1,
+              "tenants", Map.of("someTenant", TENANTS_AUTHZ),
+              "permissions", List.of("p1", "p2"), "roles", List.of("r1", "r2")))
           .build();
   @SuppressWarnings("checkstyle:LineLength")
   public static final SigningKey MOCK_SIGNING_KEY =

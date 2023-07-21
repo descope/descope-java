@@ -5,6 +5,7 @@ import static com.descope.literals.AppConstants.BEARER_AUTHORIZATION_PREFIX;
 import static com.descope.literals.AppConstants.COOKIE;
 import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
 import static com.descope.literals.AppConstants.SESSION_COOKIE_NAME;
+import static com.descope.literals.AppConstants.TENANTS_CLAIM_KEY;
 import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
@@ -32,8 +33,8 @@ import java.net.http.HttpRequest;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -199,14 +200,40 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
   }
 
-  List<String> getAuthorizationClaimItems(Token token, String tenant, List<String> permissions) {
-    if (tenant == null || MapUtils.isEmpty(token.getClaims())) {
+  @SuppressWarnings("unchecked")
+  boolean isTenantAssociated(Token token, String tenant) {
+    if (MapUtils.isEmpty(token.getClaims())) {
+      return false;
+    }
+    var claims = token.getClaims();
+    if (claims.get(TENANTS_CLAIM_KEY) == null) {
+      return false;
+    }
+    claims = (Map<String, Object>) claims.get(TENANTS_CLAIM_KEY);
+    if (claims.get(tenant) == null) {
+      return false;
+    }
+    return true;
+  }
+
+  @SuppressWarnings("unchecked")
+  List<String> getAuthorizationClaimItems(Token token, String tenant, String root) {
+    if (MapUtils.isEmpty(token.getClaims())) {
       return Collections.emptyList();
     }
-
-    return token.getClaims().keySet().stream()
-        .filter(permissions::contains)
-        .collect(Collectors.toList());
+    var claims = token.getClaims();
+    if (StringUtils.isNotBlank(tenant)) {
+      if (claims.get(TENANTS_CLAIM_KEY) == null) {
+        return Collections.emptyList();
+      }
+      claims = (Map<String, Object>) claims.get(TENANTS_CLAIM_KEY);
+      if (claims.get(tenant) == null) {
+        return Collections.emptyList();
+      }
+      claims = (Map<String, Object>) claims.get(tenant);
+    }
+    var res = (List<String>) claims.get(root);
+    return res == null ? Collections.emptyList() : res;
   }
 
   private URI composeRefreshTokenLinkURL() {

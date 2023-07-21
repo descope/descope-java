@@ -302,7 +302,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI addTenantRolesUri = composeAddTenantRolesUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "tenantId", "", "roleNames", roles);
+    Map<String, Object> request = Map.of("loginId", loginId, "tenantId", tenantId, "roleNames", roles);
     var apiProxy = getApiProxy();
     return apiProxy.post(addTenantRolesUri, request, UserResponseDetails.class);
   }

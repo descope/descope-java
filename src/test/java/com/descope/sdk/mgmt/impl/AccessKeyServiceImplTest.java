@@ -27,7 +27,7 @@ import org.mockito.MockedStatic;
 
 class AccessKeyServiceImplTest {
   private final List<String> mockRoles = List.of("Test");
-  private final AssociatedTenant associatedTenant = new AssociatedTenant("test", mockRoles);
+  private final AssociatedTenant associatedTenant = new AssociatedTenant("test", "", mockRoles);
   private final List<AssociatedTenant> mockKeyTenants = List.of(associatedTenant);
   private final AccessKeyResponseDetails mockResponse =
       AccessKeyResponseDetails.builder()

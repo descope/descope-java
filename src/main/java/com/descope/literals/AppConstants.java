@@ -12,4 +12,7 @@ public class AppConstants {
   public static final String COOKIE = "Cookie";
   public static final String SESSION_COOKIE_NAME = "DS";
   public static final String REFRESH_COOKIE_NAME = "DSR";
+  public static final String TENANTS_CLAIM_KEY = "tenants";
+  public static final String PERMISSIONS_CLAIM_KEY = "permissions";
+  public static final String ROLES_CLAIM_KEY = "roles";
 }

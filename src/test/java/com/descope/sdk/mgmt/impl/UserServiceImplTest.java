@@ -797,7 +797,7 @@ public class UserServiceImplTest {
           .verifiedPhone(true)
           .displayName("Testing Test")
           .invite(false)
-          .userTenants(List.of(new AssociatedTenant(tenantId, List.of(roleName))))
+          .userTenants(List.of(AssociatedTenant.builder().tenantId(tenantId).roleNames(List.of(roleName)).build()))
           .build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
@@ -809,7 +809,7 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     assertThat(user.getUserTenants()).containsExactly(
-      new AssociatedTenant(tenantId, List.of(roleName)));
+        AssociatedTenant.builder().tenantId(tenantId).roleNames(List.of(roleName)).build());
     // Delete
     userService.delete(loginId);
     tenantService.delete(tenantId);

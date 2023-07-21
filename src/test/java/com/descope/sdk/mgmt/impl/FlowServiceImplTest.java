@@ -13,6 +13,7 @@ import com.descope.model.flow.Flow;
 import com.descope.model.flow.FlowResponse;
 import com.descope.model.flow.Screen;
 import com.descope.model.flow.Theme;
+import com.descope.model.flow.ThemeResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -84,8 +85,9 @@ class FlowServiceImplTest {
   @Test
   void testExportThemeForSuccess() {
     var theme = mock(Theme.class);
+    var themeResponse = new ThemeResponse(theme);
     var apiProxy = mock(ApiProxy.class);
-    doReturn(theme).when(apiProxy).post(any(), any(), any());
+    doReturn(themeResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -105,8 +107,9 @@ class FlowServiceImplTest {
   @Test
   void testImportThemeForSuccess() {
     var theme = mock(Theme.class);
+    var themeResponse = new ThemeResponse(theme);
     var apiProxy = mock(ApiProxy.class);
-    doReturn(theme).when(apiProxy).post(any(), any(), any());
+    doReturn(themeResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);

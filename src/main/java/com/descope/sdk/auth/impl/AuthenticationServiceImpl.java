@@ -1,5 +1,7 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.AppConstants.PERMISSIONS_CLAIM_KEY;
+import static com.descope.literals.AppConstants.ROLES_CLAIM_KEY;
 import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_ACCESS_KEY_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_ALL_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
@@ -72,8 +74,11 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   @Override
   public boolean validatePermissions(Token token, String tenant, List<String> permissions)
       throws DescopeException {
-    List<String> authorizationClaimItems = getAuthorizationClaimItems(token, tenant, permissions);
-    return CollectionUtils.isEqualCollection(authorizationClaimItems, permissions);
+    if (StringUtils.isNotBlank(tenant) && !isTenantAssociated(token, tenant)) {
+      return false;
+    }
+    List<String> grantedPermissions = getPermissions(token, tenant);
+    return CollectionUtils.isSubCollection(permissions, grantedPermissions);
   }
 
   @Override
@@ -84,8 +89,27 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   @Override
   public boolean validateRoles(Token token, String tenant, List<String> roles)
       throws DescopeException {
-    List<String> authorizationClaimItems = getAuthorizationClaimItems(token, tenant, roles);
-    return CollectionUtils.isEqualCollection(authorizationClaimItems, roles);
+    if (StringUtils.isNotBlank(tenant) && !isTenantAssociated(token, tenant)) {
+      return false;
+    }
+    List<String> grantedRoles = getRoles(token, tenant);
+    return CollectionUtils.isSubCollection(roles, grantedRoles);
+  }
+
+  public List<String> getRoles(Token token, String tenant) throws DescopeException {
+    return getAuthorizationClaimItems(token, tenant, ROLES_CLAIM_KEY);
+  }
+
+  public List<String> getRoles(Token token) throws DescopeException {
+    return getAuthorizationClaimItems(token, "", ROLES_CLAIM_KEY);
+  }
+
+  public List<String> getPermissions(Token token, String tenant) throws DescopeException {
+    return getAuthorizationClaimItems(token, tenant, PERMISSIONS_CLAIM_KEY);
+  }
+
+  public List<String> getPermissions(Token token) throws DescopeException {
+    return getAuthorizationClaimItems(token, "", PERMISSIONS_CLAIM_KEY);
   }
 
   @Override
