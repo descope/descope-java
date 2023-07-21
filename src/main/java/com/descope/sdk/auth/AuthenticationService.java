@@ -96,6 +96,44 @@ public interface AuthenticationService {
   boolean validateRoles(Token token, String tenant, List<String> roles) throws DescopeException;
 
   /**
+   * Return the list of roles granted to the validated session token in the given tenant.
+   *
+   * @param token - {@link Token Token}
+   * @param tenant - Tenant ID.
+   * @return {@link List} of {@link String} roles the user has in the tenant
+   * @throws DescopeException if there is an error
+   */
+  List<String> getRoles(Token token, String tenant) throws DescopeException;
+
+  /**
+   * Return the list of roles granted to the validated session token.
+   *
+   * @param token - {@link Token Token}
+   * @return {@link List} of {@link String} roles the user has globally in the project
+   * @throws DescopeException if there is an error
+   */
+  List<String> getRoles(Token token) throws DescopeException;
+
+  /**
+   * Return the list of permissions granted to the validated session token in the given tenant.
+   *
+   * @param token - {@link Token Token}
+   * @param tenant - Tenant ID.
+   * @return {@link List} of {@link String} permissions the user has in the tenant
+   * @throws DescopeException if there is an error
+   */
+  List<String> getPermissions(Token token, String tenant) throws DescopeException;
+
+  /**
+   * Return the list of permissions granted to the validated session token.
+   *
+   * @param token - {@link Token Token}
+   * @return {@link List} of {@link String} permissions the user has globally in the project
+   * @throws DescopeException if there is an error
+   */
+  List<String> getPermissions(Token token) throws DescopeException;
+
+  /**
    * Used to log out of current device session.
    *
    * @param refreshToken - token
