@@ -75,6 +75,9 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   public boolean validatePermissions(Token token, String tenant, List<String> permissions)
       throws DescopeException {
     List<String> grantedPermissions = getPermissions(token, tenant);
+    if (grantedPermissions == null || grantedPermissions.isEmpty()) {
+      return false;
+    }
     return CollectionUtils.isSubCollection(permissions, grantedPermissions);
   }
 
@@ -87,6 +90,9 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   public boolean validateRoles(Token token, String tenant, List<String> roles)
       throws DescopeException {
     List<String> grantedRoles = getRoles(token, tenant);
+    if (grantedRoles == null || grantedRoles.isEmpty()) {
+      return false;
+    }
     return CollectionUtils.isSubCollection(roles, grantedRoles);
   }
 
