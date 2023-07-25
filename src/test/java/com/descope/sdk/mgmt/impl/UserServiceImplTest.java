@@ -13,6 +13,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.user.request.UserRequest;
@@ -33,6 +34,7 @@ import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 public class UserServiceImplTest {
@@ -643,7 +645,7 @@ public class UserServiceImplTest {
     assertEquals("The page argument is invalid", thrown.getMessage());
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-");
     String email = TestUtils.getRandomName("test-") + "@descope.com";
@@ -727,7 +729,7 @@ public class UserServiceImplTest {
     userService.delete(loginId);
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalTestUsers() {
     String loginId = TestUtils.getRandomName("u-");
     String email = TestUtils.getRandomName("test-") + "@descope.com";
@@ -777,7 +779,7 @@ public class UserServiceImplTest {
     userService.deleteAllTestUsers();
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalUserWithTenantAndRole() {
     String tenantName = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(tenantName, List.of(tenantName + ".com"));

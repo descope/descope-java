@@ -98,6 +98,12 @@
             <version>5.9.3</version>
         </dependency>
         <dependency>
+            <groupId>org.junit-pioneer</groupId>
+            <artifactId>junit-pioneer</artifactId>
+            <version>2.0.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <artifactId>mockito-junit-jupiter</artifactId>
             <groupId>org.mockito</groupId>
             <scope>test</scope>

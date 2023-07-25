@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.RateLimitExceededException;
 import com.descope.model.jwt.Token;
 import com.descope.model.user.request.UserRequest;
 import com.descope.sdk.TestUtils;
@@ -19,6 +20,7 @@ import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 public class AuthenticationServiceImplTest {
 
@@ -54,7 +56,7 @@ public class AuthenticationServiceImplTest {
     assertFalse(authenticationService.validateRoles(MOCK_TOKEN, List.of("r2", "r3")));
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalPermissions() {
     String roleName = TestUtils.getRandomName("r-").substring(0, 20);
     roleService.create(roleName, "ttt", null);
@@ -82,7 +84,7 @@ public class AuthenticationServiceImplTest {
     roleService.delete(roleName);
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-") + "@descope.com";
     userService.createTestUser(loginId, UserRequest.builder().email(loginId).verifiedEmail(true).build());

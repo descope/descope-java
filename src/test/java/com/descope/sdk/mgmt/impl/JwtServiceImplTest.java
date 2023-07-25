@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.user.request.UserRequest;
 import com.descope.sdk.TestUtils;
@@ -16,6 +17,7 @@ import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 
 public class JwtServiceImplTest {
 
@@ -44,7 +46,7 @@ public class JwtServiceImplTest {
     assertEquals("The JWT argument is invalid", thrown.getMessage());
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-") + "@descope.com";
     userService.createTestUser(loginId, UserRequest.builder().email(loginId).verifiedEmail(true).build());

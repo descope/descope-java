@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.mgmt.AccessKeyResponse;
@@ -23,6 +24,7 @@ import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 class AccessKeyServiceImplTest {
@@ -179,7 +181,7 @@ class AccessKeyServiceImplTest {
     }
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String name = TestUtils.getRandomName("ak-");
     var createResult = accessKeyService.create(name, 0, null, null);

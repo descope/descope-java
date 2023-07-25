@@ -22,6 +22,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.Provider;
@@ -43,6 +44,7 @@ import java.security.Key;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 public class OTPServiceImplTest {
@@ -242,7 +244,7 @@ public class OTPServiceImplTest {
     assertThat(user.getLoginIds()).isNotEmpty();
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
@@ -255,7 +257,7 @@ public class OTPServiceImplTest {
     userService.delete(loginId);
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalUpdateEmail() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
@@ -274,7 +276,7 @@ public class OTPServiceImplTest {
     userService.delete(loginId);
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalUpdatePhone() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.Provider;
@@ -48,6 +49,7 @@ import java.util.List;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 class MagicLinkServiceImplTest {
@@ -286,7 +288,7 @@ class MagicLinkServiceImplTest {
     }
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
@@ -301,7 +303,7 @@ class MagicLinkServiceImplTest {
     userService.delete(loginId);
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalUpdateEmail() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
@@ -325,7 +327,7 @@ class MagicLinkServiceImplTest {
     userService.delete(loginId);
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalUpdatePhone() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(

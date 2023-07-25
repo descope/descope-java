@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
@@ -22,6 +23,7 @@ import com.descope.sdk.mgmt.TenantService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 public class TenantServiceImplTest {
@@ -142,7 +144,7 @@ public class TenantServiceImplTest {
     }
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String name = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(name, List.of(name + ".com", name + "1.com"));
