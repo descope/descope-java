@@ -134,6 +134,15 @@ public interface AuthenticationService {
   List<String> getPermissions(Token token) throws DescopeException;
 
   /**
+   * Return the list of associated tenant IDs in the given token.
+   *
+   * @param token - {@link Token Token}
+   * @return {@link List} of {@link String} tenant IDs that the user is associated with
+   * @throws DescopeException if there is an error
+   */
+  List<String> getTenantIds(Token token) throws DescopeException;
+
+  /**
    * Used to log out of current device session.
    *
    * @param refreshToken - token

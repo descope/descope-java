@@ -3,6 +3,7 @@ package com.descope.sdk.auth;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.user.User;
 import java.net.http.HttpRequest;
@@ -75,11 +76,12 @@ public interface MagicLinkService {
    * @param loginId - User login ID
    * @param email - User email
    * @param uri - Base URI
-   * @param request - {@link HttpRequest HttpRequest}
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
    * @return masked address where the link was sent (email)
    * @throws DescopeException - error upon failure
    */
-  String updateUserEmail(String loginId, String email, String uri, HttpRequest request)
+  String updateUserEmail(String loginId, String email, String uri, String refreshToken, UpdateOptions updateOptions)
       throws DescopeException;
 
   /**
@@ -90,11 +92,12 @@ public interface MagicLinkService {
    * @param loginId - User login ID
    * @param phone - User phone
    * @param uri - Base URI
-   * @param request - {@link HttpRequest HttpRequest}
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
    * @return masked address where the link was sent (whatsapp or sms)
    * @throws DescopeException - error upon failure
    */
   String updateUserPhone(
-      DeliveryMethod deliveryMethod, String loginId, String phone, String uri, HttpRequest request)
-      throws DescopeException;
+      DeliveryMethod deliveryMethod, String loginId, String phone, String uri, String refreshToken,
+      UpdateOptions updateOptions) throws DescopeException;
 }

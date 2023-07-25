@@ -17,6 +17,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
@@ -117,28 +118,39 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   @Override
-  public String updateUserEmail(String loginId, String email) throws DescopeException {
+  public String updateUserEmail(String loginId, String email, String refreshToken, UpdateOptions updateOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     if (StringUtils.isBlank(email) || !EMAIL_PATTERN.matcher(email).matches()) {
       throw ServerCommonException.invalidArgument("Email");
     }
-
-    // TODO - Need to check on UpdateOptions which got recently added on go lang
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
     Class<? extends Masked> maskedClass = getMaskedValue(EMAIL);
     URI otpUpdateUserEmail = composeUpdateUserEmailOTP();
-
-    var updateEmailRequest = new UpdateEmailRequestBody(email, loginId);
-
-    var apiProxy = getApiProxy();
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
+    var updateEmailRequest = UpdateEmailRequestBody
+        .builder()
+        .email(email)
+        .loginId(loginId)
+        .addToLoginIds(updateOptions.isAddToLoginIds())
+        .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+        .providerId(updateOptions.getProviderId())
+        .templateId(updateOptions.getTemplateId())
+        .build();
+    var apiProxy = getApiProxy(refreshToken);
     var masked = apiProxy.post(otpUpdateUserEmail, updateEmailRequest, maskedClass);
     return masked.getMasked();
   }
 
   @Override
-  public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone)
-      throws DescopeException {
+  public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
+      UpdateOptions updateOptions) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -148,10 +160,24 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     if (deliveryMethod != DeliveryMethod.WHATSAPP && deliveryMethod != DeliveryMethod.SMS) {
       throw ServerCommonException.invalidArgument("Method");
     }
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
     Class<? extends Masked> maskedClass = getMaskedValue(SMS);
     URI otpUpdateUserPhone = composeUpdateUserPhoneOTP(deliveryMethod);
-    var updatePhoneRequestBody = new UpdatePhoneRequestBody(phone, loginId);
-    var apiProxy = getApiProxy();
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
+    var updatePhoneRequestBody = UpdatePhoneRequestBody
+        .builder()
+        .phone(phone)
+        .loginId(loginId)
+        .addToLoginIds(updateOptions.isAddToLoginIds())
+        .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+        .providerId(updateOptions.getProviderId())
+        .templateId(updateOptions.getTemplateId())
+        .build();
+    var apiProxy = getApiProxy(refreshToken);
     var masked = apiProxy.post(otpUpdateUserPhone, updatePhoneRequestBody, maskedClass);
     return masked.getMasked();
   }

@@ -14,6 +14,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
@@ -84,7 +85,6 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
 
   @Override
   public AuthenticationInfo getSession(String pendingRef) throws DescopeException {
-    // TODO - Functional testing is pending same is not working on descope site also
     URI getSessionURL = composeGetSession();
     var apiProxy = getApiProxy();
     var jwtResponse =
@@ -104,26 +104,35 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
-  public String updateUserEmail(String loginId, String email, String uri) throws DescopeException {
+  public EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     if (StringUtils.isBlank(email) || !EMAIL_PATTERN.matcher(email).matches()) {
       throw ServerCommonException.invalidArgument("Email");
     }
-    Class<? extends Masked> maskedClass = getMaskedValue(EMAIL);
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
     URI magicLinkUpdateUserEmail = composeUpdateUserEmailEnchantedLink();
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
     UpdateEmailRequest updateEmailRequest =
         UpdateEmailRequest.builder()
             .email(email)
             .uri(uri)
             .loginId(loginId)
             .crossDevice(false)
+            .addToLoginIds(updateOptions.isAddToLoginIds())
+            .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+            .providerId(updateOptions.getProviderId())
+            .templateId(updateOptions.getTemplateId())
             .build();
 
-    var apiProxy = getApiProxy();
-    var masked = apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, maskedClass);
-    return masked.getMasked();
+    var apiProxy = getApiProxy(refreshToken);
+    return apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, EnchantedLinkResponse.class);
   }
 
   private URI composeUpdateUserEmailEnchantedLink() {

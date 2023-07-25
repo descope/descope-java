@@ -4,6 +4,7 @@ import static com.descope.sdk.TestUtils.MOCK_DOMAIN;
 import static com.descope.sdk.TestUtils.MOCK_EMAIL;
 import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
 import static com.descope.sdk.TestUtils.MOCK_MASKED_EMAIL;
+import static com.descope.sdk.TestUtils.MOCK_REFRESH_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_URL;
@@ -113,7 +114,7 @@ public class EnchantedLinkServiceImplTest {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> enchantedLinkService.updateUserEmail("", MOCK_DOMAIN, null));
+            () -> enchantedLinkService.updateUserEmail("", MOCK_EMAIL, MOCK_DOMAIN, "", null));
 
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -125,7 +126,7 @@ public class EnchantedLinkServiceImplTest {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> enchantedLinkService.updateUserEmail(MOCK_EMAIL, "", null));
+            () -> enchantedLinkService.updateUserEmail(MOCK_EMAIL, "", MOCK_DOMAIN, "", null));
 
     assertNotNull(thrown);
     assertEquals("The Email argument is invalid", thrown.getMessage());
@@ -137,23 +138,35 @@ public class EnchantedLinkServiceImplTest {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> enchantedLinkService.updateUserEmail(MOCK_EMAIL, "abc", null));
+            () -> enchantedLinkService.updateUserEmail(MOCK_EMAIL, "abc", MOCK_DOMAIN, "", null));
 
     assertNotNull(thrown);
     assertEquals("The Email argument is invalid", thrown.getMessage());
   }
 
   @Test
+  void testUpdateUserEmailForEmptyRefreshToken() {
+
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> enchantedLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, "", null));
+
+    assertNotNull(thrown);
+    assertEquals("The Refresh Token argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testUpdateUserEmailForSuccess() {
     var apiProxy = mock(ApiProxy.class);
-    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
-    doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
+    var mockRes = new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL);
+    doReturn(mockRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      String updateUserEmail =
-          enchantedLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
-      assertThat(updateUserEmail).isNotBlank().contains("*");
+      var enchantedLinkRes =
+          enchantedLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null);
+      assertThat(enchantedLinkRes.getMaskedEmail()).isNotBlank().contains("*");
     }
   }
 
@@ -231,6 +244,34 @@ public class EnchantedLinkServiceImplTest {
     var authInfo = enchantedLinkService.getSession(response.getPendingRef());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    userService.delete(loginId);
+  }
+
+  @Test
+  void testFunctionalUpdateEmail() {
+    String loginId = TestUtils.getRandomName("u-");
+    userService.createTestUser(
+        loginId, UserRequest.builder().email(loginId + "@descope.com").build());
+    var response = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
+    assertThat(response.getLink()).isNotBlank();
+    assertThat(response.getPendingRef()).isNotBlank();
+    var params = UriUtils.splitQuery("https://kuku.com" + response.getLink());
+    assertThat(params.get("t").size()).isEqualTo(1);
+    enchantedLinkService.verify(params.get("t").get(0));
+    var authInfo = enchantedLinkService.getSession(response.getPendingRef());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    var response2 = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
+    assertThat(response2.getLink()).isNotBlank();
+    assertThat(response2.getPendingRef()).isNotBlank();
+    enchantedLinkService.updateUserEmail(
+        loginId, loginId + "1@descope.com", MOCK_URL, authInfo.getRefreshToken().getJwt(), null);
+    params = UriUtils.splitQuery("https://kuku.com" + response2.getLink());
+    assertThat(params.get("t").size()).isEqualTo(1);
+    enchantedLinkService.verify(params.get("t").get(0));
+    authInfo = enchantedLinkService.getSession(response2.getPendingRef());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();    
     userService.delete(loginId);
   }
 }

@@ -16,4 +16,9 @@ public class UpdatePhoneRequest {
   @JsonProperty("URI")
   private String uri;
   private boolean crossDevice;
+  @JsonProperty("addToLoginIDs")
+  private boolean addToLoginIds;
+  private boolean onMergeUseExisting;
+  private String providerId;
+  private String templateId;
 }

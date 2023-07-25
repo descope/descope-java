@@ -137,9 +137,16 @@ abstract class AbstractProxyImpl {
           ByteArrayOutputStream bs = new ByteArrayOutputStream();
           TeeInputStream tee = new TeeInputStream(stream, bs, true);
           if (responseInfo.statusCode() < 200 || responseInfo.statusCode() > 299) {
+            if (responseInfo.statusCode() == 429) { // Rate limit from infra
+              throw new RateLimitExceededException(
+                "Rate limit exceeded",
+                ErrorCode.RATE_LIMIT_EXCEEDED,
+                responseInfo.headers().firstValueAsLong(RETRY_AFTER_HEADER).orElse(DEFAULT_RETRY));              
+            }
             try {
               var errorDetails = objectMapper.readValue(tee, JsonBodyHandler.ErrorDetails.class);
               log.error(errorDetails.getActualMessage());
+              log.error(bs.toString());
               if (ErrorCode.RATE_LIMIT_EXCEEDED.equals(errorDetails.errorCode)) {
                 throw new RateLimitExceededException(
                   errorDetails.getActualMessage(),
@@ -182,7 +189,9 @@ abstract class AbstractProxyImpl {
       private String message;
 
       String getActualMessage() {
-        return errorMessage == null ? message : errorMessage;
+        return errorMessage == null
+          ? message == null ? errorDescription : message
+          : errorMessage;
       }
     }
   }
