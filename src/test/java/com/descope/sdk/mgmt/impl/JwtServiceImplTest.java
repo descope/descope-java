@@ -57,6 +57,6 @@ public class JwtServiceImplTest {
     var newJwt = jwtService.updateJWTWithCustomClaims(authInfo.getToken().getJwt(), mockCustomClaims);
     assertNotNull(newJwt.getClaims());
     assertEquals(newJwt.getClaims().get("test"), "claim");
-    userService.deleteAllTestUsers();
+    userService.delete(loginId);
   }
 }

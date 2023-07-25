@@ -776,7 +776,7 @@ public class UserServiceImplTest {
     }
     assertTrue(found);
     // Delete
-    userService.deleteAllTestUsers();
+    userService.delete(loginId);
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
@@ -816,5 +816,10 @@ public class UserServiceImplTest {
     userService.delete(loginId);
     tenantService.delete(tenantId);
     roleService.delete(roleName);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalDeleteAllTestUsers() {
+    userService.deleteAllTestUsers();
   }
 }
