@@ -19,6 +19,4 @@ public class UpdateEmailRequest {
   @JsonProperty("addToLoginIDs")
   private boolean addToLoginIds;
   private boolean onMergeUseExisting;
-  private String providerId;
-  private String templateId;
 }

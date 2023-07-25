@@ -817,9 +817,4 @@ public class UserServiceImplTest {
     tenantService.delete(tenantId);
     roleService.delete(roleName);
   }
-
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
-  void testFunctionalDeleteAllTestUsers() {
-    userService.deleteAllTestUsers();
-  }
 }

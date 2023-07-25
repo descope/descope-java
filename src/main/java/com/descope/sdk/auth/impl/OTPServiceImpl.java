@@ -140,8 +140,6 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
         .loginId(loginId)
         .addToLoginIds(updateOptions.isAddToLoginIds())
         .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
-        .providerId(updateOptions.getProviderId())
-        .templateId(updateOptions.getTemplateId())
         .build();
     var apiProxy = getApiProxy(refreshToken);
     var masked = apiProxy.post(otpUpdateUserEmail, updateEmailRequest, maskedClass);
@@ -174,8 +172,6 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
         .loginId(loginId)
         .addToLoginIds(updateOptions.isAddToLoginIds())
         .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
-        .providerId(updateOptions.getProviderId())
-        .templateId(updateOptions.getTemplateId())
         .build();
     var apiProxy = getApiProxy(refreshToken);
     var masked = apiProxy.post(otpUpdateUserPhone, updatePhoneRequestBody, maskedClass);

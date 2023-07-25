@@ -126,8 +126,6 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
             .crossDevice(false)
             .addToLoginIds(updateOptions.isAddToLoginIds())
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
-            .providerId(updateOptions.getProviderId())
-            .templateId(updateOptions.getTemplateId())
             .build();
 
     var apiProxy = getApiProxy(refreshToken);

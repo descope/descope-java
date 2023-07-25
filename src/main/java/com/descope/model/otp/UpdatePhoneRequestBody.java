@@ -16,6 +16,4 @@ public class UpdatePhoneRequestBody {
   @JsonProperty("addToLoginIDs")
   private boolean addToLoginIds;
   private boolean onMergeUseExisting;
-  private String providerId;
-  private String templateId;
 }

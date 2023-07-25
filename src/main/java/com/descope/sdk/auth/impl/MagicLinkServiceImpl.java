@@ -140,8 +140,6 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
             .crossDevice(false)
             .addToLoginIds(updateOptions.isAddToLoginIds())
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
-            .providerId(updateOptions.getProviderId())
-            .templateId(updateOptions.getTemplateId())
             .build();
 
     var apiProxy = getApiProxy(refreshToken);
@@ -179,8 +177,6 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
             .crossDevice(false)
             .addToLoginIds(updateOptions.isAddToLoginIds())
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
-            .providerId(updateOptions.getProviderId())
-            .templateId(updateOptions.getTemplateId())
             .build();
 
     var apiProxy = getApiProxy(refreshToken);
