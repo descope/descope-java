@@ -108,7 +108,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     if (deliveryMethod == null) {
       throw ServerCommonException.invalidArgument("Method");
     }
-    var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code);
+    var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code, null);
     URI otpVerifyCode = composeVerifyCodeURL(deliveryMethod);
     var apiProxy = getApiProxy();
     var jwtResponse =
