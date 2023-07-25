@@ -42,7 +42,7 @@ jobs:
         env:
           DESCOPE_PROJECT_ID: ${{ secrets.DESCOPE_PROJECT_ID }}
           DESCOPE_MANAGEMENT_KEY: ${{ secrets.DESCOPE_MANAGEMENT_KEY }}
-        run: mvn -B -ntp package
+        run: mvn -B -ntp -P ci package
 
   verify:
     name: Verify Release

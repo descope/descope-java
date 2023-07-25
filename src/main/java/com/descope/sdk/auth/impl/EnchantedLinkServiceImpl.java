@@ -25,7 +25,6 @@ import com.descope.model.magiclink.request.SignInRequest;
 import com.descope.model.magiclink.request.SignUpRequest;
 import com.descope.model.magiclink.request.UpdateEmailRequest;
 import com.descope.model.magiclink.request.VerifyRequest;
-import com.descope.model.magiclink.response.Masked;
 import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.EnchantedLinkService;

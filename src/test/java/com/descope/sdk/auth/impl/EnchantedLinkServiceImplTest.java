@@ -28,7 +28,6 @@ import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
-import com.descope.model.magiclink.response.MaskedEmailRes;
 import com.descope.model.user.User;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.UserResponse;
