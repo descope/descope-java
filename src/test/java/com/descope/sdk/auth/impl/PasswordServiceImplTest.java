@@ -27,6 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.Provider;
@@ -47,6 +48,7 @@ import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 public class PasswordServiceImplTest {
@@ -259,7 +261,7 @@ public class PasswordServiceImplTest {
     }
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-");
     var authInfo = passwordService.signUp(loginId, MOCK_USER, MOCK_PWD);

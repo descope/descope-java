@@ -8,6 +8,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.audit.AuditSearchRequest;
 import com.descope.proxy.ApiProxy;
@@ -18,10 +19,10 @@ import com.descope.sdk.mgmt.AuditService;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 public class AuditServiceImplTest {
@@ -87,9 +88,8 @@ public class AuditServiceImplTest {
     assertEquals("The to argument is invalid", thrown.getMessage());
   }
 
-  @Test
-  @SneakyThrows
-  void testFunctionalFullCycle() {
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalFullCycle() throws Exception {
     var createResult = accessKeyService.create(
         TestUtils.getRandomName("ak-"), 0, null, null);
     accessKeyService.delete(createResult.getKey().getId());

@@ -201,19 +201,20 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   @SuppressWarnings("unchecked")
-  boolean isTenantAssociated(Token token, String tenant) {
+  public List<String> getTenantIds(Token token) {
     if (MapUtils.isEmpty(token.getClaims())) {
-      return false;
+      return Collections.emptyList();
     }
     var claims = token.getClaims();
     if (claims.get(TENANTS_CLAIM_KEY) == null) {
-      return false;
+      return Collections.emptyList();
     }
     claims = (Map<String, Object>) claims.get(TENANTS_CLAIM_KEY);
-    if (claims.get(tenant) == null) {
-      return false;
-    }
-    return true;
+    return List.copyOf(claims.keySet());
+  }
+
+  boolean isTenantAssociated(Token token, String tenant) {
+    return getTenantIds(token).contains(tenant);
   }
 
   @SuppressWarnings("unchecked")

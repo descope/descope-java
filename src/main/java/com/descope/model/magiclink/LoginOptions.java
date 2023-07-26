@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginOptions {
-  private boolean stepUp;
+  private boolean stepup;
   private boolean mfa;
   private Map<String, Object> customClaims;
 }

@@ -38,6 +38,6 @@ public class JwtUtils {
   }
 
   public static boolean isJWTRequired(LoginOptions loginOptions) {
-    return loginOptions != null && (loginOptions.isStepUp() || loginOptions.isMfa());
+    return loginOptions != null && (loginOptions.isStepup() || loginOptions.isMfa());
   }
 }

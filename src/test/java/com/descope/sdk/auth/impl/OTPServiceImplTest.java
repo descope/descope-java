@@ -5,6 +5,7 @@ import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
 import static com.descope.sdk.TestUtils.MOCK_MASKED_EMAIL;
 import static com.descope.sdk.TestUtils.MOCK_MASKED_PHONE;
 import static com.descope.sdk.TestUtils.MOCK_PHONE;
+import static com.descope.sdk.TestUtils.MOCK_REFRESH_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
 import static com.descope.sdk.TestUtils.PROJECT_ID;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.Provider;
@@ -42,6 +44,7 @@ import java.security.Key;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 public class OTPServiceImplTest {
@@ -105,7 +108,7 @@ public class OTPServiceImplTest {
 
     ServerCommonException thrown =
         assertThrows(ServerCommonException.class,
-          () -> otpService.updateUserEmail("", MOCK_EMAIL));
+          () -> otpService.updateUserEmail("", MOCK_EMAIL, MOCK_REFRESH_TOKEN, null));
 
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -115,7 +118,8 @@ public class OTPServiceImplTest {
   void testUpdateUserEmailForEmptyEmail() {
 
     ServerCommonException thrown =
-        assertThrows(ServerCommonException.class, () -> otpService.updateUserEmail(MOCK_EMAIL, ""));
+        assertThrows(ServerCommonException.class,
+          () -> otpService.updateUserEmail(MOCK_EMAIL, "", MOCK_REFRESH_TOKEN, null));
 
     assertNotNull(thrown);
     assertEquals("The Email argument is invalid", thrown.getMessage());
@@ -126,7 +130,7 @@ public class OTPServiceImplTest {
 
     ServerCommonException thrown =
         assertThrows(
-            ServerCommonException.class, () -> otpService.updateUserEmail(MOCK_EMAIL, "abc"));
+            ServerCommonException.class, () -> otpService.updateUserEmail(MOCK_EMAIL, "abc", MOCK_REFRESH_TOKEN, null));
 
     assertNotNull(thrown);
     assertEquals("The Email argument is invalid", thrown.getMessage());
@@ -140,7 +144,7 @@ public class OTPServiceImplTest {
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      String updateUserEmail = otpService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL);
+      String updateUserEmail = otpService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_REFRESH_TOKEN, null);
       assertThat(updateUserEmail).isNotBlank().contains("*");
     }
   }
@@ -150,7 +154,7 @@ public class OTPServiceImplTest {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> otpService.updateUserPhone(DeliveryMethod.SMS, "", MOCK_PHONE));
+            () -> otpService.updateUserPhone(DeliveryMethod.SMS, "", MOCK_PHONE, MOCK_REFRESH_TOKEN, null));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -160,7 +164,7 @@ public class OTPServiceImplTest {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> otpService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, ""));
+            () -> otpService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, "", MOCK_REFRESH_TOKEN, null));
     assertNotNull(thrown);
     assertEquals("The Phone argument is invalid", thrown.getMessage());
   }
@@ -170,7 +174,7 @@ public class OTPServiceImplTest {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> otpService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, "1234E"));
+            () -> otpService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, "1234E", MOCK_REFRESH_TOKEN, null));
     assertNotNull(thrown);
     assertEquals("The Phone argument is invalid", thrown.getMessage());
   }
@@ -180,7 +184,7 @@ public class OTPServiceImplTest {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> otpService.updateUserPhone(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_PHONE));
+            () -> otpService.updateUserPhone(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_PHONE, MOCK_REFRESH_TOKEN, null));
     assertNotNull(thrown);
     assertEquals("The Method argument is invalid", thrown.getMessage());
   }
@@ -194,7 +198,7 @@ public class OTPServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String updateUserPhone =
-          otpService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE);
+          otpService.updateUserPhone(DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_REFRESH_TOKEN, null);
       assertThat(updateUserPhone).isNotBlank().contains("X");
     }
   }
@@ -240,7 +244,7 @@ public class OTPServiceImplTest {
     assertThat(user.getLoginIds()).isNotEmpty();
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
@@ -248,6 +252,45 @@ public class OTPServiceImplTest {
     var response = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
     assertThat(response.getCode()).isNotBlank();
     var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalUpdateEmail() {
+    String loginId = TestUtils.getRandomName("u-");
+    userService.createTestUser(
+        loginId, UserRequest.builder().email(loginId + "@descope.com").build());
+    var response = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    assertThat(response.getCode()).isNotBlank();
+    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    var response2 = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    assertThat(response.getCode()).isNotBlank();
+    otpService.updateUserEmail(loginId, loginId + "1@descope.com", authInfo.getRefreshToken().getJwt(), null);
+    authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response2.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalUpdatePhone() {
+    String loginId = TestUtils.getRandomName("u-");
+    userService.createTestUser(
+        loginId, UserRequest.builder().phone(MOCK_PHONE).build());
+    var response = userService.generateOtpForTestUser(loginId, DeliveryMethod.SMS);
+    assertThat(response.getCode()).isNotBlank();
+    var authInfo = otpService.verifyCode(DeliveryMethod.SMS, loginId, response.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    var response2 = userService.generateOtpForTestUser(loginId, DeliveryMethod.SMS);
+    assertThat(response.getCode()).isNotBlank();
+    otpService.updateUserPhone(
+        DeliveryMethod.SMS, loginId, "+1-555-555-5556", authInfo.getRefreshToken().getJwt(), null);
+    authInfo = otpService.verifyCode(DeliveryMethod.SMS, loginId, response2.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     userService.delete(loginId);

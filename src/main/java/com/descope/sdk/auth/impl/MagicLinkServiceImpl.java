@@ -16,6 +16,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
@@ -115,24 +116,30 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
   }
 
   @Override
-  public String updateUserEmail(String loginId, String email, String uri, HttpRequest request)
-      throws DescopeException {
+  public String updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     if (StringUtils.isBlank(email) || !EMAIL_PATTERN.matcher(email).matches()) {
       throw ServerCommonException.invalidArgument("Email");
     }
-
-    String refreshToken = getValidRefreshToken(request);
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
     Class<? extends Masked> maskedClass = getMaskedValue(EMAIL);
     URI magicLinkUpdateUserEmail = composeUpdateUserEmailMagiclink();
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
     UpdateEmailRequest updateEmailRequest =
         UpdateEmailRequest.builder()
             .email(email)
             .uri(uri)
             .loginId(loginId)
             .crossDevice(false)
+            .addToLoginIds(updateOptions.isAddToLoginIds())
+            .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
             .build();
 
     var apiProxy = getApiProxy(refreshToken);
@@ -142,8 +149,8 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
 
   @Override
   public String updateUserPhone(
-      DeliveryMethod deliveryMethod, String loginId, String phone, String uri, HttpRequest request)
-      throws DescopeException {
+      DeliveryMethod deliveryMethod, String loginId, String phone, String uri, String refreshToken,
+      UpdateOptions updateOptions) throws DescopeException {
 
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -154,16 +161,22 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (deliveryMethod != DeliveryMethod.WHATSAPP && deliveryMethod != DeliveryMethod.SMS) {
       throw ServerCommonException.invalidArgument("Method");
     }
-
-    String refreshToken = getValidRefreshToken(request);
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
     Class<? extends Masked> maskedClass = getMaskedValue(SMS);
     URI magicLinkUpdateUserPhone = composeUpdateUserPhoneMagiclink(deliveryMethod);
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
     UpdatePhoneRequest updatePhoneRequest =
         UpdatePhoneRequest.builder()
             .phone(phone)
             .uri(uri)
             .loginId(loginId)
             .crossDevice(false)
+            .addToLoginIds(updateOptions.isAddToLoginIds())
+            .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
             .build();
 
     var apiProxy = getApiProxy(refreshToken);
@@ -188,7 +201,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
   }
 
   private URI composeUpdateUserEmailMagiclink() {
-    return composeURI(UPDATE_EMAIL_MAGIC_LINK, EMAIL.getValue());
+    return getUri(UPDATE_EMAIL_MAGIC_LINK);
   }
 
   private URI composeUpdateUserPhoneMagiclink(DeliveryMethod deliveryMethod) {

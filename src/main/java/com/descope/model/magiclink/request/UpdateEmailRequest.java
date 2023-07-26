@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateEmailRequest {
-
   private String email;
   private String loginId;
-
   @JsonProperty("URI")
   private String uri;
-
   private boolean crossDevice;
+  @JsonProperty("addToLoginIDs")
+  private boolean addToLoginIds;
+  private boolean onMergeUseExisting;
 }

@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.permission.Permission;
 import com.descope.model.permission.PermissionResponse;
@@ -23,6 +24,7 @@ import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 class PermissionServiceImplTest {
@@ -125,7 +127,7 @@ class PermissionServiceImplTest {
     }
   }
 
-  @Test
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String p = TestUtils.getRandomName("p-").substring(0, 20);
     permissionService.create(p, "ttt");

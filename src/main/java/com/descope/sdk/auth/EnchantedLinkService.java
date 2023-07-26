@@ -2,6 +2,7 @@ package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.user.User;
@@ -68,10 +69,13 @@ public interface EnchantedLinkService {
    * @param loginId - User login ID
    * @param email   - User email
    * @param uri     - Base URI
-   * @return masked address where the link was sent (email)
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @return {@link EnchantedLinkResponse} including masked address where the link was sent (email),
+   *         link to chose and link to retrieve new session from
    * @throws DescopeException - error upon failure
    */
-  String updateUserEmail(String loginId, String email, String uri)
-      throws DescopeException;
+  EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions) throws DescopeException;
 
 }

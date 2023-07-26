@@ -96,18 +96,22 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     return CollectionUtils.isSubCollection(roles, grantedRoles);
   }
 
+  @Override
   public List<String> getRoles(Token token, String tenant) throws DescopeException {
     return getAuthorizationClaimItems(token, tenant, ROLES_CLAIM_KEY);
   }
 
+  @Override
   public List<String> getRoles(Token token) throws DescopeException {
     return getAuthorizationClaimItems(token, "", ROLES_CLAIM_KEY);
   }
 
+  @Override
   public List<String> getPermissions(Token token, String tenant) throws DescopeException {
     return getAuthorizationClaimItems(token, tenant, PERMISSIONS_CLAIM_KEY);
   }
 
+  @Override
   public List<String> getPermissions(Token token) throws DescopeException {
     return getAuthorizationClaimItems(token, "", PERMISSIONS_CLAIM_KEY);
   }

@@ -1,6 +1,5 @@
-package com.descope.model.otp;
+package com.descope.model.auth;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,10 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateEmailRequestBody {
-  private String email;
-  private String loginId;
-  @JsonProperty("addToLoginIDs")
+public class UpdateOptions {
   private boolean addToLoginIds;
   private boolean onMergeUseExisting;
 }

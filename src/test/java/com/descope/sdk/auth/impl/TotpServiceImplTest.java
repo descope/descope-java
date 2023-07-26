@@ -4,7 +4,9 @@ import static com.descope.sdk.TestUtils.MOCK_EMAIL;
 import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
 import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.MOCK_USER;
 import static com.descope.sdk.TestUtils.PROJECT_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,6 +18,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.Provider;
@@ -29,17 +32,25 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.TOTPService;
+import com.descope.sdk.mgmt.UserService;
+import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import java.security.Key;
+import java.time.Instant;
 import java.util.List;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.binary.Base32;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 public class TotpServiceImplTest {
 
   private TOTPService totpService;
+  private UserService userService;
 
   @BeforeEach
   void setUp() {
@@ -47,6 +58,8 @@ public class TotpServiceImplTest {
     var client = TestUtils.getClient();
     this.totpService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getTotpService();
+    var mgmtParams = TestUtils.getManagementParams();
+    this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 
   @Test
@@ -123,5 +136,54 @@ public class TotpServiceImplTest {
       TOTPResponse updateUserEmail = totpService.updateUser(MOCK_EMAIL);
       assertNotNull(updateUserEmail);
     }
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalFullCycle() throws Exception {
+    String loginId = TestUtils.getRandomName("u-");
+    var response = totpService.signUp(loginId, MOCK_USER);
+    assertNotNull(response);
+    assertThat(response.getKey()).isNotBlank();
+    assertThat(response.getImage()).isNotBlank();
+    assertThat(response.getProvisioningURL()).isNotBlank();
+    String code = generate(response.getKey(), Math.floorDiv(Instant.now().getEpochSecond(), 30));
+    assertNotNull(totpService.signInCode(loginId, code, null));
+    userService.delete(loginId);
+  }
+
+  private String generate(String key, long counter) throws Exception {
+    byte[] hash = generateHash(key, counter);
+    return getDigitsFromHash(hash);
+  }
+
+  private byte[] generateHash(String key, long counter) throws Exception {
+    byte[] data = new byte[8];
+    long value = counter;
+    for (int i = 8; i-- > 0; value >>>= 8) {
+      data[i] = (byte) value;
+    }
+    // Create a HMAC-SHA1 signing key from the shared key
+    Base32 base32 = new Base32();
+    byte[] decodedKey = base32.decode(key);
+    SecretKeySpec signKey = new SecretKeySpec(decodedKey, "HmacSHA1");
+    Mac mac = Mac.getInstance("HmacSHA1");
+    mac.init(signKey);
+
+    // Create a hash of the counter value
+    return mac.doFinal(data);
+  }
+
+  private String getDigitsFromHash(byte[] hash) {
+    int digits = 6;
+    int offset = hash[hash.length - 1] & 0xF;
+    long truncatedHash = 0;
+    for (int i = 0; i < 4; ++i) {
+      truncatedHash <<= 8;
+      truncatedHash |= (hash[offset + i] & 0xFF);
+    }
+    truncatedHash &= 0x7FFFFFFF;
+    truncatedHash %= Math.pow(10, digits);
+    // Left pad with 0s for a n-digit code
+    return String.format("%0" + digits + "d", truncatedHash);
   }
 }

@@ -4,7 +4,7 @@
     <groupId>com.descope</groupId>
     <artifactId>java-sdk</artifactId>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Java library used to integrate with Descope.</description>
     <url>https://github.com/descope/descope-java</url>
@@ -98,6 +98,12 @@
             <version>5.9.3</version>
         </dependency>
         <dependency>
+            <groupId>org.junit-pioneer</groupId>
+            <artifactId>junit-pioneer</artifactId>
+            <version>2.0.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <artifactId>mockito-junit-jupiter</artifactId>
             <groupId>org.mockito</groupId>
             <scope>test</scope>
@@ -118,6 +124,13 @@
             <groupId>uk.org.webcompere</groupId>
             <artifactId>system-stubs-jupiter</artifactId>
             <version>2.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.16.0</version>
+            <scope>test</scope>
         </dependency>
         <!--  UTILS  -->
         <dependency>
@@ -206,6 +219,11 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
             </plugin>
         </plugins>
     </build>

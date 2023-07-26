@@ -44,7 +44,7 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
       throw ServerCommonException.invalidArgument("loginId");
     }
 
-    var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code);
+    var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code, loginOptions);
     URI totpVerifyCode = composeVerifyTOTPCodeURL();
     var apiProxy = getApiProxy();
     var jwtResponse =
