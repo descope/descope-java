@@ -35,7 +35,8 @@ public class AccessKeyCreate extends HelpBase implements Callable<Integer> {
           if (parts.length == 2) {
             String[] roles = parts[1].split(",");
             if (roles.length > 0) {
-              associatedTenants.add(new AssociatedTenant(parts[0], Arrays.asList(roles)));
+              associatedTenants.add(
+                  AssociatedTenant.builder().tenantId(parts[0]).roleNames(Arrays.asList(roles)).build());
             }
           }
         }
