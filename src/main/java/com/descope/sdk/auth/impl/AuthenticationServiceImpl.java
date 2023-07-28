@@ -49,7 +49,14 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     if (StringUtils.isAllBlank(sessionToken, refreshToken)) {
       throw ServerCommonException.missingArguments("Both sessionToken and refreshToken are empty");
     } else if (StringUtils.isNotBlank(sessionToken)) {
-      return validateSessionWithToken(sessionToken);
+      try {
+        return validateSessionWithToken(sessionToken);
+      } catch (Exception e) {
+        if (StringUtils.isNotBlank(refreshToken)) {
+          return refreshSessionWithToken(refreshToken);
+        }
+        throw e;
+      }
     } else {
       return refreshSessionWithToken(refreshToken);
     }
