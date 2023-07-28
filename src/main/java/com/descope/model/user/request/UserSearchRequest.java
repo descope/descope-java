@@ -1,5 +1,6 @@
 package com.descope.model.user.request;
 
+import com.descope.enums.UserStatus;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -21,4 +22,5 @@ public class UserSearchRequest {
   Boolean withTestUser;
   Boolean testUsersOnly;
   Map<String, Object> customAttributes;
+  List<UserStatus> statuses;
 }
