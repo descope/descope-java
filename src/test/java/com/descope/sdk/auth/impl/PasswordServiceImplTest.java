@@ -194,7 +194,27 @@ public class PasswordServiceImplTest {
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      passwordService.replaceUserPassword(MOCK_EMAIL, MOCK_PWD, MOCK_PWD);
+		var authenticationInfo = passwordService.replaceUserPassword(MOCK_EMAIL, MOCK_PWD, MOCK_PWD);
+
+		Assertions.assertThat(authenticationInfo).isNotNull();
+
+    Token sessionToken = authenticationInfo.getToken();
+    Assertions.assertThat(sessionToken).isNotNull();
+    Assertions.assertThat(sessionToken.getJwt()).isNotBlank();
+    Assertions.assertThat(sessionToken.getClaims()).isNotEmpty();
+    Assertions.assertThat(sessionToken.getProjectId()).isEqualTo(PROJECT_ID);
+
+    Token refreshToken = authenticationInfo.getRefreshToken();
+    Assertions.assertThat(refreshToken).isNotNull();
+    Assertions.assertThat(refreshToken.getJwt()).isNotBlank();
+    Assertions.assertThat(refreshToken.getClaims()).isNotEmpty();
+    Assertions.assertThat(refreshToken.getProjectId()).isEqualTo(PROJECT_ID);
+
+    UserResponse user = authenticationInfo.getUser();
+    Assertions.assertThat(user).isNotNull();
+    Assertions.assertThat(user.getUserId()).isNotBlank();
+    Assertions.assertThat(user.getLoginIds()).isNotEmpty();
+
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
