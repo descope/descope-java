@@ -100,7 +100,7 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
   }
 
   @Override
-  public void replaceUserPassword(String loginId, String oldPassword, String newPassword)
+  public AuthenticationInfo replaceUserPassword(String loginId, String oldPassword, String newPassword)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -112,7 +112,8 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
             .newPassword(newPassword)
             .build();
     var apiProxy = getApiProxy();
-    apiProxy.post(getUri(REPLACE_USER_PASSWORD_LINK), pwdUpdateRequest, Void.class);
+    var jwtResponse = apiProxy.post(getUri(REPLACE_USER_PASSWORD_LINK), pwdUpdateRequest, JWTResponse.class);
+		return getAuthenticationInfo(jwtResponse);
   }
 
   @Override

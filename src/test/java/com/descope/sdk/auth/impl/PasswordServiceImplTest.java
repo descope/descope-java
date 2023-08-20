@@ -190,7 +190,7 @@ public class PasswordServiceImplTest {
   @Test
   void testReplaceUserPasswordForSuccess() {
     var apiProxy = mock(ApiProxy.class);
-    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
+    doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -280,7 +280,8 @@ public class PasswordServiceImplTest {
     user = authInfo.getUser();
     assertNotNull(user);
     assertFalse(authInfo.getFirstSeen());
-    passwordService.replaceUserPassword(loginId, MOCK_PWD, MOCK_PWD + "1");
+    authInfo = passwordService.replaceUserPassword(loginId, MOCK_PWD, MOCK_PWD + "1");
+		assertThat(authInfo.getRefreshToken().getJwt()).isNotBlank();
     authInfo = passwordService.signIn(loginId, MOCK_PWD + "1");
     assertThat(authInfo.getRefreshToken().getJwt()).isNotBlank();
     passwordService.updateUserPassword(

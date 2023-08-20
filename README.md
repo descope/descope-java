@@ -432,7 +432,7 @@ Alternatively, it is also possible to replace an existing active password with a
 ```java
 // Replaces the user's current password with a new one
 try {
-    ps.replaceUserPassword(loginId, oldPassword, newPassword);
+    AuthenticationInfo info = ps.replaceUserPassword(loginId, oldPassword, newPassword);
 } catch (DescopeException de) {
     // Handle the error
 }
