@@ -1283,16 +1283,10 @@ try {
 // Embedded links can be created to directly receive a verifiable token without sending it.
 // This token can then be verified using the magic link 'verify' function, either directly or through a flow.
 UserService us = descopeClient.getManagementServices().getUserService();
+MagicLinkService mls = descopeClient.getAuthenticationServices().getMagicLinkService();
 try {
-    UserResponseDetails resp = us.createTestUser("desmond@descope.com", UserRequest.builder()
-            .email("desmond@descope.com")
-            .displayName("Desmond Copeland")
-            .tenants(Arrays.asList(
-                AssociatedTenant.builder()
-                    .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1"),
-                AssociatedTenant.builder()
-                    .tenantId("tenant-ID2")))));
+    String token - us.generateEmbeddedLink("desmond@descope.com", null /*custom claims if any */);
+    var authInfo = mls.verify(token);
 } catch (DescopeException de) {
     // Handle the error
 }
