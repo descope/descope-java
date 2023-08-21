@@ -842,7 +842,7 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     assertThat(user.getUserTenants()).containsExactly(
-        AssociatedTenant.builder().tenantId(tenantId).roleNames(List.of(roleName)).build());
+        AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(List.of(roleName)).build());
     // Delete
     userService.delete(loginId);
     tenantService.delete(tenantId);
