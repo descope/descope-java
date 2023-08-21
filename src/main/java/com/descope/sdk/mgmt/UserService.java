@@ -10,6 +10,7 @@ import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import java.util.List;
+import java.util.Map;
 
 /** Provides functions for managing users in a project. */
 public interface UserService {
@@ -345,5 +346,19 @@ public interface UserService {
    *     thrown.
    */
   EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(String loginId, String uri)
+        throws DescopeException;
+
+  /**
+   * Generate an embedded link token, later can be used to authenticate via magiclink verify method
+   * or via flow verify step.
+   *
+   * @param loginId loginId The loginID is required.
+   * @param customClaims additional claims to be added to the verified token JWT
+   * @return It returns the token that can then be verified using the magic link 'verify' function,
+   *         either directly or through a flow.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  String generateEmbeddedLink(String loginId, Map<String, Object> customClaims)
         throws DescopeException;
 }

@@ -1279,6 +1279,18 @@ try {
 
 // Note 1: The generate code/link methods, work only for test users, will not work for regular users.
 // Note 2: In case of testing sign-in / sign-up methods with test users, need to make sure to generate the code prior calling the sign-in / sign-up methods
+
+// Embedded links can be created to directly receive a verifiable token without sending it.
+// This token can then be verified using the magic link 'verify' function, either directly or through a flow.
+UserService us = descopeClient.getManagementServices().getUserService();
+MagicLinkService mls = descopeClient.getAuthenticationServices().getMagicLinkService();
+try {
+    String token - us.generateEmbeddedLink("desmond@descope.com", null /*custom claims if any */);
+    var authInfo = mls.verify(token);
+} catch (DescopeException de) {
+    // Handle the error
+}
+token, err := descopeClient.Management.User().GenerateEmbeddedLink("desmond@descope.com", map[string]any{"key1":"value1"})
 ```
 
 # API Rate Limits
