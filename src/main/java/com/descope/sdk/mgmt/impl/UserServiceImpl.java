@@ -13,6 +13,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_NAME_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_CREATE_EMBEDDED_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_EXPIRE_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
@@ -28,12 +29,14 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.request.EnchantedLinkTestUserRequest;
+import com.descope.model.user.request.GenerateEmbeddedLinkRequest;
 import com.descope.model.user.request.MagicLinkTestUserRequest;
 import com.descope.model.user.request.OTPTestUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
+import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponseDetails;
@@ -382,6 +385,18 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     return apiProxy.post(enchantedLinkForTestUserUri, request, EnchantedLinkTestUserResponse.class);
   }
 
+  public String generateEmbeddedLink(
+      String loginId, Map<String, Object> customClaims) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI generateEmbeddedLinkUri = composeGenerateEmbeddedLink();
+    var request = new GenerateEmbeddedLinkRequest(loginId, customClaims);
+    var apiProxy = getApiProxy();
+    var response = apiProxy.post(generateEmbeddedLinkUri, request, GenerateEmbeddedLinkResponse.class);
+    return response.getToken();
+  }
+
   private URI composeCreateUserUri() {
     return getUri(CREATE_USER_LINK);
   }
@@ -472,5 +487,9 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeExpirePasswordUri() {
     return getUri(USER_EXPIRE_PASSWORD_LINK);
+  }
+
+  private URI composeGenerateEmbeddedLink() {
+    return getUri(USER_CREATE_EMBEDDED_LINK);
   }
 }

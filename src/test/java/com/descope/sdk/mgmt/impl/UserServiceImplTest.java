@@ -20,6 +20,7 @@ import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
+import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponse;
@@ -27,10 +28,13 @@ import com.descope.model.user.response.UserResponseDetails;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
+import com.descope.sdk.auth.MagicLinkService;
+import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import java.util.List;
+import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +48,7 @@ public class UserServiceImplTest {
   private UserService userService;
   private TenantService tenantService;
   private RolesService roleService;
+  private MagicLinkService magicLinkService;
 
   @BeforeEach
   void setUp() {
@@ -53,6 +58,8 @@ public class UserServiceImplTest {
     this.userService = mgmtServices.getUserService();
     this.tenantService = mgmtServices.getTenantService();
     this.roleService = mgmtServices.getRolesService();
+    this.magicLinkService =
+        AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams()).getMagicLinkService();
   }
 
   @Test
@@ -611,6 +618,30 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testGenerateEmbeddedLinkForEmptyLoginId() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> userService.generateEmbeddedLink("", null));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateEmbeddedLinkForSuccess() {
+    var mockResponse = new GenerateEmbeddedLinkResponse("someToken");
+    var apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      var response =
+          userService.generateEmbeddedLink("someLoginId", null);
+      Assertions.assertThat(response).isEqualTo("someToken");
+    }
+  }
+
+  @Test
   void testSearchAllForSuccess() {
     var userResponse = mock(UserResponse.class);
     var allUsersResponse = new AllUsersResponseDetails(List.of(userResponse));
@@ -816,5 +847,39 @@ public class UserServiceImplTest {
     userService.delete(loginId);
     tenantService.delete(tenantId);
     roleService.delete(roleName);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalGenerateEmbeddedLink() {
+    String loginId = TestUtils.getRandomName("u-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    // Create
+    var createResponse = userService.create(loginId,
+        UserRequest.builder()
+          .loginId(loginId)
+          .email(email)
+          .verifiedEmail(true)
+          .phone(phone)
+          .verifiedPhone(true)
+          .displayName("Testing Test")
+          .invite(false)
+          .build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains(loginId);
+    String token = userService.generateEmbeddedLink(loginId, null);
+    var authInfo = magicLinkService.verify(token);
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    token = userService.generateEmbeddedLink(loginId, Map.of("kuku", "kiki"));
+    authInfo = magicLinkService.verify(token);
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    var claims = authInfo.getToken().getClaims();
+    // temporary
+    var nsecClaims = Map.class.cast(claims.get("nsec"));
+    assertEquals("kiki", nsecClaims == null ? claims.get("kuku") : nsecClaims.get("kuku"));
+    userService.delete(loginId);
   }
 }

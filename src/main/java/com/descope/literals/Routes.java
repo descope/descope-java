@@ -85,6 +85,7 @@ public class Routes {
     public static final String ENCHANTED_LINK_FOR_TEST_LINK = "/v1/mgmt/tests/generate/enchantedlink";
     public static final String USER_SET_PASSWORD_LINK = "/v1/mgmt/user/password/set";
     public static final String USER_EXPIRE_PASSWORD_LINK = "/v1/mgmt/user/password/expire";
+    public static final String USER_CREATE_EMBEDDED_LINK = "/v1/mgmt/user/signin/embeddedlink";
 
     // Tenant
     public static final String CREATE_TENANT_LINK = "/v1/mgmt/tenant/create";
