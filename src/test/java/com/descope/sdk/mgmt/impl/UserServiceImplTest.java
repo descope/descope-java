@@ -35,6 +35,7 @@ import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +60,7 @@ public class UserServiceImplTest {
     this.tenantService = mgmtServices.getTenantService();
     this.roleService = mgmtServices.getRolesService();
     this.magicLinkService =
-        AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams()).getMagicLinkService();
+      AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams()).getMagicLinkService();
   }
 
   @Test
@@ -881,5 +882,33 @@ public class UserServiceImplTest {
     var nsecClaims = Map.class.cast(claims.get("nsec"));
     assertEquals("kiki", nsecClaims == null ? claims.get("kuku") : nsecClaims.get("kuku"));
     userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalGenerateEmbeddedLinkWithPhoneAsID() {
+    String randomSaffix = String.valueOf(new Random().nextInt(1000));
+    randomSaffix = "0".repeat(4 - randomSaffix.length()) + randomSaffix;
+    String phone = "+1-555-555-" + randomSaffix;
+    String cleanPhone = "+1555555" + randomSaffix;
+    // Create
+    var createResponse = userService.create(phone,
+        UserRequest.builder()
+          .loginId(phone)
+          .phone(phone)
+          .verifiedPhone(true)
+          .displayName("Testing Test")
+          .invite(false)
+          .build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains(cleanPhone);
+    String token = userService.generateEmbeddedLink(phone, null);
+    var authInfo = magicLinkService.verify(token);
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    var userResp = userService.load(cleanPhone);
+    assertNotNull(userResp.getUser());
+    Assertions.assertThat(userResp.getUser().getLoginIds()).contains(cleanPhone);
+    userService.delete(phone);
   }
 }
