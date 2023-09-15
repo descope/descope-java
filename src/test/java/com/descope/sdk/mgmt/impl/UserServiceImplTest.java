@@ -29,7 +29,6 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.MagicLinkService;
-import com.descope.sdk.auth.OTPService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
@@ -60,8 +59,8 @@ public class UserServiceImplTest {
     this.userService = mgmtServices.getUserService();
     this.tenantService = mgmtServices.getTenantService();
     this.roleService = mgmtServices.getRolesService();
-    this.magicLinkService = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams())
-        .getMagicLinkService();
+    this.magicLinkService =
+      AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams()).getMagicLinkService();
   }
 
   @Test
