@@ -98,7 +98,7 @@ public class UserServiceImplTest {
     var userRequest = mock(UserRequest.class);
     var apiProxy = mock(ApiProxy.class);
     var inviteUrl = InviteOptions.builder().inviteUrl("https://mockUrl.com").build();
-		doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
 
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(

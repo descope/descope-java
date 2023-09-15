@@ -191,17 +191,17 @@ public class PasswordServiceImplTest {
   void testReplaceUserPasswordForSuccess() {
     var apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-		doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
-		try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
         mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
-       	var authenticationInfo = passwordService.replaceUserPassword(MOCK_EMAIL, MOCK_PWD, MOCK_PWD);
-				Assertions.assertThat(authenticationInfo).isNotNull();
-      	verify(apiProxy, times(1)).post(any(), any(), any());
+        var authenticationInfo = passwordService.replaceUserPassword(MOCK_EMAIL, MOCK_PWD, MOCK_PWD);
+        Assertions.assertThat(authenticationInfo).isNotNull();
+        verify(apiProxy, times(1)).post(any(), any(), any());
       }
     }
   }
@@ -288,7 +288,7 @@ public class PasswordServiceImplTest {
     assertNotNull(user);
     assertFalse(authInfo.getFirstSeen());
     authInfo = passwordService.replaceUserPassword(loginId, MOCK_PWD, MOCK_PWD + "1");
-		assertThat(authInfo.getRefreshToken().getJwt()).isNotBlank();
+    assertThat(authInfo.getRefreshToken().getJwt()).isNotBlank();
     authInfo = passwordService.signIn(loginId, MOCK_PWD + "1");
     assertThat(authInfo.getRefreshToken().getJwt()).isNotBlank();
     passwordService.updateUserPassword(

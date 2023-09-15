@@ -98,7 +98,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
     if (options != null) {
       request.setInviteUrl(options.getInviteUrl());
-		}
+    }
 
     URI createUserUri = composeCreateUserUri();
     var apiProxy = getApiProxy();

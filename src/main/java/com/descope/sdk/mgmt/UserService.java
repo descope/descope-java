@@ -56,7 +56,7 @@ public interface UserService {
    *     make sure the login id is unique for test.
    * @param request request is optional, and if provided, all attributes within it are optional.
    * @param options Additional options for the invitation, such as invite URL.
-	 * @return {@link UserResponseDetails UserResponseDetails}
+   * @return {@link UserResponseDetails UserResponseDetails}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
