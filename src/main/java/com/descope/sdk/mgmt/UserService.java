@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
+import com.descope.model.auth.InviteOptions;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -54,11 +55,12 @@ public interface UserService {
    * @param loginId The loginID is required and will determine what the user will use to sign in,
    *     make sure the login id is unique for test.
    * @param request request is optional, and if provided, all attributes within it are optional.
-   * @return {@link UserResponseDetails UserResponseDetails}
+   * @param options Additional options for the invitation, such as invite URL.
+	 * @return {@link UserResponseDetails UserResponseDetails}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  UserResponseDetails invite(String loginId, UserRequest request) throws DescopeException;
+  UserResponseDetails invite(String loginId, UserRequest request, InviteOptions options) throws DescopeException;
 
   /**
    * Update an existing user.

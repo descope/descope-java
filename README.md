@@ -432,7 +432,7 @@ Alternatively, it is also possible to replace an existing active password with a
 ```java
 // Replaces the user's current password with a new one
 try {
-    ps.replaceUserPassword(loginId, oldPassword, newPassword);
+    AuthenticationInfo info = ps.replaceUserPassword(loginId, oldPassword, newPassword);
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -662,10 +662,11 @@ try {
 }
 
 // Alternatively, a user can be created and invited via an email message.
-// Make sure to configure the invite URL in the Descope console prior to using this function,
+// You can configure the invite URL in the Descope console prior to using this function, or pass inviteUrl in the options parameter.
 // and that an email address is provided in the information.
 try {
-    us.invite("desmond@descope.com", UserRequest.builder()
+    us.invite("desmond@descope.com",
+						UserRequest.builder()
             .email("desmond@descope.com")
             .displayName("Desmond Copeland")
             .tenants(Arrays.asList(
@@ -673,7 +674,10 @@ try {
                     .tenantId("tenant-ID1")
                     .roleNames(Arrays.asList("role-name1"),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2")))));
+                    .tenantId("tenant-ID2")))),
+						InviteOptions.builder()
+						.inviteUrl("https://my-app.com/invite")
+					);
 } catch (DescopeException de) {
     // Handle the error
 }

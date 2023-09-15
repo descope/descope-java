@@ -16,6 +16,7 @@ import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AssociatedTenant;
+import com.descope.model.auth.InviteOptions;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -96,11 +97,13 @@ public class UserServiceImplTest {
     var userResponseDetails = mock(UserResponseDetails.class);
     var userRequest = mock(UserRequest.class);
     var apiProxy = mock(ApiProxy.class);
-    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    var inviteUrl = InviteOptions.builder().inviteUrl("https://mockUrl.com").build();
+		doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.invite("someLoginId", userRequest);
+      var response = userService.invite("someLoginId", userRequest, inviteUrl);
       Assertions.assertThat(response).isNotNull();
     }
   }

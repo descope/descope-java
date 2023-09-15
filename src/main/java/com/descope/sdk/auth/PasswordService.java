@@ -16,7 +16,7 @@ public interface PasswordService {
   void updateUserPassword(String loginId, String newPassword, String refreshToken)
       throws DescopeException;
 
-  void replaceUserPassword(String loginId, String oldPassword, String newPassword)
+  AuthenticationInfo replaceUserPassword(String loginId, String oldPassword, String newPassword)
       throws DescopeException;
 
   PasswordPolicy getPasswordPolicy() throws DescopeException;

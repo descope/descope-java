@@ -26,6 +26,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.request.EnchantedLinkTestUserRequest;
@@ -58,6 +59,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       request = new UserRequest();
     }
     request.setLoginId(loginId);
+    request.setInviteUrl("");
     request.setInvite(false);
     request.setTest(false);
 
@@ -75,6 +77,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
     request.setLoginId(loginId);
     request.setInvite(false);
+    request.setInviteUrl("");
     request.setTest(true);
 
     URI createUserUri = composeCreateUserUri();
@@ -83,7 +86,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails invite(String loginId, UserRequest request) throws DescopeException {
+  public UserResponseDetails invite(String loginId, UserRequest request, InviteOptions options)
+      throws DescopeException {
     if (request == null) {
       request = new UserRequest();
     }
@@ -91,6 +95,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     request.setLoginId(loginId);
     request.setInvite(true);
     request.setTest(false);
+
+    if (options != null) {
+      request.setInviteUrl(options.getInviteUrl());
+		}
 
     URI createUserUri = composeCreateUserUri();
     var apiProxy = getApiProxy();
