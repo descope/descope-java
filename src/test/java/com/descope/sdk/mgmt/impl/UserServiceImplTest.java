@@ -16,6 +16,7 @@ import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AssociatedTenant;
+import com.descope.model.user.User;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -29,6 +30,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.MagicLinkService;
+import com.descope.sdk.auth.OTPService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
@@ -49,6 +51,7 @@ public class UserServiceImplTest {
   private TenantService tenantService;
   private RolesService roleService;
   private MagicLinkService magicLinkService;
+  private OTPService otpService;
 
   @BeforeEach
   void setUp() {
@@ -58,8 +61,9 @@ public class UserServiceImplTest {
     this.userService = mgmtServices.getUserService();
     this.tenantService = mgmtServices.getTenantService();
     this.roleService = mgmtServices.getRolesService();
-    this.magicLinkService =
-        AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams()).getMagicLinkService();
+    var authServices = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams());
+    this.magicLinkService = authServices.getMagicLinkService();
+    this.otpService = authServices.getOtpService();
   }
 
   @Test
@@ -881,5 +885,30 @@ public class UserServiceImplTest {
     var nsecClaims = Map.class.cast(claims.get("nsec"));
     assertEquals("kiki", nsecClaims == null ? claims.get("kuku") : nsecClaims.get("kuku"));
     userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalGenerateEmbeddedLinkWithPhoneAsID() {
+    String phone = "+1-555-555-5555";
+    // Create
+    var createResponse = userService.create(phone,
+        UserRequest.builder()
+          .loginId(phone)
+          .phone(phone)
+          .verifiedPhone(true)
+          .displayName("Testing Test")
+          .invite(false)
+          .build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains("+15555555555");
+    String token = userService.generateEmbeddedLink(phone, null);
+    var authInfo = magicLinkService.verify(token);
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    var userResp = userService.load("+15555555555");
+    assertNotNull(userResp.getUser());
+    Assertions.assertThat(userResp.getUser().getLoginIds()).contains("+15555555555");
+    userService.delete(phone);
   }
 }
