@@ -12,7 +12,6 @@ import com.descope.utils.UriUtils;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.security.Key;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
