@@ -25,4 +25,5 @@ public class UserRequest {
   String picture;
   Boolean invite;
   Boolean test;
+  String inviteUrl;
 }
