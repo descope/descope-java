@@ -368,6 +368,28 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testUpdateLoginIdForEmptyLoginId() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class, () -> userService.updateLoginId("", "someId"));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateLoginIdForSuccess() {
+    var userResponseDetails = mock(UserResponseDetails.class);
+    var apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      var response = userService.updateLoginId("someLoginId", "someNewLoginId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
   void testAddRolesForEmptyKeyLoginId() {
     ServerCommonException thrown =
         assertThrows(ServerCommonException.class, () -> userService.addRoles("", mockRoles));
@@ -734,7 +756,9 @@ public class UserServiceImplTest {
     email = TestUtils.getRandomName("test-") + "@descope.com";
     userService.updateEmail(loginId, email, true);
     userService.updatePhone(loginId, "+1-555-555-6666", true);
-    var loadResponse = userService.load(loginId);
+    String newLoginId = TestUtils.getRandomName("u-");
+    userService.updateLoginId(loginId, newLoginId);
+    var loadResponse = userService.load(newLoginId);
     user = loadResponse.getUser();
     assertNotNull(user);
     assertEquals(email, user.getEmail());
@@ -761,7 +785,7 @@ public class UserServiceImplTest {
     }
     assertTrue(found);
     // Delete
-    userService.delete(loginId);
+    userService.delete(newLoginId);
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

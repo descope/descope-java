@@ -215,6 +215,17 @@ public interface UserService {
       throws DescopeException;
 
   /**
+   * Update the email address for an existing user.
+   *
+   * @param loginId The loginID is required.
+   * @param newLoginId The new login ID to be updated. Pass in empty string to just remove the existing loginId.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updateLoginId(String loginId, String newLoginId) throws DescopeException;
+
+  /**
    * Add roles for a user without tenant association. Use AddTenantRoles for users that are part of
    * a multi-tenant project.
    *
