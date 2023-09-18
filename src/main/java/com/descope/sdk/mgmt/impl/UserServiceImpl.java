@@ -10,6 +10,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TES
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_CUSTOM_ATTRIBUTE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_PICTURE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LOGIN_ID_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_NAME_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
@@ -262,6 +263,17 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public UserResponseDetails updateLoginId(String loginId, String newLoginId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI updateLoginIdUri = composeUpdateLoginIdUri();
+    Map<String, Object> request = Map.of("loginId", loginId, "newLoginId", newLoginId);
+    var apiProxy = getApiProxy();
+    return apiProxy.post(updateLoginIdUri, request, UserResponseDetails.class);
+  }
+
+  @Override
   public UserResponseDetails addRoles(String loginId, List<String> roles) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -451,6 +463,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeUpdatePictureUri() {
     return getUri(UPDATE_PICTURE_LINK);
+  }
+
+  private URI composeUpdateLoginIdUri() {
+    return getUri(UPDATE_USER_LOGIN_ID_LINK);
   }
 
   private URI composeAddRolesUri() {

@@ -76,6 +76,7 @@ public class Routes {
     public static final String UPDATE_USER_NAME_LINK = "/v1/mgmt/user/update/name";
     public static final String UPDATE_PICTURE_LINK = "/v1/mgmt/user/update/picture";
     public static final String UPDATE_CUSTOM_ATTRIBUTE_LINK = "/v1/mgmt/user/update/customAttribute";
+    public static final String UPDATE_USER_LOGIN_ID_LINK = "/v1/mgmt/user/update/loginid";
     public static final String USER_ADD_ROLES_LINK = "/v1/mgmt/user/update/role/add";
     public static final String USER_REMOVE_ROLES_LINK = "/v1/mgmt/user/update/role/remove";
     public static final String USER_ADD_TENANT_LINK = "/v1/mgmt/user/update/tenant/add";
