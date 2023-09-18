@@ -815,7 +815,7 @@ public class UserServiceImplTest {
     assertEquals("invited", user.getStatus());
     assertEquals(true, user.getTest());
     var searchResponse = userService.searchAll(
-        UserSearchRequest.builder().withTestUser(true).build());
+        UserSearchRequest.builder().withTestUser(true).phones(List.of(phone)).emails(List.of(email)).build());
     boolean found = false;
     for (var u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {

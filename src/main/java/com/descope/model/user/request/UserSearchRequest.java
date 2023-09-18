@@ -23,4 +23,6 @@ public class UserSearchRequest {
   Boolean testUsersOnly;
   Map<String, Object> customAttributes;
   List<UserStatus> statuses;
+  List<String> emails;
+  List<String> phones;
 }
