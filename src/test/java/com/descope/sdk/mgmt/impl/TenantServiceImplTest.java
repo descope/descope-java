@@ -17,7 +17,6 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.request.TenantSearchRequest;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
-import com.descope.model.user.request.UserSearchRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;

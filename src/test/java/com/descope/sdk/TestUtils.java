@@ -95,7 +95,7 @@ public class TestUtils {
     }
 
     public static Client getClient() {
-        String baseUrl = "https://api.descope.org";
+        String baseUrl = "https://api.descope.com";
         return Client.builder()
                 .uri(baseUrl)
                 .sdkInfo(getSdkInfo())
