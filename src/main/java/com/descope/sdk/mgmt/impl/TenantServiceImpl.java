@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt.impl;
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.TENANT_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
 
 import com.descope.exception.DescopeException;
@@ -10,6 +11,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.tenant.Tenant;
+import com.descope.model.tenant.request.TenantSearchRequest;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
 import com.descope.sdk.mgmt.TenantService;
 import java.net.URI;
@@ -29,7 +31,17 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("name");
     }
-    var tenant = new Tenant("", name, selfProvisioningDomains);
+    var tenant = new Tenant("", name, selfProvisioningDomains, null);
+    return create(tenant);
+  }
+
+  @Override
+  public String create(String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes)
+      throws DescopeException {
+    if (StringUtils.isBlank(name)) {
+      throw ServerCommonException.invalidArgument("name");
+    }
+    var tenant = new Tenant("", name, selfProvisioningDomains, customAttributes);
     return create(tenant);
   }
 
@@ -40,7 +52,19 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
       throw ServerCommonException.invalidArgument("id or name");
     }
 
-    var tenant = new Tenant(id, name, selfProvisioningDomains);
+    var tenant = new Tenant(id, name, selfProvisioningDomains, null);
+    create(tenant);
+  }
+
+  @Override
+  public void createWithId(String id, String name, List<String> selfProvisioningDomains,
+      Map<String, Object> customAttributes)
+      throws DescopeException {
+    if (StringUtils.isAnyBlank(id, name)) {
+      throw ServerCommonException.invalidArgument("id or name");
+    }
+
+    var tenant = new Tenant(id, name, selfProvisioningDomains, customAttributes);
     create(tenant);
   }
 
@@ -52,13 +76,13 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
   }
 
   @Override
-  public void update(String id, String name, List<String> selfProvisioningDomains)
+  public void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes)
       throws DescopeException {
     if (StringUtils.isAnyBlank(id, name)) {
       throw ServerCommonException.invalidArgument("id or name");
     }
 
-    var tenant = new Tenant(id, name, selfProvisioningDomains);
+    var tenant = new Tenant(id, name, selfProvisioningDomains, customAttributes);
     update(tenant);
   }
 
@@ -87,6 +111,19 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     return response.getTenants();
   }
 
+  @Override
+  public List<Tenant> searchAll(TenantSearchRequest request)
+      throws DescopeException {
+    if (request == null) {
+      request = TenantSearchRequest.builder().build();
+    }
+
+    URI composeSearchAllUri = composeSearchAllUri();
+    var apiProxy = getApiProxy();
+    GetAllTenantsResponse response = apiProxy.post(composeSearchAllUri, request, GetAllTenantsResponse.class);
+    return response.getTenants();
+  }
+
   private URI composeCreateTenantUri() {
     return getUri(CREATE_TENANT_LINK);
   }
@@ -101,5 +138,9 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
 
   private URI loadAllTenantsUri() {
     return getUri(LOAD_ALL_TENANTS_LINK);
+  }
+
+  private URI composeSearchAllUri() {
+    return getUri(TENANT_SEARCH_ALL_LINK);
   }
 }
