@@ -67,7 +67,8 @@ public interface TenantService {
    *                                to be pre-configured)
    * @throws DescopeException in case of errors
    */
-  void createWithId(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes)
+  void createWithId(String id, String name, List<String> selfProvisioningDomains,
+      Map<String, Object> customAttributes)
       throws DescopeException;
 
   /**
@@ -105,7 +106,7 @@ public interface TenantService {
   List<Tenant> loadAll() throws DescopeException;
 
   /**
-   * Search all users according to given filters.
+   * Search all tenants according to given filters.
    *
    * @param request The options optional parameter allows to fine-tune the search
    *                filters and
