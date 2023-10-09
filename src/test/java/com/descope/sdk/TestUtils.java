@@ -15,10 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import org.junit.platform.commons.util.StringUtils;
-
 import lombok.experimental.UtilityClass;
+import org.junit.platform.commons.util.StringUtils;
 
 @UtilityClass
 public class TestUtils {
