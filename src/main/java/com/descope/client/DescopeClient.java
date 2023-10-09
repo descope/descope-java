@@ -48,6 +48,7 @@ public class DescopeClient {
       log.info("Provided public key is set, forcing only provided public key validation");
     }
     config.initializeManagementKey();
+    config.initializeBaseURL();
 
     var client = getClient(config);
     this.authenticationServices = getAuthenticationServices(config, client);

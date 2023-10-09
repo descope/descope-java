@@ -68,6 +68,13 @@ public class Config {
     return this.projectId;
   }
 
+  public String initializeBaseURL() {
+    if (StringUtils.isBlank(this.descopeBaseUrl)) {
+      this.descopeBaseUrl = EnvironmentUtils.getBaseURL();
+    }
+    return this.descopeBaseUrl;
+  }
+
   public String initializePublicKey() {
     if (StringUtils.isBlank(this.publicKey)) {
       this.publicKey = EnvironmentUtils.getPublicKey();
