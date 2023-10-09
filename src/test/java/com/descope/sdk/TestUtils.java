@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.experimental.UtilityClass;
+import org.junit.platform.commons.util.StringUtils;
 
 @UtilityClass
 public class TestUtils {
@@ -31,57 +32,52 @@ public class TestUtils {
   public static final String MOCK_URL = "https://www.domain.com";
   public static final String MOCK_PWD = "somePassword1!";
   public static final String MOCK_NAME = "Some Name";
-  public static final User MOCK_USER =
-      User.builder().email(MOCK_EMAIL).name(MOCK_NAME).phone(MOCK_PHONE).build();
-  public static final UserResponse MOCK_USER_RESPONSE =
-      new UserResponse(
-          "someUserId",
-          List.of(MOCK_EMAIL),
-          "someEmail@descope.com",
-          true,
-          "+1-555-555-5555",
-          false,
-          "someName",
-          Collections.emptyList(),
-          Collections.emptyList(),
-          "enabled",
-          "",
-          false,
-          0L,
-          Collections.emptyMap(),
-          false,
-          false,
-          Collections.emptyMap());
-  public static final JWTResponse MOCK_JWT_RESPONSE =
-      new JWTResponse(
-          "someSessionJwt",
-          "someRefreshJwt",
-          "",
-          "/",
-          1234567,
-          1234567890,
-          MOCK_USER_RESPONSE,
-          true);
-  public static final Map<String, Object> TENANTS_AUTHZ =
-      Map.of("permissions", List.of("tp1", "tp2"), "roles", List.of("tr1", "tr2"));
-  public static final Token MOCK_TOKEN =
-      Token.builder()
-          .id("1")
-          .projectId(PROJECT_ID)
-          .jwt("someJwtToken")
-          .claims(Map.of("someClaim", 1,
-              "tenants", Map.of("someTenant", TENANTS_AUTHZ),
-              "permissions", List.of("p1", "p2"), "roles", List.of("r1", "r2")))
-          .build();
+  public static final User MOCK_USER = User.builder().email(MOCK_EMAIL).name(MOCK_NAME).phone(MOCK_PHONE).build();
+  public static final UserResponse MOCK_USER_RESPONSE = new UserResponse(
+      "someUserId",
+      List.of(MOCK_EMAIL),
+      "someEmail@descope.com",
+      true,
+      "+1-555-555-5555",
+      false,
+      "someName",
+      Collections.emptyList(),
+      Collections.emptyList(),
+      "enabled",
+      "",
+      false,
+      0L,
+      Collections.emptyMap(),
+      false,
+      false,
+      Collections.emptyMap());
+  public static final JWTResponse MOCK_JWT_RESPONSE = new JWTResponse(
+      "someSessionJwt",
+      "someRefreshJwt",
+      "",
+      "/",
+      1234567,
+      1234567890,
+      MOCK_USER_RESPONSE,
+      true);
+  public static final Map<String, Object> TENANTS_AUTHZ = Map.of("permissions", List.of("tp1", "tp2"), "roles",
+      List.of("tr1", "tr2"));
+  public static final Token MOCK_TOKEN = Token.builder()
+      .id("1")
+      .projectId(PROJECT_ID)
+      .jwt("someJwtToken")
+      .claims(Map.of("someClaim", 1,
+          "tenants", Map.of("someTenant", TENANTS_AUTHZ),
+          "permissions", List.of("p1", "p2"), "roles", List.of("r1", "r2")))
+      .build();
   @SuppressWarnings("checkstyle:LineLength")
-  public static final SigningKey MOCK_SIGNING_KEY =
-      SigningKey.builder()
-          .e("AQAB")
-          .kid(PROJECT_ID)
-          .kty("RSA")
-          .n(
-              "w8b3KRCep717H4MdVbwYHeb0vr891Ok1BL_TmC0XFUIKjRoKsWOcUZ9BFd6wR_5mnJuE7M8ZjVQRCbRlVgnh6AsEL3JA9Z6c1TpURTIXZxSE6NbeB7IMLMn5HWW7cjbnG4WO7E1PUCT6zCcBVz6EhA925GIJpyUxuY7oqJG-6NoOltI0Ocm6M2_7OIFMzFdw42RslqyX6l-SDdo_ZLq-XtcsCVRyj2YvmXUNF4Vq1x5syPOEQ-SezkvpBcb5Szi0ULpW5CvX2ieHAeHeQ2x8gkv6Dn2AW_dllQ--ZO-QH2QkxEXlMVqilwAdbA0k6BBtSkMC-7kD3A86bGGplpzz5Q")
-          .build();
+  public static final SigningKey MOCK_SIGNING_KEY = SigningKey.builder()
+      .e("AQAB")
+      .kid(PROJECT_ID)
+      .kty("RSA")
+      .n(
+          "w8b3KRCep717H4MdVbwYHeb0vr891Ok1BL_TmC0XFUIKjRoKsWOcUZ9BFd6wR_5mnJuE7M8ZjVQRCbRlVgnh6AsEL3JA9Z6c1TpURTIXZxSE6NbeB7IMLMn5HWW7cjbnG4WO7E1PUCT6zCcBVz6EhA925GIJpyUxuY7oqJG-6NoOltI0Ocm6M2_7OIFMzFdw42RslqyX6l-SDdo_ZLq-XtcsCVRyj2YvmXUNF4Vq1x5syPOEQ-SezkvpBcb5Szi0ULpW5CvX2ieHAeHeQ2x8gkv6Dn2AW_dllQ--ZO-QH2QkxEXlMVqilwAdbA0k6BBtSkMC-7kD3A86bGGplpzz5Q")
+      .build();
 
   public static AuthParams getAuthParams() {
     return AuthParams.builder().projectId(EnvironmentUtils.getProjectId()).build();
@@ -100,7 +96,10 @@ public class TestUtils {
   }
 
   public static Client getClient() {
-    String baseUrl = "https://api.descope.com";
+    String baseUrl = EnvironmentUtils.getBaseURL();
+    if (StringUtils.isBlank(baseUrl)) {
+      baseUrl = "https://api.descope.com";
+    }
     return Client.builder()
         .uri(baseUrl)
         .sdkInfo(getSdkInfo())
