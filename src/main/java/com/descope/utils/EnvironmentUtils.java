@@ -1,5 +1,6 @@
 package com.descope.utils;
 
+import static com.descope.literals.AppConstants.BASE_URL_ENV_VAR;
 import static com.descope.literals.AppConstants.MANAGEMENT_KEY_ENV_VAR;
 import static com.descope.literals.AppConstants.PROJECT_ID_ENV_VAR;
 import static com.descope.literals.AppConstants.PUBLIC_KEY_ENV_VAR;
@@ -13,6 +14,10 @@ public class EnvironmentUtils {
 
   public static String getProjectId() {
     return dotenv.get(PROJECT_ID_ENV_VAR);
+  }
+
+  public static String getBaseURL() {
+    return dotenv.get(BASE_URL_ENV_VAR);
   }
 
   public static String getPublicKey() {
