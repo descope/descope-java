@@ -2,6 +2,7 @@ package com.descope.model.tenant;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,4 +17,5 @@ public class Tenant {
   String id;
   String name;
   List<String> selfProvisioningDomains;
+  Map<String, Object> customAttributes;
 }

@@ -362,7 +362,7 @@ public class AuthzServiceImplTest {
             ServerCommonException.class,
             () -> authzService.targetsRelations(null));
     assertNotNull(thrown);
-    assertEquals("The users argument is invalid", thrown.getMessage());
+    assertEquals("The targets argument is invalid", thrown.getMessage());
   }
 
   @Test

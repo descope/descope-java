@@ -93,6 +93,7 @@ public class Routes {
     public static final String UPDATE_TENANT_LINK = "/v1/mgmt/tenant/update";
     public static final String DELETE_TENANT_LINK = "/v1/mgmt/tenant/delete";
     public static final String LOAD_ALL_TENANTS_LINK = "/v1/mgmt/tenant/all";
+    public static final String TENANT_SEARCH_ALL_LINK = "/v1/mgmt/tenant/search";
 
     // SSO
     public static final String SSO_GET_SETTINGS_LINK = "/mgmt/sso/settings";
