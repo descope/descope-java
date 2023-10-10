@@ -139,5 +139,22 @@ public class Routes {
 
     // Audit
     public static final String MANAGEMENT_AUDIT_SEARCH_LINK = "/v1/mgmt/audit/search";
+
+    // Authz
+    public static final String MANAGEMENT_AUTHZ_SCHEMA_SAVE = "/v1/mgmt/authz/schema/save";
+    public static final String MANAGEMENT_AUTHZ_SCHEMA_DELETE = "/v1/mgmt/authz/schema/delete";
+    public static final String MANAGEMENT_AUTHZ_SCHEMA_LOAD = "/v1/mgmt/authz/schema/load";
+    public static final String MANAGEMENT_AUTHZ_NS_SAVE = "/v1/mgmt/authz/ns/save";
+    public static final String MANAGEMENT_AUTHZ_NS_DELETE = "/v1/mgmt/authz/ns/delete";
+    public static final String MANAGEMENT_AUTHZ_RD_SAVE = "/v1/mgmt/authz/rd/save";
+    public static final String MANAGEMENT_AUTHZ_RD_DELETE = "/v1/mgmt/authz/rd/delete";
+    public static final String MANAGEMENT_AUTHZ_RE_CREATE = "/v1/mgmt/authz/re/create";
+    public static final String MANAGEMENT_AUTHZ_RE_DELETE = "/v1/mgmt/authz/re/delete";
+    public static final String MANAGEMENT_AUTHZ_RE_DELETE_RESOURCES = "/v1/mgmt/authz/re/deleteresources";
+    public static final String MANAGEMENT_AUTHZ_RE_HAS_RELATIONS = "/v1/mgmt/authz/re/has";
+    public static final String MANAGEMENT_AUTHZ_RE_WHO = "/v1/mgmt/authz/re/who";
+    public static final String MANAGEMENT_AUTHZ_RE_RESOURCE = "/v1/mgmt/authz/re/resource";
+    public static final String MANAGEMENT_AUTHZ_RE_TARGETS = "/v1/mgmt/authz/re/targets";
+    public static final String MANAGEMENT_AUTHZ_RE_TARGET_ALL = "/v1/mgmt/authz/re/targetall";
   }
 }

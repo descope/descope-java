@@ -815,7 +815,11 @@ public class UserServiceImplTest {
     assertEquals("invited", user.getStatus());
     assertEquals(true, user.getTest());
     var searchResponse = userService.searchAll(
-        UserSearchRequest.builder().withTestUser(true).phones(List.of(phone)).emails(List.of(email)).build());
+        UserSearchRequest.builder()
+        .withTestUser(true)
+        .phones(List.of(user.getPhone()))
+        .emails(List.of(user.getEmail()))
+        .build());
     boolean found = false;
     for (var u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
@@ -862,7 +866,7 @@ public class UserServiceImplTest {
           .build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
-    Assertions.assertThat(user.getLoginIds()).contains(loginId);
+    assertThat(user.getLoginIds()).contains(loginId);
     assertEquals(email, user.getEmail());
     assertEquals("+15555555555", user.getPhone());
     assertEquals(true, user.getVerifiedEmail());
@@ -871,6 +875,20 @@ public class UserServiceImplTest {
     assertEquals("invited", user.getStatus());
     assertThat(user.getUserTenants()).containsExactly(
         AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(List.of(roleName)).build());
+    var updateResponse = userService.update(loginId,
+        UserRequest.builder()
+          .loginId(loginId)
+          .roleNames(List.of(roleName))
+          .email(email)
+          .verifiedEmail(true)
+          .phone(phone)
+          .verifiedPhone(true)
+          .displayName("Testing Test")
+          .invite(false)
+          .build());
+    user = updateResponse.getUser();
+    assertNotNull(user);
+    assertThat(user.getRoleNames()).containsExactly(roleName);
     // Delete
     userService.delete(loginId);
     tenantService.delete(tenantId);

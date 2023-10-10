@@ -19,6 +19,7 @@ public class ManagementServiceBuilder {
         .accessKeyService(new AccessKeyServiceImpl(client, managementParams))
         .permissionService(new PermissionServiceImpl(client, managementParams))
         .auditService(new AuditServiceImpl(client, managementParams))
+        .authzService(new AuthzServiceImpl(client, managementParams))
         .build();
   }
 }

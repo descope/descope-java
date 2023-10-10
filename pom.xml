@@ -153,6 +153,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <version>2.15.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.15.2</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>${project.groupId}.${project.artifactId}-${project.version}</finalName>

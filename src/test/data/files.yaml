@@ -1,0 +1,130 @@
+# Example schema for the authz tests
+name: Files
+namespaces:
+  - name: org
+    relationDefinitions:
+      - name: parent
+      - name: member
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationLeft
+                relationDefinition: parent
+                relationDefinitionNamespace: org
+                targetRelationDefinition: member
+                targetRelationDefinitionNamespace: org
+  - name: folder
+    relationDefinitions:
+      - name: parent
+      - name: owner
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: folder
+                targetRelationDefinition: owner
+                targetRelationDefinitionNamespace: folder
+      - name: editor
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: folder
+                targetRelationDefinition: editor
+                targetRelationDefinitionNamespace: folder
+            - nType: child
+              expression:
+                neType: targetSet
+                targetRelationDefinition: owner
+                targetRelationDefinitionNamespace: folder
+      - name: viewer
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: folder
+                targetRelationDefinition: viewer
+                targetRelationDefinitionNamespace: folder
+            - nType: child
+              expression:
+                neType: targetSet
+                targetRelationDefinition: editor
+                targetRelationDefinitionNamespace: folder
+  - name: doc
+    relationDefinitions:
+      - name: parent
+      - name: owner
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: doc
+                targetRelationDefinition: owner
+                targetRelationDefinitionNamespace: folder
+      - name: editor
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: doc
+                targetRelationDefinition: editor
+                targetRelationDefinitionNamespace: folder
+            - nType: child
+              expression:
+                neType: targetSet
+                targetRelationDefinition: owner
+                targetRelationDefinitionNamespace: doc
+      - name: viewer
+        complexDefinition:
+          nType: union
+          children:
+            - nType: child
+              expression:
+                neType: self
+            - nType: child
+              expression:
+                neType: relationRight
+                relationDefinition: parent
+                relationDefinitionNamespace: doc
+                targetRelationDefinition: viewer
+                targetRelationDefinitionNamespace: folder
+            - nType: child
+              expression:
+                neType: targetSet
+                targetRelationDefinition: editor
+                targetRelationDefinitionNamespace: doc
