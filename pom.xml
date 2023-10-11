@@ -4,7 +4,7 @@
     <groupId>com.descope</groupId>
     <artifactId>java-sdk</artifactId>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Java library used to integrate with Descope.</description>
     <url>https://github.com/descope/descope-java</url>
@@ -151,6 +151,11 @@
         <dependency>
             <artifactId>jackson-databind</artifactId>
             <groupId>com.fasterxml.jackson.core</groupId>
+            <version>2.15.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
             <version>2.15.2</version>
         </dependency>
     </dependencies>

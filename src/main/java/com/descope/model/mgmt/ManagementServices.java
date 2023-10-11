@@ -2,6 +2,7 @@ package com.descope.model.mgmt;
 
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.sdk.mgmt.AuditService;
+import com.descope.sdk.mgmt.AuthzService;
 import com.descope.sdk.mgmt.FlowService;
 import com.descope.sdk.mgmt.GroupService;
 import com.descope.sdk.mgmt.JwtService;
@@ -26,4 +27,5 @@ public class ManagementServices {
   FlowService flowService;
   GroupService groupService;
   AuditService auditService;
+  AuthzService authzService;
 }
