@@ -7,7 +7,7 @@ import com.descope.model.magiclink.LoginOptions;
 public interface OAuthService {
 
   /**
-   * Use to start an OAuth authentication using the given OAuthProvider.
+   * Use to start an OAuth authentication using the given OAuthProvider with sign up or in and options.
    *
    * @param provider     - provider
    * @param returnURL    - return url
@@ -15,6 +15,28 @@ public interface OAuthService {
    * @return a string represent the redirect URL
    */
   String start(String provider, String returnURL, LoginOptions loginOptions)
+      throws DescopeException;
+
+  /**
+   * Use to start an OAuth authentication using the given OAuthProvider with sign in and options.
+   *
+   * @param provider     - provider
+   * @param returnURL    - return url
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @return a string represent the redirect URL
+   */
+  String startSignIn(String provider, String returnURL, LoginOptions loginOptions)
+      throws DescopeException;
+
+  /**
+   * Use to start an OAuth authentication using the given OAuthProvider with sign up and options.
+   *
+   * @param provider     - provider
+   * @param returnURL    - return url
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @return a string represent the redirect URL
+   */
+  String startSignUp(String provider, String returnURL, LoginOptions loginOptions)
       throws DescopeException;
 
   /**
