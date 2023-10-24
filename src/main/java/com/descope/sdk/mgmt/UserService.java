@@ -78,6 +78,27 @@ public interface UserService {
   UserResponseDetails update(String loginId, UserRequest request) throws DescopeException;
 
   /**
+   * Logout user from all devices.
+   *
+   *
+   * @param loginId The loginID is required.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   *                          
+   */
+  void logoutUser(String loginId) throws DescopeException;
+
+  /**
+   * Logout user from all devices by user ID.
+   *
+   *
+   * @param userId The userID is required.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   *                          
+   */
+  void logoutUserByUserId(String userId) throws DescopeException;
+
+
+  /**
    * Delete an existing user.
    *
    * <p>IMPORTANT: This action is irreversible. Use carefully.

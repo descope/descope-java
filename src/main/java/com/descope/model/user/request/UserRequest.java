@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRequest {
+  String userId;
   String loginId;
   String email;
   Boolean verifiedEmail;

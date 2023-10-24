@@ -131,6 +131,26 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public void logoutUser(String loginId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI logoutUserUri = composeLogoutUserUri();
+    var apiProxy = getApiProxy();
+    apiProxy.post(logoutUserUri, UserRequest.builder().loginId(loginId).build(), Void.class);
+  }
+
+  @Override
+  public void logoutUserByUserId(String userId) throws DescopeException {
+    if (StringUtils.isBlank(userId)) {
+      throw ServerCommonException.invalidArgument("User ID");
+    }
+    URI logoutUserUri = composeLogoutUserUri();
+    var apiProxy = getApiProxy();
+    apiProxy.post(logoutUserUri, UserRequest.builder().userId(userId).build(), Void.class);
+  }
+
+  @Override
   public void deleteAllTestUsers() throws DescopeException {
     URI deleteAllTestUsersUri = composeDeleteAllTestUsersUri();
     var apiProxy = getApiProxy();
@@ -204,8 +224,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updateEmailUri = composeUpdateEmailUri();
-    Map<String, Object> request =
-        Map.of("loginId", loginId, "email", email, "verified", isVerified);
+    Map<String, Object> request = Map.of("loginId", loginId, "email", email, "verified", isVerified);
     var apiProxy = getApiProxy();
     return apiProxy.post(updateEmailUri, request, UserResponseDetails.class);
   }
@@ -217,8 +236,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updatePhoneUri = composeUpdatePhoneUri();
-    Map<String, Object> request =
-        Map.of("loginId", loginId, "phone", phone, "verified", isVerified);
+    Map<String, Object> request = Map.of("loginId", loginId, "phone", phone, "verified", isVerified);
     var apiProxy = getApiProxy();
     return apiProxy.post(updatePhoneUri, request, UserResponseDetails.class);
   }
@@ -256,8 +274,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Key");
     }
     URI updateAttributesUri = composeUpdateAttributesUri();
-    Map<String, Object> request =
-        Map.of("loginId", loginId, "attributeKey", key, "attributeValue", value);
+    Map<String, Object> request = Map.of("loginId", loginId, "attributeKey", key, "attributeValue", value);
     var apiProxy = getApiProxy();
     return apiProxy.post(updateAttributesUri, request, UserResponseDetails.class);
   }
@@ -387,8 +404,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI maginLinkForTestUserUri = composeMaginLinkForTestUserUri();
-    MagicLinkTestUserRequest request =
-        new MagicLinkTestUserRequest(loginId, deliveryMethod.getValue(), uri);
+    MagicLinkTestUserRequest request = new MagicLinkTestUserRequest(loginId, deliveryMethod.getValue(), uri);
     var apiProxy = getApiProxy();
     return apiProxy.post(maginLinkForTestUserUri, request, MagicLinkTestUserResponse.class);
   }
@@ -427,6 +443,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeDeleteUserUri() {
     return getUri(DELETE_USER_LINK);
+  }
+
+  private URI composeLogoutUserUri() {
+    return getUri(LOAD_USER_LINK);
   }
 
   private URI composeDeleteAllTestUsersUri() {
