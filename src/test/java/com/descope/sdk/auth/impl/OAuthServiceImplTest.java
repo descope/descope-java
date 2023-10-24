@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.OAuthResponse;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
@@ -48,7 +49,7 @@ public class OAuthServiceImplTest {
   @Test
   void testStart() {
     var apiProxy = mock(ApiProxy.class);
-    doReturn(MOCK_URL).when(apiProxy).post(any(), any(), any());
+    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
