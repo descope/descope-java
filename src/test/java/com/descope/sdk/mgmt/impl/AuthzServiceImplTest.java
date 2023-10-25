@@ -402,20 +402,23 @@ public class AuthzServiceImplTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     mapper.findAndRegisterModules();
     Schema s = mapper.readValue(new File("src/test/data/files.yaml"), Schema.class);
-    authzService.deleteSchema();
-    authzService.saveSchema(s, true);
-    authzService.createRelations(List.of(
-      new Relation("Dev", "parent", "org", "Descope", null, null, null, null),
-      new Relation("Sales", "parent", "org", "Descope", null, null, null, null),
-      new Relation("Dev", "member", "org", "u1", null, null, null, null),
-      new Relation("Dev", "member", "org", "u3", null, null, null, null),
-      new Relation("Sales", "member", "org", "u2", null, null, null, null),
-      new Relation("Presentations", "parent", "folder", "Internal", null, null, null, null),
-      new Relation("roadmap.ppt", "parent", "doc", "Presentations", null, null, null, null),
-      new Relation("roadmap.ppt", "owner", "doc", "u1", null, null, null, null),
-      new Relation("Internal", "viewer", "folder", null, "Descope", "member", "org", null),
-      new Relation("Presentations", "editor", "folder", null, "Sales", "member", "org", null)
-    ));
+    Schema existingSchema = authzService.loadSchema();
+    if (!existingSchema.getName().equals(s.getName())) {
+      authzService.deleteSchema();
+      authzService.saveSchema(s, true);
+      authzService.createRelations(List.of(
+        new Relation("Dev", "parent", "org", "Descope", null, null, null, null),
+        new Relation("Sales", "parent", "org", "Descope", null, null, null, null),
+        new Relation("Dev", "member", "org", "u1", null, null, null, null),
+        new Relation("Dev", "member", "org", "u3", null, null, null, null),
+        new Relation("Sales", "member", "org", "u2", null, null, null, null),
+        new Relation("Presentations", "parent", "folder", "Internal", null, null, null, null),
+        new Relation("roadmap.ppt", "parent", "doc", "Presentations", null, null, null, null),
+        new Relation("roadmap.ppt", "owner", "doc", "u1", null, null, null, null),
+        new Relation("Internal", "viewer", "folder", null, "Descope", "member", "org", null),
+        new Relation("Presentations", "editor", "folder", null, "Sales", "member", "org", null)
+      ));
+    }
     var resp = authzService.hasRelations(List.of(
       new RelationQuery("roadmap.ppt", "owner", "doc", "u1", false),
       new RelationQuery("roadmap.ppt", "editor", "doc", "u1", false),
@@ -438,6 +441,5 @@ public class AuthzServiceImplTest {
     assertThat(respUsersRelations).size().isEqualTo(2);
     var respWhat = authzService.whatCanTargetAccess("u1");
     assertThat(respWhat).size().isEqualTo(7);
-    authzService.deleteSchema();
   }
 }

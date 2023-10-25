@@ -16,4 +16,13 @@ public class AppConstants {
   public static final String TENANTS_CLAIM_KEY = "tenants";
   public static final String PERMISSIONS_CLAIM_KEY = "permissions";
   public static final String ROLES_CLAIM_KEY = "roles";
+  public static final String OAUTH_PROVIDER_APPLE = "apple";
+  public static final String OAUTH_PROVIDER_DISCORD = "discord";
+  public static final String OAUTH_PROVIDER_FACEBOOK = "facebook";
+  public static final String OAUTH_PROVIDER_GITHUB = "github";
+  public static final String OAUTH_PROVIDER_GITLAB = "gitlab";
+  public static final String OAUTH_PROVIDER_GOOGLE = "google";
+  public static final String OAUTH_PROVIDER_LINKEDIN = "linkedin";
+  public static final String OAUTH_PROVIDER_MICROSOFT = "microsoft";
+  public static final String OAUTH_PROVIDER_SLACK = "slack";
 }

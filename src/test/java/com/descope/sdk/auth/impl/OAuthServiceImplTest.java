@@ -1,5 +1,6 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.AppConstants.OAUTH_PROVIDER_GOOGLE;
 import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
 import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
@@ -100,7 +101,7 @@ public class OAuthServiceImplTest {
   }
 
   void testExampleRequireBrowser() throws Exception {
-    System.out.println(oauthService.start("google", "https://localhost/kuku", null));
+    System.out.println(oauthService.start(OAUTH_PROVIDER_GOOGLE, "https://localhost/kuku", null));
     String encodedCode = "";
     var code = URLDecoder.decode(encodedCode, "UTF-8");
     var authInfo = oauthService.exchangeToken(code);
