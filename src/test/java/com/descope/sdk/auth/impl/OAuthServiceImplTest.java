@@ -5,6 +5,7 @@ import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_URL;
 import static com.descope.sdk.TestUtils.PROJECT_ID;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.OAuthResponse;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
@@ -24,6 +26,7 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.OAuthService;
 import com.descope.utils.JwtUtils;
+import java.net.URLDecoder;
 import java.security.Key;
 import java.util.List;
 import org.assertj.core.api.Assertions;
@@ -34,7 +37,7 @@ import org.mockito.MockedStatic;
 public class OAuthServiceImplTest {
 
   private OAuthService oauthService;
-
+  
   @BeforeEach
   void setUp() {
     var authParams = TestUtils.getAuthParams();
@@ -46,7 +49,7 @@ public class OAuthServiceImplTest {
   @Test
   void testStart() {
     var apiProxy = mock(ApiProxy.class);
-    doReturn(MOCK_URL).when(apiProxy).post(any(), any(), any());
+    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -95,4 +98,14 @@ public class OAuthServiceImplTest {
     Assertions.assertThat(user.getUserId()).isNotBlank();
     Assertions.assertThat(user.getLoginIds()).isNotEmpty();
   }
+
+  void testExampleRequireBrowser() throws Exception {
+    System.out.println(oauthService.start("google", "https://localhost/kuku", null));
+    String encodedCode = "";
+    var code = URLDecoder.decode(encodedCode, "UTF-8");
+    var authInfo = oauthService.exchangeToken(code);
+    var user = authInfo.getUser();
+    assertNotNull(user);
+  }
+
 }
