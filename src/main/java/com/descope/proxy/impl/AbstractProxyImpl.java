@@ -145,8 +145,8 @@ abstract class AbstractProxyImpl {
             }
             try {
               var errorDetails = objectMapper.readValue(tee, JsonBodyHandler.ErrorDetails.class);
-              log.error(errorDetails.getActualMessage());
-              log.error(bs.toString());
+              log.debug(errorDetails.getActualMessage());
+              log.debug(bs.toString());
               if (ErrorCode.RATE_LIMIT_EXCEEDED.equals(errorDetails.errorCode)) {
                 throw new RateLimitExceededException(
                   errorDetails.getActualMessage(),
@@ -154,10 +154,10 @@ abstract class AbstractProxyImpl {
                   responseInfo.headers().firstValueAsLong(RETRY_AFTER_HEADER).orElse(DEFAULT_RETRY));
               }
               throw ServerCommonException.genericServerError(
-                  errorDetails.getActualMessage(), errorDetails.getErrorCode());
+                  errorDetails.getActualMessage(), errorDetails.getErrorCode(), bs.toString());
             } catch (IOException e) {
               throw ServerCommonException.genericServerError(
-                  bs.toString(), String.valueOf(responseInfo.statusCode()));
+                  bs.toString(), String.valueOf(responseInfo.statusCode()), bs.toString());
             }
           }
           var res = objectMapper.readValue(tee, returnClz);
