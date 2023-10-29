@@ -750,7 +750,8 @@ public class UserServiceImplTest {
       }
     }
     assertTrue(found);
-    searchResponse = userService.searchAll(UserSearchRequest.builder().testUsersOnly(true).build());
+    searchResponse = userService
+        .searchAll(UserSearchRequest.builder().testUsersOnly(true).emails(List.of(user.getEmail())).build());
     found = false;
     for (var u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {

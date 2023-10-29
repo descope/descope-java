@@ -21,7 +21,7 @@ public class TenantUpdate extends TenantBase implements Callable<Integer> {
     try {
       var client = new DescopeClient();
       var tenantService = client.getManagementServices().getTenantService();
-      tenantService.update(tenantId, name, selfProvisionedDomains, nil);
+      tenantService.update(tenantId, name, selfProvisionedDomains, null);
       System.out.printf("Tenant %s [%s] updated\n", name, tenantId);
     } catch (DescopeException de) {
       exitCode = 1;

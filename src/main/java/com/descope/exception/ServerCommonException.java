@@ -5,10 +5,14 @@ import static com.descope.exception.ErrorCode.ERR_REFRESH_TOKEN;
 import static com.descope.exception.ErrorCode.INVALID_ARGUMENT;
 import static com.descope.exception.ErrorCode.INVALID_SIGNING_KEY;
 
+import lombok.Getter;
 import lombok.ToString;
 
 @ToString(callSuper = true, includeFieldNames = true)
+@Getter
 public class ServerCommonException extends DescopeException {
+
+  private String serverResponse;
 
   protected ServerCommonException(String message, String code) {
     super(message);
@@ -32,7 +36,9 @@ public class ServerCommonException extends DescopeException {
     return new ServerCommonException(error, INVALID_SIGNING_KEY);
   }
 
-  public static ServerCommonException genericServerError(String message, String code) {
-    return new ServerCommonException(message, code);
+  public static ServerCommonException genericServerError(String message, String code, String serverResponse) {
+    var e = new ServerCommonException(message, code);
+    e.serverResponse = serverResponse;
+    return e;
   }
 }
