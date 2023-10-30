@@ -6,6 +6,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.DELETE_ALL_TEST_US
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.ENCHANTED_LINK_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_USER_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.LOGOUT_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_CUSTOM_ATTRIBUTE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_PICTURE_LINK;
@@ -446,7 +447,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   private URI composeLogoutUserUri() {
-    return getUri(LOAD_USER_LINK);
+    return getUri(LOGOUT_USER_LINK);
   }
 
   private URI composeDeleteAllTestUsersUri() {
