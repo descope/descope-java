@@ -6,6 +6,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.DELETE_ALL_TEST_US
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.ENCHANTED_LINK_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_USER_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.LOGOUT_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_CUSTOM_ATTRIBUTE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_PICTURE_LINK;
@@ -131,6 +132,26 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public void logoutUser(String loginId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI logoutUserUri = composeLogoutUserUri();
+    var apiProxy = getApiProxy();
+    apiProxy.post(logoutUserUri, UserRequest.builder().loginId(loginId).build(), Void.class);
+  }
+
+  @Override
+  public void logoutUserByUserId(String userId) throws DescopeException {
+    if (StringUtils.isBlank(userId)) {
+      throw ServerCommonException.invalidArgument("User ID");
+    }
+    URI logoutUserUri = composeLogoutUserUri();
+    var apiProxy = getApiProxy();
+    apiProxy.post(logoutUserUri, UserRequest.builder().userId(userId).build(), Void.class);
+  }
+
+  @Override
   public void deleteAllTestUsers() throws DescopeException {
     URI deleteAllTestUsersUri = composeDeleteAllTestUsersUri();
     var apiProxy = getApiProxy();
@@ -204,8 +225,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updateEmailUri = composeUpdateEmailUri();
-    Map<String, Object> request =
-        Map.of("loginId", loginId, "email", email, "verified", isVerified);
+    Map<String, Object> request = Map.of("loginId", loginId, "email", email, "verified", isVerified);
     var apiProxy = getApiProxy();
     return apiProxy.post(updateEmailUri, request, UserResponseDetails.class);
   }
@@ -217,8 +237,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updatePhoneUri = composeUpdatePhoneUri();
-    Map<String, Object> request =
-        Map.of("loginId", loginId, "phone", phone, "verified", isVerified);
+    Map<String, Object> request = Map.of("loginId", loginId, "phone", phone, "verified", isVerified);
     var apiProxy = getApiProxy();
     return apiProxy.post(updatePhoneUri, request, UserResponseDetails.class);
   }
@@ -256,8 +275,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Key");
     }
     URI updateAttributesUri = composeUpdateAttributesUri();
-    Map<String, Object> request =
-        Map.of("loginId", loginId, "attributeKey", key, "attributeValue", value);
+    Map<String, Object> request = Map.of("loginId", loginId, "attributeKey", key, "attributeValue", value);
     var apiProxy = getApiProxy();
     return apiProxy.post(updateAttributesUri, request, UserResponseDetails.class);
   }
@@ -387,8 +405,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI maginLinkForTestUserUri = composeMaginLinkForTestUserUri();
-    MagicLinkTestUserRequest request =
-        new MagicLinkTestUserRequest(loginId, deliveryMethod.getValue(), uri);
+    MagicLinkTestUserRequest request = new MagicLinkTestUserRequest(loginId, deliveryMethod.getValue(), uri);
     var apiProxy = getApiProxy();
     return apiProxy.post(maginLinkForTestUserUri, request, MagicLinkTestUserResponse.class);
   }
@@ -427,6 +444,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeDeleteUserUri() {
     return getUri(DELETE_USER_LINK);
+  }
+
+  private URI composeLogoutUserUri() {
+    return getUri(LOGOUT_USER_LINK);
   }
 
   private URI composeDeleteAllTestUsersUri() {

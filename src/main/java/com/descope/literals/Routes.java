@@ -71,6 +71,7 @@ public class Routes {
     public static final String DELETE_USER_LINK = "/v1/mgmt/user/delete";
     public static final String DELETE_ALL_TEST_USERS_LINK = "/v1/mgmt/user/test/delete/all";
     public static final String LOAD_USER_LINK = "/v1/mgmt/user";
+    public static final String LOGOUT_USER_LINK = "/v1/mgmt/user/logout";
     public static final String USER_SEARCH_ALL_LINK = "/v1/mgmt/user/search";
     public static final String USER_UPDATE_STATUS_LINK = "/v1/mgmt/user/update/status";
     public static final String USER_UPDATE_EMAIL_LINK = "/v1/mgmt/user/update/email";

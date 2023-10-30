@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.DescopeException;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AssociatedTenant;
@@ -29,6 +31,7 @@ import com.descope.model.user.response.UserResponseDetails;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
+import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.MagicLinkService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
@@ -51,6 +54,7 @@ public class UserServiceImplTest {
   private TenantService tenantService;
   private RolesService roleService;
   private MagicLinkService magicLinkService;
+  private AuthenticationService authenticationService;
 
   @BeforeEach
   void setUp() {
@@ -60,8 +64,9 @@ public class UserServiceImplTest {
     this.userService = mgmtServices.getUserService();
     this.tenantService = mgmtServices.getTenantService();
     this.roleService = mgmtServices.getRolesService();
-    this.magicLinkService = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams())
-        .getMagicLinkService();
+    var authServices = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams());
+    this.magicLinkService = authServices.getMagicLinkService();
+    this.authenticationService = authServices.getAuthService();
   }
 
   @Test
@@ -71,8 +76,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.create("someLoginId", userRequest);
       Assertions.assertThat(response).isNotNull();
     }
@@ -85,8 +89,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.createTestUser("someLoginId", userRequest);
       Assertions.assertThat(response).isNotNull();
     }
@@ -101,8 +104,7 @@ public class UserServiceImplTest {
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
 
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.invite("someLoginId", userRequest, inviteUrl);
       Assertions.assertThat(response).isNotNull();
     }
@@ -123,11 +125,24 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.update("someLoginId", userRequest);
       Assertions.assertThat(response).isNotNull();
     }
+  }
+
+  @Test
+  void testLogoutForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.logoutUser(""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLogoutByUserIDForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.logoutUserByUserId(""));
+    assertNotNull(thrown);
+    assertEquals("The User ID argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -142,8 +157,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       userService.delete("someLoginId");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -154,8 +168,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).delete(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       userService.deleteAllTestUsers();
       verify(apiProxy, times(1)).delete(any(), any(), any());
     }
@@ -174,8 +187,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.load("someLoginId");
       Assertions.assertThat(response).isNotNull();
     }
@@ -194,8 +206,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.loadByUserId("SomeUserId");
       Assertions.assertThat(response).isNotNull();
     }
@@ -214,8 +225,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.activate("someLoginId");
       Assertions.assertThat(response).isNotNull();
     }
@@ -234,8 +244,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.deactivate("someLoginId");
       Assertions.assertThat(response).isNotNull();
     }
@@ -243,8 +252,8 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateEmailForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class, () -> userService.updateEmail("", "someEmail", false));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updateEmail("", "someEmail", false));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -255,8 +264,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.updateEmail("someLoginId", "someEmail", false);
       Assertions.assertThat(response).isNotNull();
     }
@@ -264,8 +272,8 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdatePhoneForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class, () -> userService.updatePhone("", "someEmail", false));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updatePhone("", "someEmail", false));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -276,8 +284,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.updatePhone("someLoginId", "1234567890", false);
       Assertions.assertThat(response).isNotNull();
     }
@@ -285,8 +292,8 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateDisplayNameForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class, () -> userService.updateDisplayName("", "someDisplay"));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updateDisplayName("", "someDisplay"));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -297,8 +304,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.updateDisplayName("someLoginId", "someDisplay");
       Assertions.assertThat(response).isNotNull();
     }
@@ -306,8 +312,8 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdatePictureForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class, () -> userService.updatePicture("", "somePicture"));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updatePicture("", "somePicture"));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -318,8 +324,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.updatePicture("someLoginId", "somePicture");
       Assertions.assertThat(response).isNotNull();
     }
@@ -327,8 +332,7 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateCustomAttributesForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.updateCustomAttributes("", "someKey", 0));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -336,8 +340,7 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateCustomAttributesForEmptyKey() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.updateCustomAttributes("someLoginId", "", 0));
     assertNotNull(thrown);
     assertEquals("The Key argument is invalid", thrown.getMessage());
@@ -349,8 +352,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.updateCustomAttributes("someLoginId", "someKey", 0);
       Assertions.assertThat(response).isNotNull();
     }
@@ -358,8 +360,8 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateLoginIdForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class, () -> userService.updateLoginId("", "someId"));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updateLoginId("", "someId"));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -370,8 +372,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.updateLoginId("someLoginId", "someNewLoginId");
       Assertions.assertThat(response).isNotNull();
     }
@@ -390,8 +391,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.addRoles("someLoginId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
@@ -411,8 +411,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.removeRoles("someLoginId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
@@ -432,8 +431,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.addTenant("someLoginId", "someTenantId");
       Assertions.assertThat(response).isNotNull();
     }
@@ -441,8 +439,8 @@ public class UserServiceImplTest {
 
   @Test
   void testRemoveTenantForEmptyKeyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class, () -> userService.removeTenant("", "someTenantId"));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.removeTenant("", "someTenantId"));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -453,8 +451,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.removeTenant("someLoginId", "someTenantId");
       Assertions.assertThat(response).isNotNull();
     }
@@ -462,8 +459,7 @@ public class UserServiceImplTest {
 
   @Test
   void testAddTenantRolesForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.addTenantRoles("", "someTenantId", mockRoles));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -475,8 +471,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.addTenantRoles("someLoginId", "someTenantId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
@@ -484,8 +479,7 @@ public class UserServiceImplTest {
 
   @Test
   void testRemoveTenantRolesForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.removeTenantRoles("", "someTenantId", mockRoles));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -497,8 +491,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.removeTenantRoles("someLoginId", "someTenantId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
@@ -506,8 +499,8 @@ public class UserServiceImplTest {
 
   @Test
   void testSetPasswordForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class, () -> userService.setPassword("", "somePassword"));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.setPassword("", "somePassword"));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -525,8 +518,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       userService.setPassword("someLoginId", "somePassword");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -544,8 +536,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       userService.expirePassword("someLoginId");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -553,8 +544,7 @@ public class UserServiceImplTest {
 
   @Test
   void testGenerateOtpForTestUserForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.generateOtpForTestUser("", DeliveryMethod.EMAIL));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -566,8 +556,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.generateOtpForTestUser("someLoginId", DeliveryMethod.EMAIL);
       Assertions.assertThat(response.getCode()).isEqualTo("12345");
     }
@@ -575,10 +564,8 @@ public class UserServiceImplTest {
 
   @Test
   void testGenerateMagicLinkForTestUserForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> userService.generateMagicLinkForTestUser(
-            "", mockUrl, DeliveryMethod.EMAIL));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateMagicLinkForTestUser("", mockUrl, DeliveryMethod.EMAIL));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -589,18 +576,15 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.generateMagicLinkForTestUser(
-          "someLoginId", mockUrl, DeliveryMethod.EMAIL);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      var response = userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.EMAIL);
       Assertions.assertThat(response.getLink()).isEqualTo("link");
     }
   }
 
   @Test
   void testGenerateEnchantedLinkForTestUserForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.generateEnchantedLinkForTestUser("", mockUrl));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -612,8 +596,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.generateEnchantedLinkForTestUser("someLoginId", mockUrl);
       Assertions.assertThat(response.getLink()).isEqualTo("link");
     }
@@ -621,8 +604,7 @@ public class UserServiceImplTest {
 
   @Test
   void testGenerateEmbeddedLinkForEmptyLoginId() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.generateEmbeddedLink("", null));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
@@ -634,8 +616,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.generateEmbeddedLink("someLoginId", null);
       Assertions.assertThat(response).isEqualTo("someToken");
     }
@@ -649,8 +630,7 @@ public class UserServiceImplTest {
     var apiProxy = mock(ApiProxy.class);
     doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       var response = userService.searchAll(userSearchRequest);
       Assertions.assertThat(response.getUsers().size()).isEqualTo(1);
     }
@@ -658,17 +638,15 @@ public class UserServiceImplTest {
 
   @Test
   void testSearchAllForInvalidLimit() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class, () -> userService.searchAll(
-            UserSearchRequest.builder().limit(-1).build()));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.searchAll(UserSearchRequest.builder().limit(-1).build()));
     assertNotNull(thrown);
     assertEquals("The limit argument is invalid", thrown.getMessage());
   }
 
   @Test
   void testSearchAllForInvalidPage() {
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.searchAll(UserSearchRequest.builder().page(-1).build()));
     assertNotNull(thrown);
     assertEquals("The page argument is invalid", thrown.getMessage());
@@ -680,16 +658,8 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    var createResponse = userService.create(loginId,
-        UserRequest.builder()
-            .loginId(loginId)
-            .email(email)
-            .verifiedEmail(true)
-            .phone(phone)
-            .verifiedPhone(true)
-            .displayName("Testing Test")
-            .invite(false)
-            .build());
+    var createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -710,16 +680,8 @@ public class UserServiceImplTest {
     assertNotNull(user);
     assertEquals("enabled", user.getStatus());
     // Update
-    var updateResponse = userService.update(loginId,
-        UserRequest.builder()
-            .loginId(loginId)
-            .email(email)
-            .verifiedEmail(true)
-            .phone(phone)
-            .verifiedPhone(true)
-            .displayName("Testing Test1")
-            .invite(false)
-            .build());
+    var updateResponse = userService.update(loginId, UserRequest.builder().loginId(loginId).email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test1").invite(false).build());
     user = updateResponse.getUser();
     assertNotNull(user);
     assertEquals("Testing Test1", user.getName());
@@ -766,16 +728,8 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    var createResponse = userService.createTestUser(loginId,
-        UserRequest.builder()
-            .loginId(loginId)
-            .email(email)
-            .verifiedEmail(true)
-            .phone(phone)
-            .verifiedPhone(true)
-            .displayName("Testing Test")
-            .invite(false)
-            .build());
+    var createResponse = userService.createTestUser(loginId, UserRequest.builder().loginId(loginId).email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -786,11 +740,8 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     assertEquals(true, user.getTest());
-    var searchResponse = userService.searchAll(
-        UserSearchRequest.builder().withTestUser(true)
-            .phones(List.of(user.getPhone()))
-            .emails(List.of(user.getEmail()))
-            .build());
+    var searchResponse = userService.searchAll(UserSearchRequest.builder().withTestUser(true)
+        .phones(List.of(user.getPhone())).emails(List.of(user.getEmail())).build());
     boolean found = false;
     for (var u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
@@ -799,8 +750,8 @@ public class UserServiceImplTest {
       }
     }
     assertTrue(found);
-    searchResponse = userService.searchAll(
-        UserSearchRequest.builder().testUsersOnly(true).emails(List.of(user.getEmail())).build());
+    searchResponse = userService
+        .searchAll(UserSearchRequest.builder().testUsersOnly(true).emails(List.of(user.getEmail())).build());
     found = false;
     for (var u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
@@ -825,14 +776,8 @@ public class UserServiceImplTest {
     String phone = "+1-555-555-5555";
     // Create
     var createResponse = userService.create(loginId,
-        UserRequest.builder()
-            .loginId(loginId)
-            .email(email)
-            .verifiedEmail(true)
-            .phone(phone)
-            .verifiedPhone(true)
-            .displayName("Testing Test")
-            .invite(false)
+        UserRequest.builder().loginId(loginId).email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
+            .displayName("Testing Test").invite(false)
             .userTenants(List.of(AssociatedTenant.builder().tenantId(tenantId).roleNames(List.of(roleName)).build()))
             .build());
     UserResponse user = createResponse.getUser();
@@ -847,16 +792,8 @@ public class UserServiceImplTest {
     assertThat(user.getUserTenants()).containsExactly(
         AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(List.of(roleName)).build());
     var updateResponse = userService.update(loginId,
-        UserRequest.builder()
-          .loginId(loginId)
-          .roleNames(List.of(roleName))
-          .email(email)
-          .verifiedEmail(true)
-          .phone(phone)
-          .verifiedPhone(true)
-          .displayName("Testing Test")
-          .invite(false)
-          .build());
+        UserRequest.builder().loginId(loginId).roleNames(List.of(roleName)).email(email).verifiedEmail(true)
+            .phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
     user = updateResponse.getUser();
     assertNotNull(user);
     assertThat(user.getRoleNames()).containsExactly(roleName);
@@ -872,16 +809,8 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    var createResponse = userService.create(loginId,
-        UserRequest.builder()
-            .loginId(loginId)
-            .email(email)
-            .verifiedEmail(true)
-            .phone(phone)
-            .verifiedPhone(true)
-            .displayName("Testing Test")
-            .invite(false)
-            .build());
+    var createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -890,6 +819,7 @@ public class UserServiceImplTest {
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     token = userService.generateEmbeddedLink(loginId, Map.of("kuku", "kiki"));
+    final long now = System.currentTimeMillis();
     authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
@@ -897,6 +827,26 @@ public class UserServiceImplTest {
     // temporary
     var nsecClaims = Map.class.cast(claims.get("nsec"));
     assertEquals("kiki", nsecClaims == null ? claims.get("kuku") : nsecClaims.get("kuku"));
+
+    // sleep till we are more than a sec than 'now'
+    while ((System.currentTimeMillis() - 1000) < now) {
+      try {
+        Thread.sleep(100);
+      } catch (Throwable thr) {
+        fail("shouldn't happen");
+      }
+    }
+
+    // now logout and see that we logged out successfully
+    userService.logoutUser(loginId);
+    boolean gotExc = false;
+    try {
+      authenticationService.refreshSessionWithToken(authInfo.getToken().getJwt());
+      fail("Refresh should fail after logout");
+    } catch (DescopeException de) {
+      gotExc = true;
+    }
+    assertEquals(true, gotExc);
     userService.delete(loginId);
   }
 
@@ -907,14 +857,8 @@ public class UserServiceImplTest {
     String phone = "+1-555-555-" + randomSaffix;
     String cleanPhone = "+1555555" + randomSaffix;
     // Create
-    var createResponse = userService.create(phone,
-        UserRequest.builder()
-            .loginId(phone)
-            .phone(phone)
-            .verifiedPhone(true)
-            .displayName("Testing Test")
-            .invite(false)
-            .build());
+    var createResponse = userService.create(phone, UserRequest.builder().loginId(phone).phone(phone).verifiedPhone(true)
+        .displayName("Testing Test").invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(cleanPhone);
