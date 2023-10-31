@@ -29,5 +29,5 @@ public class ManagementServices {
   GroupService groupService;
   AuditService auditService;
   AuthzService authzService;
-	ProjectService projectService;
+  ProjectService projectService;
 }

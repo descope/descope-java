@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 public enum ProjectTag {
-	None(""),
+  None(""),
   Production("production");
 
   @Getter
