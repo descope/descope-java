@@ -20,6 +20,7 @@ public class ManagementServiceBuilder {
         .permissionService(new PermissionServiceImpl(client, managementParams))
         .auditService(new AuditServiceImpl(client, managementParams))
         .authzService(new AuthzServiceImpl(client, managementParams))
+				.projectService(new ProjectServiceImpl(client, managementParams))
         .build();
   }
 }
