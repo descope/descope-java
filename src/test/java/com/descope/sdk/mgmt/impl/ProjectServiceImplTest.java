@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mockStatic;
 import org.assertj.core.api.Assertions;
 
 import com.descope.enums.ProjectTag;
-import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.project.NewProjectResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
