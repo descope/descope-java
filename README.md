@@ -70,6 +70,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 8. [Manage Flows](#manage-flows)
 9. [Manage JWTs](#manage-jwts)
 10. [Search Audit](#search-audit)
+11. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1128,6 +1129,28 @@ try {
     AuditSearchResponse resp = as.search(AuditSearchRequest.builder()
             .from(Instant.now().minus(Duration.ofDays(30)))
             .actions(Arrays.asList("LoginSucceed")));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+### Manage Project
+
+You can change the project name, as well as to clone the current project to a new one.
+
+```java
+ProjectService ps = descopeClient.getManagementServices().getProjectService();
+// Change the project name
+try {
+    ps.updateName("New Project Name");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Clone the current project to a new one
+try {
+    NewProjectResponse resp = ps.clone("New Project Name", ProjectTag.None);
 } catch (DescopeException de) {
     // Handle the error
 }

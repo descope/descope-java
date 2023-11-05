@@ -18,7 +18,7 @@ public interface ProjectService {
    * Users, tenants and access keys are not cloned.
    *
    * @param name The new name for the project
-   * @param tag  The tag for the project
+   * @param tag The tag for the project
    * @return {@link NewProjectResponse NewProjectResponse}
    * @throws DescopeException - error upon failure
    */
