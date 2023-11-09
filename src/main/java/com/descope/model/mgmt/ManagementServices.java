@@ -7,6 +7,7 @@ import com.descope.sdk.mgmt.FlowService;
 import com.descope.sdk.mgmt.GroupService;
 import com.descope.sdk.mgmt.JwtService;
 import com.descope.sdk.mgmt.PermissionService;
+import com.descope.sdk.mgmt.ProjectService;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.SsoService;
 import com.descope.sdk.mgmt.TenantService;
@@ -28,4 +29,5 @@ public class ManagementServices {
   GroupService groupService;
   AuditService auditService;
   AuthzService authzService;
+  ProjectService projectService;
 }
