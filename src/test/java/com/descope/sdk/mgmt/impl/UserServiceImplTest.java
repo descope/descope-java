@@ -26,6 +26,7 @@ import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
+import com.descope.model.user.response.ProviderTokenResponse;
 import com.descope.model.user.response.UserResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.proxy.ApiProxy;
@@ -539,6 +540,38 @@ public class UserServiceImplTest {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       userService.expirePassword("someLoginId");
       verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testGetProviderTokenForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.getProviderToken("", ""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGetProviderTokenForEmptyProvider() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.getProviderToken("x", ""));
+    assertNotNull(thrown);
+    assertEquals("The Provider argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGetProviderTokenForSuccess() {
+    var mockResponse = new ProviderTokenResponse("provider", "1", "at", 1L, List.of("a", "b"));
+    var apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      var response = userService.getProviderToken("xxx", "provider");
+      Assertions.assertThat(response.getProvider()).isEqualTo("provider");
+      Assertions.assertThat(response.getProviderUserId()).isEqualTo("1");
+      Assertions.assertThat(response.getAccessToken()).isEqualTo("at");
+      Assertions.assertThat(response.getExpiration()).isEqualTo(1L);
+      Assertions.assertThat(response.getScopes()).containsExactly("a", "b");
     }
   }
 
