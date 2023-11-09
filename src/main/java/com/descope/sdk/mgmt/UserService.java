@@ -9,6 +9,7 @@ import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
+import com.descope.model.user.response.ProviderTokenResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import java.util.List;
 import java.util.Map;
@@ -339,6 +340,21 @@ public interface UserService {
    *     thrown.
    */
   void expirePassword(String loginId) throws DescopeException;
+
+  /**
+   * Get the provider token for the given login ID.
+   * Only users that sign-in using social providers will have token.
+   * Note: The 'Manage tokens from provider' setting must be enabled.
+   *
+   * @param loginId The loginId we are retrieving token for and is required 
+   * @param provider The provider for whom we retrieve the token from the list of providers under AppConstants or custom
+   * @return The token details
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  ProviderTokenResponse getProviderToken(String loginId, String provider)
+      throws DescopeException;
+
 
   /**
    * Generate OTP for the given login ID of a test user. This is useful when running tests and don't

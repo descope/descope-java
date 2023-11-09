@@ -5,6 +5,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.CREATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_ALL_TEST_USERS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.ENCHANTED_LINK_FOR_TEST_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.GET_PROVIDER_TOKEN;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOGOUT_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TEST_LINK;
@@ -42,6 +43,7 @@ import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
+import com.descope.model.user.response.ProviderTokenResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.sdk.mgmt.UserService;
 import java.net.URI;
@@ -386,6 +388,20 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public ProviderTokenResponse getProviderToken(String loginId, String provider)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(provider)) {
+      throw ServerCommonException.invalidArgument("Provider");
+    }
+    URI getProviderTokenUri = composeGetProviderTokenUri(Map.of("loginId", loginId, "provider", provider));
+    var apiProxy = getApiProxy();
+    return apiProxy.get(getProviderTokenUri, ProviderTokenResponse.class);
+  }
+
+  @Override
   public OTPTestUserResponse generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
@@ -512,6 +528,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeRemoveTenantRolesUri() {
     return getUri(USER_REMOVE_TENANT_LINK);
+  }
+
+  private URI composeGetProviderTokenUri(Map<String, String> params) {
+    return getQueryParamUri(GET_PROVIDER_TOKEN, params);
   }
 
   private URI composeOTPForTestUserUri() {

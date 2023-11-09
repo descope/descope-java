@@ -84,6 +84,7 @@ public class Routes {
     public static final String USER_REMOVE_ROLES_LINK = "/v1/mgmt/user/update/role/remove";
     public static final String USER_ADD_TENANT_LINK = "/v1/mgmt/user/update/tenant/add";
     public static final String USER_REMOVE_TENANT_LINK = "/v1/mgmt/user/update/tenant/remove";
+    public static final String GET_PROVIDER_TOKEN = "/v1/mgmt/user/provider/token";
     public static final String COMPOSE_OTP_FOR_TEST_LINK = "/v1/mgmt/tests/generate/otp";
     public static final String MAGIC_LINK_FOR_TEST_LINK = "/v1/mgmt/tests/generate/magiclink";
     public static final String ENCHANTED_LINK_FOR_TEST_LINK = "/v1/mgmt/tests/generate/enchantedlink";
