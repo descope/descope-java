@@ -15,7 +15,8 @@ public interface ProjectService {
 
   /**
    * Clone the current project, including its settings and configurations
-   * Users, tenants and access keys are not cloned.
+   * - This action is supported only with a pro license or above.
+   * - Users, tenants and access keys are not cloned.
    *
    * @param name The new name for the project
    * @param tag The tag for the project
