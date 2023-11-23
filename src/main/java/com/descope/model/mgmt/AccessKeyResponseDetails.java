@@ -20,4 +20,5 @@ public class AccessKeyResponseDetails {
   private long createdTime;
   private long expireTime;
   private String createdBy;
+  private String clientId;
 }
