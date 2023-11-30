@@ -27,4 +27,5 @@ public class UserRequest {
   Boolean invite;
   Boolean test;
   String inviteUrl;
+  List<String> additionalLoginIds;
 }

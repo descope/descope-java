@@ -690,12 +690,15 @@ public class UserServiceImplTest {
     String loginId = TestUtils.getRandomName("u-");
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
+    List<String> additionalLoginIds = List.of(TestUtils.getRandomName("u-"), TestUtils.getRandomName("u-"));
     // Create
     var createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
-        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test")
+        .invite(false).additionalLoginIds(additionalLoginIds).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
+    Assertions.assertThat(user.getLoginIds()).containsAll(additionalLoginIds);
     assertEquals(email, user.getEmail());
     assertEquals("+15555555555", user.getPhone());
     assertEquals(true, user.getVerifiedEmail());
