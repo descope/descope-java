@@ -23,6 +23,7 @@ import com.descope.sdk.SdkServicesBase;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +148,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       return Collections.emptyList();
     }
     claims = (Map<String, Object>) claims.get(TENANTS_CLAIM_KEY);
-    return List.copyOf(claims.keySet());
+    return new ArrayList<>(claims.keySet());
   }
 
   boolean isTenantAssociated(Token token, String tenant) {

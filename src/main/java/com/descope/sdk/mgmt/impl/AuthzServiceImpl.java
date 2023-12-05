@@ -32,6 +32,7 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AuthzService;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,14 +60,14 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
   @Override
   public void deleteSchema() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = new HashMap<>();
+    Map<String, Object> request = Collections.emptyMap();
     apiProxy.post(getUri(MANAGEMENT_AUTHZ_SCHEMA_DELETE), request, Void.class);
   }
 
   @Override
   public Schema loadSchema() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = new HashMap<>();
+    Map<String, Object> request = Collections.emptyMap();
     LoadSchemaResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_SCHEMA_LOAD), request, LoadSchemaResponse.class);
     return resp.getSchema();
   }
