@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -43,6 +44,7 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -54,7 +56,7 @@ import org.mockito.MockedStatic;
 
 public class UserServiceImplTest {
 
-  private final List<String> mockRoles = List.of("role1", "role2");
+  private final List<String> mockRoles = Arrays.asList("role1", "role2");
   private final String mockUrl = "http://localhost.com";
   private UserService userService;
   private TenantService tenantService;
@@ -566,7 +568,7 @@ public class UserServiceImplTest {
 
   @Test
   void testGetProviderTokenForSuccess() {
-    ProviderTokenResponse mockResponse = new ProviderTokenResponse("provider", "1", "at", 1L, List.of("a", "b"));
+    ProviderTokenResponse mockResponse = new ProviderTokenResponse("provider", "1", "at", 1L, Arrays.asList("a", "b"));
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -664,7 +666,7 @@ public class UserServiceImplTest {
   @Test
   void testSearchAllForSuccess() {
     UserResponse userResponse = mock(UserResponse.class);
-    AllUsersResponseDetails allUsersResponse = new AllUsersResponseDetails(List.of(userResponse));
+    AllUsersResponseDetails allUsersResponse = new AllUsersResponseDetails(Arrays.asList(userResponse));
     UserSearchRequest userSearchRequest = UserSearchRequest.builder().limit(6).page(1).build();
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
@@ -781,7 +783,7 @@ public class UserServiceImplTest {
     assertEquals("invited", user.getStatus());
     assertEquals(true, user.getTest());
     AllUsersResponseDetails searchResponse = userService.searchAll(UserSearchRequest.builder().withTestUser(true)
-        .phones(List.of(user.getPhone())).emails(List.of(user.getEmail())).build());
+        .phones(Arrays.asList(user.getPhone())).emails(Arrays.asList(user.getEmail())).build());
     boolean found = false;
     for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
@@ -791,7 +793,7 @@ public class UserServiceImplTest {
     }
     assertTrue(found);
     searchResponse = userService
-        .searchAll(UserSearchRequest.builder().testUsersOnly(true).emails(List.of(user.getEmail())).build());
+        .searchAll(UserSearchRequest.builder().testUsersOnly(true).emails(Arrays.asList(user.getEmail())).build());
     found = false;
     for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
@@ -807,7 +809,7 @@ public class UserServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalUserWithTenantAndRole() {
     String tenantName = TestUtils.getRandomName("t-");
-    String tenantId = tenantService.create(tenantName, List.of(tenantName + ".com"));
+    String tenantId = tenantService.create(tenantName, Arrays.asList(tenantName + ".com"));
     assertThat(tenantId).isNotBlank();
     String roleName = TestUtils.getRandomName("r-").substring(0, 20);
     roleService.create(roleName, "", null);
@@ -818,7 +820,8 @@ public class UserServiceImplTest {
     UserResponseDetails createResponse = userService.create(loginId,
         UserRequest.builder().loginId(loginId).email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
             .displayName("Testing Test").invite(false)
-            .userTenants(List.of(AssociatedTenant.builder().tenantId(tenantId).roleNames(List.of(roleName)).build()))
+            .userTenants(
+              Arrays.asList(AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName)).build()))
             .build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
@@ -830,9 +833,10 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     assertThat(user.getUserTenants()).containsExactly(
-        AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(List.of(roleName)).build());
+        AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(
+          Arrays.asList(roleName)).build());
     UserResponseDetails updateResponse = userService.update(loginId,
-        UserRequest.builder().loginId(loginId).roleNames(List.of(roleName)).email(email).verifiedEmail(true)
+        UserRequest.builder().loginId(loginId).roleNames(Arrays.asList(roleName)).email(email).verifiedEmail(true)
             .phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
     user = updateResponse.getUser();
     assertNotNull(user);
@@ -858,7 +862,7 @@ public class UserServiceImplTest {
     AuthenticationInfo authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    token = userService.generateEmbeddedLink(loginId, Map.of("kuku", "kiki"));
+    token = userService.generateEmbeddedLink(loginId, mapOf("kuku", "kiki"));
     final long now = System.currentTimeMillis();
     authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());

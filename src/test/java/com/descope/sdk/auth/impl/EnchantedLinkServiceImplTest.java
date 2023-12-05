@@ -45,6 +45,7 @@ import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import com.descope.utils.UriUtils;
 import java.security.Key;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -180,7 +181,7 @@ public class EnchantedLinkServiceImplTest {
   void testGetSession() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
     Provider provider = mock(Provider.class);

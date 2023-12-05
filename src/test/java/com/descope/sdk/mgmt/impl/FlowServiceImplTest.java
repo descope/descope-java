@@ -23,7 +23,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.FlowService;
-import java.util.List;
+import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,7 +68,7 @@ class FlowServiceImplTest {
     Screen screen = mock(Screen.class);
     ServerCommonException thrown =
         assertThrows(
-            ServerCommonException.class, () -> flowService.importFlow("", flow, List.of(screen)));
+            ServerCommonException.class, () -> flowService.importFlow("", flow, Arrays.asList(screen)));
     assertNotNull(thrown);
     assertEquals("The FlowID argument is invalid", thrown.getMessage());
   }
@@ -83,7 +83,7 @@ class FlowServiceImplTest {
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      FlowResponse response = flowService.importFlow("someFlowID", flow, List.of(screen));
+      FlowResponse response = flowService.importFlow("someFlowID", flow, Arrays.asList(screen));
       Assertions.assertThat(response).isNotNull();
     }
   }

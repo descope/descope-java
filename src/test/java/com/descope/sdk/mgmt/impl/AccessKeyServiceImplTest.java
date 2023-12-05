@@ -23,6 +23,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.AccessKeyService;
+import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +32,9 @@ import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 class AccessKeyServiceImplTest {
-  private final List<String> mockRoles = List.of("Test");
+  private final List<String> mockRoles = Arrays.asList("Test");
   private final AssociatedTenant associatedTenant = new AssociatedTenant("test", "", mockRoles);
-  private final List<AssociatedTenant> mockKeyTenants = List.of(associatedTenant);
+  private final List<AssociatedTenant> mockKeyTenants = Arrays.asList(associatedTenant);
   private final AccessKeyResponseDetails mockResponse =
       AccessKeyResponseDetails.builder()
           .keyTenants(mockKeyTenants)

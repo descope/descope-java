@@ -27,7 +27,7 @@ import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.SAMLService;
 import com.descope.utils.JwtUtils;
 import java.security.Key;
-import java.util.List;
+import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +61,7 @@ public class SamlLinkServiceImplTest {
   void testExchangeToken() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
     Provider provider = mock(Provider.class);

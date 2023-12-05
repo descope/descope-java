@@ -25,6 +25,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
@@ -166,7 +167,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    URI loadUserUri = composeLoadUserUri(Map.of("loginId", loginId));
+    URI loadUserUri = composeLoadUserUri(mapOf("loginId", loginId));
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(loadUserUri, UserResponseDetails.class);
   }
@@ -176,7 +177,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(userId)) {
       throw ServerCommonException.invalidArgument("User ID");
     }
-    URI loadUserUri = composeLoadUserUri(Map.of("userId", userId));
+    URI loadUserUri = composeLoadUserUri(mapOf("userId", userId));
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(loadUserUri, UserResponseDetails.class);
   }
@@ -205,7 +206,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI activateUserUri = composeActivateUserUri();
-    Map<String, String> request = Map.of("loginId", loginId, "status", "enabled");
+    Map<String, String> request = mapOf("loginId", loginId, "status", "enabled");
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(activateUserUri, request, UserResponseDetails.class);
   }
@@ -216,7 +217,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI activateUserUri = composeActivateUserUri();
-    Map<String, String> request = Map.of("loginId", loginId, "status", "disabled");
+    Map<String, String> request = mapOf("loginId", loginId, "status", "disabled");
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(activateUserUri, request, UserResponseDetails.class);
   }
@@ -228,7 +229,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updateEmailUri = composeUpdateEmailUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "email", email, "verified", isVerified);
+    Map<String, Object> request = mapOf("loginId", loginId, "email", email, "verified", isVerified);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updateEmailUri, request, UserResponseDetails.class);
   }
@@ -240,7 +241,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updatePhoneUri = composeUpdatePhoneUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "phone", phone, "verified", isVerified);
+    Map<String, Object> request = mapOf("loginId", loginId, "phone", phone, "verified", isVerified);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updatePhoneUri, request, UserResponseDetails.class);
   }
@@ -252,7 +253,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updateUserNameUri = composeUpdateUserNameUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "displayName", displayName);
+    Map<String, Object> request = mapOf("loginId", loginId, "displayName", displayName);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updateUserNameUri, request, UserResponseDetails.class);
   }
@@ -263,7 +264,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updatePictureUri = composeUpdatePictureUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "picture", picture);
+    Map<String, Object> request = mapOf("loginId", loginId, "picture", picture);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updatePictureUri, request, UserResponseDetails.class);
   }
@@ -278,7 +279,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Key");
     }
     URI updateAttributesUri = composeUpdateAttributesUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "attributeKey", key, "attributeValue", value);
+    Map<String, Object> request = mapOf("loginId", loginId, "attributeKey", key, "attributeValue", value);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updateAttributesUri, request, UserResponseDetails.class);
   }
@@ -289,7 +290,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updateLoginIdUri = composeUpdateLoginIdUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "newLoginId", newLoginId);
+    Map<String, Object> request = mapOf("loginId", loginId, "newLoginId", newLoginId);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updateLoginIdUri, request, UserResponseDetails.class);
   }
@@ -300,7 +301,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI addRolesUri = composeAddRolesUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "tenantId", "", "roleNames", roles);
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(addRolesUri, request, UserResponseDetails.class);
   }
@@ -312,7 +313,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI removeRolesUri = composeRemoveRolesUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "tenantId", "", "roleNames", roles);
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(removeRolesUri, request, UserResponseDetails.class);
   }
@@ -323,7 +324,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI addTenantUri = composeAddTenantUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "tenantId", tenantId);
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(addTenantUri, request, UserResponseDetails.class);
   }
@@ -334,7 +335,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI removeTenantUri = composeRemoveTenantUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "tenantId", tenantId);
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(removeTenantUri, request, UserResponseDetails.class);
   }
@@ -346,7 +347,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI addTenantRolesUri = composeAddTenantRolesUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "tenantId", tenantId, "roleNames", roles);
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId, "roleNames", roles);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(addTenantRolesUri, request, UserResponseDetails.class);
   }
@@ -358,7 +359,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI removeTenantRolesUri = composeRemoveTenantRolesUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "tenantId", "", "roleNames", roles);
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(removeTenantRolesUri, request, UserResponseDetails.class);
   }
@@ -372,7 +373,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Password");
     }
     URI setPasswordUri = composeSetPasswordUri();
-    Map<String, Object> request = Map.of("loginId", loginId, "password", password);
+    Map<String, Object> request = mapOf("loginId", loginId, "password", password);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(setPasswordUri, request, Void.class);
   }
@@ -383,7 +384,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI expirePasswordUri = composeExpirePasswordUri();
-    Map<String, Object> request = Map.of("loginId", loginId);
+    Map<String, Object> request = mapOf("loginId", loginId);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(expirePasswordUri, request, Void.class);
   }
@@ -397,7 +398,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(provider)) {
       throw ServerCommonException.invalidArgument("Provider");
     }
-    URI getProviderTokenUri = composeGetProviderTokenUri(Map.of("loginId", loginId, "provider", provider));
+    URI getProviderTokenUri = composeGetProviderTokenUri(mapOf("loginId", loginId, "provider", provider));
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(getProviderTokenUri, ProviderTokenResponse.class);
   }

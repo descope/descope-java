@@ -24,6 +24,7 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.PermissionService;
 import com.descope.sdk.mgmt.RolesService;
+import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,9 +34,9 @@ import org.mockito.MockedStatic;
 
 class RolesServiceImplTest {
 
-  private final List<String> mockPermissionNames = List.of("permission1", "permission2");
+  private final List<String> mockPermissionNames = Arrays.asList("permission1", "permission2");
   private final List<Role> mockRole =
-      List.of(
+      Arrays.asList(
           Role.builder()
               .name("someName")
               .permissionNames(mockPermissionNames)
@@ -155,7 +156,7 @@ class RolesServiceImplTest {
     String r1 = TestUtils.getRandomName("r-").substring(0, 20);
     permissionService.create(p1, "p1");
     permissionService.create(p2, "p2");
-    rolesService.create(r1, "ttt", List.of(p1, p2));
+    rolesService.create(r1, "ttt", Arrays.asList(p1, p2));
     RoleResponse roles = rolesService.loadAll();
     assertThat(roles.getRoles()).isNotEmpty();
     boolean found = false;
@@ -167,7 +168,7 @@ class RolesServiceImplTest {
       }
     }
     assertTrue(found);
-    rolesService.update(r1, r1 + "1", "zzz", List.of(p1));
+    rolesService.update(r1, r1 + "1", "zzz", Arrays.asList(p1));
     roles = rolesService.loadAll();
     assertThat(roles.getRoles()).isNotEmpty();
     found = false;

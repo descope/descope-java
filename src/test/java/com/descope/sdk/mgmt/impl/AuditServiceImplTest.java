@@ -25,7 +25,7 @@ import com.descope.sdk.mgmt.impl.AuditServiceImpl.ActualAuditRecord;
 import com.descope.sdk.mgmt.impl.AuditServiceImpl.ActualAuditSearchResponse;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
+import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,10 +49,11 @@ public class AuditServiceImplTest {
   @Test
   void testSearchForSuccess() {
     ActualAuditRecord auditRecord = mock(AuditServiceImpl.ActualAuditRecord.class);
-    ActualAuditSearchResponse auditResponse = new AuditServiceImpl.ActualAuditSearchResponse(List.of(auditRecord));
+    ActualAuditSearchResponse auditResponse =
+        new AuditServiceImpl.ActualAuditSearchResponse(Arrays.asList(auditRecord));
     Instant now = Instant.now();
     auditRecord.occurred = String.valueOf(now.toEpochMilli());
-    auditRecord.externalIds = List.of("id1", "id2");
+    auditRecord.externalIds = Arrays.asList("id1", "id2");
     AuditSearchRequest auditSearchRequest = new AuditSearchRequest();
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(auditResponse).when(apiProxy).post(any(), any(), any());

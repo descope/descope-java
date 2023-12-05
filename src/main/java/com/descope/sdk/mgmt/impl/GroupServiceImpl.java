@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt.impl;
 import static com.descope.literals.Routes.ManagementEndPoints.GROUP_LOAD_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_FOR_GROUP_MEMBERS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_GROUP_MEMBERS_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -26,7 +27,7 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
-    Map<String, String> request = Map.of("tenantId", tenantID);
+    Map<String, String> request = mapOf("tenantId", tenantID);
     ApiProxy apiProxy = getApiProxy();
     return (List<Group>) apiProxy.post(getUri(GROUP_LOAD_ALL_LINK), request, List.class);
   }
@@ -42,7 +43,7 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
       throw ServerCommonException.invalidArgument("userIDs and loginIDs");
     }
     Map<String, Object> request =
-        Map.of("tenantId", tenantID, "loginIds", loginIDs, "userIds", userIDs);
+        mapOf("tenantId", tenantID, "loginIds", loginIDs, "userIds", userIDs);
     ApiProxy apiProxy = getApiProxy();
     return (List<Group>)
         apiProxy.post(getUri(LOAD_ALL_FOR_GROUP_MEMBERS_LINK), request, List.class);
@@ -57,7 +58,7 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
     if (StringUtils.isBlank(groupID)) {
       throw ServerCommonException.invalidArgument("GroupID");
     }
-    Map<String, String> request = Map.of("tenantId", tenantID, "groupId", groupID);
+    Map<String, String> request = mapOf("tenantId", tenantID, "groupId", groupID);
     ApiProxy apiProxy = getApiProxy();
     return (List<Group>) apiProxy.post(getUri(LOAD_ALL_GROUP_MEMBERS_LINK), request, List.class);
   }

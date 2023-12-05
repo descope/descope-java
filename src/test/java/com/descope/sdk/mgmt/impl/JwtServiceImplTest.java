@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.utils.CollectionUtils.mapOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,7 +28,7 @@ import org.junitpioneer.jupiter.RetryingTest;
 
 public class JwtServiceImplTest {
 
-  private final Map<String, Object> mockCustomClaims = Map.of("test", "claim");
+  private final Map<String, Object> mockCustomClaims = mapOf("test", "claim");
   private JwtService jwtService;
   private UserService userService;
   private OTPService otpService;

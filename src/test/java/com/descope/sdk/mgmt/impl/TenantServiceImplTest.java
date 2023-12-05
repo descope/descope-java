@@ -23,6 +23,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.TenantService;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ import org.mockito.MockedStatic;
 
 public class TenantServiceImplTest {
 
-  private final List<String> selfProvisioningDomains = List.of("domain1", "domain2");
+  private final List<String> selfProvisioningDomains = Arrays.asList("domain1", "domain2");
   Tenant mockTenant = Tenant.builder()
       .id("id")
       .name("name")
@@ -130,7 +131,8 @@ public class TenantServiceImplTest {
 
   @Test
   void testLoadAllForSuccess() {
-    GetAllTenantsResponse mockTenantsResponse = GetAllTenantsResponse.builder().tenants(List.of(mockTenant)).build();
+    GetAllTenantsResponse mockTenantsResponse =
+        GetAllTenantsResponse.builder().tenants(Arrays.asList(mockTenant)).build();
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockTenantsResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -144,7 +146,7 @@ public class TenantServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String name = TestUtils.getRandomName("t-");
-    String tenantId = tenantService.create(name, List.of(name + ".com", name + "1.com"));
+    String tenantId = tenantService.create(name, Arrays.asList(name + ".com", name + "1.com"));
     assertThat(tenantId).isNotBlank();
     List<Tenant> tenants = tenantService.loadAll();
     assertThat(tenants).isNotEmpty();
@@ -157,7 +159,7 @@ public class TenantServiceImplTest {
       }
     }
     assertTrue(found);
-    tenantService.update(tenantId, name + "1", List.of(name + ".com"), null);
+    tenantService.update(tenantId, name + "1", Arrays.asList(name + ".com"), null);
     tenants = tenantService.loadAll();
     assertThat(tenants).isNotEmpty();
     found = false;
@@ -169,7 +171,7 @@ public class TenantServiceImplTest {
       }
     }
 
-    TenantSearchRequest tenantSearchRequest = TenantSearchRequest.builder().names(List.of(name + "1")).build();
+    TenantSearchRequest tenantSearchRequest = TenantSearchRequest.builder().names(Arrays.asList(name + "1")).build();
     tenants = tenantService.searchAll(tenantSearchRequest);
     assertThat(tenants).isNotEmpty();
     found = false;
@@ -180,7 +182,7 @@ public class TenantServiceImplTest {
       }
     }
 
-    tenantSearchRequest = TenantSearchRequest.builder().names(List.of("doesnotexists")).build();
+    tenantSearchRequest = TenantSearchRequest.builder().names(Arrays.asList("doesnotexists")).build();
     tenants = tenantService.searchAll(tenantSearchRequest);
     assertThat(tenants).isEmpty();
     tenantService.delete(tenantId);

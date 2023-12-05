@@ -24,7 +24,7 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
-import java.util.List;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -53,14 +53,14 @@ public class AuthenticationServiceImplTest {
 
   @Test
   void testPermissionsAndRoles() {
-    assertTrue(authenticationService.validatePermissions(MOCK_TOKEN, "someTenant", List.of("tp1", "tp2")));
-    assertFalse(authenticationService.validatePermissions(MOCK_TOKEN, "someTenant", List.of("tp2", "tp3")));
-    assertTrue(authenticationService.validatePermissions(MOCK_TOKEN, List.of("p1", "p2")));
-    assertFalse(authenticationService.validatePermissions(MOCK_TOKEN, List.of("p2", "p3")));
-    assertTrue(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", List.of("tr1", "tr2")));
-    assertFalse(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", List.of("tr2", "tr3")));
-    assertTrue(authenticationService.validateRoles(MOCK_TOKEN, List.of("r1", "r2")));
-    assertFalse(authenticationService.validateRoles(MOCK_TOKEN, List.of("r2", "r3")));
+    assertTrue(authenticationService.validatePermissions(MOCK_TOKEN, "someTenant", Arrays.asList("tp1", "tp2")));
+    assertFalse(authenticationService.validatePermissions(MOCK_TOKEN, "someTenant", Arrays.asList("tp2", "tp3")));
+    assertTrue(authenticationService.validatePermissions(MOCK_TOKEN, Arrays.asList("p1", "p2")));
+    assertFalse(authenticationService.validatePermissions(MOCK_TOKEN, Arrays.asList("p2", "p3")));
+    assertTrue(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", Arrays.asList("tr1", "tr2")));
+    assertFalse(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", Arrays.asList("tr2", "tr3")));
+    assertTrue(authenticationService.validateRoles(MOCK_TOKEN, Arrays.asList("r1", "r2")));
+    assertFalse(authenticationService.validateRoles(MOCK_TOKEN, Arrays.asList("r2", "r3")));
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
@@ -68,24 +68,24 @@ public class AuthenticationServiceImplTest {
     String roleName = TestUtils.getRandomName("r-").substring(0, 20);
     roleService.create(roleName, "ttt", null);
     String tenantName = TestUtils.getRandomName("t-");
-    String tenantId = tenantService.create(tenantName, List.of(tenantName + ".com"));
+    String tenantId = tenantService.create(tenantName, Arrays.asList(tenantName + ".com"));
     String loginId = TestUtils.getRandomName("u-") + "@descope.com";
     userService.createTestUser(loginId,
         UserRequest.builder()
           .email(loginId)
           .verifiedEmail(true)
-          .roleNames(List.of(roleName))
+          .roleNames(Arrays.asList(roleName))
           .build());
     userService.addTenant(loginId, tenantId);
-    userService.addTenantRoles(loginId, tenantId, List.of(roleName));
+    userService.addTenantRoles(loginId, tenantId, Arrays.asList(roleName));
     OTPTestUserResponse code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
     AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    assertTrue(authenticationService.validateRoles(authInfo.getToken(), List.of(roleName)));
-    assertFalse(authenticationService.validateRoles(authInfo.getToken(), List.of(roleName + "x")));
-    assertTrue(authenticationService.validateRoles(authInfo.getToken(), tenantId, List.of(roleName)));
-    assertFalse(authenticationService.validateRoles(authInfo.getToken(), tenantId, List.of(roleName + "x")));
+    assertTrue(authenticationService.validateRoles(authInfo.getToken(), Arrays.asList(roleName)));
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), Arrays.asList(roleName + "x")));
+    assertTrue(authenticationService.validateRoles(authInfo.getToken(), tenantId, Arrays.asList(roleName)));
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), tenantId, Arrays.asList(roleName + "x")));
     userService.delete(loginId);
     tenantService.delete(tenantId);
     roleService.delete(roleName);

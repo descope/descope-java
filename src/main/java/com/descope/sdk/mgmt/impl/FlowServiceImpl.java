@@ -5,6 +5,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_LIST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -39,7 +40,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
     if (StringUtils.isBlank(flowID)) {
       throw ServerCommonException.invalidArgument("FlowID");
     }
-    Map<String, String> request = Map.of("flowId", flowID);
+    Map<String, String> request = mapOf("flowId", flowID);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_EXPORT_LINK), request, FlowResponse.class);
   }
@@ -50,7 +51,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
     if (StringUtils.isBlank(flowID)) {
       throw ServerCommonException.invalidArgument("FlowID");
     }
-    Map<String, Object> request = Map.of("flowId", flowID, "flow", flow, "screens", screens);
+    Map<String, Object> request = mapOf("flowId", flowID, "flow", flow, "screens", screens);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_IMPORT_LINK), request, FlowResponse.class);
   }
@@ -66,7 +67,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
     if (theme == null) {
       throw ServerCommonException.invalidArgument("Theme");
     }
-    Map<String, Object> request = Map.of("theme", theme);
+    Map<String, Object> request = mapOf("theme", theme);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(THEME_IMPORT_LINK), request, ThemeResponse.class).getTheme();
   }

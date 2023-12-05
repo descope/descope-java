@@ -20,7 +20,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.SsoService;
-import java.util.List;
+import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -189,7 +189,7 @@ class SsoServiceImplTest {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> ssoService.configureMapping("", List.of(mockRoleMapping), attributeMapping));
+            () -> ssoService.configureMapping("", Arrays.asList(mockRoleMapping), attributeMapping));
     assertNotNull(thrown);
     assertEquals("The TenantID argument is invalid", thrown.getMessage());
   }
@@ -203,7 +203,7 @@ class SsoServiceImplTest {
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      ssoService.configureMapping("someTenantID", List.of(mockRoleMapping), attributeMapping);
+      ssoService.configureMapping("someTenantID", Arrays.asList(mockRoleMapping), attributeMapping);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }

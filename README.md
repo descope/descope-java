@@ -1224,7 +1224,7 @@ try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBu
 // Now mock the verify
 ApiProxy apiProxy = mock(ApiProxy.class);
 doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any()); // Return the mock JWT response
-doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY))).when(apiProxy).get(any(), eq(SigningKeysResponse.class)); // Return mock key
+doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY))).when(apiProxy).get(any(), eq(SigningKeysResponse.class)); // Return mock key
 var provider = mock(Provider.class);
 when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 

@@ -4,6 +4,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISS
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_LOAD_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_UPDATE_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -26,7 +27,7 @@ class PermissionServiceImpl extends ManagementsBase implements PermissionService
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("Name");
     }
-    Map<String, String> request = Map.of("name", name, "description", description);
+    Map<String, String> request = mapOf("name", name, "description", description);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_PERMISSION_CREATE_LINK), request, Void.class);
   }
@@ -40,7 +41,7 @@ class PermissionServiceImpl extends ManagementsBase implements PermissionService
       throw ServerCommonException.invalidArgument("NewName");
     }
     Map<String, String> request =
-        Map.of("name", name, "newName", newName, "description", description);
+        mapOf("name", name, "newName", newName, "description", description);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_PERMISSION_UPDATE_LINK), request, Void.class);
   }
@@ -50,7 +51,7 @@ class PermissionServiceImpl extends ManagementsBase implements PermissionService
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("Name");
     }
-    Map<String, String> request = Map.of("name", name);
+    Map<String, String> request = mapOf("name", name);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_PERMISSION_DELETE_LINK), request, Void.class);
   }

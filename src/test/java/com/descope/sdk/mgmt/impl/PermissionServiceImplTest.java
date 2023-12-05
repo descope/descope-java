@@ -22,6 +22,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.PermissionService;
+import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,7 @@ class PermissionServiceImplTest {
 
   private final Permission mockPermission =
       Permission.builder().name("someName").description("someDesc").build();
-  private final List<Permission> mockPermissionList = List.of(mockPermission);
+  private final List<Permission> mockPermissionList = Arrays.asList(mockPermission);
   private final PermissionResponse permissionResponse = new PermissionResponse(mockPermissionList);
   private PermissionService permissionService;
 

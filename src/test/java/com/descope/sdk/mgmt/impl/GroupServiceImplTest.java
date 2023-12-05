@@ -17,6 +17,7 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.GroupService;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,7 @@ import org.mockito.Mockito;
 class GroupServiceImplTest {
 
   private final Group mockGroup = Mockito.mock(Group.class);
-  private final List<Group> groups = List.of(mockGroup);
+  private final List<Group> groups = Arrays.asList(mockGroup);
   private GroupService groupService;
 
   @BeforeEach
@@ -60,8 +61,8 @@ class GroupServiceImplTest {
 
   @Test
   void testLoadAllGroupsForMembersForEmptyTenantID() {
-    List<String> userIds = List.of("user1", "user2");
-    List<String> loginIds = List.of("loginId1", "loginId2");
+    List<String> userIds = Arrays.asList("user1", "user2");
+    List<String> loginIds = Arrays.asList("loginId1", "loginId2");
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
@@ -84,8 +85,8 @@ class GroupServiceImplTest {
 
   @Test
   void testLoadAllGroupsForMembersForSuccess() {
-    List<String> userIds = List.of("user1", "user2");
-    List<String> loginIds = List.of("loginId1", "loginId2");
+    List<String> userIds = Arrays.asList("user1", "user2");
+    List<String> loginIds = Arrays.asList("loginId1", "loginId2");
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(groups).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {

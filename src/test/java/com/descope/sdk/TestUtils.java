@@ -1,5 +1,7 @@
 package com.descope.sdk;
 
+import static com.descope.utils.CollectionUtils.mapOf;
+
 import com.descope.model.auth.AuthParams;
 import com.descope.model.client.Client;
 import com.descope.model.client.ClientParams;
@@ -11,8 +13,8 @@ import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.User;
 import com.descope.model.user.response.UserResponse;
 import com.descope.utils.EnvironmentUtils;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.experimental.UtilityClass;
@@ -35,7 +37,7 @@ public class TestUtils {
   public static final User MOCK_USER = User.builder().email(MOCK_EMAIL).name(MOCK_NAME).phone(MOCK_PHONE).build();
   public static final UserResponse MOCK_USER_RESPONSE = new UserResponse(
       "someUserId",
-      List.of(MOCK_EMAIL),
+      Arrays.asList(MOCK_EMAIL),
       "someEmail@descope.com",
       true,
       "+1-555-555-5555",
@@ -60,15 +62,15 @@ public class TestUtils {
       1234567890,
       MOCK_USER_RESPONSE,
       true);
-  public static final Map<String, Object> TENANTS_AUTHZ = Map.of("permissions", List.of("tp1", "tp2"), "roles",
-      List.of("tr1", "tr2"));
+  public static final Map<String, Object> TENANTS_AUTHZ = mapOf("permissions", Arrays.asList("tp1", "tp2"), "roles",
+      Arrays.asList("tr1", "tr2"));
   public static final Token MOCK_TOKEN = Token.builder()
       .id("1")
       .projectId(PROJECT_ID)
       .jwt("someJwtToken")
-      .claims(Map.of("someClaim", 1,
-          "tenants", Map.of("someTenant", TENANTS_AUTHZ),
-          "permissions", List.of("p1", "p2"), "roles", List.of("r1", "r2")))
+      .claims(mapOf("someClaim", 1,
+          "tenants", mapOf("someTenant", TENANTS_AUTHZ),
+          "permissions", Arrays.asList("p1", "p2"), "roles", Arrays.asList("r1", "r2")))
       .build();
   @SuppressWarnings("checkstyle:LineLength")
   public static final SigningKey MOCK_SIGNING_KEY = SigningKey.builder()

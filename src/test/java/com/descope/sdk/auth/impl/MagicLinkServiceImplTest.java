@@ -49,6 +49,7 @@ import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import com.descope.utils.UriUtils;
 import java.security.Key;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
@@ -92,7 +93,7 @@ class MagicLinkServiceImplTest {
   void testVerify() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
     Provider provider = mock(Provider.class);

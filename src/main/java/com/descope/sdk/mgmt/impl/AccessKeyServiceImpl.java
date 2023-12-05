@@ -7,6 +7,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_LOAD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_UPDATE_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -48,14 +49,14 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     }
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(
-        getQueryParamUri(MANAGEMENT_ACCESS_KEY_LOAD_LINK, Map.of("id", id)),
+        getQueryParamUri(MANAGEMENT_ACCESS_KEY_LOAD_LINK, mapOf("id", id)),
         AccessKeyResponse.class);
   }
 
   @Override
   public AccessKeyResponseList searchAll(List<String> tenantIDs) throws DescopeException {
     Map<String, List<String>> request =
-        tenantIDs == null ? new HashMap<String, List<String>>() : Map.of("tenantIds", tenantIDs);
+        tenantIDs == null ? new HashMap<String, List<String>>() : mapOf("tenantIds", tenantIDs);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(
         getUri(MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK), request, AccessKeyResponseList.class);
@@ -70,7 +71,7 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
       throw ServerCommonException.invalidArgument("Name");
     }
 
-    Map<String, String> request = Map.of("id", id, "name", name);
+    Map<String, String> request = mapOf("id", id, "name", name);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(
         getUri(MANAGEMENT_ACCESS_KEY_UPDATE_LINK), request, AccessKeyResponse.class);
@@ -81,7 +82,7 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     if (StringUtils.isBlank(id)) {
       throw ServerCommonException.invalidArgument("Id");
     }
-    Map<String, String> request = Map.of("id", id);
+    Map<String, String> request = mapOf("id", id);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(
         getUri(MANAGEMENT_ACCESS_KEY_DEACTIVATE_LINK), request, AccessKeyResponse.class);
@@ -92,7 +93,7 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     if (StringUtils.isBlank(id)) {
       throw ServerCommonException.invalidArgument("Id");
     }
-    Map<String, String> request = Map.of("id", id);
+    Map<String, String> request = mapOf("id", id);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(
         getUri(MANAGEMENT_ACCESS_KEY_ACTIVE_LINK), request, AccessKeyResponse.class);
@@ -103,7 +104,7 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     if (StringUtils.isBlank(id)) {
       throw ServerCommonException.invalidArgument("Id");
     }
-    Map<String, String> request = Map.of("id", id);
+    Map<String, String> request = mapOf("id", id);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_DELETE_LINK), request, Void.class);
   }

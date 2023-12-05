@@ -4,6 +4,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_C
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_LOAD_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_UPDATE_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -49,7 +50,7 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
       throw ServerCommonException.invalidArgument("NewName");
     }
     Map<String, Object> request =
-        Map.of(
+        mapOf(
             "name",
             name,
             "newName",
@@ -67,7 +68,7 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("Name");
     }
-    Map<String, String> request = Map.of("name", name);
+    Map<String, String> request = mapOf("name", name);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_DELETE_LINK), request, Void.class);
   }

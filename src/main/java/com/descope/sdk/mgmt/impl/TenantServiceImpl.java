@@ -5,6 +5,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.DELETE_TENANT_LINK
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.TENANT_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -101,7 +102,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
 
     URI deleteTenantUri = composeDeleteTenantUri();
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(deleteTenantUri, Map.of("id", id), Void.class);
+    apiProxy.post(deleteTenantUri, mapOf("id", id), Void.class);
   }
 
   @Override

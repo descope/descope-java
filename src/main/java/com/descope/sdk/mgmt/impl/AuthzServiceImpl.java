@@ -15,6 +15,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_R
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_SCHEMA_DELETE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_SCHEMA_LOAD;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_SCHEMA_SAVE;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -51,21 +52,21 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("schema");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of("schema", schema, "upgrade", upgrade);
+    Map<String, Object> request = mapOf("schema", schema, "upgrade", upgrade);
     apiProxy.post(getUri(MANAGEMENT_AUTHZ_SCHEMA_SAVE), request, Void.class);
   }
 
   @Override
   public void deleteSchema() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of();
+    Map<String, Object> request = new HashMap<>();
     apiProxy.post(getUri(MANAGEMENT_AUTHZ_SCHEMA_DELETE), request, Void.class);
   }
 
   @Override
   public Schema loadSchema() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of();
+    Map<String, Object> request = new HashMap<>();
     LoadSchemaResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_SCHEMA_LOAD), request, LoadSchemaResponse.class);
     return resp.getSchema();
   }
@@ -77,7 +78,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("namespace");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = new HashMap<>(Map.of("namespace", namespace));
+    Map<String, Object> request = new HashMap<>(mapOf("namespace", namespace));
     if (!StringUtils.isBlank(oldName)) {
       request.put("oldName", oldName);
     }
@@ -93,7 +94,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("name");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = new HashMap<>(Map.of("name", name));
+    Map<String, Object> request = new HashMap<>(mapOf("name", name));
     if (!StringUtils.isBlank(schemaName)) {
       request.put("schemaName", schemaName);
     }
@@ -111,7 +112,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     }
     ApiProxy apiProxy = getApiProxy();
     Map<String, Object> request =
-        new HashMap<>(Map.of("relationDefinition", relationDefinition, "namespace", namespace));
+        new HashMap<>(mapOf("relationDefinition", relationDefinition, "namespace", namespace));
     if (!StringUtils.isBlank(oldName)) {
       request.put("oldName", oldName);
     }
@@ -130,7 +131,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("namespace");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = new HashMap<>(Map.of("name", name, "namespace", namespace));
+    Map<String, Object> request = new HashMap<>(mapOf("name", name, "namespace", namespace));
     if (!StringUtils.isBlank(schemaName)) {
       request.put("schemaName", schemaName);
     }
@@ -143,7 +144,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("relations");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of("relations", relations);
+    Map<String, Object> request = mapOf("relations", relations);
     apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_CREATE), request, Void.class);
   }
 
@@ -153,7 +154,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("relations");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of("relations", relations);
+    Map<String, Object> request = mapOf("relations", relations);
     apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_DELETE), request, Void.class);
   }
 
@@ -163,7 +164,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("resources");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of("resources", resources);
+    Map<String, Object> request = mapOf("resources", resources);
     apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_DELETE_RESOURCES), request, Void.class);
   }
 
@@ -173,7 +174,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("relationQueries");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of("relationQueries", relationQueries);
+    Map<String, Object> request = mapOf("relationQueries", relationQueries);
     HasRelationsResponse resp =
         apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_HAS_RELATIONS), request, HasRelationsResponse.class);
     return resp.getRelationQueries();
@@ -193,7 +194,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     }
     ApiProxy apiProxy = getApiProxy();
     Map<String, Object> request =
-        Map.of("resource", resource, "relationDefinition", relationDefinition, "namespace", namespace);
+        mapOf("resource", resource, "relationDefinition", relationDefinition, "namespace", namespace);
     WhoCanAccessResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_WHO), request, WhoCanAccessResponse.class);
     return resp.getTargets();
   }
@@ -204,7 +205,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("resource");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of("resource", resource);
+    Map<String, Object> request = mapOf("resource", resource);
     RelationsResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_RESOURCE), request, RelationsResponse.class);
     return resp.getRelations();
   }
@@ -215,7 +216,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("targets");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of("targets", targets);
+    Map<String, Object> request = mapOf("targets", targets);
     RelationsResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGETS), request, RelationsResponse.class);
     return resp.getRelations();
   }
@@ -226,7 +227,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
       throw ServerCommonException.invalidArgument("user");
     }
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> request = Map.of("target", target);
+    Map<String, Object> request = mapOf("target", target);
     RelationsResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_ALL), request, RelationsResponse.class);
     return resp.getRelations();
   }
