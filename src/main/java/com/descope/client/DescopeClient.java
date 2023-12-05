@@ -13,7 +13,6 @@ import com.descope.model.mgmt.ManagementServices;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import io.jsonwebtoken.lang.Collections;
-import java.lang.Runtime.Version;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -106,12 +105,12 @@ public class DescopeClient {
 
   private static SdkInfo getSdkInfo() {
     String name = "java";
-    Version javaVersion = Runtime.version();
+    String version = System.getProperty("java.version");
 
     // TODO - SHA
     return SdkInfo.builder()
         .name(name)
-        .javaVersion(javaVersion.toString())
+        .javaVersion(version)
         .version(new SdkInfo().getClass().getPackage().getImplementationVersion())
         .build();
   }

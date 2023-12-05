@@ -11,7 +11,6 @@ import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.User;
 import com.descope.model.user.response.UserResponse;
 import com.descope.utils.EnvironmentUtils;
-import java.lang.Runtime.Version;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -86,12 +85,12 @@ public class TestUtils {
 
   private static SdkInfo getSdkInfo() {
     String name = "java";
-    Version javaVersion = Runtime.version();
+    String version = System.getProperty("java.version");
 
     // TODO - SHA
     return SdkInfo.builder()
         .name(name)
-        .javaVersion(javaVersion.toString())
+        .javaVersion(version)
         .version(new SdkInfo().getClass().getPackage().getImplementationVersion())
         .build();
   }
