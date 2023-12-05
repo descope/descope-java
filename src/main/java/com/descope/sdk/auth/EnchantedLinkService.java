@@ -13,6 +13,7 @@ public interface EnchantedLinkService {
    *
    * @param loginId      - User login ID
    * @param uri          - Base URI
+   * @param token        - when doing step-up or mfa then we need current session token
    * @param loginOptions - {@link LoginOptions LoginOptions}
    * @return pendingRef, linkId and masked email
    * @throws DescopeException - error upon failure
@@ -20,6 +21,7 @@ public interface EnchantedLinkService {
   EnchantedLinkResponse signIn(
       String loginId,
       String uri,
+      String token,
       LoginOptions loginOptions)
       throws DescopeException;
 

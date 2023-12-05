@@ -31,7 +31,6 @@ import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.MagicLinkService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
-import java.net.http.HttpRequest;
 import org.apache.commons.lang3.StringUtils;
 
 class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLinkService {
@@ -45,7 +44,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
       DeliveryMethod deliveryMethod,
       String loginId,
       String uri,
-      HttpRequest request,
+      String token,
       LoginOptions loginOptions)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
@@ -57,8 +56,10 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     URI magicLinkSignInURL = composeMagicLinkSignInURI(deliveryMethod);
     SignInRequest signInRequest = new SignInRequest(uri, loginId, loginOptions);
     if (JwtUtils.isJWTRequired(loginOptions)) {
-      String pwd = getValidRefreshToken(request);
-      apiProxy = getApiProxy(pwd);
+      if (StringUtils.isBlank(token)) {
+        throw ServerCommonException.invalidArgument("token");
+      }
+      apiProxy = getApiProxy(token);
     } else {
       apiProxy = getApiProxy();
     }

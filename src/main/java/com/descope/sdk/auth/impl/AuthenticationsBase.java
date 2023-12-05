@@ -1,15 +1,10 @@
 package com.descope.sdk.auth.impl;
 
-import static com.descope.literals.AppConstants.AUTHORIZATION_HEADER_NAME;
 import static com.descope.literals.AppConstants.BEARER_AUTHORIZATION_PREFIX;
-import static com.descope.literals.AppConstants.COOKIE;
-import static com.descope.literals.AppConstants.REFRESH_COOKIE_NAME;
-import static com.descope.literals.AppConstants.SESSION_COOKIE_NAME;
 import static com.descope.literals.AppConstants.TENANTS_CLAIM_KEY;
 import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
@@ -18,7 +13,6 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
-import com.descope.model.magiclink.Tokens;
 import com.descope.model.magiclink.response.Masked;
 import com.descope.model.magiclink.response.MaskedEmailRes;
 import com.descope.model.magiclink.response.MaskedPhoneRes;
@@ -29,17 +23,12 @@ import com.descope.sdk.SdkServicesBase;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
-import java.net.http.HttpRequest;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-@Slf4j
 abstract class AuthenticationsBase extends SdkServicesBase implements AuthenticationService {
   private final AuthParams authParams;
 
@@ -107,58 +96,6 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       default:
         throw new IllegalStateException("Unexpected value: " + deliveryMethod);
     }
-  }
-
-  String getValidRefreshToken(HttpRequest request) {
-    Tokens tokens = provideTokens(request);
-    if (isEmpty(tokens.getRefreshToken())) {
-      throw ServerCommonException.refreshToken("Unable to find tokens from cookies");
-    }
-    return tokens.getRefreshToken();
-  }
-
-  Tokens provideTokens(HttpRequest request) {
-    if (request == null) {
-      return Tokens.builder().build();
-    }
-
-    Tokens tokens = new Tokens();
-    Optional<String> authToken = request.headers().firstValue(AUTHORIZATION_HEADER_NAME);
-    if (authToken.isPresent()) {
-      try {
-        String sessionToken = getSessionTokenFromBearerToken(authToken.get());
-        tokens.setSessionToken(sessionToken);
-      } catch (ServerCommonException e) {
-        log.warn(e.getMessage());
-      }
-    }
-
-    if (isEmpty(tokens.getSessionToken())) {
-      Optional<String> cookies = request.headers().firstValue(COOKIE);
-      if (cookies.isPresent()) {
-        String[] cookiesList = cookies.get().split(";");
-        String sessionCookie =
-            Arrays.stream(cookiesList)
-                .filter(cookie -> cookie.contains(SESSION_COOKIE_NAME))
-                .map(String::trim)
-                .findAny()
-                .orElse(null);
-        if (sessionCookie != null) {
-          tokens.setSessionToken(sessionCookie.split("=")[1]);
-        }
-
-        String refreshCookie =
-            Arrays.stream(cookiesList)
-                .filter(cookie -> cookie.contains(REFRESH_COOKIE_NAME))
-                .findAny()
-                .orElse(null);
-        if (refreshCookie != null) {
-          tokens.setRefreshToken(refreshCookie.split("=")[1]);
-        }
-      }
-    }
-
-    return tokens;
   }
 
   String getSessionTokenFromBearerToken(String bearerToken) {

@@ -28,6 +28,7 @@ import com.descope.model.magiclink.request.VerifyRequest;
 import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.EnchantedLinkService;
+import com.descope.utils.JwtUtils;
 import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,14 +39,22 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
-  public EnchantedLinkResponse signIn(String loginId, String uri, LoginOptions loginOptions)
+  public EnchantedLinkResponse signIn(String loginId, String uri, String token, LoginOptions loginOptions)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI enchantedLink = composeEnchantedLinkSignInURL();
     SignInRequest signInRequest = new SignInRequest(uri, loginId, loginOptions);
-    ApiProxy apiProxy = getApiProxy();
+    ApiProxy apiProxy;
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      if (StringUtils.isBlank(token)) {
+        throw ServerCommonException.invalidArgument("token");
+      }
+      apiProxy = getApiProxy(token);
+    } else {
+      apiProxy = getApiProxy();
+    }
     return apiProxy.post(enchantedLink, signInRequest, EnchantedLinkResponse.class);
   }
 
