@@ -23,14 +23,18 @@ import static org.mockito.Mockito.when;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.client.Client;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.User;
 import com.descope.model.user.request.UserRequest;
+import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -41,7 +45,9 @@ import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import com.descope.utils.UriUtils;
 import java.security.Key;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -53,11 +59,11 @@ public class EnchantedLinkServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getAuthParams();
-    var client = TestUtils.getClient();
+    AuthParams authParams = TestUtils.getAuthParams();
+    Client client = TestUtils.getClient();
     this.enchantedLinkService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getEnchantedLinkService();
-    var mgmtParams = TestUtils.getManagementParams();
+    ManagementParams mgmtParams = TestUtils.getManagementParams();
     this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 
@@ -65,7 +71,7 @@ public class EnchantedLinkServiceImplTest {
   void signUp() {
     User user = new User("someUserName", MOCK_EMAIL, "+910000000000");
 
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(),
@@ -77,24 +83,24 @@ public class EnchantedLinkServiceImplTest {
 
   @Test
   void signIn() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null);
+      EnchantedLinkResponse response = enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null, null);
       assertThat(response).isNotNull();
     }
   }
 
   @Test
   void testSignUpOrInForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN);
+      EnchantedLinkResponse response = enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN);
       assertThat(response).isNotNull();
     }
   }
@@ -159,13 +165,13 @@ public class EnchantedLinkServiceImplTest {
 
   @Test
   void testUpdateUserEmailForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
-    var mockRes = new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    EnchantedLinkResponse mockRes = new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL);
     doReturn(mockRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var enchantedLinkRes =
+      EnchantedLinkResponse enchantedLinkRes =
           enchantedLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null);
       assertThat(enchantedLinkRes.getMaskedEmail()).isNotBlank().contains("*");
     }
@@ -173,12 +179,12 @@ public class EnchantedLinkServiceImplTest {
 
   @Test
   void testGetSession() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
-    var provider = mock(Provider.class);
+    Provider provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
@@ -214,10 +220,10 @@ public class EnchantedLinkServiceImplTest {
 
   @Test
   void testVerify() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mock(EmptyResponse.class)).when(apiProxy).post(any(), any(), any());
 
-    var provider = mock(Provider.class);
+    Provider provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -236,13 +242,13 @@ public class EnchantedLinkServiceImplTest {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
         loginId, UserRequest.builder().email(loginId + "@descope.com").build());
-    var response = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
+    EnchantedLinkTestUserResponse response = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
     assertThat(response.getLink()).isNotBlank();
     assertThat(response.getPendingRef()).isNotBlank();
-    var params = UriUtils.splitQuery("https://kuku.com" + response.getLink());
+    Map<String, List<String>> params = UriUtils.splitQuery("https://kuku.com" + response.getLink());
     assertThat(params.get("t").size()).isEqualTo(1);
     enchantedLinkService.verify(params.get("t").get(0));
-    var authInfo = enchantedLinkService.getSession(response.getPendingRef());
+    AuthenticationInfo authInfo = enchantedLinkService.getSession(response.getPendingRef());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     userService.delete(loginId);
@@ -253,16 +259,16 @@ public class EnchantedLinkServiceImplTest {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
         loginId, UserRequest.builder().email(loginId + "@descope.com").build());
-    var response = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
+    EnchantedLinkTestUserResponse response = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
     assertThat(response.getLink()).isNotBlank();
     assertThat(response.getPendingRef()).isNotBlank();
-    var params = UriUtils.splitQuery("https://kuku.com" + response.getLink());
+    Map<String, List<String>> params = UriUtils.splitQuery("https://kuku.com" + response.getLink());
     assertThat(params.get("t").size()).isEqualTo(1);
     enchantedLinkService.verify(params.get("t").get(0));
-    var authInfo = enchantedLinkService.getSession(response.getPendingRef());
+    AuthenticationInfo authInfo = enchantedLinkService.getSession(response.getPendingRef());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    var response2 = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
+    EnchantedLinkTestUserResponse response2 = userService.generateEnchantedLinkForTestUser(loginId, MOCK_URL);
     assertThat(response2.getLink()).isNotBlank();
     assertThat(response2.getPendingRef()).isNotBlank();
     enchantedLinkService.updateUserEmail(

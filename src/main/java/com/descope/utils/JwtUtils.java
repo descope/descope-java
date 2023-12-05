@@ -5,6 +5,7 @@ import com.descope.model.magiclink.LoginOptions;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import java.security.Key;
 import java.util.Date;
@@ -18,7 +19,7 @@ public class JwtUtils {
   public static Token getToken(String jwt, Key key) {
     Jws<Claims> claimsJws = getClaimsJws(jwt, key);
     JwsHeader<?> header = claimsJws.getHeader();
-    var claims = claimsJws.getBody();
+    Claims claims = claimsJws.getBody();
 
     return Token.builder()
         .jwt(jwt)
@@ -31,7 +32,7 @@ public class JwtUtils {
   }
 
   public static Jws<Claims> getClaimsJws(String jwt, Key key) {
-    var jwtParser =
+    JwtParser jwtParser =
         Jwts.parserBuilder().setSigningKey(key).setAllowedClockSkewSeconds(SKEW_SECONDS).build();
     Jws<Claims> claimsJws = jwtParser.parseClaimsJws(jwt);
     return claimsJws;

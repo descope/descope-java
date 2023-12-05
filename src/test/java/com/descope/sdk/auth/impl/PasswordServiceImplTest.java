@@ -29,10 +29,13 @@ import static org.mockito.Mockito.when;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.client.Client;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.password.PasswordPolicy;
 import com.descope.model.user.User;
 import com.descope.model.user.response.UserResponse;
@@ -44,7 +47,7 @@ import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import java.security.Key;
-import java.util.List;
+import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,11 +61,11 @@ public class PasswordServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getAuthParams();
-    var client = TestUtils.getClient();
+    AuthParams authParams = TestUtils.getAuthParams();
+    Client client = TestUtils.getClient();
     this.passwordService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getPasswordService();
-    var mgmtParams = TestUtils.getManagementParams();
+    ManagementParams mgmtParams = TestUtils.getManagementParams();
     this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 
@@ -70,13 +73,13 @@ public class PasswordServiceImplTest {
   void testSignupForSuccess() {
     User usr = new User("someUserName", MOCK_EMAIL, "+910000000000");
 
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
 
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
-    var provider = mock(Provider.class);
+    Provider provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
@@ -120,13 +123,13 @@ public class PasswordServiceImplTest {
   @Test
   void testSignInForSuccess() {
 
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
 
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
-    var provider = mock(Provider.class);
+    Provider provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
@@ -168,7 +171,7 @@ public class PasswordServiceImplTest {
 
   @Test
   void testSendPasswordResetForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -189,9 +192,9 @@ public class PasswordServiceImplTest {
 
   @Test
   void testReplaceUserPasswordForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -199,7 +202,7 @@ public class PasswordServiceImplTest {
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
         mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
-        var authenticationInfo = passwordService.replaceUserPassword(MOCK_EMAIL, MOCK_PWD, MOCK_PWD);
+        AuthenticationInfo authenticationInfo = passwordService.replaceUserPassword(MOCK_EMAIL, MOCK_PWD, MOCK_PWD);
         Assertions.assertThat(authenticationInfo).isNotNull();
         verify(apiProxy, times(1)).post(any(), any(), any());
       }
@@ -218,7 +221,7 @@ public class PasswordServiceImplTest {
 
   @Test
   void testUpdateUserPasswordForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any()))
@@ -250,7 +253,7 @@ public class PasswordServiceImplTest {
 
   @Test
   void testGetPasswordPolicy() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     PasswordPolicy passwordPolicy =
         PasswordPolicy.builder()
             .minLength(8)
@@ -271,8 +274,8 @@ public class PasswordServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-");
-    var authInfo = passwordService.signUp(loginId, MOCK_USER, MOCK_PWD);
-    var user = authInfo.getUser();
+    AuthenticationInfo authInfo = passwordService.signUp(loginId, MOCK_USER, MOCK_PWD);
+    UserResponse user = authInfo.getUser();
     assertNotNull(user);
     assertEquals(MOCK_EMAIL, user.getEmail());
     assertEquals(MOCK_NAME, user.getName());
@@ -295,7 +298,7 @@ public class PasswordServiceImplTest {
         loginId, MOCK_PWD + "2", authInfo.getRefreshToken().getJwt());
     passwordService.signIn(loginId, MOCK_PWD + "2");
     userService.delete(loginId);
-    var policy = passwordService.getPasswordPolicy();
+    PasswordPolicy policy = passwordService.getPasswordPolicy();
     assertThat(policy.getMinLength()).isGreaterThan(7);
   }
 }

@@ -28,6 +28,7 @@ import com.descope.model.magiclink.request.VerifyRequest;
 import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.EnchantedLinkService;
+import com.descope.utils.JwtUtils;
 import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,14 +39,22 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
-  public EnchantedLinkResponse signIn(String loginId, String uri, LoginOptions loginOptions)
+  public EnchantedLinkResponse signIn(String loginId, String uri, String token, LoginOptions loginOptions)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI enchantedLink = composeEnchantedLinkSignInURL();
-    var signInRequest = new SignInRequest(uri, loginId, loginOptions);
-    ApiProxy apiProxy = getApiProxy();
+    SignInRequest signInRequest = new SignInRequest(uri, loginId, loginOptions);
+    ApiProxy apiProxy;
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      if (StringUtils.isBlank(token)) {
+        throw ServerCommonException.invalidArgument("token");
+      }
+      apiProxy = getApiProxy(token);
+    } else {
+      apiProxy = getApiProxy();
+    }
     return apiProxy.post(enchantedLink, signInRequest, EnchantedLinkResponse.class);
   }
 
@@ -55,17 +64,14 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
     if (user == null) {
       user = new User();
     }
-
     URI enchantedLinkSignUpURL = composeEnchantedLinkSignUpURL();
-
-    var signUpRequestBuilder =
+    SignUpRequest.SignUpRequestBuilder signUpRequestBuilder =
         SignUpRequest.builder().loginId(loginId).uri(uri).user(user).email(loginId);
     if (isEmpty(user.getEmail())) {
       user.setEmail(loginId);
     }
-
-    var signUpRequest = signUpRequestBuilder.user(user).build();
-    var apiProxy = getApiProxy();
+    SignUpRequest signUpRequest = signUpRequestBuilder.user(user).build();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(enchantedLinkSignUpURL, signUpRequest, EnchantedLinkResponse.class);
   }
 
@@ -74,19 +80,17 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-
     URI magicLinkSignUpOrInURL = composeEnchantedLinkSignUpOrInURL();
-    var signInRequest = new SignInRequest(uri, loginId, null);
-
-    var apiProxy = getApiProxy();
+    SignInRequest signInRequest = new SignInRequest(uri, loginId, null);
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(magicLinkSignUpOrInURL, signInRequest, EnchantedLinkResponse.class);
   }
 
   @Override
   public AuthenticationInfo getSession(String pendingRef) throws DescopeException {
     URI getSessionURL = composeGetSession();
-    var apiProxy = getApiProxy();
-    var jwtResponse =
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse =
         apiProxy.post(
             getSessionURL,
             EnchantedLinkSessionBody.builder().pendingRef(pendingRef).build(),
@@ -97,8 +101,8 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public void verify(String token) throws DescopeException {
     URI verifyEnchantedLinkURL = composeVerifyEnchantedLinkURL();
-    var verifyRequest = new VerifyRequest(token);
-    var apiProxy = getApiProxy();
+    VerifyRequest verifyRequest = new VerifyRequest(token);
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(verifyEnchantedLinkURL, verifyRequest, EmptyResponse.class);
   }
 
@@ -128,7 +132,7 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
             .build();
 
-    var apiProxy = getApiProxy(refreshToken);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
     return apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, EnchantedLinkResponse.class);
   }
 

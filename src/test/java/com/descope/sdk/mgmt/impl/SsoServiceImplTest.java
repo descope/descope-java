@@ -11,6 +11,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
 import com.descope.model.sso.SSOSettingsResponse;
@@ -18,7 +20,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.SsoService;
-import java.util.List;
+import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,8 +33,8 @@ class SsoServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getManagementParams();
-    var client = TestUtils.getClient();
+    ManagementParams authParams = TestUtils.getManagementParams();
+    Client client = TestUtils.getClient();
     this.ssoService = ManagementServiceBuilder.buildServices(client, authParams).getSsoService();
   }
 
@@ -46,13 +48,13 @@ class SsoServiceImplTest {
 
   @Test
   void testGetSettingsForSuccess() {
-    var ssoSettingsResponse = mock(SSOSettingsResponse.class);
-    var apiProxy = mock(ApiProxy.class);
+    SSOSettingsResponse ssoSettingsResponse = mock(SSOSettingsResponse.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(ssoSettingsResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = ssoService.getSettings("someTenantID");
+      SSOSettingsResponse response = ssoService.getSettings("someTenantID");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -67,7 +69,7 @@ class SsoServiceImplTest {
 
   @Test
   void testDeleteSettingsForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).delete(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -139,7 +141,7 @@ class SsoServiceImplTest {
 
   @Test
   void testConfigureSettingsForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -170,7 +172,7 @@ class SsoServiceImplTest {
 
   @Test
   void testConfigureMetadataForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -182,26 +184,26 @@ class SsoServiceImplTest {
 
   @Test
   void testConfigureMappingForEmptyTenantId() {
-    var mockRoleMapping = Mockito.mock(RoleMapping.class);
-    var attributeMapping = Mockito.mock(AttributeMapping.class);
+    RoleMapping mockRoleMapping = Mockito.mock(RoleMapping.class);
+    AttributeMapping attributeMapping = Mockito.mock(AttributeMapping.class);
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
-            () -> ssoService.configureMapping("", List.of(mockRoleMapping), attributeMapping));
+            () -> ssoService.configureMapping("", Arrays.asList(mockRoleMapping), attributeMapping));
     assertNotNull(thrown);
     assertEquals("The TenantID argument is invalid", thrown.getMessage());
   }
 
   @Test
   void testConfigureMappingForSuccess() {
-    var mockRoleMapping = Mockito.mock(RoleMapping.class);
-    var attributeMapping = Mockito.mock(AttributeMapping.class);
-    var apiProxy = mock(ApiProxy.class);
+    RoleMapping mockRoleMapping = Mockito.mock(RoleMapping.class);
+    AttributeMapping attributeMapping = Mockito.mock(AttributeMapping.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      ssoService.configureMapping("someTenantID", List.of(mockRoleMapping), attributeMapping);
+      ssoService.configureMapping("someTenantID", Arrays.asList(mockRoleMapping), attributeMapping);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }

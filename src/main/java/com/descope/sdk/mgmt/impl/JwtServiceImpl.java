@@ -9,6 +9,7 @@ import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.UpdateJwtRequest;
 import com.descope.model.jwt.response.UpdateJwtResponse;
 import com.descope.model.mgmt.ManagementParams;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
 import java.util.Map;
@@ -29,11 +30,11 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
 
     // customClaims can be nil, it will mean that this JWT will be validated, and updated authz data
     // will be set
-    var updateJwtRequest = new UpdateJwtRequest(jwt, customClaims);
+    UpdateJwtRequest updateJwtRequest = new UpdateJwtRequest(jwt, customClaims);
     URI updateJwtUri = composeUpdateJwtUri();
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
 
-    var jwtResponse = apiProxy.post(updateJwtUri, updateJwtRequest, UpdateJwtResponse.class);
+    UpdateJwtResponse jwtResponse = apiProxy.post(updateJwtUri, updateJwtRequest, UpdateJwtResponse.class);
     return validateAndCreateToken(jwtResponse.getJwt());
   }
 

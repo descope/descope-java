@@ -14,12 +14,16 @@ import static org.mockito.Mockito.verify;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AssociatedTenant;
+import com.descope.model.client.Client;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseDetails;
+import com.descope.model.mgmt.AccessKeyResponseList;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.AccessKeyService;
+import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,9 +32,9 @@ import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
 class AccessKeyServiceImplTest {
-  private final List<String> mockRoles = List.of("Test");
+  private final List<String> mockRoles = Arrays.asList("Test");
   private final AssociatedTenant associatedTenant = new AssociatedTenant("test", "", mockRoles);
-  private final List<AssociatedTenant> mockKeyTenants = List.of(associatedTenant);
+  private final List<AssociatedTenant> mockKeyTenants = Arrays.asList(associatedTenant);
   private final AccessKeyResponseDetails mockResponse =
       AccessKeyResponseDetails.builder()
           .keyTenants(mockKeyTenants)
@@ -45,8 +49,8 @@ class AccessKeyServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getManagementParams();
-    var client = TestUtils.getClient();
+    ManagementParams authParams = TestUtils.getManagementParams();
+    Client client = TestUtils.getClient();
     this.accessKeyService =
         ManagementServiceBuilder.buildServices(client, authParams).getAccessKeyService();
   }
@@ -63,7 +67,7 @@ class AccessKeyServiceImplTest {
 
   @Test
   void testCreateForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -83,7 +87,7 @@ class AccessKeyServiceImplTest {
 
   @Test
   void testLoadForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -103,7 +107,7 @@ class AccessKeyServiceImplTest {
 
   @Test
   void testUpdateForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -131,7 +135,7 @@ class AccessKeyServiceImplTest {
 
   @Test
   void testDeactivateForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -151,7 +155,7 @@ class AccessKeyServiceImplTest {
 
   @Test
   void testActivateForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockAccessResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -171,7 +175,7 @@ class AccessKeyServiceImplTest {
 
   @Test
   void testDeleteForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -184,7 +188,7 @@ class AccessKeyServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String name = TestUtils.getRandomName("ak-");
-    var createResult = accessKeyService.create(name, 0, null, null);
+    AccessKeyResponse createResult = accessKeyService.create(name, 0, null, null);
     Assertions.assertThat(createResult).isNotNull();
     Assertions.assertThat(createResult.getCleartext()).isNotBlank();
     Assertions.assertThat(createResult.getKey()).isNotNull();
@@ -192,18 +196,18 @@ class AccessKeyServiceImplTest {
     Assertions.assertThat(createResult.getKey().getName()).isEqualTo(name);
     Assertions.assertThat(createResult.getKey().getStatus()).isEqualTo("active");
     Assertions.assertThat(createResult.getKey().getCreatedBy()).isNotBlank();
-    var loadResult = accessKeyService.load(createResult.getKey().getId());
+    AccessKeyResponse loadResult = accessKeyService.load(createResult.getKey().getId());
     Assertions.assertThat(loadResult).isNotNull();
     Assertions.assertThat(loadResult.getKey()).isNotNull();
     Assertions.assertThat(loadResult.getKey().getId()).isNotBlank();
     Assertions.assertThat(loadResult.getKey().getName()).isEqualTo(name);
     Assertions.assertThat(loadResult.getKey().getStatus()).isEqualTo("active");
     Assertions.assertThat(loadResult.getKey().getCreatedBy()).isNotBlank();
-    var searchResult = accessKeyService.searchAll(null);
+    AccessKeyResponseList searchResult = accessKeyService.searchAll(null);
     Assertions.assertThat(searchResult).isNotNull();
     Assertions.assertThat(searchResult.getKeys()).isNotEmpty();
     accessKeyService.deactivate(createResult.getKey().getId());
-    var deactivateResult = accessKeyService.load(createResult.getKey().getId());
+    AccessKeyResponse deactivateResult = accessKeyService.load(createResult.getKey().getId());
     Assertions.assertThat(deactivateResult).isNotNull();
     Assertions.assertThat(deactivateResult.getKey()).isNotNull();
     Assertions.assertThat(deactivateResult.getKey().getId()).isNotBlank();

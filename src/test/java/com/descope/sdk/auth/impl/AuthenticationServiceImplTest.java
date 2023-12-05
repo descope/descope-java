@@ -8,8 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.model.auth.AuthParams;
+import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
+import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -17,7 +24,7 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
-import java.util.List;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -32,13 +39,13 @@ public class AuthenticationServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getAuthParams();
-    var client = TestUtils.getClient();
-    var authService = AuthenticationServiceBuilder.buildServices(client, authParams);
+    AuthParams authParams = TestUtils.getAuthParams();
+    Client client = TestUtils.getClient();
+    AuthenticationServices authService = AuthenticationServiceBuilder.buildServices(client, authParams);
     this.authenticationService = authService.getAuthService();
     this.otpService = authService.getOtpService();
-    var mgmtParams = TestUtils.getManagementParams();
-    var mgmtServices = ManagementServiceBuilder.buildServices(client, mgmtParams);
+    ManagementParams mgmtParams = TestUtils.getManagementParams();
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, mgmtParams);
     this.userService = mgmtServices.getUserService();
     this.roleService = mgmtServices.getRolesService();
     this.tenantService = mgmtServices.getTenantService();
@@ -46,14 +53,14 @@ public class AuthenticationServiceImplTest {
 
   @Test
   void testPermissionsAndRoles() {
-    assertTrue(authenticationService.validatePermissions(MOCK_TOKEN, "someTenant", List.of("tp1", "tp2")));
-    assertFalse(authenticationService.validatePermissions(MOCK_TOKEN, "someTenant", List.of("tp2", "tp3")));
-    assertTrue(authenticationService.validatePermissions(MOCK_TOKEN, List.of("p1", "p2")));
-    assertFalse(authenticationService.validatePermissions(MOCK_TOKEN, List.of("p2", "p3")));
-    assertTrue(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", List.of("tr1", "tr2")));
-    assertFalse(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", List.of("tr2", "tr3")));
-    assertTrue(authenticationService.validateRoles(MOCK_TOKEN, List.of("r1", "r2")));
-    assertFalse(authenticationService.validateRoles(MOCK_TOKEN, List.of("r2", "r3")));
+    assertTrue(authenticationService.validatePermissions(MOCK_TOKEN, "someTenant", Arrays.asList("tp1", "tp2")));
+    assertFalse(authenticationService.validatePermissions(MOCK_TOKEN, "someTenant", Arrays.asList("tp2", "tp3")));
+    assertTrue(authenticationService.validatePermissions(MOCK_TOKEN, Arrays.asList("p1", "p2")));
+    assertFalse(authenticationService.validatePermissions(MOCK_TOKEN, Arrays.asList("p2", "p3")));
+    assertTrue(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", Arrays.asList("tr1", "tr2")));
+    assertFalse(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", Arrays.asList("tr2", "tr3")));
+    assertTrue(authenticationService.validateRoles(MOCK_TOKEN, Arrays.asList("r1", "r2")));
+    assertFalse(authenticationService.validateRoles(MOCK_TOKEN, Arrays.asList("r2", "r3")));
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
@@ -61,24 +68,24 @@ public class AuthenticationServiceImplTest {
     String roleName = TestUtils.getRandomName("r-").substring(0, 20);
     roleService.create(roleName, "ttt", null);
     String tenantName = TestUtils.getRandomName("t-");
-    String tenantId = tenantService.create(tenantName, List.of(tenantName + ".com"));
+    String tenantId = tenantService.create(tenantName, Arrays.asList(tenantName + ".com"));
     String loginId = TestUtils.getRandomName("u-") + "@descope.com";
     userService.createTestUser(loginId,
         UserRequest.builder()
           .email(loginId)
           .verifiedEmail(true)
-          .roleNames(List.of(roleName))
+          .roleNames(Arrays.asList(roleName))
           .build());
     userService.addTenant(loginId, tenantId);
-    userService.addTenantRoles(loginId, tenantId, List.of(roleName));
-    var code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
-    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
+    userService.addTenantRoles(loginId, tenantId, Arrays.asList(roleName));
+    OTPTestUserResponse code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    assertTrue(authenticationService.validateRoles(authInfo.getToken(), List.of(roleName)));
-    assertFalse(authenticationService.validateRoles(authInfo.getToken(), List.of(roleName + "x")));
-    assertTrue(authenticationService.validateRoles(authInfo.getToken(), tenantId, List.of(roleName)));
-    assertFalse(authenticationService.validateRoles(authInfo.getToken(), tenantId, List.of(roleName + "x")));
+    assertTrue(authenticationService.validateRoles(authInfo.getToken(), Arrays.asList(roleName)));
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), Arrays.asList(roleName + "x")));
+    assertTrue(authenticationService.validateRoles(authInfo.getToken(), tenantId, Arrays.asList(roleName)));
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), tenantId, Arrays.asList(roleName + "x")));
     userService.delete(loginId);
     tenantService.delete(tenantId);
     roleService.delete(roleName);
@@ -88,8 +95,8 @@ public class AuthenticationServiceImplTest {
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-") + "@descope.com";
     userService.createTestUser(loginId, UserRequest.builder().email(loginId).verifiedEmail(true).build());
-    var code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
-    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
+    OTPTestUserResponse code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     Token token = authenticationService.validateSessionWithToken(authInfo.getToken().getJwt());

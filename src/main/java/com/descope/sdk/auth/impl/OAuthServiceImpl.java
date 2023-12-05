@@ -4,6 +4,7 @@ import static com.descope.literals.Routes.AuthEndPoints.COMPOSE_OAUTH_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.COMPOSE_OAUTH_LINK_SIGN_IN;
 import static com.descope.literals.Routes.AuthEndPoints.COMPOSE_OAUTH_LINK_SIGN_UP;
 import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_OAUTH_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthParams;
@@ -11,9 +12,9 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.OAuthResponse;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.OAuthService;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,14 +25,13 @@ class OAuthServiceImpl extends AuthenticationServiceImpl implements OAuthService
 
   protected String startWithUrl(String url, String provider, String redirectURL, LoginOptions loginOptions)
       throws DescopeException {
-    Map<String, String> params = new HashMap<>();
-    params.put("provider", provider);
+    Map<String, String> params = mapOf("provider", provider);
     if (StringUtils.isNotBlank(redirectURL)) {
       params.put("redirectURL", redirectURL);
     }
     URI oauthURL = getQueryParamUri(url, params);
-    var apiProxy = getApiProxy();
-    var res = apiProxy.post(oauthURL, loginOptions, OAuthResponse.class);
+    ApiProxy apiProxy = getApiProxy();
+    OAuthResponse res = apiProxy.post(oauthURL, loginOptions, OAuthResponse.class);
     return res.getUrl();
   }
 

@@ -1,8 +1,9 @@
 package com.descope.utils;
 
+import static com.descope.utils.CollectionUtils.mapOf;
+
 import com.descope.model.auth.AssociatedTenant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.experimental.UtilityClass;
@@ -17,9 +18,7 @@ public class MgmtUtils {
     }
     List<Map<String, Object>> associatedTenantList = new ArrayList<>();
     for (AssociatedTenant tenant : tenants) {
-      Map<String, Object> map = new HashMap<>();
-      map.put("tenantId", tenant.getTenantId());
-      map.put("roleNames", tenant.getRoleNames());
+      Map<String, Object> map = mapOf("tenantId", tenant.getTenantId(), "roleNames", tenant.getRoleNames());
       associatedTenantList.add(map);
     }
     return associatedTenantList;

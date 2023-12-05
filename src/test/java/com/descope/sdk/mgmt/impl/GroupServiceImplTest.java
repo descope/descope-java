@@ -9,12 +9,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
 import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
 import com.descope.model.group.Group;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.GroupService;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,13 +28,13 @@ import org.mockito.Mockito;
 class GroupServiceImplTest {
 
   private final Group mockGroup = Mockito.mock(Group.class);
-  private final List<Group> groups = List.of(mockGroup);
+  private final List<Group> groups = Arrays.asList(mockGroup);
   private GroupService groupService;
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getManagementParams();
-    var client = TestUtils.getClient();
+    ManagementParams authParams = TestUtils.getManagementParams();
+    Client client = TestUtils.getClient();
     this.groupService =
         ManagementServiceBuilder.buildServices(client, authParams).getGroupService();
   }
@@ -46,20 +49,20 @@ class GroupServiceImplTest {
 
   @Test
   void testLoadAllGroupsForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(groups).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = groupService.loadAllGroups("someTenantId");
+      List<Group> response = groupService.loadAllGroups("someTenantId");
       Assertions.assertThat(response).isNotNull();
     }
   }
 
   @Test
   void testLoadAllGroupsForMembersForEmptyTenantID() {
-    List<String> userIds = List.of("user1", "user2");
-    List<String> loginIds = List.of("loginId1", "loginId2");
+    List<String> userIds = Arrays.asList("user1", "user2");
+    List<String> loginIds = Arrays.asList("loginId1", "loginId2");
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
@@ -82,14 +85,14 @@ class GroupServiceImplTest {
 
   @Test
   void testLoadAllGroupsForMembersForSuccess() {
-    List<String> userIds = List.of("user1", "user2");
-    List<String> loginIds = List.of("loginId1", "loginId2");
-    var apiProxy = mock(ApiProxy.class);
+    List<String> userIds = Arrays.asList("user1", "user2");
+    List<String> loginIds = Arrays.asList("loginId1", "loginId2");
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(groups).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = groupService.loadAllGroupsForMembers("someTenantId", userIds, loginIds);
+      List<Group> response = groupService.loadAllGroupsForMembers("someTenantId", userIds, loginIds);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -115,12 +118,12 @@ class GroupServiceImplTest {
 
   @Test
   void testLoadAllGroupMembers() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(groups).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = groupService.loadAllGroupMembers("someTenantId", "groupId");
+      List<Group> response = groupService.loadAllGroupMembers("someTenantId", "groupId");
       Assertions.assertThat(response).isNotNull();
     }
   }

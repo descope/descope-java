@@ -24,14 +24,18 @@ import static org.mockito.Mockito.when;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.client.Client;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.response.MaskedEmailRes;
 import com.descope.model.magiclink.response.MaskedPhoneRes;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.User;
 import com.descope.model.user.request.UserRequest;
+import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -41,7 +45,7 @@ import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import java.security.Key;
-import java.util.List;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -54,11 +58,11 @@ public class OTPServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getAuthParams();
-    var client = TestUtils.getClient();
+    AuthParams authParams = TestUtils.getAuthParams();
+    Client client = TestUtils.getClient();
     this.otpService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getOtpService();
-    var mgmtParams = TestUtils.getManagementParams();
+    ManagementParams mgmtParams = TestUtils.getManagementParams();
     this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 
@@ -66,8 +70,8 @@ public class OTPServiceImplTest {
   void testSignUp() {
     User user = new User("someUserName", MOCK_EMAIL, "+910000000000");
 
-    var apiProxy = mock(ApiProxy.class);
-    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    MaskedEmailRes maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -79,8 +83,8 @@ public class OTPServiceImplTest {
 
   @Test
   void signIn() {
-    var apiProxy = mock(ApiProxy.class);
-    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    MaskedEmailRes maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -92,8 +96,8 @@ public class OTPServiceImplTest {
 
   @Test
   void testSignUpOrIn() {
-    var apiProxy = mock(ApiProxy.class);
-    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    MaskedEmailRes maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -138,8 +142,8 @@ public class OTPServiceImplTest {
 
   @Test
   void testUpdateUserEmailForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
-    var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    MaskedEmailRes maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);
     doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -191,8 +195,8 @@ public class OTPServiceImplTest {
 
   @Test
   void testUpdateUserPhoneForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
-    var maskedPhoneRes = new MaskedPhoneRes(MOCK_MASKED_PHONE);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    MaskedPhoneRes maskedPhoneRes = new MaskedPhoneRes(MOCK_MASKED_PHONE);
     doReturn(maskedPhoneRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -205,12 +209,12 @@ public class OTPServiceImplTest {
 
   @Test
   void testVerifyCode() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
-    var provider = mock(Provider.class);
+    Provider provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
@@ -249,9 +253,9 @@ public class OTPServiceImplTest {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
         loginId, UserRequest.builder().email(loginId + "@descope.com").build());
-    var response = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    OTPTestUserResponse response = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
     assertThat(response.getCode()).isNotBlank();
-    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response.getCode());
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     userService.delete(loginId);
@@ -262,12 +266,12 @@ public class OTPServiceImplTest {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
         loginId, UserRequest.builder().email(loginId + "@descope.com").build());
-    var response = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    OTPTestUserResponse response = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
     assertThat(response.getCode()).isNotBlank();
-    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response.getCode());
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    var response2 = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    OTPTestUserResponse response2 = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
     assertThat(response.getCode()).isNotBlank();
     otpService.updateUserEmail(loginId, loginId + "1@descope.com", authInfo.getRefreshToken().getJwt(), null);
     authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, response2.getCode());
@@ -281,12 +285,12 @@ public class OTPServiceImplTest {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
         loginId, UserRequest.builder().phone(MOCK_PHONE).build());
-    var response = userService.generateOtpForTestUser(loginId, DeliveryMethod.SMS);
+    OTPTestUserResponse response = userService.generateOtpForTestUser(loginId, DeliveryMethod.SMS);
     assertThat(response.getCode()).isNotBlank();
-    var authInfo = otpService.verifyCode(DeliveryMethod.SMS, loginId, response.getCode());
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.SMS, loginId, response.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    var response2 = userService.generateOtpForTestUser(loginId, DeliveryMethod.SMS);
+    OTPTestUserResponse response2 = userService.generateOtpForTestUser(loginId, DeliveryMethod.SMS);
     assertThat(response.getCode()).isNotBlank();
     otpService.updateUserPhone(
         DeliveryMethod.SMS, loginId, "+1-555-555-5556", authInfo.getRefreshToken().getJwt(), null);

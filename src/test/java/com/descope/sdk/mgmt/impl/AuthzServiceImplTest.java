@@ -22,6 +22,9 @@ import com.descope.model.authz.RelationQuery;
 import com.descope.model.authz.RelationsResponse;
 import com.descope.model.authz.Schema;
 import com.descope.model.authz.WhoCanAccessResponse;
+import com.descope.model.client.Client;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.mgmt.ManagementServices;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -29,6 +32,7 @@ import com.descope.sdk.mgmt.AuthzService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +44,9 @@ public class AuthzServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getManagementParams();
-    var client = TestUtils.getClient();
-    var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    ManagementParams authParams = TestUtils.getManagementParams();
+    Client client = TestUtils.getClient();
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
     this.authzService = mgmtServices.getAuthzService();
   }
 
@@ -68,18 +72,18 @@ public class AuthzServiceImplTest {
 
   @Test
   void testSaveSchemaForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      authzService.saveSchema(Schema.builder().namespaces(List.of(new Namespace())).build(), false);
+      authzService.saveSchema(Schema.builder().namespaces(Arrays.asList(new Namespace())).build(), false);
     }
   }
 
   @Test
   void testDeleteSchemaForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -90,13 +94,13 @@ public class AuthzServiceImplTest {
 
   @Test
   void testLoadSchemaForSuccess() {
-    var schemaResponse = new LoadSchemaResponse(new Schema("kuku", null));
-    var apiProxy = mock(ApiProxy.class);
+    LoadSchemaResponse schemaResponse = new LoadSchemaResponse(new Schema("kuku", null));
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(schemaResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var schema = authzService.loadSchema();
+      Schema schema = authzService.loadSchema();
       assertNotNull(schema);
       assertEquals("kuku", schema.getName());
     }
@@ -126,12 +130,12 @@ public class AuthzServiceImplTest {
 
   @Test
   void testSaveNamespaceForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      authzService.saveNamespace(new Namespace("kuku", List.of(new RelationDefinition())), null, null);
+      authzService.saveNamespace(new Namespace("kuku", Arrays.asList(new RelationDefinition())), null, null);
     }
   }
 
@@ -147,7 +151,7 @@ public class AuthzServiceImplTest {
 
   @Test
   void testDeleteNamespaceForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -181,7 +185,7 @@ public class AuthzServiceImplTest {
 
   @Test
   void testSaveRelationDefinitionForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -208,7 +212,7 @@ public class AuthzServiceImplTest {
 
   @Test
   void testDeleteRelationDefinitionForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -229,12 +233,12 @@ public class AuthzServiceImplTest {
 
   @Test
   void testCreateRelationsForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      authzService.createRelations(List.of(new Relation()));
+      authzService.createRelations(Arrays.asList(new Relation()));
     }
   }
 
@@ -250,12 +254,12 @@ public class AuthzServiceImplTest {
 
   @Test
   void testDeleteRelationsForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      authzService.deleteRelations(List.of(new Relation()));
+      authzService.deleteRelations(Arrays.asList(new Relation()));
     }
   }
 
@@ -271,12 +275,12 @@ public class AuthzServiceImplTest {
 
   @Test
   void testDeleteRelationsForResourcesForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(null).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      authzService.deleteRelationsForResources(List.of("kuku"));
+      authzService.deleteRelationsForResources(Arrays.asList("kuku"));
     }
   }
 
@@ -292,12 +296,12 @@ public class AuthzServiceImplTest {
 
   @Test
   void testHasRelationsForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
-    doReturn(new HasRelationsResponse(List.of(new RelationQuery()))).when(apiProxy).post(any(), any(), any());
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new HasRelationsResponse(Arrays.asList(new RelationQuery()))).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      authzService.hasRelations(List.of(new RelationQuery()));
+      authzService.hasRelations(Arrays.asList(new RelationQuery()));
     }
   }
 
@@ -325,8 +329,8 @@ public class AuthzServiceImplTest {
 
   @Test
   void testWhoCanAccessForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
-    doReturn(new WhoCanAccessResponse(List.of("kuku"))).when(apiProxy).post(any(), any(), any());
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new WhoCanAccessResponse(Arrays.asList("kuku"))).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -346,8 +350,8 @@ public class AuthzServiceImplTest {
 
   @Test
   void testResourceRelationsForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
-    doReturn(new RelationsResponse(List.of(new Relation()))).when(apiProxy).post(any(), any(), any());
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new RelationsResponse(Arrays.asList(new Relation()))).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -367,12 +371,12 @@ public class AuthzServiceImplTest {
 
   @Test
   void testUsersRelationsForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
-    doReturn(new RelationsResponse(List.of(new Relation()))).when(apiProxy).post(any(), any(), any());
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new RelationsResponse(Arrays.asList(new Relation()))).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      authzService.targetsRelations(List.of("kiki"));
+      authzService.targetsRelations(Arrays.asList("kiki"));
     }
   }
 
@@ -388,8 +392,8 @@ public class AuthzServiceImplTest {
 
   @Test
   void testWhatCanUserAccessForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
-    doReturn(new RelationsResponse(List.of(new Relation()))).when(apiProxy).post(any(), any(), any());
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new RelationsResponse(Arrays.asList(new Relation()))).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -406,7 +410,7 @@ public class AuthzServiceImplTest {
     if (!existingSchema.getName().equals(s.getName())) {
       authzService.deleteSchema();
       authzService.saveSchema(s, true);
-      authzService.createRelations(List.of(
+      authzService.createRelations(Arrays.asList(
         new Relation("Dev", "parent", "org", "Descope", null, null, null, null),
         new Relation("Sales", "parent", "org", "Descope", null, null, null, null),
         new Relation("Dev", "member", "org", "u1", null, null, null, null),
@@ -419,7 +423,7 @@ public class AuthzServiceImplTest {
         new Relation("Presentations", "editor", "folder", null, "Sales", "member", "org", null)
       ));
     }
-    var resp = authzService.hasRelations(List.of(
+    List<RelationQuery> resp = authzService.hasRelations(Arrays.asList(
       new RelationQuery("roadmap.ppt", "owner", "doc", "u1", false),
       new RelationQuery("roadmap.ppt", "editor", "doc", "u1", false),
       new RelationQuery("roadmap.ppt", "viewer", "doc", "u1", false),
@@ -433,13 +437,13 @@ public class AuthzServiceImplTest {
     assertTrue(resp.get(3).isHasRelation());
     assertFalse(resp.get(4).isHasRelation());
     assertTrue(resp.get(5).isHasRelation());
-    var respWho = authzService.whoCanAccess("roadmap.ppt", "editor", "doc");
-    assertThat(respWho).hasSameElementsAs(List.of("u1", "u2"));
-    var respResourceRelations = authzService.resourceRelations("roadmap.ppt");
+    List<String> respWho = authzService.whoCanAccess("roadmap.ppt", "editor", "doc");
+    assertThat(respWho).hasSameElementsAs(Arrays.asList("u1", "u2"));
+    List<Relation> respResourceRelations = authzService.resourceRelations("roadmap.ppt");
     assertThat(respResourceRelations).size().isEqualTo(2);
-    var respUsersRelations = authzService.targetsRelations(List.of("u1"));
+    List<Relation> respUsersRelations = authzService.targetsRelations(Arrays.asList("u1"));
     assertThat(respUsersRelations).size().isEqualTo(2);
-    var respWhat = authzService.whatCanTargetAccess("u1");
+    List<Relation> respWhat = authzService.whatCanTargetAccess("u1");
     assertThat(respWhat).size().isEqualTo(7);
   }
 }

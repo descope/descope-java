@@ -5,6 +5,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_META
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -13,6 +14,7 @@ import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
 import com.descope.model.sso.SSOSettingsResponse;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.SsoService;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +30,8 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
-    Map<String, String> params = Map.of("tenantId", tenantID);
-    var apiProxy = getApiProxy();
+    Map<String, String> params = mapOf("tenantId", tenantID);
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS_LINK, params), SSOSettingsResponse.class);
   }
 
@@ -38,8 +40,8 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
-    Map<String, String> request = Map.of("tenantId", tenantID);
-    var apiProxy = getApiProxy();
+    Map<String, String> request = mapOf("tenantId", tenantID);
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.delete(getUri(SSO_DELETE_SETTINGS_LINK), request, Void.class);
   }
 
@@ -68,7 +70,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
       throw ServerCommonException.invalidArgument("RedirectURL");
     }
     Map<String, String> request =
-        Map.of(
+        mapOf(
             "tenantId",
             tenantID,
             "idpURL",
@@ -81,7 +83,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
             redirectURL,
             "domain",
             domain);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_SETTINGS_LINK), request, Void.class);
   }
 
@@ -93,8 +95,8 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
     if (StringUtils.isBlank(idpMetadataURL)) {
       throw ServerCommonException.invalidArgument("IdpMetadataURL");
     }
-    Map<String, String> request = Map.of("tenantId", tenantID, "idpMetadataURL", idpMetadataURL);
-    var apiProxy = getApiProxy();
+    Map<String, String> request = mapOf("tenantId", tenantID, "idpMetadataURL", idpMetadataURL);
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_METADATA_LINK), request, Void.class);
   }
 
@@ -106,14 +108,14 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
       throw ServerCommonException.invalidArgument("TenantID");
     }
     Map<String, Object> request =
-        Map.of(
+        mapOf(
             "tenantId",
             tenantID,
             "roleMappings",
             roleMapping,
             "attributeMapping",
             attributeMapping);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_MAPPING_LINK), request, Void.class);
   }
 }

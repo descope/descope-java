@@ -14,6 +14,9 @@ import static org.mockito.Mockito.verify;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.roles.Role;
 import com.descope.model.roles.RoleResponse;
 import com.descope.proxy.ApiProxy;
@@ -21,6 +24,7 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.PermissionService;
 import com.descope.sdk.mgmt.RolesService;
+import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,9 +34,9 @@ import org.mockito.MockedStatic;
 
 class RolesServiceImplTest {
 
-  private final List<String> mockPermissionNames = List.of("permission1", "permission2");
+  private final List<String> mockPermissionNames = Arrays.asList("permission1", "permission2");
   private final List<Role> mockRole =
-      List.of(
+      Arrays.asList(
           Role.builder()
               .name("someName")
               .permissionNames(mockPermissionNames)
@@ -45,9 +49,9 @@ class RolesServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getManagementParams();
-    var client = TestUtils.getClient();
-    var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    ManagementParams authParams = TestUtils.getManagementParams();
+    Client client = TestUtils.getClient();
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
     this.rolesService = mgmtServices.getRolesService();
     this.permissionService = mgmtServices.getPermissionService();
   }
@@ -64,7 +68,7 @@ class RolesServiceImplTest {
 
   @Test
   void testRolesCreateSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -86,7 +90,7 @@ class RolesServiceImplTest {
 
   @Test
   void testUpdateForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -116,7 +120,7 @@ class RolesServiceImplTest {
 
   @Test
   void testDeleteForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -128,7 +132,7 @@ class RolesServiceImplTest {
 
   @Test
   void testLoadAllForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockRoleResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -152,11 +156,11 @@ class RolesServiceImplTest {
     String r1 = TestUtils.getRandomName("r-").substring(0, 20);
     permissionService.create(p1, "p1");
     permissionService.create(p2, "p2");
-    rolesService.create(r1, "ttt", List.of(p1, p2));
-    var roles = rolesService.loadAll();
+    rolesService.create(r1, "ttt", Arrays.asList(p1, p2));
+    RoleResponse roles = rolesService.loadAll();
     assertThat(roles.getRoles()).isNotEmpty();
     boolean found = false;
-    for (var r : roles.getRoles()) {
+    for (Role r : roles.getRoles()) {
       if (r.getName().equals(r1)) {
         found = true;
         assertEquals("ttt", r.getDescription());
@@ -164,11 +168,11 @@ class RolesServiceImplTest {
       }
     }
     assertTrue(found);
-    rolesService.update(r1, r1 + "1", "zzz", List.of(p1));
+    rolesService.update(r1, r1 + "1", "zzz", Arrays.asList(p1));
     roles = rolesService.loadAll();
     assertThat(roles.getRoles()).isNotEmpty();
     found = false;
-    for (var r : roles.getRoles()) {
+    for (Role r : roles.getRoles()) {
       if (r.getName().equals(r1 + "1")) {
         found = true;
         assertEquals("zzz", r.getDescription());
