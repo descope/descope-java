@@ -898,7 +898,7 @@ public class UserServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalGenerateEmbeddedLinkWithPhoneAsID() {
     String randomSaffix = String.valueOf(new Random().nextInt(1000));
-    randomSaffix = "0".repeat(4 - randomSaffix.length()) + randomSaffix;
+    randomSaffix = new String(new char[4 - randomSaffix.length()]).replace("\0", "0") + randomSaffix;
     String phone = "+1-555-555-" + randomSaffix;
     String cleanPhone = "+1555555" + randomSaffix;
     // Create
