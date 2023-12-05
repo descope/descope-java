@@ -20,11 +20,14 @@ import static org.mockito.Mockito.when;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.client.Client;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.totp.TOTPResponse;
 import com.descope.model.user.User;
 import com.descope.model.user.response.UserResponse;
@@ -54,11 +57,11 @@ public class TotpServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getAuthParams();
-    var client = TestUtils.getClient();
+    AuthParams authParams = TestUtils.getAuthParams();
+    Client client = TestUtils.getClient();
     this.totpService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getTotpService();
-    var mgmtParams = TestUtils.getManagementParams();
+    ManagementParams mgmtParams = TestUtils.getManagementParams();
     this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
   }
 
@@ -66,24 +69,24 @@ public class TotpServiceImplTest {
   void signUp() {
     User user = new User("someUserName", MOCK_EMAIL, "+910000000000");
 
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mock(TOTPResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = totpService.signUp(MOCK_EMAIL, user);
+      TOTPResponse response = totpService.signUp(MOCK_EMAIL, user);
       Assertions.assertThat(response).isNotNull();
     }
   }
 
   @Test
   void signInCode() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
-    var provider = mock(Provider.class);
+    Provider provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
@@ -128,7 +131,7 @@ public class TotpServiceImplTest {
 
   @Test
   void testUpdateUserForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mock(TOTPResponse.class)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -141,7 +144,7 @@ public class TotpServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() throws Exception {
     String loginId = TestUtils.getRandomName("u-");
-    var response = totpService.signUp(loginId, MOCK_USER);
+    TOTPResponse response = totpService.signUp(loginId, MOCK_USER);
     assertNotNull(response);
     assertThat(response.getKey()).isNotBlank();
     assertThat(response.getImage()).isNotBlank();

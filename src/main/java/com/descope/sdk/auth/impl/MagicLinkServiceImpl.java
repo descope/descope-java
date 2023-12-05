@@ -55,14 +55,14 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     ApiProxy apiProxy;
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignInURL = composeMagicLinkSignInURI(deliveryMethod);
-    var signInRequest = new SignInRequest(uri, loginId, loginOptions);
+    SignInRequest signInRequest = new SignInRequest(uri, loginId, loginOptions);
     if (JwtUtils.isJWTRequired(loginOptions)) {
-      var pwd = getValidRefreshToken(request);
+      String pwd = getValidRefreshToken(request);
       apiProxy = getApiProxy(pwd);
     } else {
       apiProxy = getApiProxy();
     }
-    var masked = apiProxy.post(magicLinkSignInURL, signInRequest, maskedClass);
+    Masked masked = apiProxy.post(magicLinkSignInURL, signInRequest, maskedClass);
     return masked.getMasked();
   }
 
@@ -77,23 +77,23 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpURL = composeMagicLinkSignUpURI(deliveryMethod);
 
-    var signUpRequestBuilder = SignUpRequest.builder().loginId(loginId).uri(uri);
+    SignUpRequest.SignUpRequestBuilder signUpRequestBuilder = SignUpRequest.builder().loginId(loginId).uri(uri);
     if (EMAIL.equals(deliveryMethod)) {
       signUpRequestBuilder.email(user.getEmail());
     }
 
-    var signUpRequest = signUpRequestBuilder.user(user).build();
-    var apiProxy = getApiProxy();
-    var masked = apiProxy.post(magicLinkSignUpURL, signUpRequest, maskedClass);
+    SignUpRequest signUpRequest = signUpRequestBuilder.user(user).build();
+    ApiProxy apiProxy = getApiProxy();
+    Masked masked = apiProxy.post(magicLinkSignUpURL, signUpRequest, maskedClass);
     return masked.getMasked();
   }
 
   @Override
   public AuthenticationInfo verify(String token) {
     URI verifyMagicLinkURL = composeVerifyMagicLinkURL();
-    var verifyRequest = new VerifyRequest(token);
-    var apiProxy = getApiProxy();
-    var jwtResponse = apiProxy.post(verifyMagicLinkURL, verifyRequest, JWTResponse.class);
+    VerifyRequest verifyRequest = new VerifyRequest(token);
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse = apiProxy.post(verifyMagicLinkURL, verifyRequest, JWTResponse.class);
 
     return getAuthenticationInfo(jwtResponse);
   }
@@ -108,10 +108,10 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
-    var signInRequest = new SignInRequest(uri, loginId, null);
+    SignInRequest signInRequest = new SignInRequest(uri, loginId, null);
 
-    var apiProxy = getApiProxy();
-    var masked = apiProxy.post(magicLinkSignUpOrInURL, signInRequest, maskedClass);
+    ApiProxy apiProxy = getApiProxy();
+    Masked masked = apiProxy.post(magicLinkSignUpOrInURL, signInRequest, maskedClass);
     return masked.getMasked();
   }
 
@@ -142,8 +142,8 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
             .build();
 
-    var apiProxy = getApiProxy(refreshToken);
-    var masked = apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, maskedClass);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    Masked masked = apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, maskedClass);
     return masked.getMasked();
   }
 
@@ -179,8 +179,8 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
             .build();
 
-    var apiProxy = getApiProxy(refreshToken);
-    var masked = apiProxy.post(magicLinkUpdateUserPhone, updatePhoneRequest, maskedClass);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    Masked masked = apiProxy.post(magicLinkUpdateUserPhone, updatePhoneRequest, maskedClass);
     return masked.getMasked();
   }
 

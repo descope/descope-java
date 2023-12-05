@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Map;
+import java.util.Map.Entry;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,7 +38,7 @@ public abstract class SdkServicesBase {
   protected URI getQueryParamUri(String path, Map<String, String> params) {
     if (isNotEmpty(params)) {
       StringBuilder sb = new StringBuilder("?");
-      for (var e : params.entrySet()) {
+      for (Entry<String, String> e : params.entrySet()) {
         if (sb.length() > 0) {
           sb.append('&');
         }
@@ -52,7 +53,7 @@ public abstract class SdkServicesBase {
 
   @SneakyThrows
   protected Key requestKeys() {
-    var key = client.getProvidedKey();
+    Key key = client.getProvidedKey();
     if (key != null) {
       return client.getProvidedKey();
     }

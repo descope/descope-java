@@ -8,6 +8,7 @@ import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.SAMLService;
 import java.net.URI;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ class SAMLServiceImpl extends AuthenticationServiceImpl implements SAMLService {
       request.put("redirectURL", returnURL);
     }
     URI samlStartURLAML = composeSAMLStartURL();
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(samlStartURLAML, request, String.class);
   }
 

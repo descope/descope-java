@@ -11,6 +11,7 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.OAuthResponse;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.OAuthService;
 import java.net.URI;
 import java.util.HashMap;
@@ -30,8 +31,8 @@ class OAuthServiceImpl extends AuthenticationServiceImpl implements OAuthService
       params.put("redirectURL", redirectURL);
     }
     URI oauthURL = getQueryParamUri(url, params);
-    var apiProxy = getApiProxy();
-    var res = apiProxy.post(oauthURL, loginOptions, OAuthResponse.class);
+    ApiProxy apiProxy = getApiProxy();
+    OAuthResponse res = apiProxy.post(oauthURL, loginOptions, OAuthResponse.class);
     return res.getUrl();
   }
 

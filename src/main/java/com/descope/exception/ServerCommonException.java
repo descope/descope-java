@@ -37,7 +37,7 @@ public class ServerCommonException extends DescopeException {
   }
 
   public static ServerCommonException genericServerError(String message, String code, String serverResponse) {
-    var e = new ServerCommonException(message, code);
+    ServerCommonException e = new ServerCommonException(message, code);
     e.serverResponse = serverResponse;
     return e;
   }

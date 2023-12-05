@@ -9,8 +9,8 @@ import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.audit.AuditSearchResponse;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AuditService;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -32,8 +32,8 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
     if (request == null) {
       request = new AuditSearchRequest();
     }
-    var now = Instant.now();
-    var oldest = now.minus(Duration.ofDays(30));
+    Instant now = Instant.now();
+    Instant oldest = now.minus(Duration.ofDays(30));
     if (request.getFrom() != null && request.getFrom().isBefore(oldest)) {
       throw ServerCommonException.invalidArgument("from");
     }
@@ -42,8 +42,8 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
     }
 
     URI composeSearchUri = composeSearchUri();
-    var apiProxy = getApiProxy();
-    var actualReq = new ActualAuditSearchRequest(
+    ApiProxy apiProxy = getApiProxy();
+    ActualAuditSearchRequest actualReq = new ActualAuditSearchRequest(
         request.getUserIds(),
         request.getActions(),
         request.getExcludedActions(),
@@ -57,9 +57,10 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
         request.getText(),
         request.getFrom() != null ? request.getFrom().toEpochMilli() : 0,
         request.getTo() != null ? request.getTo().toEpochMilli() : 0);
-    var resp = (ActualAuditSearchResponse) apiProxy.post(composeSearchUri, actualReq, ActualAuditSearchResponse.class);
-    var res = new ArrayList<AuditRecord>();
-    for (var auditRecord : resp.getAudits()) {
+    ActualAuditSearchResponse resp =
+        (ActualAuditSearchResponse) apiProxy.post(composeSearchUri, actualReq, ActualAuditSearchResponse.class);
+    List<AuditRecord> res = new ArrayList<AuditRecord>();
+    for (ActualAuditRecord auditRecord : resp.getAudits()) {
       res.add(
           new AuditRecord(
               auditRecord.projectId,
@@ -103,7 +104,6 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  @JsonIgnoreProperties(ignoreUnknown = true)
   static class ActualAuditRecord {
     String projectId;
     String userId;

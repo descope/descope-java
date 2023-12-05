@@ -10,6 +10,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.roles.RoleResponse;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.RolesService;
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +35,7 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
     if (permissionNames != null) {
       request.put("permissionNames", permissionNames);
     }
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_CREATE_LINK), request, Void.class);
   }
 
@@ -57,7 +58,7 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
             description,
             "permissionNames",
             permissionNames);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_UPDATE_LINK), request, Void.class);
   }
 
@@ -67,13 +68,13 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
       throw ServerCommonException.invalidArgument("Name");
     }
     Map<String, String> request = Map.of("name", name);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_DELETE_LINK), request, Void.class);
   }
 
   @Override
   public RoleResponse loadAll() throws DescopeException {
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(getUri(MANAGEMENT_ROLES_LOAD_ALL_LINK), RoleResponse.class);
   }
 }

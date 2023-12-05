@@ -16,6 +16,7 @@ import com.descope.model.flow.Screen;
 import com.descope.model.flow.Theme;
 import com.descope.model.flow.ThemeResponse;
 import com.descope.model.mgmt.ManagementParams;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.FlowService;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
 
   @Override
   public FlowsResponse listFlows() throws DescopeException {
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_LIST_LINK), null, FlowsResponse.class);
   }
 
@@ -39,7 +40,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
       throw ServerCommonException.invalidArgument("FlowID");
     }
     Map<String, String> request = Map.of("flowId", flowID);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_EXPORT_LINK), request, FlowResponse.class);
   }
 
@@ -50,13 +51,13 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
       throw ServerCommonException.invalidArgument("FlowID");
     }
     Map<String, Object> request = Map.of("flowId", flowID, "flow", flow, "screens", screens);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_IMPORT_LINK), request, FlowResponse.class);
   }
 
   @Override
   public Theme exportTheme() throws DescopeException {
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(THEME_EXPORT_LINK), null, ThemeResponse.class).getTheme();
   }
 
@@ -66,7 +67,7 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
       throw ServerCommonException.invalidArgument("Theme");
     }
     Map<String, Object> request = Map.of("theme", theme);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(THEME_IMPORT_LINK), request, ThemeResponse.class).getTheme();
   }
 }

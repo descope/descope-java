@@ -13,6 +13,7 @@ import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.request.TenantSearchRequest;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.TenantService;
 import java.net.URI;
 import java.util.List;
@@ -31,7 +32,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("name");
     }
-    var tenant = new Tenant("", name, selfProvisioningDomains, null);
+    Tenant tenant = new Tenant("", name, selfProvisioningDomains, null);
     return create(tenant);
   }
 
@@ -41,7 +42,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("name");
     }
-    var tenant = new Tenant("", name, selfProvisioningDomains, customAttributes);
+    Tenant tenant = new Tenant("", name, selfProvisioningDomains, customAttributes);
     return create(tenant);
   }
 
@@ -52,7 +53,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
       throw ServerCommonException.invalidArgument("id or name");
     }
 
-    var tenant = new Tenant(id, name, selfProvisioningDomains, null);
+    Tenant tenant = new Tenant(id, name, selfProvisioningDomains, null);
     create(tenant);
   }
 
@@ -64,13 +65,13 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
       throw ServerCommonException.invalidArgument("id or name");
     }
 
-    var tenant = new Tenant(id, name, selfProvisioningDomains, customAttributes);
+    Tenant tenant = new Tenant(id, name, selfProvisioningDomains, customAttributes);
     create(tenant);
   }
 
   private String create(Tenant tenant) {
     URI createTenantUri = composeCreateTenantUri();
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     Tenant savedTenant = apiProxy.post(createTenantUri, tenant, Tenant.class);
     return savedTenant.getId();
   }
@@ -82,13 +83,13 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
       throw ServerCommonException.invalidArgument("id or name");
     }
 
-    var tenant = new Tenant(id, name, selfProvisioningDomains, customAttributes);
+    Tenant tenant = new Tenant(id, name, selfProvisioningDomains, customAttributes);
     update(tenant);
   }
 
   private void update(Tenant tenant) {
     URI updateTenantUri = composeUpdateTenantUri();
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(updateTenantUri, tenant, Void.class);
   }
 
@@ -99,14 +100,14 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     }
 
     URI deleteTenantUri = composeDeleteTenantUri();
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(deleteTenantUri, Map.of("id", id), Void.class);
   }
 
   @Override
   public List<Tenant> loadAll() throws DescopeException {
     URI loadAllTenantsUri = loadAllTenantsUri();
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     GetAllTenantsResponse response = apiProxy.get(loadAllTenantsUri, GetAllTenantsResponse.class);
     return response.getTenants();
   }
@@ -119,7 +120,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     }
 
     URI composeSearchAllUri = composeSearchAllUri();
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     GetAllTenantsResponse response = apiProxy.post(composeSearchAllUri, request, GetAllTenantsResponse.class);
     return response.getTenants();
   }

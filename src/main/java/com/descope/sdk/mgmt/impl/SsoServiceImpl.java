@@ -13,6 +13,7 @@ import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
 import com.descope.model.sso.SSOSettingsResponse;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.SsoService;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
       throw ServerCommonException.invalidArgument("TenantId");
     }
     Map<String, String> params = Map.of("tenantId", tenantID);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS_LINK, params), SSOSettingsResponse.class);
   }
 
@@ -39,7 +40,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
       throw ServerCommonException.invalidArgument("TenantId");
     }
     Map<String, String> request = Map.of("tenantId", tenantID);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.delete(getUri(SSO_DELETE_SETTINGS_LINK), request, Void.class);
   }
 
@@ -81,7 +82,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
             redirectURL,
             "domain",
             domain);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_SETTINGS_LINK), request, Void.class);
   }
 
@@ -94,7 +95,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
       throw ServerCommonException.invalidArgument("IdpMetadataURL");
     }
     Map<String, String> request = Map.of("tenantId", tenantID, "idpMetadataURL", idpMetadataURL);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_METADATA_LINK), request, Void.class);
   }
 
@@ -113,7 +114,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
             roleMapping,
             "attributeMapping",
             attributeMapping);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_MAPPING_LINK), request, Void.class);
   }
 }

@@ -49,14 +49,14 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     ApiProxy apiProxy;
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI otpSignInURL = composeSignInURL(deliveryMethod);
-    var signInRequest = new SignInRequest(loginId, loginOptions);
+    SignInRequest signInRequest = new SignInRequest(loginId, loginOptions);
     if (JwtUtils.isJWTRequired(loginOptions)) {
-      var pwd = ""; // getValidRefreshToken(request);
+      String pwd = ""; // getValidRefreshToken(request);
       apiProxy = getApiProxy(pwd);
     } else {
       apiProxy = getApiProxy();
     }
-    var masked = apiProxy.post(otpSignInURL, signInRequest, maskedClass);
+    Masked masked = apiProxy.post(otpSignInURL, signInRequest, maskedClass);
     return masked.getMasked();
   }
 
@@ -70,12 +70,12 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI otpSignUpURL = composeSignUpURI(deliveryMethod);
 
-    var signUpRequest = newSignUpRequest(deliveryMethod, user);
+    SignUpRequest signUpRequest = newSignUpRequest(deliveryMethod, user);
     signUpRequest.setLoginId(loginId);
     signUpRequest.setUser(user);
 
-    var apiProxy = getApiProxy();
-    var masked = apiProxy.post(otpSignUpURL, signUpRequest, maskedClass);
+    ApiProxy apiProxy = getApiProxy();
+    Masked masked = apiProxy.post(otpSignUpURL, signUpRequest, maskedClass);
     return masked.getMasked();
   }
 
@@ -88,9 +88,9 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI otpSignUpOrInURL = composeSignUpOrInURL(deliveryMethod);
-    var signInRequest = new SignInRequest(loginId, null);
-    var apiProxy = getApiProxy();
-    var masked = apiProxy.post(otpSignUpOrInURL, signInRequest, maskedClass);
+    SignInRequest signInRequest = new SignInRequest(loginId, null);
+    ApiProxy apiProxy = getApiProxy();
+    Masked masked = apiProxy.post(otpSignUpOrInURL, signInRequest, maskedClass);
     return masked.getMasked();
   }
 
@@ -108,10 +108,11 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     if (deliveryMethod == null) {
       throw ServerCommonException.invalidArgument("Method");
     }
-    var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code, null);
+    AuthenticationVerifyRequestBody authenticationVerifyRequestBody =
+        new AuthenticationVerifyRequestBody(loginId, code, null);
     URI otpVerifyCode = composeVerifyCodeURL(deliveryMethod);
-    var apiProxy = getApiProxy();
-    var jwtResponse =
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse =
         apiProxy.post(otpVerifyCode, authenticationVerifyRequestBody, JWTResponse.class);
 
     return getAuthenticationInfo(jwtResponse);
@@ -134,15 +135,15 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
-    var updateEmailRequest = UpdateEmailRequestBody
+    UpdateEmailRequestBody updateEmailRequest = UpdateEmailRequestBody
         .builder()
         .email(email)
         .loginId(loginId)
         .addToLoginIds(updateOptions.isAddToLoginIds())
         .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
         .build();
-    var apiProxy = getApiProxy(refreshToken);
-    var masked = apiProxy.post(otpUpdateUserEmail, updateEmailRequest, maskedClass);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    Masked masked = apiProxy.post(otpUpdateUserEmail, updateEmailRequest, maskedClass);
     return masked.getMasked();
   }
 
@@ -166,15 +167,15 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
-    var updatePhoneRequestBody = UpdatePhoneRequestBody
+    UpdatePhoneRequestBody updatePhoneRequestBody = UpdatePhoneRequestBody
         .builder()
         .phone(phone)
         .loginId(loginId)
         .addToLoginIds(updateOptions.isAddToLoginIds())
         .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
         .build();
-    var apiProxy = getApiProxy(refreshToken);
-    var masked = apiProxy.post(otpUpdateUserPhone, updatePhoneRequestBody, maskedClass);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    Masked masked = apiProxy.post(otpUpdateUserPhone, updatePhoneRequestBody, maskedClass);
     return masked.getMasked();
   }
 

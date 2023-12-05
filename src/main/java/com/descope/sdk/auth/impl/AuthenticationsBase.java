@@ -181,11 +181,11 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
 
   Token refreshSession(String refreshToken) {
     validateJWT(refreshToken);
-    var apiProxy = getApiProxy(refreshToken);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
     URI refreshTokenLinkURL = composeRefreshTokenLinkURL();
 
-    var jwtResponse = apiProxy.post(refreshTokenLinkURL, null, JWTResponse.class);
-    var authenticationInfo = getAuthenticationInfo(jwtResponse);
+    JWTResponse jwtResponse = apiProxy.post(refreshTokenLinkURL, null, JWTResponse.class);
+    AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
 
     return authenticationInfo.getToken();
   }
@@ -205,7 +205,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (MapUtils.isEmpty(token.getClaims())) {
       return Collections.emptyList();
     }
-    var claims = token.getClaims();
+    Map<String, Object> claims = token.getClaims();
     if (claims.get(TENANTS_CLAIM_KEY) == null) {
       return Collections.emptyList();
     }
@@ -222,7 +222,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (MapUtils.isEmpty(token.getClaims())) {
       return Collections.emptyList();
     }
-    var claims = token.getClaims();
+    Map<String, Object> claims = token.getClaims();
     if (StringUtils.isNotBlank(tenant)) {
       if (claims.get(TENANTS_CLAIM_KEY) == null) {
         return Collections.emptyList();
@@ -233,7 +233,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       }
       claims = (Map<String, Object>) claims.get(tenant);
     }
-    var res = (List<String>) claims.get(root);
+    List<String> res = (List<String>) claims.get(root);
     return res == null ? Collections.emptyList() : res;
   }
 

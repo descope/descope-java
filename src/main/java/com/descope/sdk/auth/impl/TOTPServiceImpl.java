@@ -15,6 +15,7 @@ import com.descope.model.otp.AuthenticationVerifyRequestBody;
 import com.descope.model.totp.TOTPResponse;
 import com.descope.model.totp.TotpSignUpRequestBody;
 import com.descope.model.user.User;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.TOTPService;
 import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
@@ -32,8 +33,8 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
     }
     URI totpSignUpURL = composeSignUpTOTPURL();
 
-    var signUpRequest = TotpSignUpRequestBody.builder().loginId(loginId).user(user).build();
-    var apiProxy = getApiProxy();
+    TotpSignUpRequestBody signUpRequest = TotpSignUpRequestBody.builder().loginId(loginId).user(user).build();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(totpSignUpURL, signUpRequest, TOTPResponse.class);
   }
 
@@ -44,10 +45,11 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
       throw ServerCommonException.invalidArgument("loginId");
     }
 
-    var authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code, loginOptions);
+    AuthenticationVerifyRequestBody authenticationVerifyRequestBody =
+        new AuthenticationVerifyRequestBody(loginId, code, loginOptions);
     URI totpVerifyCode = composeVerifyTOTPCodeURL();
-    var apiProxy = getApiProxy();
-    var jwtResponse =
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse =
         apiProxy.post(totpVerifyCode, authenticationVerifyRequestBody, JWTResponse.class);
 
     return getAuthenticationInfo(jwtResponse);
@@ -60,8 +62,8 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
     }
 
     URI totpUpdateUser = composeUpdateTOTPURL();
-    var signUpRequest = TotpSignUpRequestBody.builder().loginId(loginId).build();
-    var apiProxy = getApiProxy();
+    TotpSignUpRequestBody signUpRequest = TotpSignUpRequestBody.builder().loginId(loginId).build();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(totpUpdateUser, signUpRequest, TOTPResponse.class);
   }
 

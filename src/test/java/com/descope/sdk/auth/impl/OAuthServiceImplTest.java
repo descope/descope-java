@@ -15,8 +15,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.OAuthResponse;
+import com.descope.model.client.Client;
 import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
@@ -41,15 +43,15 @@ public class OAuthServiceImplTest {
   
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getAuthParams();
-    var client = TestUtils.getClient();
+    AuthParams authParams = TestUtils.getAuthParams();
+    Client client = TestUtils.getClient();
     this.oauthService =
         AuthenticationServiceBuilder.buildServices(client, authParams).getOauthService();
   }
 
   @Test
   void testStart() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -61,12 +63,12 @@ public class OAuthServiceImplTest {
 
   @Test
   void testExchangeToken() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
-    var provider = mock(Provider.class);
+    Provider provider = mock(Provider.class);
     when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
@@ -103,9 +105,9 @@ public class OAuthServiceImplTest {
   void testExampleRequireBrowser() throws Exception {
     System.out.println(oauthService.start(OAUTH_PROVIDER_GOOGLE, "https://localhost/kuku", null));
     String encodedCode = "";
-    var code = URLDecoder.decode(encodedCode, "UTF-8");
-    var authInfo = oauthService.exchangeToken(code);
-    var user = authInfo.getUser();
+    String code = URLDecoder.decode(encodedCode, "UTF-8");
+    AuthenticationInfo authInfo = oauthService.exchangeToken(code);
+    UserResponse user = authInfo.getUser();
     assertNotNull(user);
   }
 

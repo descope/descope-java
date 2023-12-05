@@ -8,8 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.model.auth.AuthParams;
+import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
+import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -32,13 +39,13 @@ public class AuthenticationServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getAuthParams();
-    var client = TestUtils.getClient();
-    var authService = AuthenticationServiceBuilder.buildServices(client, authParams);
+    AuthParams authParams = TestUtils.getAuthParams();
+    Client client = TestUtils.getClient();
+    AuthenticationServices authService = AuthenticationServiceBuilder.buildServices(client, authParams);
     this.authenticationService = authService.getAuthService();
     this.otpService = authService.getOtpService();
-    var mgmtParams = TestUtils.getManagementParams();
-    var mgmtServices = ManagementServiceBuilder.buildServices(client, mgmtParams);
+    ManagementParams mgmtParams = TestUtils.getManagementParams();
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, mgmtParams);
     this.userService = mgmtServices.getUserService();
     this.roleService = mgmtServices.getRolesService();
     this.tenantService = mgmtServices.getTenantService();
@@ -71,8 +78,8 @@ public class AuthenticationServiceImplTest {
           .build());
     userService.addTenant(loginId, tenantId);
     userService.addTenantRoles(loginId, tenantId, List.of(roleName));
-    var code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
-    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
+    OTPTestUserResponse code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     assertTrue(authenticationService.validateRoles(authInfo.getToken(), List.of(roleName)));
@@ -88,8 +95,8 @@ public class AuthenticationServiceImplTest {
   void testFunctionalFullCycle() {
     String loginId = TestUtils.getRandomName("u-") + "@descope.com";
     userService.createTestUser(loginId, UserRequest.builder().email(loginId).verifiedEmail(true).build());
-    var code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
-    var authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
+    OTPTestUserResponse code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     Token token = authenticationService.validateSessionWithToken(authInfo.getToken().getJwt());

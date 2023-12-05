@@ -13,6 +13,7 @@ import com.descope.model.mgmt.ManagementServices;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import io.jsonwebtoken.lang.Collections;
+import java.lang.Runtime.Version;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -50,7 +51,7 @@ public class DescopeClient {
     config.initializeManagementKey();
     config.initializeBaseURL();
 
-    var client = getClient(config);
+    Client client = getClient(config);
     this.authenticationServices = getAuthenticationServices(config, client);
     this.managementServices = getManagementServices(config, projectId, client);
     this.config = config;
@@ -58,7 +59,7 @@ public class DescopeClient {
 
   private static ManagementServices getManagementServices(
       Config config, String projectId, Client client) {
-    var managementParams = ManagementParams.builder()
+    ManagementParams managementParams = ManagementParams.builder()
         .projectId(projectId)
         .managementKey(config.getManagementKey())
         .build();
@@ -66,7 +67,7 @@ public class DescopeClient {
   }
 
   private static AuthenticationServices getAuthenticationServices(Config config, Client client) {
-    var authParams = AuthParams.builder()
+    AuthParams authParams = AuthParams.builder()
         .projectId(config.getProjectId())
         .publicKey(config.getPublicKey())
         .sessionJwtViaCookie(config.isSessionJWTViaCookie())
@@ -76,7 +77,7 @@ public class DescopeClient {
   }
 
   private static Client getClient(Config config) {
-    var clientParams = ClientParams.builder()
+    ClientParams clientParams = ClientParams.builder()
         .projectId(config.getProjectId())
         .baseUrl(config.getDescopeBaseUrl())
         .customDefaultHeaders(config.getCustomDefaultHeaders())
@@ -94,7 +95,7 @@ public class DescopeClient {
       params.setBaseUrl(DEFAULT_BASE_URL);
     }
 
-    var sdkInfo = getSdkInfo();
+    SdkInfo sdkInfo = getSdkInfo();
     return Client.builder()
         .uri(params.getBaseUrl())
         .params(params)
@@ -105,7 +106,7 @@ public class DescopeClient {
 
   private static SdkInfo getSdkInfo() {
     String name = "java";
-    var javaVersion = Runtime.version();
+    Version javaVersion = Runtime.version();
 
     // TODO - SHA
     return SdkInfo.builder()

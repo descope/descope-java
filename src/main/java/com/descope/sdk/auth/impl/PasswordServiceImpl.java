@@ -20,6 +20,7 @@ import com.descope.model.password.AuthenticationPasswordSignUpRequestBody;
 import com.descope.model.password.AuthenticationPasswordUpdateRequestBody;
 import com.descope.model.password.PasswordPolicy;
 import com.descope.model.user.User;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.PasswordService;
 import org.apache.commons.lang3.StringUtils;
 
@@ -37,14 +38,14 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
     if (user == null) {
       user = new User();
     }
-    var pwdSignUpRequest =
+    AuthenticationPasswordSignUpRequestBody pwdSignUpRequest =
         AuthenticationPasswordSignUpRequestBody.builder()
             .loginId(loginId)
             .user(user)
             .password(password)
             .build();
-    var apiProxy = getApiProxy();
-    var jwtResponse =
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse =
         apiProxy.post(getUri(SIGN_UP_PASSWORD_LINK), pwdSignUpRequest, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
@@ -55,13 +56,13 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
       throw ServerCommonException.invalidArgument("Login ID");
     }
 
-    var pwdSignInRequest =
+    AuthenticationPasswordSignInRequestBody pwdSignInRequest =
         AuthenticationPasswordSignInRequestBody.builder()
             .loginId(loginId)
             .password(password)
             .build();
-    var apiProxy = getApiProxy();
-    var jwtResponse =
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse =
         apiProxy.post(getUri(SIGN_IN_PASSWORD_LINK), pwdSignInRequest, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
@@ -72,12 +73,12 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
       throw ServerCommonException.invalidArgument("Login ID");
     }
 
-    var pwdResetRequest =
+    AuthenticationPasswordResetRequestBody pwdResetRequest =
         AuthenticationPasswordResetRequestBody.builder()
             .loginId(loginId)
             .redirectURL(redirectURL)
             .build();
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SEND_RESET_PASSWORD_LINK), pwdResetRequest, Void.class);
   }
 
@@ -90,12 +91,12 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
     if (StringUtils.isBlank(refreshToken)) {
       throw ServerCommonException.invalidArgument("Refresh Token");
     }
-    var pwdUpdateRequest =
+    AuthenticationPasswordUpdateRequestBody pwdUpdateRequest =
         AuthenticationPasswordUpdateRequestBody.builder()
             .loginId(loginId)
             .newPassword(newPassword)
             .build();
-    var apiProxy = getApiProxy(refreshToken);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
     apiProxy.post(getUri(UPDATE_USER_PASSWORD_LINK), pwdUpdateRequest, Void.class);
   }
 
@@ -105,20 +106,20 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    var pwdUpdateRequest =
+    AuthenticationPasswordReplaceRequestBody pwdUpdateRequest =
         AuthenticationPasswordReplaceRequestBody.builder()
             .loginId(loginId)
             .oldPassword(oldPassword)
             .newPassword(newPassword)
             .build();
-    var apiProxy = getApiProxy();
-    var jwtResponse = apiProxy.post(getUri(REPLACE_USER_PASSWORD_LINK), pwdUpdateRequest, JWTResponse.class);
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse = apiProxy.post(getUri(REPLACE_USER_PASSWORD_LINK), pwdUpdateRequest, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
 
   @Override
   public PasswordPolicy getPasswordPolicy() throws DescopeException {
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(getUri(PASSWORD_POLICY_LINK), PasswordPolicy.class);
   }
 }

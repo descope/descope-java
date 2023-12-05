@@ -9,6 +9,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.group.Group;
 import com.descope.model.mgmt.ManagementParams;
+import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.GroupService;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
       throw ServerCommonException.invalidArgument("TenantId");
     }
     Map<String, String> request = Map.of("tenantId", tenantID);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return (List<Group>) apiProxy.post(getUri(GROUP_LOAD_ALL_LINK), request, List.class);
   }
 
@@ -42,7 +43,7 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
     }
     Map<String, Object> request =
         Map.of("tenantId", tenantID, "loginIds", loginIDs, "userIds", userIDs);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return (List<Group>)
         apiProxy.post(getUri(LOAD_ALL_FOR_GROUP_MEMBERS_LINK), request, List.class);
   }
@@ -57,7 +58,7 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
       throw ServerCommonException.invalidArgument("GroupID");
     }
     Map<String, String> request = Map.of("tenantId", tenantID, "groupId", groupID);
-    var apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy();
     return (List<Group>) apiProxy.post(getUri(LOAD_ALL_GROUP_MEMBERS_LINK), request, List.class);
   }
 }
