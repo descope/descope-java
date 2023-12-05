@@ -1149,6 +1149,7 @@ try {
 }
 
 // Clone the current project to a new one
+// Note that this action is supported only with a pro license or above.
 try {
     NewProjectResponse resp = ps.clone("New Project Name", ProjectTag.None);
 } catch (DescopeException de) {
