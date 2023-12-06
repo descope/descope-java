@@ -259,7 +259,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public updateDisplayNames(String loginId, String givenName, String middleName,
+  public UserResponseDetails updateDisplayNames(String loginId, String givenName, String middleName,
    String familyName) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
