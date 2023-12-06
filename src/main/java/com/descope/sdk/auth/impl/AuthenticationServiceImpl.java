@@ -14,6 +14,7 @@ import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
+import com.descope.proxy.ApiProxy;
 import java.net.URI;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
@@ -64,11 +65,11 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public Token exchangeAccessKey(String accessKey) throws DescopeException {
-    var apiProxy = getApiProxy(accessKey);
+    ApiProxy apiProxy = getApiProxy(accessKey);
     URI exchangeAccessKeyLinkURL = composeExchangeAccessKeyLinkURL();
 
-    var jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL, null, JWTResponse.class);
-    var authenticationInfo = getAuthenticationInfo(jwtResponse);
+    JWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL, null, JWTResponse.class);
+    AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
     return authenticationInfo.getToken();
   }
 
@@ -128,7 +129,7 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     if (Strings.isEmpty(refreshToken)) {
       throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
     }
-    var apiProxy = getApiProxy(refreshToken);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
     URI logOutURL = composeLogOutLinkURL(); 
     apiProxy.post(logOutURL, null, JWTResponse.class);
   }
@@ -138,7 +139,7 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     if (Strings.isEmpty(refreshToken)) {
       throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
     }
-    var apiProxy = getApiProxy(refreshToken);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
     URI logOutAllURL = composeLogOutAllLinkURL();
     apiProxy.post(logOutAllURL, null, JWTResponse.class);
   }
@@ -148,8 +149,8 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
       throw ServerCommonException.invalidArgument("Code");
     }
     ExchangeTokenRequest request = new ExchangeTokenRequest(code);
-    var apiProxy = getApiProxy();
-    var jwtResponse = apiProxy.post(url, request, JWTResponse.class);
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse = apiProxy.post(url, request, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
 

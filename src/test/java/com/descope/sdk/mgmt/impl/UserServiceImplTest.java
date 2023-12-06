@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,7 +19,12 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AssociatedTenant;
+import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.auth.InviteOptions;
+import com.descope.model.client.Client;
+import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -38,6 +44,7 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -49,7 +56,7 @@ import org.mockito.MockedStatic;
 
 public class UserServiceImplTest {
 
-  private final List<String> mockRoles = List.of("role1", "role2");
+  private final List<String> mockRoles = Arrays.asList("role1", "role2");
   private final String mockUrl = "http://localhost.com";
   private UserService userService;
   private TenantService tenantService;
@@ -59,54 +66,54 @@ public class UserServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getManagementParams();
-    var client = TestUtils.getClient();
-    var mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    ManagementParams authParams = TestUtils.getManagementParams();
+    Client client = TestUtils.getClient();
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
     this.userService = mgmtServices.getUserService();
     this.tenantService = mgmtServices.getTenantService();
     this.roleService = mgmtServices.getRolesService();
-    var authServices = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams());
+    AuthenticationServices authServices = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams());
     this.magicLinkService = authServices.getMagicLinkService();
     this.authenticationService = authServices.getAuthService();
   }
 
   @Test
   void testCreateForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var userRequest = mock(UserRequest.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    UserRequest userRequest = mock(UserRequest.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.create("someLoginId", userRequest);
+      UserResponseDetails response = userService.create("someLoginId", userRequest);
       Assertions.assertThat(response).isNotNull();
     }
   }
 
   @Test
   void testCreateTestUserForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var userRequest = mock(UserRequest.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    UserRequest userRequest = mock(UserRequest.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.createTestUser("someLoginId", userRequest);
+      UserResponseDetails response = userService.createTestUser("someLoginId", userRequest);
       Assertions.assertThat(response).isNotNull();
     }
   }
 
   @Test
   void testInviteForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var userRequest = mock(UserRequest.class);
-    var apiProxy = mock(ApiProxy.class);
-    var inviteUrl = InviteOptions.builder().inviteUrl("https://mockUrl.com").build();
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    UserRequest userRequest = mock(UserRequest.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    InviteOptions inviteUrl = InviteOptions.builder().inviteUrl("https://mockUrl.com").build();
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
 
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.invite("someLoginId", userRequest, inviteUrl);
+      UserResponseDetails response = userService.invite("someLoginId", userRequest, inviteUrl);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -121,13 +128,13 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var userRequest = mock(UserRequest.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    UserRequest userRequest = mock(UserRequest.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.update("someLoginId", userRequest);
+      UserResponseDetails response = userService.update("someLoginId", userRequest);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -155,7 +162,7 @@ public class UserServiceImplTest {
 
   @Test
   void testDeleteForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -166,7 +173,7 @@ public class UserServiceImplTest {
 
   @Test
   void testDeleteAllTestUsersForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).delete(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -184,12 +191,12 @@ public class UserServiceImplTest {
 
   @Test
   void testLoadForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.load("someLoginId");
+      UserResponseDetails response = userService.load("someLoginId");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -203,12 +210,12 @@ public class UserServiceImplTest {
 
   @Test
   void testLoadByUserIdForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.loadByUserId("SomeUserId");
+      UserResponseDetails response = userService.loadByUserId("SomeUserId");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -222,12 +229,12 @@ public class UserServiceImplTest {
 
   @Test
   void testActivateForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.activate("someLoginId");
+      UserResponseDetails response = userService.activate("someLoginId");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -241,12 +248,12 @@ public class UserServiceImplTest {
 
   @Test
   void testDeactivateForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.deactivate("someLoginId");
+      UserResponseDetails response = userService.deactivate("someLoginId");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -261,12 +268,12 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateEmailForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.updateEmail("someLoginId", "someEmail", false);
+      UserResponseDetails response = userService.updateEmail("someLoginId", "someEmail", false);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -281,12 +288,12 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdatePhoneForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.updatePhone("someLoginId", "1234567890", false);
+      UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -301,12 +308,12 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateDisplayNameForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.updateDisplayName("someLoginId", "someDisplay");
+      UserResponseDetails response = userService.updateDisplayName("someLoginId", "someDisplay");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -321,12 +328,12 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdatePictureForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.updatePicture("someLoginId", "somePicture");
+      UserResponseDetails response = userService.updatePicture("someLoginId", "somePicture");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -349,12 +356,12 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateCustomAttributesForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.updateCustomAttributes("someLoginId", "someKey", 0);
+      UserResponseDetails response = userService.updateCustomAttributes("someLoginId", "someKey", 0);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -369,12 +376,12 @@ public class UserServiceImplTest {
 
   @Test
   void testUpdateLoginIdForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.updateLoginId("someLoginId", "someNewLoginId");
+      UserResponseDetails response = userService.updateLoginId("someLoginId", "someNewLoginId");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -388,12 +395,12 @@ public class UserServiceImplTest {
 
   @Test
   void testAddRolesForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.addRoles("someLoginId", mockRoles);
+      UserResponseDetails response = userService.addRoles("someLoginId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -408,12 +415,12 @@ public class UserServiceImplTest {
 
   @Test
   void testRemoveRolesForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.removeRoles("someLoginId", mockRoles);
+      UserResponseDetails response = userService.removeRoles("someLoginId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -428,12 +435,12 @@ public class UserServiceImplTest {
 
   @Test
   void testAddTenantForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.addTenant("someLoginId", "someTenantId");
+      UserResponseDetails response = userService.addTenant("someLoginId", "someTenantId");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -448,12 +455,12 @@ public class UserServiceImplTest {
 
   @Test
   void testRemoveTenantForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.removeTenant("someLoginId", "someTenantId");
+      UserResponseDetails response = userService.removeTenant("someLoginId", "someTenantId");
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -468,12 +475,12 @@ public class UserServiceImplTest {
 
   @Test
   void testAddTenantRolesForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.addTenantRoles("someLoginId", "someTenantId", mockRoles);
+      UserResponseDetails response = userService.addTenantRoles("someLoginId", "someTenantId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -488,12 +495,12 @@ public class UserServiceImplTest {
 
   @Test
   void testRemoveTenantRolesForSuccess() {
-    var userResponseDetails = mock(UserResponseDetails.class);
-    var apiProxy = mock(ApiProxy.class);
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.removeTenantRoles("someLoginId", "someTenantId", mockRoles);
+      UserResponseDetails response = userService.removeTenantRoles("someLoginId", "someTenantId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -516,7 +523,7 @@ public class UserServiceImplTest {
 
   @Test
   void testSetPasswordForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -534,7 +541,7 @@ public class UserServiceImplTest {
 
   @Test
   void testExpirePasswordForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -561,12 +568,12 @@ public class UserServiceImplTest {
 
   @Test
   void testGetProviderTokenForSuccess() {
-    var mockResponse = new ProviderTokenResponse("provider", "1", "at", 1L, List.of("a", "b"));
-    var apiProxy = mock(ApiProxy.class);
+    ProviderTokenResponse mockResponse = new ProviderTokenResponse("provider", "1", "at", 1L, Arrays.asList("a", "b"));
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.getProviderToken("xxx", "provider");
+      ProviderTokenResponse response = userService.getProviderToken("xxx", "provider");
       Assertions.assertThat(response.getProvider()).isEqualTo("provider");
       Assertions.assertThat(response.getProviderUserId()).isEqualTo("1");
       Assertions.assertThat(response.getAccessToken()).isEqualTo("at");
@@ -585,12 +592,12 @@ public class UserServiceImplTest {
 
   @Test
   void testGenerateOtpForTestUserForSuccess() {
-    var mockResponse = new OTPTestUserResponse("12345", "someLogin");
-    var apiProxy = mock(ApiProxy.class);
+    OTPTestUserResponse mockResponse = new OTPTestUserResponse("12345", "someLogin");
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.generateOtpForTestUser("someLoginId", DeliveryMethod.EMAIL);
+      OTPTestUserResponse response = userService.generateOtpForTestUser("someLoginId", DeliveryMethod.EMAIL);
       Assertions.assertThat(response.getCode()).isEqualTo("12345");
     }
   }
@@ -605,12 +612,13 @@ public class UserServiceImplTest {
 
   @Test
   void testGenerateMagicLinkForTestUserForSuccess() {
-    var mockResponse = new MagicLinkTestUserResponse("link", "someLogin");
-    var apiProxy = mock(ApiProxy.class);
+    MagicLinkTestUserResponse mockResponse = new MagicLinkTestUserResponse("link", "someLogin");
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.EMAIL);
+      MagicLinkTestUserResponse response =
+          userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.EMAIL);
       Assertions.assertThat(response.getLink()).isEqualTo("link");
     }
   }
@@ -625,12 +633,12 @@ public class UserServiceImplTest {
 
   @Test
   void testGenerateEnchantedLinkForTestUserForSuccess() {
-    var mockResponse = new EnchantedLinkTestUserResponse("pref", "link", "someLoginId");
-    var apiProxy = mock(ApiProxy.class);
+    EnchantedLinkTestUserResponse mockResponse = new EnchantedLinkTestUserResponse("pref", "link", "someLoginId");
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.generateEnchantedLinkForTestUser("someLoginId", mockUrl);
+      EnchantedLinkTestUserResponse response = userService.generateEnchantedLinkForTestUser("someLoginId", mockUrl);
       Assertions.assertThat(response.getLink()).isEqualTo("link");
     }
   }
@@ -645,26 +653,26 @@ public class UserServiceImplTest {
 
   @Test
   void testGenerateEmbeddedLinkForSuccess() {
-    var mockResponse = new GenerateEmbeddedLinkResponse("someToken");
-    var apiProxy = mock(ApiProxy.class);
+    GenerateEmbeddedLinkResponse mockResponse = new GenerateEmbeddedLinkResponse("someToken");
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.generateEmbeddedLink("someLoginId", null);
+      String response = userService.generateEmbeddedLink("someLoginId", null);
       Assertions.assertThat(response).isEqualTo("someToken");
     }
   }
 
   @Test
   void testSearchAllForSuccess() {
-    var userResponse = mock(UserResponse.class);
-    var allUsersResponse = new AllUsersResponseDetails(List.of(userResponse));
-    var userSearchRequest = UserSearchRequest.builder().limit(6).page(1).build();
-    var apiProxy = mock(ApiProxy.class);
+    UserResponse userResponse = mock(UserResponse.class);
+    AllUsersResponseDetails allUsersResponse = new AllUsersResponseDetails(Arrays.asList(userResponse));
+    UserSearchRequest userSearchRequest = UserSearchRequest.builder().limit(6).page(1).build();
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      var response = userService.searchAll(userSearchRequest);
+      AllUsersResponseDetails response = userService.searchAll(userSearchRequest);
       Assertions.assertThat(response.getUsers().size()).isEqualTo(1);
     }
   }
@@ -690,11 +698,11 @@ public class UserServiceImplTest {
     String loginId = TestUtils.getRandomName("u-");
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
-    List<String> additionalLoginIds = List.of(TestUtils.getRandomName("u-"), TestUtils.getRandomName("u-"));
+    List<String> additionalLoginIds = Arrays.asList(TestUtils.getRandomName("u-"), TestUtils.getRandomName("u-"));
     // Create
-    var createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
-        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test")
-        .invite(false).additionalLoginIds(additionalLoginIds).build());
+    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").additionalLoginIds(additionalLoginIds).
+				invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -706,17 +714,17 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     // Disable
-    var deactivateResponse = userService.deactivate(loginId);
+    UserResponseDetails deactivateResponse = userService.deactivate(loginId);
     user = deactivateResponse.getUser();
     assertNotNull(user);
     assertEquals("disabled", user.getStatus());
     // Enable
-    var activateResponse = userService.activate(loginId);
+    UserResponseDetails activateResponse = userService.activate(loginId);
     user = activateResponse.getUser();
     assertNotNull(user);
     assertEquals("enabled", user.getStatus());
     // Update
-    var updateResponse = userService.update(loginId, UserRequest.builder().loginId(loginId).email(email)
+    UserResponseDetails updateResponse = userService.update(loginId, UserRequest.builder().loginId(loginId).email(email)
         .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test1").invite(false).build());
     user = updateResponse.getUser();
     assertNotNull(user);
@@ -728,7 +736,7 @@ public class UserServiceImplTest {
     userService.updatePhone(loginId, "+1-555-555-6666", true);
     String newLoginId = TestUtils.getRandomName("u-");
     userService.updateLoginId(loginId, newLoginId);
-    var loadResponse = userService.load(newLoginId);
+    UserResponseDetails loadResponse = userService.load(newLoginId);
     user = loadResponse.getUser();
     assertNotNull(user);
     assertEquals(email, user.getEmail());
@@ -745,9 +753,9 @@ public class UserServiceImplTest {
     assertEquals(true, user.getVerifiedPhone());
     assertEquals("Testing Test", user.getName());
     assertEquals("enabled", user.getStatus());
-    var searchResponse = userService.searchAll(null);
+    AllUsersResponseDetails searchResponse = userService.searchAll(null);
     boolean found = false;
-    for (var u : searchResponse.getUsers()) {
+    for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
         found = true;
         break;
@@ -764,8 +772,9 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    var createResponse = userService.createTestUser(loginId, UserRequest.builder().loginId(loginId).email(email)
-        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
+    UserResponseDetails createResponse = userService.createTestUser(loginId, UserRequest.builder().loginId(loginId)
+        .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
+        .displayName("Testing Test").invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -776,10 +785,10 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     assertEquals(true, user.getTest());
-    var searchResponse = userService.searchAll(UserSearchRequest.builder().withTestUser(true)
-        .phones(List.of(user.getPhone())).emails(List.of(user.getEmail())).build());
+    AllUsersResponseDetails searchResponse = userService.searchAll(UserSearchRequest.builder().withTestUser(true)
+        .phones(Arrays.asList(user.getPhone())).emails(Arrays.asList(user.getEmail())).build());
     boolean found = false;
-    for (var u : searchResponse.getUsers()) {
+    for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
         found = true;
         break;
@@ -787,9 +796,9 @@ public class UserServiceImplTest {
     }
     assertTrue(found);
     searchResponse = userService
-        .searchAll(UserSearchRequest.builder().testUsersOnly(true).emails(List.of(user.getEmail())).build());
+        .searchAll(UserSearchRequest.builder().testUsersOnly(true).emails(Arrays.asList(user.getEmail())).build());
     found = false;
-    for (var u : searchResponse.getUsers()) {
+    for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
         found = true;
         break;
@@ -803,7 +812,7 @@ public class UserServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalUserWithTenantAndRole() {
     String tenantName = TestUtils.getRandomName("t-");
-    String tenantId = tenantService.create(tenantName, List.of(tenantName + ".com"));
+    String tenantId = tenantService.create(tenantName, Arrays.asList(tenantName + ".com"));
     assertThat(tenantId).isNotBlank();
     String roleName = TestUtils.getRandomName("r-").substring(0, 20);
     roleService.create(roleName, "", null);
@@ -811,10 +820,11 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    var createResponse = userService.create(loginId,
+    UserResponseDetails createResponse = userService.create(loginId,
         UserRequest.builder().loginId(loginId).email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
             .displayName("Testing Test").invite(false)
-            .userTenants(List.of(AssociatedTenant.builder().tenantId(tenantId).roleNames(List.of(roleName)).build()))
+            .userTenants(
+              Arrays.asList(AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName)).build()))
             .build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
@@ -826,9 +836,10 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     assertThat(user.getUserTenants()).containsExactly(
-        AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(List.of(roleName)).build());
-    var updateResponse = userService.update(loginId,
-        UserRequest.builder().loginId(loginId).roleNames(List.of(roleName)).email(email).verifiedEmail(true)
+        AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(
+          Arrays.asList(roleName)).build());
+    UserResponseDetails updateResponse = userService.update(loginId,
+        UserRequest.builder().loginId(loginId).roleNames(Arrays.asList(roleName)).email(email).verifiedEmail(true)
             .phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
     user = updateResponse.getUser();
     assertNotNull(user);
@@ -845,23 +856,24 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    var createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
+    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
         .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
     String token = userService.generateEmbeddedLink(loginId, null);
-    var authInfo = magicLinkService.verify(token);
+    AuthenticationInfo authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    token = userService.generateEmbeddedLink(loginId, Map.of("kuku", "kiki"));
+    token = userService.generateEmbeddedLink(loginId, mapOf("kuku", "kiki"));
     final long now = System.currentTimeMillis();
     authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    var claims = authInfo.getToken().getClaims();
+    Map<String, Object> claims = authInfo.getToken().getClaims();
     // temporary
-    var nsecClaims = Map.class.cast(claims.get("nsec"));
+    @SuppressWarnings("unchecked")
+    Map<String, Object> nsecClaims = Map.class.cast(claims.get("nsec"));
     assertEquals("kiki", nsecClaims == null ? claims.get("kuku") : nsecClaims.get("kuku"));
 
     // sleep till we are more than a sec than 'now'
@@ -889,20 +901,20 @@ public class UserServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalGenerateEmbeddedLinkWithPhoneAsID() {
     String randomSaffix = String.valueOf(new Random().nextInt(1000));
-    randomSaffix = "0".repeat(4 - randomSaffix.length()) + randomSaffix;
+    randomSaffix = new String(new char[4 - randomSaffix.length()]).replace("\0", "0") + randomSaffix;
     String phone = "+1-555-555-" + randomSaffix;
     String cleanPhone = "+1555555" + randomSaffix;
     // Create
-    var createResponse = userService.create(phone, UserRequest.builder().loginId(phone).phone(phone).verifiedPhone(true)
-        .displayName("Testing Test").invite(false).build());
+    UserResponseDetails createResponse = userService.create(phone, UserRequest.builder().loginId(phone).phone(phone)
+        .verifiedPhone(true).displayName("Testing Test").invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(cleanPhone);
     String token = userService.generateEmbeddedLink(phone, null);
-    var authInfo = magicLinkService.verify(token);
+    AuthenticationInfo authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    var userResp = userService.load(cleanPhone);
+    UserResponseDetails userResp = userService.load(cleanPhone);
     assertNotNull(userResp.getUser());
     Assertions.assertThat(userResp.getUser().getLoginIds()).contains(cleanPhone);
     userService.delete(phone);

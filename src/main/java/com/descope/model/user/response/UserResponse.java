@@ -1,7 +1,6 @@
 package com.descope.model.user.response;
 
 import com.descope.model.auth.AssociatedTenant;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -11,7 +10,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
 @SuppressWarnings("checkstyle:MemberName")
 public class UserResponse {
   String userId;

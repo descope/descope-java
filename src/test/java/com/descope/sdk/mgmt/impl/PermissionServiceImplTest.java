@@ -14,12 +14,15 @@ import static org.mockito.Mockito.verify;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
+import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.permission.Permission;
 import com.descope.model.permission.PermissionResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.PermissionService;
+import java.util.Arrays;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,14 +34,14 @@ class PermissionServiceImplTest {
 
   private final Permission mockPermission =
       Permission.builder().name("someName").description("someDesc").build();
-  private final List<Permission> mockPermissionList = List.of(mockPermission);
+  private final List<Permission> mockPermissionList = Arrays.asList(mockPermission);
   private final PermissionResponse permissionResponse = new PermissionResponse(mockPermissionList);
   private PermissionService permissionService;
 
   @BeforeEach
   void setUp() {
-    var authParams = TestUtils.getManagementParams();
-    var client = TestUtils.getClient();
+    ManagementParams authParams = TestUtils.getManagementParams();
+    Client client = TestUtils.getClient();
     this.permissionService =
         ManagementServiceBuilder.buildServices(client, authParams).getPermissionService();
   }
@@ -53,7 +56,7 @@ class PermissionServiceImplTest {
 
   @Test
   void testPermissionCreateSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -73,7 +76,7 @@ class PermissionServiceImplTest {
 
   @Test
   void testUpdateForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -102,7 +105,7 @@ class PermissionServiceImplTest {
 
   @Test
   void testDeleteForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -114,7 +117,7 @@ class PermissionServiceImplTest {
 
   @Test
   void testLoadAllForSuccess() {
-    var apiProxy = mock(ApiProxy.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(permissionResponse).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -131,10 +134,10 @@ class PermissionServiceImplTest {
   void testFunctionalFullCycle() {
     String p = TestUtils.getRandomName("p-").substring(0, 20);
     permissionService.create(p, "ttt");
-    var permissions = permissionService.loadAll();
+    PermissionResponse permissions = permissionService.loadAll();
     assertThat(permissions.getPermissions()).isNotEmpty();
     boolean found = false;
-    for (var perm : permissions.getPermissions()) {
+    for (Permission perm : permissions.getPermissions()) {
       if (perm.getName().equals(p)) {
         found = true;
         assertEquals("ttt", perm.getDescription());
@@ -145,7 +148,7 @@ class PermissionServiceImplTest {
     permissions = permissionService.loadAll();
     assertThat(permissions.getPermissions()).isNotEmpty();
     found = false;
-    for (var perm : permissions.getPermissions()) {
+    for (Permission perm : permissions.getPermissions()) {
       if (perm.getName().equals(p + "1")) {
         found = true;
         assertEquals("zzz", perm.getDescription());

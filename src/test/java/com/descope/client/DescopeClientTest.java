@@ -23,8 +23,8 @@ class DescopeClientTest {
             .and(MANAGEMENT_KEY_ENV_VAR, expectedManagementKey);
     env.execute(
         () -> {
-          var descopeClient = new DescopeClient();
-          var config = descopeClient.getConfig();
+          DescopeClient descopeClient = new DescopeClient();
+          Config config = descopeClient.getConfig();
           Assertions.assertThat(config.getProjectId()).isEqualTo("someProject");
           Assertions.assertThat(config.getPublicKey()).isEqualTo("somePublicKey");
           Assertions.assertThat(config.getManagementKey()).isEqualTo("someManagementKey");

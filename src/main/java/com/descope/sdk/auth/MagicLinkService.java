@@ -6,7 +6,6 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.user.User;
-import java.net.http.HttpRequest;
 
 public interface MagicLinkService {
 
@@ -19,7 +18,7 @@ public interface MagicLinkService {
    * @param deliveryMethod - {@link DeliveryMethod DeliveryMethod}
    * @param loginId - User login ID
    * @param uri - Base URI
-   * @param request - {@link HttpRequest HttpRequest}
+   * @param token - when doing step-up or mfa then we need current session token
    * @param loginOptions - {@link LoginOptions LoginOptions}
    * @return masked address where the link was sent (email, whatsapp or phone)
    * @throws DescopeException - error upon failure
@@ -28,7 +27,7 @@ public interface MagicLinkService {
       DeliveryMethod deliveryMethod,
       String loginId,
       String uri,
-      HttpRequest request,
+      String token,
       LoginOptions loginOptions)
       throws DescopeException;
 

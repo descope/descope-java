@@ -7,7 +7,7 @@ for a backend written in Java. You can read more on the [Descope Website](https:
 
 ## Requirements
 
-The SDK supports Java version 11 and above.
+The SDK supports Java version 8 and above.
 
 ## Installing the SDK
 
@@ -1213,7 +1213,7 @@ Java provides a very simple way to mock services and objects using the Mockito p
 Here is a simple example of how you can mock a magic link verify response.
 ```java
 User user = new User("someUserName", MOCK_EMAIL, "+1-555-555-5555");
-var apiProxy = mock(ApiProxy.class); // Mock the proxy that actually sends the HTTP requests
+ApiProxy apiProxy = mock(ApiProxy.class); // Mock the proxy that actually sends the HTTP requests
 var maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL); // Define expected response
 doReturn(maskedEmailRes).when(apiProxy).post(any(), any(), any()); // When post is called, return mock response
 try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) { // Mock proxy builder
@@ -1222,9 +1222,9 @@ try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBu
 }
 
 // Now mock the verify
-var apiProxy = mock(ApiProxy.class);
+ApiProxy apiProxy = mock(ApiProxy.class);
 doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any()); // Return the mock JWT response
-doReturn(new SigningKeysResponse(List.of(MOCK_SIGNING_KEY))).when(apiProxy).get(any(), eq(SigningKeysResponse.class)); // Return mock key
+doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY))).when(apiProxy).get(any(), eq(SigningKeysResponse.class)); // Return mock key
 var provider = mock(Provider.class);
 when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
