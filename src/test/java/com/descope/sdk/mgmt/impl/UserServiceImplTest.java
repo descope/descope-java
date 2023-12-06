@@ -702,7 +702,7 @@ public class UserServiceImplTest {
     // Create
     UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
         .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test")
-				.additionalLoginIds(additionalLoginIds).invite(false).build());
+        .additionalLoginIds(additionalLoginIds).invite(false).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
