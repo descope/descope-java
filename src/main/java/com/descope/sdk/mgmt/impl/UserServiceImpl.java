@@ -260,13 +260,13 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   public UserResponseDetails updateDisplayNames(String loginId, String givenName, String middleName,
-   String familyName) throws DescopeException {
+      String familyName) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updateUserNameUri = composeUpdateUserNameUri();
     Map<String, Object> request = mapOf("loginId", loginId, "givenName", givenName, "middleName", middleName,
-      "familyName", familyName);
+        "familyName", familyName);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updateUserNameUri, request, UserResponseDetails.class);
   }
