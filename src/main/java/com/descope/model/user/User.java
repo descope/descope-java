@@ -13,4 +13,7 @@ public class User {
   private String name;
   private String email;
   private String phone;
+  private String givenName;
+  private String middleName;
+  private String familyName;
 }

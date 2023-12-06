@@ -19,6 +19,9 @@ public class UserResponse {
   String phone;
   Boolean verifiedPhone;
   String name;
+  String givenName;
+  String middleName;
+  String familyName;
   List<String> roleNames;
   List<AssociatedTenant> userTenants;
   String status;
