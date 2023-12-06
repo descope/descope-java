@@ -212,6 +212,22 @@ public interface UserService {
   UserResponseDetails updateDisplayName(String loginId, String displayName) throws DescopeException;
 
   /**
+   * Update an existing user's display name (i.e., their full name).
+   *
+   * @param loginId The loginID is required.
+   * @param givenName The parameter can be empty in which case the name will be
+   *     removed.
+   * @param middleName The parameter can be empty in which case the name will be
+   *     removed.
+   * @param familyName The parameter can be empty in which case the name will be
+   *     removed.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updateDisplayName(String loginId, String givenName, String middleName, String familyName) throws DescopeException;
+
+  /**
    * Update an existing user's picture (i.e., url to the avatar).
    *
    * @param loginId The loginID is required.

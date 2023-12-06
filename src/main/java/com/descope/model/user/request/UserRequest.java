@@ -20,6 +20,9 @@ public class UserRequest {
   String phone;
   Boolean verifiedPhone;
   String displayName;
+  String givenName;
+  String middleName;
+  String familyName;
   List<String> roleNames;
   List<AssociatedTenant> userTenants;
   Map<String, Object> customAttributes;

@@ -731,6 +731,7 @@ public class UserServiceImplTest {
     assertEquals("Testing Test1", user.getName());
     // Update individual fields
     userService.updateDisplayName(loginId, "Testing Test");
+    userService.updateDisplayNames(loginId, "My Given", "My Middle", "My Last");
     email = TestUtils.getRandomName("test-") + "@descope.com";
     userService.updateEmail(loginId, email, true);
     userService.updatePhone(loginId, "+1-555-555-6666", true);
@@ -744,6 +745,9 @@ public class UserServiceImplTest {
     assertEquals(true, user.getVerifiedEmail());
     assertEquals(true, user.getVerifiedPhone());
     assertEquals("Testing Test", user.getName());
+    assertEquals("My Given", user.getGivenName());
+    assertEquals("My Middle", user.getMiddleName());
+    assertEquals("My Last", user.getFamilyName());
     assertEquals("enabled", user.getStatus());
     loadResponse = userService.loadByUserId(createResponse.getUser().getUserId());
     assertNotNull(user);

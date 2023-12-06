@@ -1,42 +1,30 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.COMPOSE_OTP_FOR_TEST_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.CREATE_USER_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.DELETE_ALL_TEST_USERS_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.DELETE_USER_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.ENCHANTED_LINK_FOR_TEST_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.GET_PROVIDER_TOKEN;
-import static com.descope.literals.Routes.ManagementEndPoints.LOAD_USER_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.LOGOUT_USER_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TEST_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_CUSTOM_ATTRIBUTE_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_PICTURE_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LOGIN_ID_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_NAME_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_CREATE_EMBEDDED_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_EXPIRE_PASSWORD_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AssociatedTenant;
+import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
-import com.descope.model.user.request.EnchantedLinkTestUserRequest;
-import com.descope.model.user.request.GenerateEmbeddedLinkRequest;
-import com.descope.model.user.request.MagicLinkTestUserRequest;
-import com.descope.model.user.request.OTPTestUserRequest;
+import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -45,519 +33,894 @@ import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
+import com.descope.model.user.response.UserResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.proxy.ApiProxy;
+import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
+import com.descope.sdk.auth.AuthenticationService;
+import com.descope.sdk.auth.MagicLinkService;
+import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
+import com.descope.sdk.mgmt.RolesService;
+import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
-import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
+import java.util.Random;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.MockedStatic;
 
-class UserServiceImpl extends ManagementsBase implements UserService {
+public class UserServiceImplTest {
 
-  UserServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  private final List<String> mockRoles = Arrays.asList("role1", "role2");
+  private final String mockUrl = "http://localhost.com";
+  private UserService userService;
+  private TenantService tenantService;
+  private RolesService roleService;
+  private MagicLinkService magicLinkService;
+  private AuthenticationService authenticationService;
+
+  @BeforeEach
+  void setUp() {
+    ManagementParams authParams = TestUtils.getManagementParams();
+    Client client = TestUtils.getClient();
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    this.userService = mgmtServices.getUserService();
+    this.tenantService = mgmtServices.getTenantService();
+    this.roleService = mgmtServices.getRolesService();
+    AuthenticationServices authServices = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams());
+    this.magicLinkService = authServices.getMagicLinkService();
+    this.authenticationService = authServices.getAuthService();
   }
 
-  @Override
-  public UserResponseDetails create(String loginId, UserRequest request) throws DescopeException {
-    if (request == null) {
-      request = new UserRequest();
+  @Test
+  void testCreateForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    UserRequest userRequest = mock(UserRequest.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.create("someLoginId", userRequest);
+      Assertions.assertThat(response).isNotNull();
     }
-    request.setLoginId(loginId);
-    request.setInviteUrl("");
-    request.setInvite(false);
-    request.setTest(false);
-
-    URI createUserUri = composeCreateUserUri();
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
   }
 
-  @Override
-  public UserResponseDetails createTestUser(String loginId, UserRequest request)
-      throws DescopeException {
-    if (request == null) {
-      request = new UserRequest();
+  @Test
+  void testCreateTestUserForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    UserRequest userRequest = mock(UserRequest.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.createTestUser("someLoginId", userRequest);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testInviteForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    UserRequest userRequest = mock(UserRequest.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    InviteOptions inviteUrl = InviteOptions.builder().inviteUrl("https://mockUrl.com").build();
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.invite("someLoginId", userRequest, inviteUrl);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdateForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.update("", new UserRequest()));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    UserRequest userRequest = mock(UserRequest.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.update("someLoginId", userRequest);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testLogoutForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.logoutUser(""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLogoutByUserIDForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.logoutUserByUserId(""));
+    assertNotNull(thrown);
+    assertEquals("The User ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testDeleteForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.delete(""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testDeleteForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      userService.delete("someLoginId");
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testDeleteAllTestUsersForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(Void.class).when(apiProxy).delete(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      userService.deleteAllTestUsers();
+      verify(apiProxy, times(1)).delete(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testLoadForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.load(""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLoadForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.load("someLoginId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testLoadByUserIdForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.loadByUserId(""));
+    assertNotNull(thrown);
+    assertEquals("The User ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLoadByUserIdForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.loadByUserId("SomeUserId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testActivateForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.activate(""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testActivateForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.activate("someLoginId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testDeactivateForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.deactivate(""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testDeactivateForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.deactivate("someLoginId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdateEmailForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updateEmail("", "someEmail", false));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateEmailForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updateEmail("someLoginId", "someEmail", false);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdatePhoneForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updatePhone("", "someEmail", false));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdatePhoneForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdateDisplayNameForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updateDisplayName("", "someDisplay"));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateDisplayNameForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updateDisplayName("someLoginId", "someDisplay");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdatePictureForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updatePicture("", "somePicture"));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdatePictureForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updatePicture("someLoginId", "somePicture");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdateCustomAttributesForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updateCustomAttributes("", "someKey", 0));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateCustomAttributesForEmptyKey() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updateCustomAttributes("someLoginId", "", 0));
+    assertNotNull(thrown);
+    assertEquals("The Key argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateCustomAttributesForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updateCustomAttributes("someLoginId", "someKey", 0);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdateLoginIdForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.updateLoginId("", "someId"));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateLoginIdForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updateLoginId("someLoginId", "someNewLoginId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testAddRolesForEmptyKeyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.addRoles("", mockRoles));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testAddRolesForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.addRoles("someLoginId", mockRoles);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testRemoveRolesForEmptyKeyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.removeRoles("", mockRoles));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testRemoveRolesForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.removeRoles("someLoginId", mockRoles);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testAddTenantForEmptyKeyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.addTenant("", "someTenantId"));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testAddTenantForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.addTenant("someLoginId", "someTenantId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testRemoveTenantForEmptyKeyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.removeTenant("", "someTenantId"));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testRemoveTenantForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.removeTenant("someLoginId", "someTenantId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testAddTenantRolesForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.addTenantRoles("", "someTenantId", mockRoles));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testAddTenantRolesForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.addTenantRoles("someLoginId", "someTenantId", mockRoles);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testRemoveTenantRolesForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.removeTenantRoles("", "someTenantId", mockRoles));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testRemoveTenantRolesForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.removeTenantRoles("someLoginId", "someTenantId", mockRoles);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testSetPasswordForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.setPassword("", "somePassword"));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testSetPasswordForEmptyPassword() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.setPassword("someLoginId", ""));
+    assertNotNull(thrown);
+    assertEquals("The Password argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testSetPasswordForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      userService.setPassword("someLoginId", "somePassword");
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testExpirePasswordForEmpty() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.expirePassword(""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testExpirePasswordForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      userService.expirePassword("someLoginId");
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testGetProviderTokenForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.getProviderToken("", ""));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGetProviderTokenForEmptyProvider() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.getProviderToken("x", ""));
+    assertNotNull(thrown);
+    assertEquals("The Provider argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGetProviderTokenForSuccess() {
+    ProviderTokenResponse mockResponse = new ProviderTokenResponse("provider", "1", "at", 1L, Arrays.asList("a", "b"));
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      ProviderTokenResponse response = userService.getProviderToken("xxx", "provider");
+      Assertions.assertThat(response.getProvider()).isEqualTo("provider");
+      Assertions.assertThat(response.getProviderUserId()).isEqualTo("1");
+      Assertions.assertThat(response.getAccessToken()).isEqualTo("at");
+      Assertions.assertThat(response.getExpiration()).isEqualTo(1L);
+      Assertions.assertThat(response.getScopes()).containsExactly("a", "b");
+    }
+  }
+
+  @Test
+  void testGenerateOtpForTestUserForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateOtpForTestUser("", DeliveryMethod.EMAIL));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateOtpForTestUserForSuccess() {
+    OTPTestUserResponse mockResponse = new OTPTestUserResponse("12345", "someLogin");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      OTPTestUserResponse response = userService.generateOtpForTestUser("someLoginId", DeliveryMethod.EMAIL);
+      Assertions.assertThat(response.getCode()).isEqualTo("12345");
+    }
+  }
+
+  @Test
+  void testGenerateMagicLinkForTestUserForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateMagicLinkForTestUser("", mockUrl, DeliveryMethod.EMAIL));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateMagicLinkForTestUserForSuccess() {
+    MagicLinkTestUserResponse mockResponse = new MagicLinkTestUserResponse("link", "someLogin");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      MagicLinkTestUserResponse response =
+          userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.EMAIL);
+      Assertions.assertThat(response.getLink()).isEqualTo("link");
+    }
+  }
+
+  @Test
+  void testGenerateEnchantedLinkForTestUserForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateEnchantedLinkForTestUser("", mockUrl));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateEnchantedLinkForTestUserForSuccess() {
+    EnchantedLinkTestUserResponse mockResponse = new EnchantedLinkTestUserResponse("pref", "link", "someLoginId");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      EnchantedLinkTestUserResponse response = userService.generateEnchantedLinkForTestUser("someLoginId", mockUrl);
+      Assertions.assertThat(response.getLink()).isEqualTo("link");
+    }
+  }
+
+  @Test
+  void testGenerateEmbeddedLinkForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateEmbeddedLink("", null));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateEmbeddedLinkForSuccess() {
+    GenerateEmbeddedLinkResponse mockResponse = new GenerateEmbeddedLinkResponse("someToken");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      String response = userService.generateEmbeddedLink("someLoginId", null);
+      Assertions.assertThat(response).isEqualTo("someToken");
+    }
+  }
+
+  @Test
+  void testSearchAllForSuccess() {
+    UserResponse userResponse = mock(UserResponse.class);
+    AllUsersResponseDetails allUsersResponse = new AllUsersResponseDetails(Arrays.asList(userResponse));
+    UserSearchRequest userSearchRequest = UserSearchRequest.builder().limit(6).page(1).build();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      AllUsersResponseDetails response = userService.searchAll(userSearchRequest);
+      Assertions.assertThat(response.getUsers().size()).isEqualTo(1);
+    }
+  }
+
+  @Test
+  void testSearchAllForInvalidLimit() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.searchAll(UserSearchRequest.builder().limit(-1).build()));
+    assertNotNull(thrown);
+    assertEquals("The limit argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testSearchAllForInvalidPage() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.searchAll(UserSearchRequest.builder().page(-1).build()));
+    assertNotNull(thrown);
+    assertEquals("The page argument is invalid", thrown.getMessage());
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalFullCycle() {
+    String loginId = TestUtils.getRandomName("u-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    List<String> additionalLoginIds = Arrays.asList(TestUtils.getRandomName("u-"), TestUtils.getRandomName("u-"));
+    // Create
+    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test")
+        .additionalLoginIds(additionalLoginIds).invite(false).build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains(loginId);
+    Assertions.assertThat(user.getLoginIds()).containsAll(additionalLoginIds);
+    assertEquals(email, user.getEmail());
+    assertEquals("+15555555555", user.getPhone());
+    assertEquals(true, user.getVerifiedEmail());
+    assertEquals(true, user.getVerifiedPhone());
+    assertEquals("Testing Test", user.getName());
+    assertEquals("invited", user.getStatus());
+    // Disable
+    UserResponseDetails deactivateResponse = userService.deactivate(loginId);
+    user = deactivateResponse.getUser();
+    assertNotNull(user);
+    assertEquals("disabled", user.getStatus());
+    // Enable
+    UserResponseDetails activateResponse = userService.activate(loginId);
+    user = activateResponse.getUser();
+    assertNotNull(user);
+    assertEquals("enabled", user.getStatus());
+    // Update
+    UserResponseDetails updateResponse = userService.update(loginId, UserRequest.builder().loginId(loginId).email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test1").invite(false).build());
+    user = updateResponse.getUser();
+    assertNotNull(user);
+    assertEquals("Testing Test1", user.getName());
+    // Update individual fields
+    userService.updateDisplayName(loginId, "Testing Test");
+    userService.updateDisplayNames(loginId, "My Given", "My Middle", "My Last");
+    email = TestUtils.getRandomName("test-") + "@descope.com";
+    userService.updateEmail(loginId, email, true);
+    userService.updatePhone(loginId, "+1-555-555-6666", true);
+    String newLoginId = TestUtils.getRandomName("u-");
+    userService.updateLoginId(loginId, newLoginId);
+    UserResponseDetails loadResponse = userService.load(newLoginId);
+    user = loadResponse.getUser();
+    assertNotNull(user);
+    assertEquals(email, user.getEmail());
+    assertEquals("+15555556666", user.getPhone());
+    assertEquals(true, user.getVerifiedEmail());
+    assertEquals(true, user.getVerifiedPhone());
+    assertEquals("Testing Test", user.getName());
+    assertEquals("My Given", user.getGivenName());
+    assertEquals("My Middle", user.getMiddleName());
+    assertEquals("My Last", user.getFamilyName());
+    assertEquals("enabled", user.getStatus());
+    loadResponse = userService.loadByUserId(createResponse.getUser().getUserId());
+    assertNotNull(user);
+    assertEquals(email, user.getEmail());
+    assertEquals("+15555556666", user.getPhone());
+    assertEquals(true, user.getVerifiedEmail());
+    assertEquals(true, user.getVerifiedPhone());
+    assertEquals("Testing Test", user.getName());
+    assertEquals("enabled", user.getStatus());
+    AllUsersResponseDetails searchResponse = userService.searchAll(null);
+    boolean found = false;
+    for (UserResponse u : searchResponse.getUsers()) {
+      if (u.getUserId().equals(createResponse.getUser().getUserId())) {
+        found = true;
+        break;
+      }
+    }
+    assertTrue(found);
+    // Delete
+    userService.delete(newLoginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalTestUsers() {
+    String loginId = TestUtils.getRandomName("u-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    // Create
+    UserResponseDetails createResponse = userService.createTestUser(loginId, UserRequest.builder().loginId(loginId)
+        .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
+            .displayName("Testing Test").invite(false).build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains(loginId);
+    assertEquals(email, user.getEmail());
+    assertEquals("+15555555555", user.getPhone());
+    assertEquals(true, user.getVerifiedEmail());
+    assertEquals(true, user.getVerifiedPhone());
+    assertEquals("Testing Test", user.getName());
+    assertEquals("invited", user.getStatus());
+    assertEquals(true, user.getTest());
+    AllUsersResponseDetails searchResponse = userService.searchAll(UserSearchRequest.builder().withTestUser(true)
+        .phones(Arrays.asList(user.getPhone())).emails(Arrays.asList(user.getEmail())).build());
+    boolean found = false;
+    for (UserResponse u : searchResponse.getUsers()) {
+      if (u.getUserId().equals(createResponse.getUser().getUserId())) {
+        found = true;
+        break;
+      }
+    }
+    assertTrue(found);
+    searchResponse = userService
+        .searchAll(UserSearchRequest.builder().testUsersOnly(true).emails(Arrays.asList(user.getEmail())).build());
+    found = false;
+    for (UserResponse u : searchResponse.getUsers()) {
+      if (u.getUserId().equals(createResponse.getUser().getUserId())) {
+        found = true;
+        break;
+      }
+    }
+    assertTrue(found);
+    // Delete
+    userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalUserWithTenantAndRole() {
+    String tenantName = TestUtils.getRandomName("t-");
+    String tenantId = tenantService.create(tenantName, Arrays.asList(tenantName + ".com"));
+    assertThat(tenantId).isNotBlank();
+    String roleName = TestUtils.getRandomName("r-").substring(0, 20);
+    roleService.create(roleName, "", null);
+    String loginId = TestUtils.getRandomName("u-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    // Create
+    UserResponseDetails createResponse = userService.create(loginId,
+        UserRequest.builder().loginId(loginId).email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
+            .displayName("Testing Test").invite(false)
+            .userTenants(
+                Arrays.asList(AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName)).build()))
+            .build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    assertThat(user.getLoginIds()).contains(loginId);
+    assertEquals(email, user.getEmail());
+    assertEquals("+15555555555", user.getPhone());
+    assertEquals(true, user.getVerifiedEmail());
+    assertEquals(true, user.getVerifiedPhone());
+    assertEquals("Testing Test", user.getName());
+    assertEquals("invited", user.getStatus());
+    assertThat(user.getUserTenants()).containsExactly(
+        AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(
+          Arrays.asList(roleName)).build());
+    UserResponseDetails updateResponse = userService.update(loginId,
+        UserRequest.builder().loginId(loginId).roleNames(Arrays.asList(roleName)).email(email).verifiedEmail(true)
+            .phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
+    user = updateResponse.getUser();
+    assertNotNull(user);
+    assertThat(user.getRoleNames()).containsExactly(roleName);
+    // Delete
+    userService.delete(loginId);
+    tenantService.delete(tenantId);
+    roleService.delete(roleName);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalGenerateEmbeddedLink() {
+    String loginId = TestUtils.getRandomName("u-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    // Create
+    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().loginId(loginId).email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").invite(false).build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains(loginId);
+    String token = userService.generateEmbeddedLink(loginId, null);
+    AuthenticationInfo authInfo = magicLinkService.verify(token);
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    token = userService.generateEmbeddedLink(loginId, mapOf("kuku", "kiki"));
+    final long now = System.currentTimeMillis();
+    authInfo = magicLinkService.verify(token);
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    Map<String, Object> claims = authInfo.getToken().getClaims();
+    // temporary
+    @SuppressWarnings("unchecked")
+    Map<String, Object> nsecClaims = Map.class.cast(claims.get("nsec"));
+    assertEquals("kiki", nsecClaims == null ? claims.get("kuku") : nsecClaims.get("kuku"));
+
+    // sleep till we are more than a sec than 'now'
+    while ((System.currentTimeMillis() - 1000) < now) {
+      try {
+        Thread.sleep(100);
+      } catch (Throwable thr) {
+        fail("shouldn't happen");
+      }
     }
 
-    request.setLoginId(loginId);
-    request.setInvite(false);
-    request.setInviteUrl("");
-    request.setTest(true);
-
-    URI createUserUri = composeCreateUserUri();
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails invite(String loginId, UserRequest request, InviteOptions options)
-      throws DescopeException {
-    if (request == null) {
-      request = new UserRequest();
+    // now logout and see that we logged out successfully
+    userService.logoutUser(loginId);
+    boolean gotExc = false;
+    try {
+      authenticationService.refreshSessionWithToken(authInfo.getToken().getJwt());
+      fail("Refresh should fail after logout");
+    } catch (DescopeException de) {
+      gotExc = true;
     }
-
-    request.setLoginId(loginId);
-    request.setInvite(true);
-    request.setTest(false);
-
-    if (options != null) {
-      request.setInviteUrl(options.getInviteUrl());
-    }
-
-    URI createUserUri = composeCreateUserUri();
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
+    assertEquals(true, gotExc);
+    userService.delete(loginId);
   }
 
-  @Override
-  public UserResponseDetails update(String loginId, UserRequest request) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    if (request == null) {
-      request = new UserRequest();
-    }
-    request.setLoginId(loginId);
-    URI updateUserUri = composeUpdateUserUri();
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(updateUserUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public void delete(String loginId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI deleteUserUri = composeDeleteUserUri();
-    ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(deleteUserUri, UserRequest.builder().loginId(loginId).build(), Void.class);
-  }
-
-  @Override
-  public void logoutUser(String loginId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI logoutUserUri = composeLogoutUserUri();
-    ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(logoutUserUri, UserRequest.builder().loginId(loginId).build(), Void.class);
-  }
-
-  @Override
-  public void logoutUserByUserId(String userId) throws DescopeException {
-    if (StringUtils.isBlank(userId)) {
-      throw ServerCommonException.invalidArgument("User ID");
-    }
-    URI logoutUserUri = composeLogoutUserUri();
-    ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(logoutUserUri, UserRequest.builder().userId(userId).build(), Void.class);
-  }
-
-  @Override
-  public void deleteAllTestUsers() throws DescopeException {
-    URI deleteAllTestUsersUri = composeDeleteAllTestUsersUri();
-    ApiProxy apiProxy = getApiProxy();
-    apiProxy.delete(deleteAllTestUsersUri, null, Void.class);
-  }
-
-  @Override
-  public UserResponseDetails load(String loginId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI loadUserUri = composeLoadUserUri(mapOf("loginId", loginId));
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.get(loadUserUri, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails loadByUserId(String userId) throws DescopeException {
-    if (StringUtils.isBlank(userId)) {
-      throw ServerCommonException.invalidArgument("User ID");
-    }
-    URI loadUserUri = composeLoadUserUri(mapOf("userId", userId));
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.get(loadUserUri, UserResponseDetails.class);
-  }
-
-  @Override
-  public AllUsersResponseDetails searchAll(UserSearchRequest request)
-      throws DescopeException {
-    if (request == null) {
-      request = UserSearchRequest.builder().limit(0).page(0).build();
-    }
-    if (request.getLimit() == null || request.getLimit() < 0) {
-      throw ServerCommonException.invalidArgument("limit");
-    }
-    if (request.getPage() == null || request.getPage() < 0) {
-      throw ServerCommonException.invalidArgument("page");
-    }
-
-    URI composeSearchAllUri = composeSearchAllUri();
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(composeSearchAllUri, request, AllUsersResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails activate(String loginId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI activateUserUri = composeActivateUserUri();
-    Map<String, String> request = mapOf("loginId", loginId, "status", "enabled");
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(activateUserUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails deactivate(String loginId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI activateUserUri = composeActivateUserUri();
-    Map<String, String> request = mapOf("loginId", loginId, "status", "disabled");
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(activateUserUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI updateEmailUri = composeUpdateEmailUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "email", email, "verified", isVerified);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(updateEmailUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI updatePhoneUri = composeUpdatePhoneUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "phone", phone, "verified", isVerified);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(updatePhoneUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails updateDisplayName(String loginId, String displayName)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI updateUserNameUri = composeUpdateUserNameUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "displayName", displayName);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(updateUserNameUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails updatePicture(String loginId, String picture) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI updatePictureUri = composeUpdatePictureUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "picture", picture);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(updatePictureUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails updateCustomAttributes(String loginId, String key, Object value)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    if (StringUtils.isBlank(key)) {
-      throw ServerCommonException.invalidArgument("Key");
-    }
-    URI updateAttributesUri = composeUpdateAttributesUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "attributeKey", key, "attributeValue", value);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(updateAttributesUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails updateLoginId(String loginId, String newLoginId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI updateLoginIdUri = composeUpdateLoginIdUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "newLoginId", newLoginId);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(updateLoginIdUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails addRoles(String loginId, List<String> roles) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI addRolesUri = composeAddRolesUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(addRolesUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails removeRoles(String loginId, List<String> roles)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI removeRolesUri = composeRemoveRolesUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(removeRolesUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails addTenant(String loginId, String tenantId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI addTenantUri = composeAddTenantUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(addTenantUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails removeTenant(String loginId, String tenantId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI removeTenantUri = composeRemoveTenantUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(removeTenantUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails addTenantRoles(String loginId, String tenantId, List<String> roles)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI addTenantRolesUri = composeAddTenantRolesUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId, "roleNames", roles);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(addTenantRolesUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public UserResponseDetails removeTenantRoles(String loginId, String tenantId, List<String> roles)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI removeTenantRolesUri = composeRemoveTenantRolesUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(removeTenantRolesUri, request, UserResponseDetails.class);
-  }
-
-  @Override
-  public void setPassword(String loginId, String password) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    if (StringUtils.isBlank(password)) {
-      throw ServerCommonException.invalidArgument("Password");
-    }
-    URI setPasswordUri = composeSetPasswordUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "password", password);
-    ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(setPasswordUri, request, Void.class);
-  }
-
-  @Override
-  public void expirePassword(String loginId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI expirePasswordUri = composeExpirePasswordUri();
-    Map<String, Object> request = mapOf("loginId", loginId);
-    ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(expirePasswordUri, request, Void.class);
-  }
-
-  @Override
-  public ProviderTokenResponse getProviderToken(String loginId, String provider)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    if (StringUtils.isBlank(provider)) {
-      throw ServerCommonException.invalidArgument("Provider");
-    }
-    URI getProviderTokenUri = composeGetProviderTokenUri(mapOf("loginId", loginId, "provider", provider));
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.get(getProviderTokenUri, ProviderTokenResponse.class);
-  }
-
-  @Override
-  public OTPTestUserResponse generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI otpForTestUserUri = composeOTPForTestUserUri();
-    OTPTestUserRequest request = new OTPTestUserRequest(loginId, deliveryMethod.getValue());
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(otpForTestUserUri, request, OTPTestUserResponse.class);
-  }
-
-  @Override
-  public MagicLinkTestUserResponse generateMagicLinkForTestUser(
-      String loginId, String uri, DeliveryMethod deliveryMethod)
-      throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI maginLinkForTestUserUri = composeMaginLinkForTestUserUri();
-    MagicLinkTestUserRequest request = new MagicLinkTestUserRequest(loginId, deliveryMethod.getValue(), uri);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(maginLinkForTestUserUri, request, MagicLinkTestUserResponse.class);
-  }
-
-  @Override
-  public EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(
-      String loginId, String uri) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI enchantedLinkForTestUserUri = composeEnchantedLinkForTestUserUri();
-    EnchantedLinkTestUserRequest request = new EnchantedLinkTestUserRequest(loginId, uri);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(enchantedLinkForTestUserUri, request, EnchantedLinkTestUserResponse.class);
-  }
-
-  public String generateEmbeddedLink(
-      String loginId, Map<String, Object> customClaims) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    URI generateEmbeddedLinkUri = composeGenerateEmbeddedLink();
-    GenerateEmbeddedLinkRequest request = new GenerateEmbeddedLinkRequest(loginId, customClaims);
-    ApiProxy apiProxy = getApiProxy();
-    GenerateEmbeddedLinkResponse response =
-        apiProxy.post(generateEmbeddedLinkUri, request, GenerateEmbeddedLinkResponse.class);
-    return response.getToken();
-  }
-
-  private URI composeCreateUserUri() {
-    return getUri(CREATE_USER_LINK);
-  }
-
-  private URI composeUpdateUserUri() {
-    return getUri(UPDATE_USER_LINK);
-  }
-
-  private URI composeDeleteUserUri() {
-    return getUri(DELETE_USER_LINK);
-  }
-
-  private URI composeLogoutUserUri() {
-    return getUri(LOGOUT_USER_LINK);
-  }
-
-  private URI composeDeleteAllTestUsersUri() {
-    return getUri(DELETE_ALL_TEST_USERS_LINK);
-  }
-
-  private URI composeLoadUserUri(Map<String, String> params) {
-    return getQueryParamUri(LOAD_USER_LINK, params);
-  }
-
-  private URI composeSearchAllUri() {
-    return getUri(USER_SEARCH_ALL_LINK);
-  }
-
-  private URI composeActivateUserUri() {
-    return getUri(USER_UPDATE_STATUS_LINK);
-  }
-
-  private URI composeUpdateEmailUri() {
-    return getUri(USER_UPDATE_EMAIL_LINK);
-  }
-
-  private URI composeUpdatePhoneUri() {
-    return getUri(USER_UPDATE_PHONE_LINK);
-  }
-
-  private URI composeUpdateUserNameUri() {
-    return getUri(UPDATE_USER_NAME_LINK);
-  }
-
-  private URI composeUpdateAttributesUri() {
-    return getUri(UPDATE_CUSTOM_ATTRIBUTE_LINK);
-  }
-
-  private URI composeUpdatePictureUri() {
-    return getUri(UPDATE_PICTURE_LINK);
-  }
-
-  private URI composeUpdateLoginIdUri() {
-    return getUri(UPDATE_USER_LOGIN_ID_LINK);
-  }
-
-  private URI composeAddRolesUri() {
-    return getUri(USER_ADD_ROLES_LINK);
-  }
-
-  private URI composeRemoveRolesUri() {
-    return getUri(USER_REMOVE_ROLES_LINK);
-  }
-
-  private URI composeAddTenantUri() {
-    return getUri(USER_ADD_TENANT_LINK);
-  }
-
-  private URI composeRemoveTenantUri() {
-    return getUri(USER_REMOVE_TENANT_LINK);
-  }
-
-  private URI composeAddTenantRolesUri() {
-    return getUri(USER_ADD_ROLES_LINK);
-  }
-
-  private URI composeRemoveTenantRolesUri() {
-    return getUri(USER_REMOVE_TENANT_LINK);
-  }
-
-  private URI composeGetProviderTokenUri(Map<String, String> params) {
-    return getQueryParamUri(GET_PROVIDER_TOKEN, params);
-  }
-
-  private URI composeOTPForTestUserUri() {
-    return getUri(COMPOSE_OTP_FOR_TEST_LINK);
-  }
-
-  private URI composeMaginLinkForTestUserUri() {
-    return getUri(MAGIC_LINK_FOR_TEST_LINK);
-  }
-
-  private URI composeEnchantedLinkForTestUserUri() {
-    return getUri(ENCHANTED_LINK_FOR_TEST_LINK);
-  }
-
-  private URI composeSetPasswordUri() {
-    return getUri(USER_SET_PASSWORD_LINK);
-  }
-
-  private URI composeExpirePasswordUri() {
-    return getUri(USER_EXPIRE_PASSWORD_LINK);
-  }
-
-  private URI composeGenerateEmbeddedLink() {
-    return getUri(USER_CREATE_EMBEDDED_LINK);
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalGenerateEmbeddedLinkWithPhoneAsID() {
+    String randomSaffix = String.valueOf(new Random().nextInt(1000));
+    randomSaffix = new String(new char[4 - randomSaffix.length()]).replace("\0", "0") + randomSaffix;
+    String phone = "+1-555-555-" + randomSaffix;
+    String cleanPhone = "+1555555" + randomSaffix;
+    // Create
+    UserResponseDetails createResponse = userService.create(phone, UserRequest.builder().loginId(phone).phone(phone)
+        .verifiedPhone(true).displayName("Testing Test").invite(false).build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains(cleanPhone);
+    String token = userService.generateEmbeddedLink(phone, null);
+    AuthenticationInfo authInfo = magicLinkService.verify(token);
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    UserResponseDetails userResp = userService.load(cleanPhone);
+    assertNotNull(userResp.getUser());
+    Assertions.assertThat(userResp.getUser().getLoginIds()).contains(cleanPhone);
+    userService.delete(phone);
   }
 }
