@@ -1,6 +1,7 @@
 package com.descope.model.user.request;
 
 import com.descope.model.auth.AssociatedTenant;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -27,5 +28,8 @@ public class UserRequest {
   Boolean invite;
   Boolean test;
   String inviteUrl;
+  Boolean sendEmail;
+  @JsonProperty("sendSMS")
+  Boolean sendSMS;
   List<String> additionalLoginIds;
 }

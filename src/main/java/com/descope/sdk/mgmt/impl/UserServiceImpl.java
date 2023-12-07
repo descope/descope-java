@@ -103,7 +103,15 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     request.setTest(false);
 
     if (options != null) {
-      request.setInviteUrl(options.getInviteUrl());
+      if (StringUtils.isNotBlank(options.getInviteUrl())) {
+        request.setInviteUrl(options.getInviteUrl());
+      }
+      if (options.getSendSMS() != null) {
+        request.setSendSMS(options.getSendSMS());        
+      }
+      if (options.getSendEmail() != null) {
+        request.setSendEmail(options.getSendEmail());
+      }
     }
 
     URI createUserUri = composeCreateUserUri();
