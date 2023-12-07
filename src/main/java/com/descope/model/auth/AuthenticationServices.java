@@ -8,6 +8,7 @@ import com.descope.sdk.auth.OTPService;
 import com.descope.sdk.auth.PasswordService;
 import com.descope.sdk.auth.SAMLService;
 import com.descope.sdk.auth.TOTPService;
+import com.descope.sdk.auth.WebAuthnService;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,4 +23,5 @@ public class AuthenticationServices {
   PasswordService passwordService;
   MagicLinkService magicLinkService;
   EnchantedLinkService enchantedLinkService;
+  WebAuthnService webAuthnService;
 }

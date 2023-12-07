@@ -58,6 +58,15 @@ public class Routes {
     public static final String REPLACE_USER_PASSWORD_LINK = "/v1/auth/password/replace";
     public static final String PASSWORD_POLICY_LINK = "/v1/auth/password/policy";
 
+    // WebAuthn
+    public static final String WEBAUTHN_SIGN_UP_START = "/v1/auth/webauthn/signup/start";
+    public static final String WEBAUTHN_SIGN_UP_FINISH = "/v1/auth/webauthn/signup/finish";
+    public static final String WEBAUTHN_SIGN_IN_START = "/v1/auth/webauthn/signin/start";
+    public static final String WEBAUTHN_SIGN_IN_FINISH = "/v1/auth/webauthn/signin/finish";
+    public static final String WEBAUTHN_SIGN_UP_OR_IN_START = "/v1/auth/webauthn/signup-in/start";
+    public static final String WEBAUTHN_UPDATE_START = "/v1/auth/webauthn/update/start";
+    public static final String WEBAUTHN_UPDATE_FINISH = "/v1/auth/webauthn/update/finish";
+
     public static final String GET_KEYS_LINK = "/v2/keys";
     public static final String REFRESH_TOKEN_LINK = "/v1/auth/refresh";
     public static final String EXCHANGE_ACCESS_KEY_LINK = "/v1/auth/accesskey/exchange";
