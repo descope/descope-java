@@ -1,6 +1,7 @@
 package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.COMPOSE_OTP_FOR_TEST_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.CREATE_USERS_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_ALL_TEST_USERS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_USER_LINK;
@@ -25,6 +26,8 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
+import static com.descope.utils.CollectionUtils.addIfNotBlank;
+import static com.descope.utils.CollectionUtils.addIfNotNull;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.enums.DeliveryMethod;
@@ -33,6 +36,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementParams;
+import com.descope.model.user.request.BatchUserRequest;
 import com.descope.model.user.request.EnchantedLinkTestUserRequest;
 import com.descope.model.user.request.GenerateEmbeddedLinkRequest;
 import com.descope.model.user.request.MagicLinkTestUserRequest;
@@ -46,6 +50,7 @@ import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
 import com.descope.model.user.response.UserResponseDetails;
+import com.descope.model.user.response.UsersBatchResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.UserService;
 import java.net.URI;
@@ -64,14 +69,26 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (request == null) {
       request = new UserRequest();
     }
-    request.setLoginId(loginId);
-    request.setInviteUrl("");
-    request.setInvite(false);
+    Map<String, Object> req = mapOf("loginId", loginId);
     request.setTest(false);
-
+    req.putAll(request.toMap());
     URI createUserUri = composeCreateUserUri();
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
+    return apiProxy.post(createUserUri, req, UserResponseDetails.class);
+  }
+
+  @Override
+  public UsersBatchResponse createBatch(List<BatchUserRequest> users) throws DescopeException {
+    if (users == null || users.isEmpty()) {
+      throw ServerCommonException.invalidArgument("Users");
+    }
+    for (BatchUserRequest u : users) {
+      u.setTest(false);
+    }
+    URI createUsersUri = composeCreateBatchUsersUri();
+    ApiProxy apiProxy = getApiProxy();
+    Map<String, Object> req = mapOf("users", users, "invite", false);
+    return apiProxy.post(createUsersUri, req, UsersBatchResponse.class);
   }
 
   @Override
@@ -80,15 +97,12 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (request == null) {
       request = new UserRequest();
     }
-
-    request.setLoginId(loginId);
-    request.setInvite(false);
-    request.setInviteUrl("");
+    Map<String, Object> req = mapOf("loginId", loginId, "invite", false);
     request.setTest(true);
-
+    req.putAll(request.toMap());
     URI createUserUri = composeCreateUserUri();
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
+    return apiProxy.post(createUserUri, req, UserResponseDetails.class);
   }
 
   @Override
@@ -97,26 +111,35 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (request == null) {
       request = new UserRequest();
     }
-
-    request.setLoginId(loginId);
-    request.setInvite(true);
+    Map<String, Object> req = mapOf("loginId", loginId, "invite", true);
     request.setTest(false);
-
     if (options != null) {
-      if (StringUtils.isNotBlank(options.getInviteUrl())) {
-        request.setInviteUrl(options.getInviteUrl());
-      }
-      if (options.getSendSMS() != null) {
-        request.setSendSMS(options.getSendSMS());        
-      }
-      if (options.getSendEmail() != null) {
-        request.setSendEmail(options.getSendEmail());
-      }
+      addIfNotBlank(req, "inviteUrl", options.getInviteUrl());
+      addIfNotNull(req, "sendSMS", options.getSendSMS());
+      addIfNotNull(req, "sendEmail", options.getSendEmail());
     }
-
     URI createUserUri = composeCreateUserUri();
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(createUserUri, request, UserResponseDetails.class);
+    return apiProxy.post(createUserUri, req, UserResponseDetails.class);
+  }
+
+  @Override
+  public UsersBatchResponse inviteBatch(List<BatchUserRequest> users, InviteOptions options) throws DescopeException {
+    if (users == null || users.isEmpty()) {
+      throw ServerCommonException.invalidArgument("Users");
+    }
+    for (BatchUserRequest u : users) {
+      u.setTest(false);
+    }
+    Map<String, Object> req = mapOf("users", users, "invite", true);
+    if (options != null) {
+      addIfNotBlank(req, "inviteUrl", options.getInviteUrl());
+      addIfNotNull(req, "sendSMS", options.getSendSMS());
+      addIfNotNull(req, "sendEmail", options.getSendEmail());
+    }
+    URI createUsersUri = composeCreateBatchUsersUri();
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(createUsersUri, req, UsersBatchResponse.class);
   }
 
   @Override
@@ -127,10 +150,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (request == null) {
       request = new UserRequest();
     }
-    request.setLoginId(loginId);
+    Map<String, Object> req = mapOf("loginId", loginId);
+    req.putAll(request.toMap());
     URI updateUserUri = composeUpdateUserUri();
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(updateUserUri, request, UserResponseDetails.class);
+    return apiProxy.post(updateUserUri, req, UserResponseDetails.class);
   }
 
   @Override
@@ -140,7 +164,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     URI deleteUserUri = composeDeleteUserUri();
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(deleteUserUri, UserRequest.builder().loginId(loginId).build(), Void.class);
+    apiProxy.post(deleteUserUri, mapOf("loginId", loginId), Void.class);
   }
 
   @Override
@@ -150,7 +174,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     URI logoutUserUri = composeLogoutUserUri();
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(logoutUserUri, UserRequest.builder().loginId(loginId).build(), Void.class);
+    apiProxy.post(logoutUserUri, mapOf("loginId", loginId), Void.class);
   }
 
   @Override
@@ -160,7 +184,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     URI logoutUserUri = composeLogoutUserUri();
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(logoutUserUri, UserRequest.builder().userId(userId).build(), Void.class);
+    apiProxy.post(logoutUserUri, mapOf("userId", userId), Void.class);
   }
 
   @Override
@@ -476,6 +500,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeCreateUserUri() {
     return getUri(CREATE_USER_LINK);
+  }
+
+  private URI composeCreateBatchUsersUri() {
+    return getUri(CREATE_USERS_BATCH_LINK);
   }
 
   private URI composeUpdateUserUri() {

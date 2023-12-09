@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.InviteOptions;
+import com.descope.model.user.request.BatchUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -11,6 +12,7 @@ import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
 import com.descope.model.user.response.UserResponseDetails;
+import com.descope.model.user.response.UsersBatchResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +31,15 @@ public interface UserService {
    *     thrown.
    */
   UserResponseDetails create(String loginId, UserRequest request) throws DescopeException;
+
+  /**
+   * Create users in batch.
+   *
+   * @param users the {@link List} of users
+   * @return {@link UsersBatchResponse} with successfully created users and failed users
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  UsersBatchResponse createBatch(List<BatchUserRequest> users) throws DescopeException;
 
   /**
    * Create a new test user. You can later generate OTP, Magic link and enchanted link to use in the
@@ -62,6 +73,16 @@ public interface UserService {
    *     thrown.
    */
   UserResponseDetails invite(String loginId, UserRequest request, InviteOptions options) throws DescopeException;
+
+  /**
+   * Create users in batch and invite them via an email / text message.
+   *
+   * @param users the {@link List} of users
+   * @param options Additional options for the invitation, such as invite URL.
+   * @return {@link UsersBatchResponse} with successfully created users and failed users
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  UsersBatchResponse inviteBatch(List<BatchUserRequest> users, InviteOptions options) throws DescopeException;
 
   /**
    * Update an existing user.

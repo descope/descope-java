@@ -3,6 +3,7 @@ package com.descope.utils;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A few utility methods since we are using Java8.
@@ -58,5 +59,17 @@ public class CollectionUtils {
     m.put(k5, v5);
     m.put(k6, v6);
     return m;
+  }
+
+  public static void addIfNotNull(Map<String, Object> m, String k, Object v) {
+    if (v != null) {
+      m.put(k, v);
+    }
+  }
+
+  public static void addIfNotBlank(Map<String, Object> m, String k, String v) {
+    if (StringUtils.isNotBlank(v)) {
+      m.put(k, v);
+    }
   }
 }
