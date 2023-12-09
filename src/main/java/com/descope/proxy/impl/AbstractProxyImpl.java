@@ -4,6 +4,7 @@ import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.SdkInfo;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
@@ -136,7 +137,7 @@ abstract class AbstractProxyImpl {
   protected <B, R> R post(URI uri, B body, Class<R> returnClz) {
     final ClassicRequestBuilder builder = ClassicRequestBuilder.post(uri);
     if (body != null) {
-      final ObjectMapper objectMapper = new ObjectMapper();
+      final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(Include.NON_NULL);
       final byte[] payload = objectMapper.writeValueAsBytes(body);
       builder.setEntity(new ByteArrayEntity(payload, ContentType.APPLICATION_JSON));
     }

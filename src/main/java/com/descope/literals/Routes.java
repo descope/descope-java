@@ -76,6 +76,7 @@ public class Routes {
   public static class ManagementEndPoints {
     // User
     public static final String CREATE_USER_LINK = "/v1/mgmt/user/create";
+    public static final String CREATE_USERS_BATCH_LINK = "/v1/mgmt/user/create/batch";
     public static final String UPDATE_USER_LINK = "/v1/mgmt/user/update";
     public static final String DELETE_USER_LINK = "/v1/mgmt/user/delete";
     public static final String DELETE_ALL_TEST_USERS_LINK = "/v1/mgmt/user/test/delete/all";
