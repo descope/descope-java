@@ -23,6 +23,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
@@ -341,6 +342,17 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public UserResponseDetails setRoles(String loginId, List<String> roles) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI addRolesUri = composeSetRolesUri();
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(addRolesUri, request, UserResponseDetails.class);
+  }
+
+  @Override
   public UserResponseDetails addRoles(String loginId, List<String> roles) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -383,6 +395,18 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(removeTenantUri, request, UserResponseDetails.class);
+  }
+
+  @Override
+  public UserResponseDetails setTenantRoles(String loginId, String tenantId, List<String> roles)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI addTenantRolesUri = composeSetTenantRolesUri();
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId, "roleNames", roles);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(addTenantRolesUri, request, UserResponseDetails.class);
   }
 
   @Override
@@ -558,6 +582,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     return getUri(UPDATE_USER_LOGIN_ID_LINK);
   }
 
+  private URI composeSetRolesUri() {
+    return getUri(USER_SET_ROLES_LINK);
+  }
+
   private URI composeAddRolesUri() {
     return getUri(USER_ADD_ROLES_LINK);
   }
@@ -572,6 +600,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeRemoveTenantUri() {
     return getUri(USER_REMOVE_TENANT_LINK);
+  }
+
+  private URI composeSetTenantRolesUri() {
+    return getUri(USER_SET_ROLES_LINK);
   }
 
   private URI composeAddTenantRolesUri() {
