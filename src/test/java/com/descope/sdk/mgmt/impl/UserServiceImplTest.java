@@ -418,7 +418,7 @@ public class UserServiceImplTest {
   }
 
   @Test
-  void testAddRolesForSuccess() {
+  void testSetRolesForSuccess() {
     UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
