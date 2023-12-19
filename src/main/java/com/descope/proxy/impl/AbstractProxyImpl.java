@@ -92,7 +92,11 @@ abstract class AbstractProxyImpl {
                     getRetryHeader(res));
                 }
                 throw ServerCommonException.genericServerError(
-                  errorDetails.getActualMessage(), errorDetails.getErrorCode(), bs.toString());
+                  errorDetails.getActualMessage(),
+                  StringUtils.isBlank(errorDetails.getErrorCode())
+                    ? String.valueOf(res.getCode())
+                    : errorDetails.getErrorCode(),
+                  bs.toString());
               } catch (IOException e) {
                 throw ServerCommonException.genericServerError(
                   bs.toString(), String.valueOf(res.getCode()), bs.toString());
