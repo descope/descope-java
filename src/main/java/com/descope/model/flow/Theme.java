@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class Theme {
   private String id;
   private Object cssTemplate;
+  private String componentsVersion;
 }

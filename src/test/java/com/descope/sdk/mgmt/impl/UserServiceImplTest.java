@@ -411,6 +411,25 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testSetRolesForEmptyKeyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.setRoles("", mockRoles));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testSetRolesForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.setRoles("someLoginId", mockRoles);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
   void testAddRolesForEmptyKeyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.addRoles("", mockRoles));
     assertNotNull(thrown);
@@ -485,6 +504,26 @@ public class UserServiceImplTest {
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       UserResponseDetails response = userService.removeTenant("someLoginId", "someTenantId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testSetTenantRolesForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.setTenantRoles("", "someTenantId", mockRoles));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testSetTenantRolesForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.setTenantRoles("someLoginId", "someTenantId", mockRoles);
       Assertions.assertThat(response).isNotNull();
     }
   }

@@ -282,6 +282,18 @@ public interface UserService {
   UserResponseDetails updateLoginId(String loginId, String newLoginId) throws DescopeException;
 
   /**
+   * Set roles for a user without tenant association. Use SetTenantRoles for users that are part of
+   * a multi-tenant project.
+   *
+   * @param loginId The loginID is required.
+   * @param roles User Roles
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails setRoles(String loginId, List<String> roles) throws DescopeException;
+
+  /**
    * Add roles for a user without tenant association. Use AddTenantRoles for users that are part of
    * a multi-tenant project.
    *
@@ -325,6 +337,19 @@ public interface UserService {
    *     thrown.
    */
   UserResponseDetails removeTenant(String loginId, String tenantId) throws DescopeException;
+
+  /**
+   * Set roles for a user in a specific tenant.
+   *
+   * @param loginId The loginID is required.
+   * @param tenantId Tenant ID
+   * @param roles Tenant Roles
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails setTenantRoles(String loginId, String tenantId, List<String> roles)
+      throws DescopeException;
 
   /**
    * Add roles for a user in a specific tenant.
