@@ -50,7 +50,7 @@ public interface AuthenticationService {
 
   /**
    * Use to ensure that a validated session token has been granted the specified permissions. This
-   * is a shortcut for ValidateTenantPermissions(token, "", permissions)
+   * is a shortcut for validatePermissions(token, "", permissions)
    *
    * @param token - {@link Token Token}
    * @param permissions - List of permissions.
@@ -73,8 +73,32 @@ public interface AuthenticationService {
       throws DescopeException;
 
   /**
+   * Use to retrieves the permissions from top level token's claims that match the specified permissions list. This
+   * is a shortcut for getMatchedPermissions(token, "", permissions)
+   *
+   * @param token - {@link Token Token}
+   * @param permissions - List of permissions.
+   * @return is valid permissions.
+   * @throws DescopeException if there is an error
+   */
+  List<String> getMatchedPermissions(Token token, List<String> permissions) throws DescopeException;
+
+  /**
+   * Use to retrieves the permissions from token's claims of a specific tenant
+  * that match the specified permissions list.
+  * This is a shortcut for getMatchedPermissions(token, "", permissions)
+   *
+   * @param token - {@link Token Token}
+   * @param tenant - Tenant ID.
+   * @param permissions - List of permissions.
+   * @return is valid permissions.
+   * @throws DescopeException if there is an error
+   */
+  List<String> getMatchedPermissions(Token token, String tenant, List<String> permissions) throws DescopeException;
+
+  /**
    * Use to ensure that a validated session token has been granted the specified roles. This is a
-   * shortcut for ValidateTenantRoles(token, "", roles)
+   * shortcut for validateRoles(token, "", roles)
    *
    * @param token - {@link Token Token}
    * @param roles - List of roles.
@@ -94,6 +118,29 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error
    */
   boolean validateRoles(Token token, String tenant, List<String> roles) throws DescopeException;
+
+  /**
+  * Use to retrieves the roles from top level token's claims that match the specified roles list. This
+  * is a shortcut for getMatchedRoles(token, "", roles)
+  *
+  * @param token - {@link Token Token}
+  * @param roles - List of roles.
+  * @return is valid roles.
+  * @throws DescopeException if there is an error
+  */
+  List<String> getMatchedRoles(Token token, List<String> roles) throws DescopeException;
+
+  /**
+  * Use to retrieves the roles from token's claims of a specific tenant
+  * that match the specified roles list.
+  *
+  * @param token - {@link Token Token}
+  * @param tenant - Tenant ID.
+  * @param roles - List of roles.
+  * @return is valid permissions.
+  * @throws DescopeException if there is an error
+  */
+  List<String> getMatchedRoles(Token token, String tenant, List<String> roles) throws DescopeException;
 
   /**
    * Return the list of roles granted to the validated session token in the given tenant.

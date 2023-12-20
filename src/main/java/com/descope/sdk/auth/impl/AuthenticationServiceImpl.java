@@ -16,6 +16,9 @@ import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.proxy.ApiProxy;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -90,6 +93,22 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   }
 
   @Override
+  public List<String> getMatchedPermissions(Token token, List<String> permissions) throws DescopeException {
+    return getMatchedPermissions(token, "", permissions);
+  }
+
+  @Override
+  public List<String> getMatchedPermissions(Token token, String tenant, List<String> permissions)
+      throws DescopeException {
+    if (CollectionUtils.isEmpty(permissions) || StringUtils.isNotBlank(tenant) && !isTenantAssociated(token, tenant)) {
+      return Collections.emptyList();
+    }
+    List<String> grantedPermissions = getPermissions(token, tenant);
+    Collection<String> intersection = CollectionUtils.intersection(permissions, grantedPermissions);
+    return new ArrayList<>(intersection);
+  }
+
+  @Override
   public boolean validateRoles(Token token, List<String> roles) throws DescopeException {
     return validateRoles(token, "", roles);
   }
@@ -102,6 +121,21 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     }
     List<String> grantedRoles = getRoles(token, tenant);
     return CollectionUtils.isSubCollection(roles, grantedRoles);
+  }
+
+  @Override
+  public List<String> getMatchedRoles(Token token, List<String> roles) throws DescopeException {
+    return getMatchedRoles(token, "", roles);
+  }
+
+  @Override
+  public List<String> getMatchedRoles(Token token, String tenant, List<String> roles) throws DescopeException {
+    if (CollectionUtils.isEmpty(roles) || StringUtils.isNotBlank(tenant) && !isTenantAssociated(token, tenant)) {
+      return Collections.emptyList();
+    }
+    List<String> grantedRoles = getRoles(token, tenant);
+    Collection<String> intersection = CollectionUtils.intersection(roles, grantedRoles);
+    return new ArrayList<>(intersection);
   }
 
   @Override
@@ -130,7 +164,7 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
       throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
     }
     ApiProxy apiProxy = getApiProxy(refreshToken);
-    URI logOutURL = composeLogOutLinkURL(); 
+    URI logOutURL = composeLogOutLinkURL();
     apiProxy.post(logOutURL, null, JWTResponse.class);
   }
 

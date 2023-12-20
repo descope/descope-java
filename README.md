@@ -515,6 +515,10 @@ try {
     // Handle the error
 }
 
+// Or get the matched roles/permissions
+List<String> matchedPermissions = as.getMatchedPermissions(sessionToken, "my-tenant-ID", Arrays.asList("Permission1", "Permission2"));
+
+List<String> matchedRoles = as.getMatchedRoles(sessionToken, "my-tenant-ID", Arrays.asList("Role1", "Role2"));
 ```
 
 When not using tenants use:
@@ -539,6 +543,10 @@ try {
     // Handle the error
 }
 
+// Or get the matched roles/permissions
+List<String> matchedPermissions = as.getMatchedPermissions(sessionToken, Arrays.asList("Permission1", "Permission2"));
+
+List<String> matchedRoles = as.getMatchedRoles(sessionToken, Arrays.asList("Role1", "Role2"));
 ```
 
 ### Logging Out

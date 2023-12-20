@@ -2,6 +2,7 @@ package com.descope.sdk.auth.impl;
 
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -61,6 +62,22 @@ public class AuthenticationServiceImplTest {
     assertFalse(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", Arrays.asList("tr2", "tr3")));
     assertTrue(authenticationService.validateRoles(MOCK_TOKEN, Arrays.asList("r1", "r2")));
     assertFalse(authenticationService.validateRoles(MOCK_TOKEN, Arrays.asList("r2", "r3")));
+  }
+
+  @Test
+  void textGetMatchedPermissionsAndRoles() {
+    assertEquals(Arrays.asList("tp1", "tp2"),
+        authenticationService.getMatchedPermissions(MOCK_TOKEN, "someTenant", Arrays.asList("tp1", "tp2")));
+    assertEquals(Arrays.asList(),
+        authenticationService.getMatchedPermissions(MOCK_TOKEN, "someTenant", null));
+    assertEquals(Arrays.asList("tp1", "tp2"),
+        authenticationService.getMatchedPermissions(MOCK_TOKEN, "someTenant", Arrays.asList("tp1", "tp2", "tp3")));
+    assertEquals(Arrays.asList("p1", "p2"),
+        authenticationService.getMatchedPermissions(MOCK_TOKEN, Arrays.asList("p1", "p2")));
+    assertEquals(Arrays.asList(),
+        authenticationService.getMatchedPermissions(MOCK_TOKEN, null));
+    assertEquals(Arrays.asList("p1", "p2"),
+        authenticationService.getMatchedPermissions(MOCK_TOKEN, Arrays.asList("p1", "p2", "p3")));
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
