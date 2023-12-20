@@ -40,8 +40,9 @@ jobs:
 
       - name: Maven Build
         env:
-          DESCOPE_PROJECT_ID: ${{ secrets.DESCOPE_PROJECT_ID }}
-          DESCOPE_MANAGEMENT_KEY: ${{ secrets.DESCOPE_MANAGEMENT_KEY }}
+          DESCOPE_BASE_URL: https://api.descope.dev
+          DESCOPE_MANAGEMENT_KEY: K2ZoKva689YmU68z1wk1YgiQ2FuduE4SI5Oc7QDR44rj8Qk1nHKI8M4LTxoSosmrEMfWiD0
+          DESCOPE_PROJECT_ID: P2ZoKhzAdvZV9HzRZ0SE8pIdNq8P
         run: mvn -B -ntp package
 
   verify:
