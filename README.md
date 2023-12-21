@@ -610,21 +610,30 @@ TenantService ts = descopeClient.getManagementServices().getTenantService();
 // The self provisioning domains or optional. If given they'll be used to associate
 // Users logging in to this tenant
 try {
-    ts.create("My Tenant", Arrays.asList("domain.com"));
+    ts.create("My Tenant", Arrays.asList("domain.com"), new HashMap<String, Object>() {{
+                put("custom-attribute-1", "custom-value1");
+                put("custom-attribute-2", "custom-value2");
+            }});
 } catch (DescopeException de) {
     // Handle the error
 }
 
 // You can optionally set your own ID when creating a tenant
 try {
-    ts.createWithId("my-custom-id", "My Tenant", Arrays.asList("domain.com"));
+    ts.createWithId("my-custom-id", "My Tenant", Arrays.asList("domain.com"), new HashMap<String, Object>() {{
+                put("custom-attribute-1", "custom-value1");
+                put("custom-attribute-2", "custom-value2");
+            }});
 } catch (DescopeException de) {
     // Handle the error
 }
 
 // Update will override all fields as is. Use carefully.
 try {
-    ts.update("my-custom-id", "My Tenant", Arrays.asList("domain.com", "another-domain.com"));
+    ts.update("my-custom-id", "My Tenant", Arrays.asList("domain.com", "another-domain.com"), new HashMap<String, Object>() {{
+                put("custom-attribute-1", "custom-value1");
+                put("custom-attribute-2", "custom-value2");
+            }});
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -646,6 +655,19 @@ try {
     // Handle the error
 }
 
+// Search tenants
+try {
+    List<Tenant> tenants = ts.searchAll(TenantSearchRequest.builder()
+            .ids(Arrays.asList("my-custom-id"))
+            .names(Arrays.asList("My Tenant"))
+            .customAttributes(Map.of("custom-attribute-1", "custom-value1"))
+            .selfProvisioningDomains(Arrays.asList("domain.com", "another-domain.com")));
+    for (Tenant t : tenants) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Users
