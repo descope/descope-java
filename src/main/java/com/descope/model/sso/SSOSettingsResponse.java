@@ -22,5 +22,7 @@ public class SSOSettingsResponse {
   private UserMapping userMapping;
   private List<GroupsMapping> groupsMapping;
   private String redirectURL;
+  private List<String> domains;
+  // Deprecated - use domains instead
   private String domain;
 }

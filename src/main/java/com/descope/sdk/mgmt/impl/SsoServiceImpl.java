@@ -52,7 +52,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
       String idpCert,
       String entityID,
       String redirectURL,
-      String domain)
+      List<String> domains)
       throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantID");
@@ -81,8 +81,8 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
             entityID,
             "redirectURL",
             redirectURL,
-            "domain",
-            domain);
+            "domains",
+            domains);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_SETTINGS_LINK), request, Void.class);
   }
