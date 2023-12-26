@@ -69,7 +69,7 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
     if (StringUtils.isBlank(redirectURL)) {
       throw ServerCommonException.invalidArgument("RedirectURL");
     }
-    Map<String, String> request =
+    Map<String, Object> request =
         mapOf(
             "tenantId",
             tenantID,
