@@ -86,7 +86,7 @@ class SsoServiceImplTest {
             ServerCommonException.class,
             () ->
                 ssoService.configureSettings(
-                    "", "idpUrl", "idpCert", "entryId", "redirectUrl", "domain"));
+                    "", "idpUrl", "idpCert", "entryId", "redirectUrl", Arrays.asList("domain.com")));
     assertNotNull(thrown);
     assertEquals("The TenantID argument is invalid", thrown.getMessage());
   }
@@ -98,7 +98,7 @@ class SsoServiceImplTest {
             ServerCommonException.class,
             () ->
                 ssoService.configureSettings(
-                    "someTenantID", "", "idpCert", "entryId", "redirectUrl", "domain"));
+                    "someTenantID", "", "idpCert", "entryId", "redirectUrl", Arrays.asList("domain.com")));
     assertNotNull(thrown);
     assertEquals("The IdpURL argument is invalid", thrown.getMessage());
   }
@@ -110,7 +110,7 @@ class SsoServiceImplTest {
             ServerCommonException.class,
             () ->
                 ssoService.configureSettings(
-                    "someTenantID", "idpUrl", "", "entryId", "redirectUrl", "domain"));
+                    "someTenantID", "idpUrl", "", "entryId", "redirectUrl", Arrays.asList("domain.com")));
     assertNotNull(thrown);
     assertEquals("The IdpCert argument is invalid", thrown.getMessage());
   }
@@ -122,7 +122,7 @@ class SsoServiceImplTest {
             ServerCommonException.class,
             () ->
                 ssoService.configureSettings(
-                    "someTenantID", "idpUrl", "idpCert", "", "redirectUrl", "domain"));
+                    "someTenantID", "idpUrl", "idpCert", "", "redirectUrl", Arrays.asList("domain.com")));
     assertNotNull(thrown);
     assertEquals("The EntityID argument is invalid", thrown.getMessage());
   }
@@ -134,7 +134,7 @@ class SsoServiceImplTest {
             ServerCommonException.class,
             () ->
                 ssoService.configureSettings(
-                    "someTenantID", "idpUrl", "idpCert", "entryId", "", "domain"));
+                    "someTenantID", "idpUrl", "idpCert", "entryId", "", Arrays.asList("domain.com")));
     assertNotNull(thrown);
     assertEquals("The RedirectURL argument is invalid", thrown.getMessage());
   }
@@ -147,7 +147,7 @@ class SsoServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       ssoService.configureSettings(
-          "someTenantID", "idpUrl", "idpCert", "entryId", "redirectUrl", "domain");
+          "someTenantID", "idpUrl", "idpCert", "entryId", "redirectUrl", Arrays.asList("domain.com"));
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }

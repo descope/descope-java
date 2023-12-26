@@ -885,10 +885,10 @@ String idpUrl = "https://idp.com";
 String entityId = "my-idp-entity-id";
 String idpCert = "<your-cert-here>";
 String redirectUrl = "https://my-app.com/handle-saml"; // Global redirect URL for SSO/SAML
-String domain = "domain.com"; // Users logging in from this domain will be logged in to this tenant
+List<String> domains = Arrays.asList("domain.com"); // Users logging in from this domain will be logged in to this tenant
 
 try {
-    ss.configureSettings(tenantId, idpUrl, idpCert, entityId, redirectUrl, domain);
+    ss.configureSettings(tenantId, idpUrl, idpCert, entityId, redirectUrl, domains);
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1204,6 +1204,7 @@ export DESCOPE_MANAGEMENT_KEY=<ManagementKey>
 ```
 
 Alternatively, you can create a `.env` file in the working folder with your project ID and management key.
+
 ```
 DESCOPE_PROJECT_ID=<ProjectID>
 DESCOPE_MANAGEMENT_KEY=<ManagementKey>
@@ -1241,6 +1242,7 @@ To run Run and Debug using Visual Studio Code open the examples folder and run t
 
 Java provides a very simple way to mock services and objects using the Mockito package.
 Here is a simple example of how you can mock a magic link verify response.
+
 ```java
 User user = new User("someUserName", MOCK_EMAIL, "+1-555-555-5555");
 ApiProxy apiProxy = mock(ApiProxy.class); // Mock the proxy that actually sends the HTTP requests

@@ -12,7 +12,7 @@ public interface SsoService {
   void deleteSettings(String tenantID) throws DescopeException;
 
   void configureSettings(String tenantID, String idpURL, String idpCert, String entityID,
-      String redirectURL, String domain) throws DescopeException;
+      String redirectURL, List<String> domains) throws DescopeException;
 
   void configureMetadata(String tenantID, String idpMetadataURL) throws DescopeException;
 
