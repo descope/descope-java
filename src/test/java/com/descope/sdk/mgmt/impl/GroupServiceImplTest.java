@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mockStatic;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.group.Group;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -33,10 +32,9 @@ class GroupServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
     this.groupService =
-        ManagementServiceBuilder.buildServices(client, authParams).getGroupService();
+        ManagementServiceBuilder.buildServices(client).getGroupService();
   }
 
   @Test

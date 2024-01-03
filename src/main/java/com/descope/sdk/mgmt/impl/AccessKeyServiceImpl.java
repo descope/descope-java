@@ -16,7 +16,6 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.AccessKeyRequest;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseList;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.utils.MgmtUtils;
@@ -26,8 +25,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
-  AccessKeyServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  AccessKeyServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

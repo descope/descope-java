@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
 import com.descope.model.sso.SSOSettingsResponse;
@@ -33,9 +32,8 @@ class SsoServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
-    this.ssoService = ManagementServiceBuilder.buildServices(client, authParams).getSsoService();
+    this.ssoService = ManagementServiceBuilder.buildServices(client).getSsoService();
   }
 
   @Test

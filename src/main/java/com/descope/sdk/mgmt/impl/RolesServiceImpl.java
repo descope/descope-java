@@ -9,7 +9,6 @@ import static com.descope.utils.CollectionUtils.mapOf;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.roles.RoleResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.RolesService;
@@ -19,8 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class RolesServiceImpl extends ManagementsBase implements RolesService {
 
-  RolesServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  RolesServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

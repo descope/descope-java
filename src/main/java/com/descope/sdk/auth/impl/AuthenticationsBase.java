@@ -8,7 +8,6 @@ import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
@@ -31,15 +30,13 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 abstract class AuthenticationsBase extends SdkServicesBase implements AuthenticationService {
-  private final AuthParams authParams;
 
-  AuthenticationsBase(Client client, AuthParams authParams) {
-    super(client, authParams.getProjectId());
-    this.authParams = authParams;
+  AuthenticationsBase(Client client) {
+    super(client);
   }
 
   ApiProxy getApiProxy() {
-    String projectId = authParams.getProjectId();
+    String projectId = client.getProjectId();
     if (StringUtils.isNotBlank(projectId)) {
       return ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId, client.getSdkInfo());
     }
@@ -47,7 +44,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   ApiProxy getApiProxy(String refreshToken) {
-    String projectId = authParams.getProjectId();
+    String projectId = client.getProjectId();
     if (StringUtils.isBlank(refreshToken) || StringUtils.isBlank(projectId)) {
       return getApiProxy();
     }
@@ -114,7 +111,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   Token validateJWT(String jwt) {
-    return JwtUtils.getToken(jwt, requestKeys());
+    return JwtUtils.getToken(jwt, client);
   }
 
   Token refreshSession(String refreshToken) {

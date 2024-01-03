@@ -18,7 +18,6 @@ import com.descope.model.flow.FlowsResponse;
 import com.descope.model.flow.Screen;
 import com.descope.model.flow.Theme;
 import com.descope.model.flow.ThemeResponse;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -36,9 +35,8 @@ class FlowServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
-    this.flowService = ManagementServiceBuilder.buildServices(client, authParams).getFlowService();
+    this.flowService = ManagementServiceBuilder.buildServices(client).getFlowService();
   }
 
   @Test

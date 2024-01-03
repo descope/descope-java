@@ -18,7 +18,6 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseDetails;
 import com.descope.model.mgmt.AccessKeyResponseList;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -49,10 +48,9 @@ class AccessKeyServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
     this.accessKeyService =
-        ManagementServiceBuilder.buildServices(client, authParams).getAccessKeyService();
+        ManagementServiceBuilder.buildServices(client).getAccessKeyService();
   }
 
   @Test

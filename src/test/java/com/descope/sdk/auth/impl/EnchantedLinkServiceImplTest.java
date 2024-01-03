@@ -19,19 +19,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
-import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.User;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
@@ -44,7 +40,6 @@ import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import com.descope.utils.UriUtils;
-import java.security.Key;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -59,12 +54,10 @@ public class EnchantedLinkServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    AuthParams authParams = TestUtils.getAuthParams();
     Client client = TestUtils.getClient();
     this.enchantedLinkService =
-        AuthenticationServiceBuilder.buildServices(client, authParams).getEnchantedLinkService();
-    ManagementParams mgmtParams = TestUtils.getManagementParams();
-    this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
+        AuthenticationServiceBuilder.buildServices(client).getEnchantedLinkService();
+    this.userService = ManagementServiceBuilder.buildServices(client).getUserService();
   }
 
   @Test
@@ -184,9 +177,6 @@ public class EnchantedLinkServiceImplTest {
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
-
     AuthenticationInfo authenticationInfo;
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
@@ -222,9 +212,6 @@ public class EnchantedLinkServiceImplTest {
   void testVerify() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mock(EmptyResponse.class)).when(apiProxy).post(any(), any(), any());
-
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(

@@ -11,7 +11,6 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
@@ -35,12 +34,11 @@ public class JwtServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
-    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client);
     this.jwtService = mgmtServices.getJwtService();
     this.userService = mgmtServices.getUserService();
-    this.otpService = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams()).getOtpService();
+    this.otpService = AuthenticationServiceBuilder.buildServices(client).getOtpService();
   }
 
   @Test

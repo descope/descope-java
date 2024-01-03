@@ -36,7 +36,6 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.request.BatchUserRequest;
 import com.descope.model.user.request.EnchantedLinkTestUserRequest;
 import com.descope.model.user.request.GenerateEmbeddedLinkRequest;
@@ -61,8 +60,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class UserServiceImpl extends ManagementsBase implements UserService {
 
-  UserServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  UserServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

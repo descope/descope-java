@@ -9,12 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
@@ -40,13 +38,11 @@ public class AuthenticationServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    AuthParams authParams = TestUtils.getAuthParams();
     Client client = TestUtils.getClient();
-    AuthenticationServices authService = AuthenticationServiceBuilder.buildServices(client, authParams);
+    AuthenticationServices authService = AuthenticationServiceBuilder.buildServices(client);
     this.authenticationService = authService.getAuthService();
     this.otpService = authService.getOtpService();
-    ManagementParams mgmtParams = TestUtils.getManagementParams();
-    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, mgmtParams);
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client);
     this.userService = mgmtServices.getUserService();
     this.roleService = mgmtServices.getRolesService();
     this.tenantService = mgmtServices.getTenantService();

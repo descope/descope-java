@@ -17,13 +17,15 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class KeyProvider {
 
-  public static Key getKey(String projectId, String url, SdkInfo sdkInfo) {
+  public static Map<String, Key> getKeys(String projectId, String url, SdkInfo sdkInfo) {
     ApiProxy apiProxy = ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId, sdkInfo);
     URI uri = addPath(UriUtils.getUri(url, GET_KEYS_LINK), projectId);
     SigningKeysResponse signingKeys = apiProxy.get(uri, SigningKeysResponse.class);
@@ -31,14 +33,16 @@ public class KeyProvider {
     if (signingKeys == null || signingKeys.getKeys() == null || signingKeys.getKeys().size() < 1) {
       throw ServerCommonException.invalidSigningKey("No keys were found in the response");
     }
-    // Will have rotating keys
-    SigningKey signingKey = signingKeys.getKeys().get(0);
-    return getPublicKey(signingKey);
+    Map<String, Key> keys = new HashMap<>();
+    for (SigningKey sk : signingKeys.getKeys()) {
+      keys.put(sk.getKid(), getPublicKey(sk));
+    }
+    return keys;
   }
 
   @SneakyThrows
   // https://mojoauth.com/blog/jwt-validation-with-jwks-java/
-  private static PublicKey getPublicKey(SigningKey signingKey) {
+  public static PublicKey getPublicKey(SigningKey signingKey) {
     byte[] exponentB = Base64.getUrlDecoder().decode(signingKey.getE());
     byte[] modulusB = Base64.getUrlDecoder().decode(signingKey.getN());
     BigInteger bigExponent = new BigInteger(1, exponentB);

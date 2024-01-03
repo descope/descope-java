@@ -14,7 +14,6 @@ import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
@@ -35,8 +34,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLinkService {
 
-  MagicLinkServiceImpl(Client client, AuthParams authParams) {
-    super(client, authParams);
+  MagicLinkServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

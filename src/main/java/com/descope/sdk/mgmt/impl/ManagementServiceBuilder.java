@@ -1,26 +1,25 @@
 package com.descope.sdk.mgmt.impl;
 
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.mgmt.ManagementServices;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class ManagementServiceBuilder {
-  public static ManagementServices buildServices(Client client, ManagementParams managementParams) {
+  public static ManagementServices buildServices(Client client) {
     return ManagementServices.builder()
-        .ssoService(new SsoServiceImpl(client, managementParams))
-        .jwtService(new JwtServiceImpl(client, managementParams))
-        .userService(new UserServiceImpl(client, managementParams))
-        .flowService(new FlowServiceImpl(client, managementParams))
-        .rolesService(new RolesServiceImpl(client, managementParams))
-        .groupService(new GroupServiceImpl(client, managementParams))
-        .tenantService(new TenantServiceImpl(client, managementParams))
-        .accessKeyService(new AccessKeyServiceImpl(client, managementParams))
-        .permissionService(new PermissionServiceImpl(client, managementParams))
-        .auditService(new AuditServiceImpl(client, managementParams))
-        .authzService(new AuthzServiceImpl(client, managementParams))
-        .projectService(new ProjectServiceImpl(client, managementParams))
+        .ssoService(new SsoServiceImpl(client))
+        .jwtService(new JwtServiceImpl(client))
+        .userService(new UserServiceImpl(client))
+        .flowService(new FlowServiceImpl(client))
+        .rolesService(new RolesServiceImpl(client))
+        .groupService(new GroupServiceImpl(client))
+        .tenantService(new TenantServiceImpl(client))
+        .accessKeyService(new AccessKeyServiceImpl(client))
+        .permissionService(new PermissionServiceImpl(client))
+        .auditService(new AuditServiceImpl(client))
+        .authzService(new AuthzServiceImpl(client))
+        .projectService(new ProjectServiceImpl(client))
         .build();
   }
 }

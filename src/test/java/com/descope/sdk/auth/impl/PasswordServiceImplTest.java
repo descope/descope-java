@@ -25,17 +25,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.password.PasswordPolicy;
 import com.descope.model.user.User;
 import com.descope.model.user.response.UserResponse;
@@ -46,7 +42,6 @@ import com.descope.sdk.auth.PasswordService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
-import java.security.Key;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,12 +56,10 @@ public class PasswordServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    AuthParams authParams = TestUtils.getAuthParams();
     Client client = TestUtils.getClient();
     this.passwordService =
-        AuthenticationServiceBuilder.buildServices(client, authParams).getPasswordService();
-    ManagementParams mgmtParams = TestUtils.getManagementParams();
-    this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
+        AuthenticationServiceBuilder.buildServices(client).getPasswordService();
+    this.userService = ManagementServiceBuilder.buildServices(client).getUserService();
   }
 
   @Test
@@ -78,9 +71,6 @@ public class PasswordServiceImplTest {
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
-
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -128,9 +118,6 @@ public class PasswordServiceImplTest {
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
-
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {

@@ -1,7 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.SdkServicesBase;
@@ -10,16 +9,13 @@ import org.apache.commons.lang3.StringUtils;
 
 abstract class ManagementsBase extends SdkServicesBase implements ManagementService {
 
-  private final ManagementParams managementParams;
-
-  ManagementsBase(Client client, ManagementParams managementParams) {
-    super(client, managementParams.getProjectId());
-    this.managementParams = managementParams;
+  ManagementsBase(Client client) {
+    super(client);
   }
 
   ApiProxy getApiProxy() {
-    String projectId = managementParams.getProjectId();
-    String managementKey = managementParams.getManagementKey();
+    String projectId = client.getProjectId();
+    String managementKey = client.getManagementKey();
     if (StringUtils.isNotBlank(projectId)) {
       return ApiProxyBuilder.buildProxy(
           () -> String.format("Bearer %s:%s", projectId, managementKey), client.getSdkInfo());
@@ -28,7 +24,7 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
   }
 
   ApiProxy getApiProxy(String refreshToken) {
-    String projectId = managementParams.getProjectId();
+    String projectId = client.getProjectId();
     if (StringUtils.isBlank(refreshToken) || StringUtils.isNotBlank(projectId)) {
       return getApiProxy();
     }

@@ -11,7 +11,6 @@ import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
@@ -28,8 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class WebAuthnServiceImpl extends AuthenticationServiceImpl implements WebAuthnService {
 
-  WebAuthnServiceImpl(Client client, AuthParams authParams) {
-    super(client, authParams);
+  WebAuthnServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

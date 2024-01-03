@@ -30,11 +30,10 @@ public class Config {
   // fail.
   private String managementKey;
 
-  // PublicKey (optional, "") - used to override or implicitly use a dedicated
-  // public key in order
-  // to decrypt and validate the JWT tokens during ValidateSessionRequest(). If
-  // empty, will attempt
-  // to fetch all public keys from the specified project id.
+  // PublicKey (optional, "") - used to override or implicitly use a dedicated public key in order
+  // to decrypt and validate the JWT tokens during ValidateSessionRequest().
+  // If empty, will attempt to fetch all public keys from the specified project id.
+  // Key should be a JSON in the format of com.descope.model.jwt.SigningKey
   private String publicKey;
 
   // DescopeBaseURL (optional, "https://api.descope.com") - override the default
@@ -46,20 +45,6 @@ public class Config {
   // used to communicate
   // with descope services.
   private Map<String, String> customDefaultHeaders;
-
-  // State whether session jwt should be sent to client in cookie or let the
-  // calling function handle
-  // the transfer of the jwt, defaults to leaving it for calling function, use
-  // cookie if session jwt
-  // will stay small (less than 1k) session cookie can grow bigger, in case of
-  // using authorization,
-  // or adding custom claims
-  private boolean sessionJWTViaCookie;
-
-  // When using cookies, set the cookie domain here. Alternatively this can be
-  // done via the Descope
-  // console.
-  private String sessionJWTCookieDomain;
 
   public String initializeProjectId() {
     if (StringUtils.isBlank(this.projectId)) {
