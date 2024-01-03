@@ -9,7 +9,6 @@ import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_PASSWORD_LIN
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
@@ -25,8 +24,8 @@ import com.descope.sdk.auth.PasswordService;
 import org.apache.commons.lang3.StringUtils;
 
 class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordService {
-  PasswordServiceImpl(Client client, AuthParams authParams) {
-    super(client, authParams);
+  PasswordServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

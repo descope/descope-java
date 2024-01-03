@@ -2,14 +2,11 @@ package com.descope.sdk;
 
 import static com.descope.utils.CollectionUtils.mapOf;
 
-import com.descope.model.auth.AuthParams;
 import com.descope.model.client.Client;
-import com.descope.model.client.ClientParams;
 import com.descope.model.client.SdkInfo;
 import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.user.User;
 import com.descope.model.user.response.UserResponse;
 import com.descope.utils.EnvironmentUtils;
@@ -84,10 +81,6 @@ public class TestUtils {
           "w8b3KRCep717H4MdVbwYHeb0vr891Ok1BL_TmC0XFUIKjRoKsWOcUZ9BFd6wR_5mnJuE7M8ZjVQRCbRlVgnh6AsEL3JA9Z6c1TpURTIXZxSE6NbeB7IMLMn5HWW7cjbnG4WO7E1PUCT6zCcBVz6EhA925GIJpyUxuY7oqJG-6NoOltI0Ocm6M2_7OIFMzFdw42RslqyX6l-SDdo_ZLq-XtcsCVRyj2YvmXUNF4Vq1x5syPOEQ-SezkvpBcb5Szi0ULpW5CvX2ieHAeHeQ2x8gkv6Dn2AW_dllQ--ZO-QH2QkxEXlMVqilwAdbA0k6BBtSkMC-7kD3A86bGGplpzz5Q")
       .build();
 
-  public static AuthParams getAuthParams() {
-    return AuthParams.builder().projectId(EnvironmentUtils.getProjectId()).build();
-  }
-
   private static SdkInfo getSdkInfo() {
     String name = "java";
     String version = System.getProperty("java.version");
@@ -107,20 +100,14 @@ public class TestUtils {
     }
     return Client.builder()
         .uri(baseUrl)
+        .projectId(EnvironmentUtils.getProjectId())
+        .managementKey(EnvironmentUtils.getManagementKey())
         .sdkInfo(getSdkInfo())
-        .params(ClientParams.builder().baseUrl(baseUrl).projectId(EnvironmentUtils.getProjectId()).build())
         .build();
   }
 
   public static String getRandomName(String prefix) {
     return prefix + UUID.randomUUID().toString();
-  }
-
-  public static ManagementParams getManagementParams() {
-    return ManagementParams.builder()
-        .projectId(EnvironmentUtils.getProjectId())
-        .managementKey(EnvironmentUtils.getManagementKey())
-        .build();
   }
 
 }

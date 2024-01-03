@@ -9,7 +9,6 @@ import static com.descope.utils.CollectionUtils.mapOf;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.permission.PermissionResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.PermissionService;
@@ -18,8 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class PermissionServiceImpl extends ManagementsBase implements PermissionService {
 
-  PermissionServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  PermissionServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

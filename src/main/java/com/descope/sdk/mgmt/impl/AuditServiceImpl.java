@@ -8,7 +8,6 @@ import com.descope.model.audit.AuditRecord;
 import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.audit.AuditSearchResponse;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AuditService;
 import java.net.URI;
@@ -23,8 +22,8 @@ import lombok.NoArgsConstructor;
 
 class AuditServiceImpl extends ManagementsBase implements AuditService {
 
-  AuditServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  AuditServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

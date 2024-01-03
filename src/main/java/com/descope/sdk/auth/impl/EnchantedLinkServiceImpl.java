@@ -12,7 +12,6 @@ import static org.apache.logging.log4j.util.Strings.isEmpty;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
@@ -34,8 +33,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements EnchantedLinkService {
 
-  EnchantedLinkServiceImpl(Client client, AuthParams authParams) {
-    super(client, authParams);
+  EnchantedLinkServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

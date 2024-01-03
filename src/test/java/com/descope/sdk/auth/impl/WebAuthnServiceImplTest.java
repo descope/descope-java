@@ -17,13 +17,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.LoginOptions;
@@ -36,7 +33,6 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.WebAuthnService;
 import com.descope.utils.JwtUtils;
-import java.security.Key;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,10 +44,9 @@ public class WebAuthnServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    AuthParams authParams = TestUtils.getAuthParams();
     Client client = TestUtils.getClient();
     this.webAuthnService =
-        AuthenticationServiceBuilder.buildServices(client, authParams).getWebAuthnService();
+        AuthenticationServiceBuilder.buildServices(client).getWebAuthnService();
   }
 
   @Test
@@ -93,8 +88,6 @@ public class WebAuthnServiceImplTest {
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -186,8 +179,6 @@ public class WebAuthnServiceImplTest {
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -271,8 +262,6 @@ public class WebAuthnServiceImplTest {
     doReturn(response).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -318,8 +307,6 @@ public class WebAuthnServiceImplTest {
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);

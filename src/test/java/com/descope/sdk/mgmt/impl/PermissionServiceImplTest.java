@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.permission.Permission;
 import com.descope.model.permission.PermissionResponse;
 import com.descope.proxy.ApiProxy;
@@ -40,10 +39,9 @@ class PermissionServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
     this.permissionService =
-        ManagementServiceBuilder.buildServices(client, authParams).getPermissionService();
+        ManagementServiceBuilder.buildServices(client).getPermissionService();
   }
 
   @Test

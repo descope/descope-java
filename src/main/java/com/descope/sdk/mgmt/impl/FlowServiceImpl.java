@@ -16,7 +16,6 @@ import com.descope.model.flow.FlowsResponse;
 import com.descope.model.flow.Screen;
 import com.descope.model.flow.Theme;
 import com.descope.model.flow.ThemeResponse;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.FlowService;
 import java.util.List;
@@ -25,8 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class FlowServiceImpl extends ManagementsBase implements FlowService {
 
-  FlowServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  FlowServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

@@ -9,7 +9,6 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.group.Group;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.GroupService;
 import java.util.List;
@@ -17,8 +16,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class GroupServiceImpl extends ManagementsBase implements GroupService {
-  GroupServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  GroupServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

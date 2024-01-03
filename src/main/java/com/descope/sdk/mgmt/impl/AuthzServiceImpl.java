@@ -29,7 +29,6 @@ import com.descope.model.authz.RelationsResponse;
 import com.descope.model.authz.Schema;
 import com.descope.model.authz.WhoCanAccessResponse;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AuthzService;
 import java.util.Collections;
@@ -40,8 +39,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class AuthzServiceImpl extends ManagementsBase implements AuthzService {
 
-  AuthzServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  AuthzServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

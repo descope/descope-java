@@ -16,18 +16,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.LoginOptions;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.totp.TOTPResponse;
 import com.descope.model.user.User;
 import com.descope.model.user.response.UserResponse;
@@ -38,7 +34,6 @@ import com.descope.sdk.auth.TOTPService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
-import java.security.Key;
 import java.time.Instant;
 import java.util.Arrays;
 import javax.crypto.Mac;
@@ -57,12 +52,10 @@ public class TotpServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    AuthParams authParams = TestUtils.getAuthParams();
     Client client = TestUtils.getClient();
     this.totpService =
-        AuthenticationServiceBuilder.buildServices(client, authParams).getTotpService();
-    ManagementParams mgmtParams = TestUtils.getManagementParams();
-    this.userService = ManagementServiceBuilder.buildServices(client, mgmtParams).getUserService();
+        AuthenticationServiceBuilder.buildServices(client).getTotpService();
+    this.userService = ManagementServiceBuilder.buildServices(client).getUserService();
   }
 
   @Test
@@ -85,9 +78,6 @@ public class TotpServiceImplTest {
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
-
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {

@@ -1,9 +1,10 @@
 package com.descope.model.client;
 
-import com.descope.model.jwt.Provider;
+import com.descope.sdk.auth.impl.KeyProvider;
 import java.security.Key;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,17 +16,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Client {
   private String uri;
+  private String projectId;
+  private String managementKey;
   private Map<String, String> headers;
-  private ClientParams params;
   private SdkInfo sdkInfo;
+  private Key providedKey;
   @Builder.Default
-  private Provider provider = Provider.builder().keyMap(new HashMap<>()).build();
+  private AtomicReference<Map<String, Key>> keys = new AtomicReference<>(new HashMap<>());
 
-  public synchronized Key getProvidedKey() {
-    return provider.getProvidedKey();
-  }
-
-  public synchronized void setProvidedKey(Key key) {
-    provider.setProvidedKey(key);
+  public Key getKey(String keyId) {
+    if (providedKey != null) {
+      return providedKey;
+    }
+    Key k = keys.get().get(keyId);
+    // If key is not found, try to refresh key cache
+    if (k == null) {
+      keys.set(KeyProvider.getKeys(projectId, uri, sdkInfo));
+      k = keys.get().get(keyId);
+    }
+    return k;
   }
 }

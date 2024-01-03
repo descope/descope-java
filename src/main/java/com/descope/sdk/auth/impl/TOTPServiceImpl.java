@@ -6,7 +6,6 @@ import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
@@ -22,8 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
 
-  TOTPServiceImpl(Client client, AuthParams authParams) {
-    super(client, authParams);
+  TOTPServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

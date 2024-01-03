@@ -24,7 +24,6 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.BatchUserPasswordHashed;
 import com.descope.model.user.request.BatchUserRequest;
@@ -76,13 +75,12 @@ public class UserServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
-    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client);
     this.userService = mgmtServices.getUserService();
     this.tenantService = mgmtServices.getTenantService();
     this.roleService = mgmtServices.getRolesService();
-    AuthenticationServices authServices = AuthenticationServiceBuilder.buildServices(client, TestUtils.getAuthParams());
+    AuthenticationServices authServices = AuthenticationServiceBuilder.buildServices(client);
     this.magicLinkService = authServices.getMagicLinkService();
     this.authenticationService = authServices.getAuthService();
     this.passwordService = authServices.getPasswordService();

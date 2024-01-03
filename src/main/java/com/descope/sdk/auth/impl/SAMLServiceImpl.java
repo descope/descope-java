@@ -5,7 +5,6 @@ import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_SAML_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
@@ -17,8 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class SAMLServiceImpl extends AuthenticationServiceImpl implements SAMLService {
 
-  SAMLServiceImpl(Client client, AuthParams authParams) {
-    super(client, authParams);
+  SAMLServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

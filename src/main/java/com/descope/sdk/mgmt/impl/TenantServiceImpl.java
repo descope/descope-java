@@ -10,7 +10,6 @@ import static com.descope.utils.CollectionUtils.mapOf;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.request.TenantSearchRequest;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
@@ -24,8 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
 class TenantServiceImpl extends ManagementsBase implements TenantService {
 
-  TenantServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  TenantServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

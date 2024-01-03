@@ -8,7 +8,6 @@ import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.UpdateJwtRequest;
 import com.descope.model.jwt.response.UpdateJwtResponse;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
@@ -17,8 +16,8 @@ import org.apache.commons.lang3.StringUtils;
 
 class JwtServiceImpl extends ManagementsBase implements JwtService {
 
-  JwtServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  JwtServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

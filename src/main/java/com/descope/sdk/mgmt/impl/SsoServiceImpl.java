@@ -10,7 +10,6 @@ import static com.descope.utils.CollectionUtils.mapOf;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
 import com.descope.model.sso.SSOSettingsResponse;
@@ -21,8 +20,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class SsoServiceImpl extends ManagementsBase implements SsoService {
-  SsoServiceImpl(Client client, ManagementParams managementParams) {
-    super(client, managementParams);
+  SsoServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

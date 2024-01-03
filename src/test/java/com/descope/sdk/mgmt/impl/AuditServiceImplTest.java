@@ -14,7 +14,6 @@ import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.audit.AuditSearchResponse;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.AccessKeyResponse;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -39,9 +38,8 @@ public class AuditServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
-    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client);
     this.auditService = mgmtServices.getAuditService();
     this.accessKeyService = mgmtServices.getAccessKeyService();
   }

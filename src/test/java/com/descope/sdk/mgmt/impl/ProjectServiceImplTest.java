@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mockStatic;
 
 import com.descope.enums.ProjectTag;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.project.NewProjectResponse;
 import com.descope.proxy.ApiProxy;
@@ -28,9 +27,8 @@ public class ProjectServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
-    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client);
     this.projectService = mgmtServices.getProjectService();
   }
 

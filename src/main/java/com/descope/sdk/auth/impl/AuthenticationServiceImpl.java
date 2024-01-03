@@ -8,7 +8,6 @@ import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.client.Client;
@@ -26,8 +25,8 @@ import org.apache.logging.log4j.util.Strings;
 
 class AuthenticationServiceImpl extends AuthenticationsBase {
 
-  AuthenticationServiceImpl(Client client, AuthParams authParams) {
-    super(client, authParams);
+  AuthenticationServiceImpl(Client client) {
+    super(client);
   }
 
   @Override

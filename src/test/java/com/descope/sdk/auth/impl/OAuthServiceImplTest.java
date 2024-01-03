@@ -13,13 +13,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
-import com.descope.model.auth.AuthParams;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.OAuthResponse;
 import com.descope.model.client.Client;
-import com.descope.model.jwt.Provider;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.LoginOptions;
@@ -30,7 +27,6 @@ import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.OAuthService;
 import com.descope.utils.JwtUtils;
 import java.net.URLDecoder;
-import java.security.Key;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,10 +39,9 @@ public class OAuthServiceImplTest {
   
   @BeforeEach
   void setUp() {
-    AuthParams authParams = TestUtils.getAuthParams();
     Client client = TestUtils.getClient();
     this.oauthService =
-        AuthenticationServiceBuilder.buildServices(client, authParams).getOauthService();
+        AuthenticationServiceBuilder.buildServices(client).getOauthService();
   }
 
   @Test
@@ -67,9 +62,6 @@ public class OAuthServiceImplTest {
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
       .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
-
-    Provider provider = mock(Provider.class);
-    when(provider.getProvidedKey()).thenReturn(mock(Key.class));
 
     AuthenticationInfo authenticationInfo;
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {

@@ -23,7 +23,6 @@ import com.descope.model.authz.RelationsResponse;
 import com.descope.model.authz.Schema;
 import com.descope.model.authz.WhoCanAccessResponse;
 import com.descope.model.client.Client;
-import com.descope.model.mgmt.ManagementParams;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -44,9 +43,8 @@ public class AuthzServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    ManagementParams authParams = TestUtils.getManagementParams();
     Client client = TestUtils.getClient();
-    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client, authParams);
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(client);
     this.authzService = mgmtServices.getAuthzService();
   }
 
