@@ -15,7 +15,7 @@ public class ClientSetupException extends DescopeException {
     return new ClientSetupException(message, MISSING_PROJECT_ID);
   }
 
-  public static ClientSetupException invliadProjectId() {
+  public static ClientSetupException invalidProjectId() {
     String message = "Invalid project ID - must be over 27 characters long";
     return new ClientSetupException(message, INVALID_PROJECT_ID);
   }
