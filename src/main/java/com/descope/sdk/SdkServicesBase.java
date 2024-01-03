@@ -37,7 +37,7 @@ public abstract class SdkServicesBase {
     if (isNotEmpty(params)) {
       StringBuilder sb = new StringBuilder("?");
       for (Entry<String, String> e : params.entrySet()) {
-        if (sb.length() > 0) {
+        if (sb.length() > 1) {
           sb.append('&');
         }
         sb.append(

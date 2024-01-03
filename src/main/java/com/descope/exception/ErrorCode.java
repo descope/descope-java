@@ -13,6 +13,7 @@ public class ErrorCode {
 
   // client setup
   public static final String MISSING_PROJECT_ID = "G010001";
+  public static final String INVALID_PROJECT_ID = "G010002";
 
   // client functional errors
   public static final String INVALID_TOKEN = "G030002";

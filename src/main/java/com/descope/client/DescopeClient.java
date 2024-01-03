@@ -23,7 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 public class DescopeClient {
 
-  private static final String DEFAULT_BASE_URL = "https://api.descope.com";
+  private static final String REGION_PLACEHOLDER = "<region>";
+  private static final String DEFAULT_BASE_URL = "https://api." + REGION_PLACEHOLDER + "descope.com";
 
   private final Config config;
   private final ManagementServices managementServices;
@@ -57,10 +58,16 @@ public class DescopeClient {
   }
 
   private static Client getClient(Config config) {
-    SdkInfo sdkInfo = getSdkInfo();
+    final SdkInfo sdkInfo = getSdkInfo();
+    final String projectId = config.getProjectId();
+    if (projectId.length() < 28) {
+      throw ClientSetupException.invliadProjectId();
+    }
+    final String region = projectId.substring(1, projectId.length() - 27);
+    final String baseUrl = DEFAULT_BASE_URL.replace(REGION_PLACEHOLDER, region.length() > 0 ? region + "." : "");
     Client c = Client.builder()
-        .uri(StringUtils.isBlank(config.getDescopeBaseUrl()) ? DEFAULT_BASE_URL : config.getDescopeBaseUrl())
-        .projectId(config.getProjectId())
+        .uri(StringUtils.isBlank(config.getDescopeBaseUrl()) ? baseUrl : config.getDescopeBaseUrl())
+        .projectId(projectId)
         .managementKey(config.getManagementKey())
         .headers(
             Collections.isEmpty(config.getCustomDefaultHeaders())
