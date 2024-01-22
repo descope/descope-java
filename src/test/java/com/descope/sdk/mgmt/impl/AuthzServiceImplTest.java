@@ -15,6 +15,7 @@ import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.authz.HasRelationsResponse;
 import com.descope.model.authz.LoadSchemaResponse;
+import com.descope.model.authz.Modified;
 import com.descope.model.authz.Namespace;
 import com.descope.model.authz.Relation;
 import com.descope.model.authz.RelationDefinition;
@@ -31,6 +32,8 @@ import com.descope.sdk.mgmt.AuthzService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.File;
+import java.time.Instant;
+import java.time.Period;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -396,6 +399,28 @@ public class AuthzServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       authzService.whatCanTargetAccess("kiki");
+    }
+  }
+
+  @Test
+  void testGetModifiedForWrongSince() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.getModified(Instant.now().minus(Period.ofDays(2))));
+    assertNotNull(thrown);
+    assertEquals("The since argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGetModifiedForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new Modified(null, null, true)).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      Modified modified = authzService.getModified(null);
+      assertTrue(modified.isSchemaChanged());
     }
   }
 

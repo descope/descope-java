@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_GET_MODIFIED;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_NS_DELETE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_NS_SAVE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RD_DELETE;
@@ -21,6 +22,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.authz.HasRelationsResponse;
 import com.descope.model.authz.LoadSchemaResponse;
+import com.descope.model.authz.Modified;
 import com.descope.model.authz.Namespace;
 import com.descope.model.authz.Relation;
 import com.descope.model.authz.RelationDefinition;
@@ -31,6 +33,8 @@ import com.descope.model.authz.WhoCanAccessResponse;
 import com.descope.model.client.Client;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AuthzService;
+import java.time.Instant;
+import java.time.Period;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -230,5 +234,19 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     Map<String, Object> request = mapOf("target", target);
     RelationsResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_ALL), request, RelationsResponse.class);
     return resp.getRelations();
+  }
+
+  @Override
+  public Modified getModified(Instant since) throws DescopeException {
+    Instant now = Instant.now();
+    if (since != null && (since.isBefore(now.minus(Period.ofDays(1))) || since.isAfter(now))) {
+      throw ServerCommonException.invalidArgument("since");
+    }
+    Map<String, Object> request = new HashMap<>();
+    if (since != null) {
+      request.put("since", since.toEpochMilli());
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_AUTHZ_GET_MODIFIED), request, Modified.class);
   }
 }
