@@ -1,11 +1,13 @@
 package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
+import com.descope.model.authz.Modified;
 import com.descope.model.authz.Namespace;
 import com.descope.model.authz.Relation;
 import com.descope.model.authz.RelationDefinition;
 import com.descope.model.authz.RelationQuery;
 import com.descope.model.authz.Schema;
+import java.time.Instant;
 import java.util.List;
 
 /** Provides ReBAC authorization service APIs. */
@@ -149,4 +151,14 @@ public interface AuthzService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   List<Relation> whatCanTargetAccess(String target) throws DescopeException;
+
+  /**
+   * Return list of targets and resources changed since the given date.
+   * Should be used to invalidate local caches.
+   *
+   * @param since return the changes since this instant
+   * @return {@link Modified} including resources and targets changed
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  Modified getModified(Instant since) throws DescopeException;
 }
