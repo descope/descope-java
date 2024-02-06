@@ -435,6 +435,7 @@ public interface UserService {
    * however, it will be used instead of any global configuration.
    *
    * @param loginId The loginID is required.
+   * @param uri An ptional redirect URL which will be used instead of any global configuration.
    * @param deliveryMethod Choose the selected delivery method for verification.
    * @return It returns the link for the login (exactly as it sent via Email)
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
@@ -449,6 +450,7 @@ public interface UserService {
    * provided however, it will be used instead of any global configuration.
    *
    * @param loginId loginId The loginID is required.
+   * @param uri An ptional redirect URL which will be used instead of any global configuration.
    * @return It returns the link for the login (exactly as it sent via Email) and pendingRef which
    *     is used to poll for a valid session
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be

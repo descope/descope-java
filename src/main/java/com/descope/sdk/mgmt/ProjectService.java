@@ -34,7 +34,7 @@ public interface ProjectService {
    *  - Users, tenants and access keys are not cloned.
    *  - Secrets, keys and tokens are not stripped from the exported data.
    *
-   * @returns An object containing the exported JSON files payload.
+   * @return An object containing the exported JSON files payload.
    * @throws DescopeException - error upon failure
    */
   ExportProjectResponse exportProject() throws DescopeException;
