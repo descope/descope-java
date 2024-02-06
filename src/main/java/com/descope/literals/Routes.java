@@ -156,6 +156,8 @@ public class Routes {
     // Project
     public static final String MANAGEMENT_PROJECT_UPDATE_NAME = "/v1/mgmt/project/update/name";
     public static final String MANAGEMENT_PROJECT_CLONE = "/v1/mgmt/project/clone";
+    public static final String MANAGEMENT_PROJECT_EXPORT = "/v1/mgmt/project/export";
+    public static final String MANAGEMENT_PROJECT_IMPORT = "/v1/mgmt/project/import";
 
     // Audit
     public static final String MANAGEMENT_AUDIT_SEARCH_LINK = "/v1/mgmt/audit/search";

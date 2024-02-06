@@ -18,6 +18,7 @@ public interface AuthzService {
    * Schema name can be used for projects to track versioning.
    *
    * @param schema {@link Schema} to save.
+   * @param upgrade Should we upgrade existing schema or ignore any namespace not provided.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   void saveSchema(Schema schema, boolean upgrade) throws DescopeException;
