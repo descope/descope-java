@@ -1,11 +1,10 @@
 package com.descope.sdk.mgmt;
 
-import java.util.Map;
-
 import com.descope.enums.ProjectTag;
 import com.descope.exception.DescopeException;
 import com.descope.model.project.ExportProjectResponse;
 import com.descope.model.project.NewProjectResponse;
+import java.util.Map;
 
 public interface ProjectService {
   /**

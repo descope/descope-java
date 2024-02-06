@@ -6,8 +6,6 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PROJECT
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PROJECT_UPDATE_NAME;
 import static com.descope.utils.CollectionUtils.mapOf;
 
-import java.util.Map;
-
 import com.descope.enums.ProjectTag;
 import com.descope.exception.DescopeException;
 import com.descope.model.client.Client;
@@ -15,6 +13,7 @@ import com.descope.model.project.ExportProjectResponse;
 import com.descope.model.project.NewProjectResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.ProjectService;
+import java.util.Map;
 
 class ProjectServiceImpl extends ManagementsBase implements ProjectService {
 
