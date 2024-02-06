@@ -1188,9 +1188,7 @@ try {
 
 ```
 
-You can manage your project's settings and configurations by exporting your
-project's environment. You can also import previously exported data into
-the same project or a different one.
+You can manage your project's settings and configurations by exporting your project's environment.
 
 ```java
 // Exports the current state of the project
@@ -1200,8 +1198,11 @@ try {
     // Handle the error
 }
 
-const files = await descopeClient.management.project.export();
+```
 
+You can also import previously exported data into the same project or a different one.
+
+```java
 try {
     // Load data from a previous export of this project or some other one
     Map<String, Object> files = ...
