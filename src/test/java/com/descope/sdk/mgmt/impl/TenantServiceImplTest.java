@@ -16,6 +16,7 @@ import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.tenant.Tenant;
+import com.descope.model.tenant.TenantSettings;
 import com.descope.model.tenant.request.TenantSearchRequest;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
 import com.descope.proxy.ApiProxy;
@@ -38,6 +39,18 @@ public class TenantServiceImplTest {
       .selfProvisioningDomains(selfProvisioningDomains)
       .build();
 
+  TenantSettings mockSettings = TenantSettings.builder()
+      .sessionSettingsEnabled(true)
+      .domains(Arrays.asList("d1", "d2"))
+      .enableInactivity(true)
+      .inactivityTime(3)
+      .inactivityTimeUnit("days")
+      .refreshTokenExpiration(30)
+      .refreshTokenExpirationUnit("days")
+      .selfProvisioningDomains(Arrays.asList("dd1", "dd2"))
+      .sessionTokenExpiration(5)
+      .sessionTokenExpirationUnit("minutes")
+      .build();
   private TenantService tenantService;
 
   @BeforeEach
@@ -128,6 +141,60 @@ public class TenantServiceImplTest {
   }
 
   @Test
+  void testLoadForEmptyId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.load(""));
+    assertNotNull(thrown);
+    assertEquals("The id argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLoadForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockTenant).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      Tenant response = tenantService.load(mockTenant.getId());
+      assertThat(response).isEqualTo(mockTenant);
+    }
+  }
+
+  @Test
+  void testGetSettingsForEmptyId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.getSettings(""));
+    assertNotNull(thrown);
+    assertEquals("The id argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGetSettingsForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockSettings).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      TenantSettings response = tenantService.getSettings(mockTenant.getId());
+      assertThat(response).isEqualTo(mockSettings);
+    }
+  }
+
+  @Test
+  void testConfigureSettingsForEmptyId() {
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> tenantService.configureSettings("", null));
+    assertNotNull(thrown);
+    assertEquals("The id argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testConfigureSettingsForNoSettings() {
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> tenantService.configureSettings("a", null));
+    assertNotNull(thrown);
+    assertEquals("The settings argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testLoadAllForSuccess() {
     GetAllTenantsResponse mockTenantsResponse =
         GetAllTenantsResponse.builder().tenants(Arrays.asList(mockTenant)).build();
@@ -157,6 +224,12 @@ public class TenantServiceImplTest {
       }
     }
     assertTrue(found);
+    Tenant tenant = tenantService.load(tenantId);
+    assertThat(tenant).isNotNull();
+    assertThat(tenant.getId()).isEqualTo(tenantId);
+    TenantSettings tenantSettings = tenantService.getSettings(tenantId);
+    assertThat(tenantSettings).isNotNull();
+    assertThat(tenantSettings.getSelfProvisioningDomains()).containsOnly(name + ".com", name + "1.com");
     tenantService.update(tenantId, name + "1", Arrays.asList(name + ".com"), null);
     tenants = tenantService.loadAll();
     assertThat(tenants).isNotEmpty();

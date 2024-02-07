@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.tenant.Tenant;
+import com.descope.model.tenant.TenantSettings;
 import com.descope.model.tenant.request.TenantSearchRequest;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +99,14 @@ public interface TenantService {
   void delete(String id) throws DescopeException;
 
   /**
+   * Load the tenant with the given ID.
+   *
+   * @param id - Tenant ID
+   * @throws DescopeException in case of errors
+   */
+  Tenant load(String id) throws DescopeException;
+
+  /**
    * Load all project tenants.s
    *
    * @return {{@link List} of {@link Tenant}
@@ -119,4 +128,21 @@ public interface TenantService {
    */
   List<Tenant> searchAll(TenantSearchRequest request) throws DescopeException;
 
+  /**
+   * Get the tenant settings.
+   *
+   * @param id Tenant ID
+   * @return {@link TenantSettings}
+   * @throws DescopeException in case of errors
+   */
+  TenantSettings getSettings(String id) throws DescopeException;
+
+  /**
+   * Configure the tenant settings.
+   *
+   * @param id Tenant ID
+   * @param settings The settings to set for the tenant
+   * @throws DescopeException in case of errors
+   */
+  void configureSettings(String id, TenantSettings settings) throws DescopeException;
 }

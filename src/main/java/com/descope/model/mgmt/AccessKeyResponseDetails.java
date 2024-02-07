@@ -21,4 +21,5 @@ public class AccessKeyResponseDetails {
   private long expireTime;
   private String createdBy;
   private String clientId;
+  private String userId;
 }

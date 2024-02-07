@@ -1,5 +1,6 @@
 package com.descope.utils;
 
+import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
@@ -47,8 +48,12 @@ public class JwtUtils {
             return k;
           }      
         }).setAllowedClockSkewSeconds(SKEW_SECONDS).build();
-    Jws<Claims> claimsJws = jwtParser.parseClaimsJws(jwt);
-    return claimsJws;
+    try {
+      Jws<Claims> claimsJws = jwtParser.parseClaimsJws(jwt);
+      return claimsJws;
+    } catch (Exception e) {
+      throw ClientFunctionalException.invalidToken(e);
+    }
   }
 
   public static boolean isJWTRequired(LoginOptions loginOptions) {

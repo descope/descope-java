@@ -8,7 +8,6 @@ import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OR_IN_ENCHANTED_
 import static com.descope.literals.Routes.AuthEndPoints.UPDATE_EMAIL_ENCHANTED_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.VERIFY_ENCHANTED_LINK;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
-import static org.apache.logging.log4j.util.Strings.isEmpty;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -66,7 +65,7 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
     URI enchantedLinkSignUpURL = composeEnchantedLinkSignUpURL();
     SignUpRequest.SignUpRequestBuilder signUpRequestBuilder =
         SignUpRequest.builder().loginId(loginId).uri(uri).user(user).email(loginId);
-    if (isEmpty(user.getEmail())) {
+    if (StringUtils.isBlank(user.getEmail())) {
       user.setEmail(loginId);
     }
     SignUpRequest signUpRequest = signUpRequestBuilder.user(user).build();
