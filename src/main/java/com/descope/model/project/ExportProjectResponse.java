@@ -1,5 +1,6 @@
 package com.descope.model.project;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,8 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewProjectResponse {
-  private String projectId;
-  private String projectName;
-  private String tag;
+public class ExportProjectResponse {
+  private Map<String, Object> files;
 }

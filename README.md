@@ -1181,7 +1181,34 @@ try {
 // Clone the current project to a new one
 // Note that this action is supported only with a pro license or above.
 try {
-    NewProjectResponse resp = ps.clone("New Project Name", ProjectTag.None);
+    NewProjectResponse resp = ps.cloneProject("New Project Name", ProjectTag.None);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+You can manage your project's settings and configurations by exporting your project's environment.
+
+```java
+// Exports the current state of the project
+try {
+    ExportProjectResponse resp = ps.exportProject();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+You can also import previously exported data into the same project or a different one.
+
+```java
+try {
+    // Load data from a previous export of this project or some other one
+    Map<String, Object> files = ...
+
+    // Update the current project's settings to mirror those in the exported data
+    ps.importProject(files);
 } catch (DescopeException de) {
     // Handle the error
 }
