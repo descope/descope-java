@@ -111,11 +111,11 @@ public class Routes {
     public static final String TENANT_SEARCH_ALL_LINK = "/v1/mgmt/tenant/search";
 
     // SSO
-    public static final String SSO_GET_SETTINGS_LINK = "/mgmt/sso/settings";
-    public static final String SSO_DELETE_SETTINGS_LINK = "/mgmt/sso/settings";
-    public static final String SSO_CONFIGURE_SETTINGS_LINK = "/mgmt/sso/settings";
-    public static final String SSO_CONFIGURE_METADATA_LINK = "/mgmt/sso/metadata";
-    public static final String SSO_CONFIGURE_MAPPING_LINK = "/mgmt/sso/mapping";
+    public static final String SSO_GET_SETTINGS_LINK = "/v2/mgmt/sso/settings";
+    public static final String SSO_DELETE_SETTINGS_LINK = "/v1/mgmt/sso/settings";
+    public static final String SSO_CONFIGURE_SETTINGS_LINK = "/v1/mgmt/sso/settings";
+    public static final String SSO_CONFIGURE_METADATA_LINK = "/v1/mgmt/sso/metadata";
+    public static final String SSO_CONFIGURE_MAPPING_LINK = "/v1/mgmt/sso/mapping";
 
     // Group
     public static final String GROUP_LOAD_ALL_LINK = "/v1/mgmt/group/all";
