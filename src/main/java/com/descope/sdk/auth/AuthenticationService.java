@@ -2,6 +2,8 @@ package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.jwt.Token;
+import com.descope.model.user.response.UserHistoryResponse;
+import com.descope.model.user.response.UserResponse;
 import java.util.List;
 
 public interface AuthenticationService {
@@ -204,4 +206,22 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error
    */
   void logoutAll(String refreshToken) throws DescopeException;
+
+  /**
+   * Use to retrieve current session user details. The request requires a valid refresh token.
+   *
+   * @param refreshToken a valid refresh token
+   * @return {@link UserResponse} returns the user details.
+   * @throws DescopeException if there is an error or token is not valid
+   */
+  UserResponse me(String refreshToken) throws DescopeException;
+
+  /**
+   * Use to retrieve current session user history. The request requires a valid refresh token.
+   *
+   * @param refreshToken a valid refresh token
+   * @return {@link UserHistoryResponse} returns the user authentication history.
+   * @throws DescopeException if there is an error or token is not valid
+   */
+  List<UserHistoryResponse> history(String refreshToken) throws DescopeException;
 }

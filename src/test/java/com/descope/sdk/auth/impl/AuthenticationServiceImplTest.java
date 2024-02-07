@@ -16,6 +16,7 @@ import com.descope.model.jwt.Token;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
+import com.descope.model.user.response.UserResponse;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -61,7 +62,7 @@ public class AuthenticationServiceImplTest {
   }
 
   @Test
-  void textGetMatchedPermissionsAndRoles() {
+  void testGetMatchedPermissionsAndRoles() {
     assertEquals(Arrays.asList("tp1", "tp2"),
         authenticationService.getMatchedPermissions(MOCK_TOKEN, "someTenant", Arrays.asList("tp1", "tp2")));
     assertEquals(Arrays.asList(),
@@ -105,7 +106,7 @@ public class AuthenticationServiceImplTest {
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
-  void testFunctionalFullCycle() {
+  void testFunctionalFullCycle() throws Exception {
     String loginId = TestUtils.getRandomName("u-") + "@descope.com";
     userService.createTestUser(loginId, UserRequest.builder().email(loginId).verifiedEmail(true).build());
     OTPTestUserResponse code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
@@ -116,6 +117,8 @@ public class AuthenticationServiceImplTest {
     assertThat(token.getJwt()).isNotBlank();
     token = authenticationService.refreshSessionWithToken(authInfo.getRefreshToken().getJwt());
     assertThat(token.getJwt()).isNotBlank();
+    UserResponse u = authenticationService.me(authInfo.getRefreshToken().getJwt());
+    assertThat(u.getEmail()).isEqualTo(loginId);
     authenticationService.logout(authInfo.getRefreshToken().getJwt());
     userService.delete(loginId);
   }

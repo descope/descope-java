@@ -2,15 +2,19 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.GET_TENANT_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.LOAD_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.TENANT_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
+import static com.descope.utils.CollectionUtils.addIfNotNull;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.tenant.Tenant;
+import com.descope.model.tenant.TenantSettings;
 import com.descope.model.tenant.request.TenantSearchRequest;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
 import com.descope.proxy.ApiProxy;
@@ -32,8 +36,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("name");
     }
-    Tenant tenant = new Tenant("", name, selfProvisioningDomains, null);
-    return create(tenant);
+    return create(Tenant.builder().name(name).selfProvisioningDomains(selfProvisioningDomains).build());
   }
 
   @Override
@@ -42,8 +45,11 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("name");
     }
-    Tenant tenant = new Tenant("", name, selfProvisioningDomains, customAttributes);
-    return create(tenant);
+    return create(Tenant.builder()
+        .name(name)
+        .selfProvisioningDomains(selfProvisioningDomains)
+        .customAttributes(customAttributes)
+        .build());
   }
 
   @Override
@@ -52,9 +58,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (StringUtils.isAnyBlank(id, name)) {
       throw ServerCommonException.invalidArgument("id or name");
     }
-
-    Tenant tenant = new Tenant(id, name, selfProvisioningDomains, null);
-    create(tenant);
+    create(Tenant.builder().id(id).name(name).selfProvisioningDomains(selfProvisioningDomains).build());
   }
 
   @Override
@@ -64,9 +68,12 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (StringUtils.isAnyBlank(id, name)) {
       throw ServerCommonException.invalidArgument("id or name");
     }
-
-    Tenant tenant = new Tenant(id, name, selfProvisioningDomains, customAttributes);
-    create(tenant);
+    create(Tenant.builder()
+        .id(id)
+        .name(name)
+        .selfProvisioningDomains(selfProvisioningDomains)
+        .customAttributes(customAttributes)
+        .build());
   }
 
   private String create(Tenant tenant) {
@@ -82,9 +89,12 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (StringUtils.isAnyBlank(id, name)) {
       throw ServerCommonException.invalidArgument("id or name");
     }
-
-    Tenant tenant = new Tenant(id, name, selfProvisioningDomains, customAttributes);
-    update(tenant);
+    update(Tenant.builder()
+        .id(id)
+        .name(name)
+        .selfProvisioningDomains(selfProvisioningDomains)
+        .customAttributes(customAttributes)
+        .build());
   }
 
   private void update(Tenant tenant) {
@@ -102,6 +112,15 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     URI deleteTenantUri = composeDeleteTenantUri();
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(deleteTenantUri, mapOf("id", id), Void.class);
+  }
+
+  @Override
+  public Tenant load(String id) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(loadTenantUri(id), Tenant.class);
   }
 
   @Override
@@ -125,6 +144,38 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     return response.getTenants();
   }
 
+  @Override
+  public TenantSettings getSettings(String id) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(getSettingsUri(id), TenantSettings.class);
+  }
+
+  @Override
+  public void configureSettings(String id, TenantSettings settings) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    if (settings == null) {
+      throw ServerCommonException.invalidArgument("settings");
+    }
+    Map<String, Object> req = mapOf("tenantId", id);
+    addIfNotNull(req, "selfProvisioningDomains", settings.getSelfProvisioningDomains());
+    addIfNotNull(req, "enabled", settings.getSessionSettingsEnabled());
+    addIfNotNull(req, "sessionTokenExpiration", settings.getSessionTokenExpiration());
+    addIfNotNull(req, "refreshTokenExpiration", settings.getRefreshTokenExpiration());
+    addIfNotNull(req, "sessionTokenExpirationUnit", settings.getSessionTokenExpirationUnit());
+    addIfNotNull(req, "refreshTokenExpirationUnit", settings.getRefreshTokenExpirationUnit());
+    addIfNotNull(req, "inactivityTime", settings.getInactivityTime());
+    addIfNotNull(req, "inactivityTimeUnit", settings.getInactivityTimeUnit());
+    addIfNotNull(req, "enableInactivity", settings.getEnableInactivity());
+    addIfNotNull(req, "domains", settings.getDomains());
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(configureSettingsUri(), req, Void.class);
+  }
+
   private URI composeCreateTenantUri() {
     return getUri(CREATE_TENANT_LINK);
   }
@@ -137,11 +188,23 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     return getUri(DELETE_TENANT_LINK);
   }
 
+  private URI loadTenantUri(String id) {
+    return getQueryParamUri(LOAD_TENANT_LINK, mapOf("id", id));
+  }
+
   private URI loadAllTenantsUri() {
     return getUri(LOAD_ALL_TENANTS_LINK);
   }
 
   private URI composeSearchAllUri() {
     return getUri(TENANT_SEARCH_ALL_LINK);
+  }
+
+  private URI getSettingsUri(String id) {
+    return getQueryParamUri(GET_TENANT_SETTINGS_LINK, mapOf("id", id));
+  }
+
+  private URI configureSettingsUri() {
+    return getUri(GET_TENANT_SETTINGS_LINK);
   }
 }

@@ -19,6 +19,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LIN
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_CREATE_EMBEDDED_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_EXPIRE_PASSWORD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_HISTORY_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
@@ -49,13 +50,16 @@ import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
+import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.model.user.response.UsersBatchResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.UserService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 class UserServiceImpl extends ManagementsBase implements UserService {
@@ -506,6 +510,16 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     EnchantedLinkTestUserRequest request = new EnchantedLinkTestUserRequest(loginId, uri);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(enchantedLinkForTestUserUri, request, EnchantedLinkTestUserResponse.class);
+  }
+
+  @Override
+  public List<UserHistoryResponse> history(List<String> userIds) throws DescopeException {
+    if (CollectionUtils.isEmpty(userIds)) {
+      throw ServerCommonException.invalidArgument("User IDs");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.postAndGetArray(getUri(USER_HISTORY_LINK), userIds,
+        new TypeReference<List<UserHistoryResponse>>() {});
   }
 
   public String generateEmbeddedLink(

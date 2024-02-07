@@ -36,7 +36,22 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("Name");
     }
-    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants);
+    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, null);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
+  }
+
+  @Override
+  public AccessKeyResponse create(
+      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId)
+      throws DescopeException {
+    if (StringUtils.isBlank(name)) {
+      throw ServerCommonException.invalidArgument("Name");
+    }
+    if (StringUtils.isBlank(userId)) {
+      throw ServerCommonException.invalidArgument("user id");
+    }
+    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, userId);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
   }
@@ -109,12 +124,13 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
   }
 
   private AccessKeyRequest createAccessKeyBody(
-      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants) {
+      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId) {
     return AccessKeyRequest.builder()
         .name(name)
         .expireTime(expireTime)
         .roleNames(roleNames)
         .keyTenants(MgmtUtils.createAssociatedTenantList(keyTenants))
+        .userId(userId)
         .build();
   }
 }
