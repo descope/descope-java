@@ -35,6 +35,7 @@ import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
+import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.model.user.response.UsersBatchResponse;
@@ -950,6 +951,10 @@ public class UserServiceImplTest {
       }
     }
 
+    List<UserHistoryResponse> history = userService.history(Arrays.asList(user.getUserId()));
+    assertThat(history).isNotEmpty();
+    history = authenticationService.history(authInfo.getRefreshToken().getJwt());
+    assertThat(history).isNotEmpty();
     // now logout and see that we logged out successfully
     userService.logoutUser(loginId);
     boolean gotExc = false;

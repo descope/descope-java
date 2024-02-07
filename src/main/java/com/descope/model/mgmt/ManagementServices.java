@@ -6,6 +6,7 @@ import com.descope.sdk.mgmt.AuthzService;
 import com.descope.sdk.mgmt.FlowService;
 import com.descope.sdk.mgmt.GroupService;
 import com.descope.sdk.mgmt.JwtService;
+import com.descope.sdk.mgmt.PasswordSettingsService;
 import com.descope.sdk.mgmt.PermissionService;
 import com.descope.sdk.mgmt.ProjectService;
 import com.descope.sdk.mgmt.RolesService;
@@ -30,4 +31,5 @@ public class ManagementServices {
   AuditService auditService;
   AuthzService authzService;
   ProjectService projectService;
+  PasswordSettingsService passwordSettingsService;
 }

@@ -11,6 +11,7 @@ import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
+import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.model.user.response.UsersBatchResponse;
 import java.util.List;
@@ -472,4 +473,13 @@ public interface UserService {
    */
   String generateEmbeddedLink(String loginId, Map<String, Object> customClaims)
         throws DescopeException;
+
+  /**
+   * Use to retrieve users' authentication history, by the given user's ids.
+   *
+   * @param userIds List of user IDs to retrieve the history for
+   * @return {{@link List} of {@link UserHistoryResponse}} of all requested users login history
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   */
+  List<UserHistoryResponse> history(List<String> userIds) throws DescopeException;
 }

@@ -16,4 +16,6 @@ public class Tenant {
   String name;
   List<String> selfProvisioningDomains;
   Map<String, Object> customAttributes;
+  String authType;
+  List<String> domains;
 }

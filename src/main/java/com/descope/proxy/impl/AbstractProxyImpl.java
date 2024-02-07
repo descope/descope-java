@@ -5,6 +5,7 @@ import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.SdkInfo;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
@@ -61,11 +62,12 @@ abstract class AbstractProxyImpl {
   }
 
   @SneakyThrows
-  <B, R> R exchange(ClassicHttpRequest req, Class<R> returnClz) {
+  <B, R> R exchange(ClassicHttpRequest req, Class<R> returnClz, TypeReference<R> typeReference) {
     addHeaders(req);
     log.debug(String.format("Sending %s request to %s", req.getMethod(), req.getRequestUri()));
     try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
       return httpClient.execute(req, new HttpClientResponseHandler<R>() {
+        @SuppressWarnings("resource")
         @Override
         public R handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
           try (final ClassicHttpResponse res = response) {
@@ -102,7 +104,9 @@ abstract class AbstractProxyImpl {
                   bs.toString(), String.valueOf(res.getCode()), bs.toString());
               }
             }
-            R r = objectMapper.readValue(tee, returnClz);
+            R r = returnClz != null
+                ? objectMapper.readValue(tee, returnClz)
+                : objectMapper.readValue(tee, typeReference);
             if (log.isDebugEnabled()) {
               String resStr = bs.toString();
               log.debug(String.format("Received response %s",
@@ -145,14 +149,29 @@ abstract class AbstractProxyImpl {
       final byte[] payload = objectMapper.writeValueAsBytes(body);
       builder.setEntity(new ByteArrayEntity(payload, ContentType.APPLICATION_JSON));
     }
-    return exchange(builder.build(), returnClz);
+    return exchange(builder.build(), returnClz, null);
+  }
+
+  @SneakyThrows
+  protected <B, R> R post(URI uri, B body, TypeReference<R> typeReference) {
+    final ClassicRequestBuilder builder = ClassicRequestBuilder.post(uri);
+    if (body != null) {
+      final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(Include.NON_NULL);
+      final byte[] payload = objectMapper.writeValueAsBytes(body);
+      builder.setEntity(new ByteArrayEntity(payload, ContentType.APPLICATION_JSON));
+    }
+    return exchange(builder.build(), null, typeReference);
   }
 
   protected <R> R get(URI uri, Class<R> returnClz) {
-    return exchange(ClassicRequestBuilder.get(uri).build(), returnClz);
+    return exchange(ClassicRequestBuilder.get(uri).build(), returnClz, null);
+  }
+
+  protected <R> R get(URI uri, TypeReference<R> typeReference) {
+    return exchange(ClassicRequestBuilder.get(uri).build(), null, typeReference);
   }
 
   protected <B, R> R delete(URI uri, B body, Class<R> returnClz) {
-    return exchange(ClassicRequestBuilder.delete(uri).build(), returnClz);
+    return exchange(ClassicRequestBuilder.delete(uri).build(), returnClz, null);
   }
 }

@@ -3,8 +3,10 @@ package com.descope.sdk.auth.impl;
 import static com.descope.literals.AppConstants.PERMISSIONS_CLAIM_KEY;
 import static com.descope.literals.AppConstants.ROLES_CLAIM_KEY;
 import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_ACCESS_KEY_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.HISTORY_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_ALL_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.ME_LINK;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -13,7 +15,10 @@ import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
+import com.descope.model.user.response.UserHistoryResponse;
+import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 
 class AuthenticationServiceImpl extends AuthenticationsBase {
 
@@ -39,8 +43,8 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public Token refreshSessionWithToken(String refreshToken) throws DescopeException {
-    if (Strings.isEmpty(refreshToken)) {
-      throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
     }
 
     return refreshSession(refreshToken);
@@ -159,8 +163,8 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public void logout(String refreshToken) throws DescopeException {
-    if (Strings.isEmpty(refreshToken)) {
-      throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
     }
     ApiProxy apiProxy = getApiProxy(refreshToken);
     URI logOutURL = composeLogOutLinkURL();
@@ -169,12 +173,32 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public void logoutAll(String refreshToken) throws DescopeException {
-    if (Strings.isEmpty(refreshToken)) {
-      throw ServerCommonException.missingArguments("Request doesn't contain refresh token");
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
     }
     ApiProxy apiProxy = getApiProxy(refreshToken);
     URI logOutAllURL = composeLogOutAllLinkURL();
     apiProxy.post(logOutAllURL, null, JWTResponse.class);
+  }
+
+  @Override
+  public UserResponse me(String refreshToken) throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+    validateJWT(refreshToken); // Will make sure token is still valid
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    return apiProxy.get(getUri(ME_LINK), UserResponse.class);
+  }
+
+  @Override
+  public List<UserHistoryResponse> history(String refreshToken) throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+    validateJWT(refreshToken); // Will make sure token is still valid
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    return apiProxy.getArray(getUri(HISTORY_LINK), new TypeReference<List<UserHistoryResponse>>(){});
   }
 
   AuthenticationInfo exchangeToken(String code, URI url) {

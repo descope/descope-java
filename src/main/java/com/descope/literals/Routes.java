@@ -11,6 +11,10 @@ public class Routes {
     public static final String LOG_OUT_LINK = "/v1/auth/logout";
     public static final String LOG_OUT_ALL_LINK = "/v1/auth/logoutall";
 
+    // My details
+    public static final String ME_LINK = "/v1/auth/me";
+    public static final String HISTORY_LINK = "/v1/auth/me/history";
+
     // MagicLink
     public static final String SIGN_IN_MAGIC_LINK = "/v1/auth/magiclink/signin";
     public static final String SIGN_UP_MAGIC_LINK = "/v1/auth/magiclink/signup";
@@ -102,14 +106,17 @@ public class Routes {
     public static final String USER_SET_PASSWORD_LINK = "/v1/mgmt/user/password/set";
     public static final String USER_EXPIRE_PASSWORD_LINK = "/v1/mgmt/user/password/expire";
     public static final String USER_CREATE_EMBEDDED_LINK = "/v1/mgmt/user/signin/embeddedlink";
+    public static final String USER_HISTORY_LINK = "/v1/mgmt/user/history";
 
     // Tenant
     public static final String CREATE_TENANT_LINK = "/v1/mgmt/tenant/create";
     public static final String UPDATE_TENANT_LINK = "/v1/mgmt/tenant/update";
     public static final String DELETE_TENANT_LINK = "/v1/mgmt/tenant/delete";
+    public static final String LOAD_TENANT_LINK = "/v1/mgmt/tenant";
     public static final String LOAD_ALL_TENANTS_LINK = "/v1/mgmt/tenant/all";
     public static final String TENANT_SEARCH_ALL_LINK = "/v1/mgmt/tenant/search";
-
+    public static final String GET_TENANT_SETTINGS_LINK = "/v1/mgmt/tenant/settings";
+    
     // SSO
     public static final String SSO_GET_SETTINGS_LINK = "/mgmt/sso/settings";
     public static final String SSO_DELETE_SETTINGS_LINK = "/mgmt/sso/settings";
@@ -179,5 +186,8 @@ public class Routes {
     public static final String MANAGEMENT_AUTHZ_RE_TARGETS = "/v1/mgmt/authz/re/targets";
     public static final String MANAGEMENT_AUTHZ_RE_TARGET_ALL = "/v1/mgmt/authz/re/targetall";
     public static final String MANAGEMENT_AUTHZ_GET_MODIFIED = "/v1/mgmt/authz/getmodified";
+
+    // Password settings
+    public static final String MANAGEMENT_PASSWORD_SETTINGS = "/v1/mgmt/password/settings";
   }
 }
