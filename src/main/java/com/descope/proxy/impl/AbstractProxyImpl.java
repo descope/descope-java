@@ -67,6 +67,7 @@ abstract class AbstractProxyImpl {
     log.debug(String.format("Sending %s request to %s", req.getMethod(), req.getRequestUri()));
     try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
       return httpClient.execute(req, new HttpClientResponseHandler<R>() {
+        @SuppressWarnings("resource")
         @Override
         public R handleResponse(ClassicHttpResponse response) throws HttpException, IOException {
           try (final ClassicHttpResponse res = response) {
