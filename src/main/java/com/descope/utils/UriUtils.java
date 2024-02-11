@@ -46,11 +46,8 @@ public class UriUtils {
       return Collections.emptyMap();
     }
 
-    return Arrays.stream(url.getQuery().split("&"))
-        .map(UriUtils::splitQueryParameter)
-        .collect(Collectors.groupingBy(
-            SimpleImmutableEntry::getKey,
-            LinkedHashMap::new,
+    return Arrays.stream(url.getQuery().split("&")).map(UriUtils::splitQueryParameter)
+        .collect(Collectors.groupingBy(SimpleImmutableEntry::getKey, LinkedHashMap::new,
             Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
   }
 
@@ -59,8 +56,6 @@ public class UriUtils {
     final int idx = it.indexOf("=");
     final String key = idx > 0 ? it.substring(0, idx) : it;
     final String value = idx > 0 && it.length() > idx + 1 ? it.substring(idx + 1) : null;
-    return new SimpleImmutableEntry<>(
-        URLDecoder.decode(key, "UTF-8"),
-        URLDecoder.decode(value, "UTF-8"));
+    return new SimpleImmutableEntry<>(URLDecoder.decode(key, "UTF-8"), URLDecoder.decode(value, "UTF-8"));
   }
 }

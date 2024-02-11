@@ -987,6 +987,8 @@ String name = "My Role";
 String description = "Optional description to briefly explain what this role allows.";
 List<String> permissionNames = Arrays.asList("My Updated Permission");
 
+// In case roles are on tenant scope, use the overloaded functions that has the tenantId parameter
+
 try {
     rs.create(name, description, permissionNames);
 } catch (DescopeException de) {
