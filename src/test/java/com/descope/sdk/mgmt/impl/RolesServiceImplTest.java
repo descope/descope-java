@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -204,7 +205,14 @@ class RolesServiceImplTest {
     permissionService.delete(p1);
     permissionService.delete(p2);
     rolesService.delete(r1 + "1", tid);
-    assertThat(roles.getRoles()).isEmpty();
+    found = false;
+    roles = rolesService.loadAll();
+    for (Role r : roles.getRoles()) {
+      if (r.getName().equals(r1 + "1") && r.getTenantId().equals(tid)) {
+        found = true;
+      }
+    }
+    assertFalse(found);
     tenantService.delete(tid);
   }
 }
