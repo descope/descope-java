@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Role {
   private String name;
+  private String tenantId;
   private String description;
   private List<String> permissionNames;
   private Long createdTime;
