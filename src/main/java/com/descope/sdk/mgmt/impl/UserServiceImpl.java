@@ -16,6 +16,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LOGIN_ID_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_NAME_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_CREATE_EMBEDDED_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_EXPIRE_PASSWORD_LINK;
@@ -25,6 +26,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ROLES_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
@@ -376,6 +378,36 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(removeRolesUri, request, UserResponseDetails.class);
+  }
+
+  @Override
+  public UserResponseDetails addSsoApps(String loginId, List<String> ssoAppIds) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    Map<String, Object> request = mapOf("loginId", loginId, "ssoAppIds", ssoAppIds);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USER_ADD_SSO_APPS_LINK), request, UserResponseDetails.class);
+  }
+
+  @Override
+  public UserResponseDetails setSsoApps(String loginId, List<String> ssoAppIds) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    Map<String, Object> request = mapOf("loginId", loginId, "ssoAppIds", ssoAppIds);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USER_SET_SSO_APPS_LINK), request, UserResponseDetails.class);
+  }
+
+  @Override
+  public UserResponseDetails removeSsoApps(String loginId, List<String> ssoAppIds) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    Map<String, Object> request = mapOf("loginId", loginId, "ssoAppIds", ssoAppIds);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USER_SET_SSO_APPS_LINK), request, UserResponseDetails.class);
   }
 
   @Override

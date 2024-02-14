@@ -19,6 +19,7 @@ import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.magiclink.request.SignInRequest;
 import com.descope.model.magiclink.request.SignUpRequest;
 import com.descope.model.magiclink.request.UpdateEmailRequest;
@@ -67,8 +68,13 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
   }
 
   @Override
-  public String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user)
-      throws DescopeException {
+  public String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user) {
+    return signUp(deliveryMethod, loginId, uri, user, null);
+  }
+
+  @Override
+  public String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
+      SignUpOptions signupOptions) throws DescopeException {
     if (user == null) {
       user = new User();
     }
@@ -81,7 +87,9 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (EMAIL.equals(deliveryMethod)) {
       signUpRequestBuilder.email(user.getEmail());
     }
-
+    if (signupOptions != null) {
+      signUpRequestBuilder.loginOptions(signupOptions);
+    }
     SignUpRequest signUpRequest = signUpRequestBuilder.user(user).build();
     ApiProxy apiProxy = getApiProxy();
     Masked masked = apiProxy.post(magicLinkSignUpURL, signUpRequest, maskedClass);

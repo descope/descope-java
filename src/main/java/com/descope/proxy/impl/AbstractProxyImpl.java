@@ -104,15 +104,19 @@ abstract class AbstractProxyImpl {
                   bs.toString(), String.valueOf(res.getCode()), bs.toString());
               }
             }
-            R r = returnClz != null
-                ? objectMapper.readValue(tee, returnClz)
-                : objectMapper.readValue(tee, typeReference);
-            if (log.isDebugEnabled()) {
-              String resStr = bs.toString();
-              log.debug(String.format("Received response %s",
-                  resStr.substring(0, resStr.length() > 10000 ? 10000 : resStr.length())));
+            try {
+              R r = returnClz != null
+                  ? objectMapper.readValue(tee, returnClz)
+                  : objectMapper.readValue(tee, typeReference);
+              if (log.isDebugEnabled()) {
+                String resStr = bs.toString();
+                log.debug(String.format("Received response %s",
+                    resStr.substring(0, resStr.length() > 10000 ? 10000 : resStr.length())));
+              }
+              return r;
+            } catch (Exception e) {
+              throw ServerCommonException.parseResponseError("Error parsing response", bs.toString(), e);
             }
-            return r;
           }
         }        
       });

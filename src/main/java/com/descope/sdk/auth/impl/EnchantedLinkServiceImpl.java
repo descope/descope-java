@@ -19,6 +19,7 @@ import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.enchantedlink.EnchantedLinkSessionBody;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.magiclink.request.SignInRequest;
 import com.descope.model.magiclink.request.SignUpRequest;
 import com.descope.model.magiclink.request.UpdateEmailRequest;
@@ -59,6 +60,12 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public EnchantedLinkResponse signUp(String loginId, String uri, User user)
       throws DescopeException {
+    return signUp(loginId, uri, user, null);
+  }
+
+  @Override
+  public EnchantedLinkResponse signUp(String loginId, String uri, User user, SignUpOptions signupOptions)
+      throws DescopeException {
     if (user == null) {
       user = new User();
     }
@@ -67,6 +74,9 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
         SignUpRequest.builder().loginId(loginId).uri(uri).user(user).email(loginId);
     if (StringUtils.isBlank(user.getEmail())) {
       user.setEmail(loginId);
+    }
+    if (signupOptions != null) {
+      signUpRequestBuilder.loginOptions(signupOptions);
     }
     SignUpRequest signUpRequest = signUpRequestBuilder.user(user).build();
     ApiProxy apiProxy = getApiProxy();

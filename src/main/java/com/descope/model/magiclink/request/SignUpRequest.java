@@ -1,5 +1,6 @@
 package com.descope.model.magiclink.request;
 
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -18,4 +19,5 @@ public class SignUpRequest {
 
   @JsonProperty("URI")
   private String uri;
+  private SignUpOptions loginOptions;
 }

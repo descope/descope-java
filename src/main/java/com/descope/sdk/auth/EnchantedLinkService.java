@@ -5,6 +5,7 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
 
 public interface EnchantedLinkService {
@@ -35,6 +36,19 @@ public interface EnchantedLinkService {
    * @throws DescopeException - error upon failure
    */
   EnchantedLinkResponse signUp(String loginId, String uri, User user)
+      throws DescopeException;
+
+  /**
+   * Use to create a new user based on the given loginID either email or a phone.
+   *
+   * @param loginId - User login ID
+   * @param uri     - Base URI
+   * @param user    - {@link User User}
+   * @param signupOptions - optional claims and template strings
+   * @return pendingRef, linkId and masked email
+   * @throws DescopeException - error upon failure
+   */
+  EnchantedLinkResponse signUp(String loginId, String uri, User user, SignUpOptions signupOptions)
       throws DescopeException;
 
   /**

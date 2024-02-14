@@ -20,4 +20,5 @@ public class TenantSearchRequest {
   Map<String, Object> customAttributes;
   @JsonProperty("tenantSelfProvisioningDomains")
   List<String> selfProvisioningDomains;
+  String authType;
 }

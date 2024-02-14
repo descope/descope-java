@@ -5,6 +5,7 @@ import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
 
 public interface MagicLinkService {
@@ -43,6 +44,21 @@ public interface MagicLinkService {
    * @throws DescopeException - error upon failure
    */
   String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user)
+      throws DescopeException;
+
+  /**
+   * Use to create a new user based on the given loginID either email, sms or whatsapp. Choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param uri - Base URI
+   * @param user - {@link User User}
+   * @param signupOptions - optional claims and template strings
+   * @return masked address where the link was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user, SignUpOptions signupOptions)
       throws DescopeException;
 
   /**

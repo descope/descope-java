@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleMapping {
-  private List<String> groups;
-  private String roleName;
+public class SSOSAMLSettingsByMetadata {
+  private String idpMetadataUrl;
+  private AttributeMapping attributeMapping;
+  private List<RoleMapping> roleMappings;
 }

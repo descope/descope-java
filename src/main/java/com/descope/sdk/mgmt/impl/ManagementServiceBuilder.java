@@ -21,6 +21,7 @@ public class ManagementServiceBuilder {
         .authzService(new AuthzServiceImpl(client))
         .projectService(new ProjectServiceImpl(client))
         .passwordSettingsService(new PasswordSettingsServiceImpl(client))
+        .ssoApplicationService(new SsoApplicationServiceImpl(client))
         .build();
   }
 }

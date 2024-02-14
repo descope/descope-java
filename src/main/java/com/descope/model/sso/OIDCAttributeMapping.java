@@ -1,6 +1,5 @@
 package com.descope.model.sso;
 
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,14 +12,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttributeMapping {
+public class OIDCAttributeMapping {
+  private String loginId;
   private String name;
   private String givenName;
   private String middleName;
   private String familyName;
-  private String picture;
   private String email;
+  private String verifiedEmail;
+  private String username;
   private String phoneNumber;
-  private String group;
-  private Map<String, String> customAttributes;
+  private String verifiedPhone;
+  private String picture;
 }

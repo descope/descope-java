@@ -5,6 +5,7 @@ import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
 
 public interface OTPService {
@@ -22,6 +23,20 @@ public interface OTPService {
       throws DescopeException;
 
   /**
+   * Use to login a user based on the given loginID either email or a phone and choose the selected
+   * delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param refreshToken - if doing step-up or mfa refresh token is required
+   * @return - masked address where the link was sent (email or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions, String refreshToken)
+      throws DescopeException;
+
+  /**
    * Use to create a new user based on the given loginID either email or a phone. choose the
    * selected delivery method for verification.
    *
@@ -32,6 +47,20 @@ public interface OTPService {
    * @throws DescopeException - error upon failure
    */
   String signUp(DeliveryMethod deliveryMethod, String loginId, User user) throws DescopeException;
+
+  /**
+   * Use to create a new user based on the given loginID either email or a phone. choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param user - {@link User User}
+   * @param signupOptions - optional claims and template strings
+   * @return masked address where the link was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUp(DeliveryMethod deliveryMethod, String loginId, User user, SignUpOptions signupOptions)
+      throws DescopeException;
 
   /**
    * Use to login in using loginID, if user does not exist, a new user will be created with the

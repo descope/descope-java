@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginOptions {
-  private boolean stepup;
-  private boolean mfa;
+public class SignUpOptions {
   private Map<String, Object> customClaims;
   private Map<String, String> templateOptions;
 }

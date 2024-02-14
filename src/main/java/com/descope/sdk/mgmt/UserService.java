@@ -318,6 +318,39 @@ public interface UserService {
   UserResponseDetails removeRoles(String loginId, List<String> roles) throws DescopeException;
 
   /**
+   * Set (associate) SSO applications for a user.
+   *
+   * @param loginId The loginID is required.
+   * @param ssoAppIds List of SSO apps to associate
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails addSsoApps(String loginId, List<String> ssoAppIds) throws DescopeException;
+
+  /**
+   * Remove SSO application association from a user.
+   *
+   * @param loginId The loginID is required.
+   * @param ssoAppIds List of SSO apps to associate
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails removeSsoApps(String loginId, List<String> ssoAppIds) throws DescopeException;
+
+  /**
+   * Associate SSO applications for a user.
+   *
+   * @param loginId The loginID is required.
+   * @param ssoAppIds List of SSO apps to associate
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails setSsoApps(String loginId, List<String> ssoAppIds) throws DescopeException;
+
+  /**
    * Add a tenant association for an existing user.
    *
    * @param loginId The loginID is required.

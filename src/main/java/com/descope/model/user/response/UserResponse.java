@@ -32,4 +32,5 @@ public class UserResponse {
   Boolean TOTP;
   Boolean SAML;
   Map<String, Boolean> oAuth;
+  List<String> ssoAppIds;
 }

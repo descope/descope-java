@@ -10,6 +10,7 @@ import com.descope.sdk.mgmt.PasswordSettingsService;
 import com.descope.sdk.mgmt.PermissionService;
 import com.descope.sdk.mgmt.ProjectService;
 import com.descope.sdk.mgmt.RolesService;
+import com.descope.sdk.mgmt.SsoApplicationService;
 import com.descope.sdk.mgmt.SsoService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
@@ -26,6 +27,7 @@ public class ManagementServices {
   PermissionService permissionService;
   RolesService rolesService;
   SsoService ssoService;
+  SsoApplicationService ssoApplicationService;
   FlowService flowService;
   GroupService groupService;
   AuditService auditService;

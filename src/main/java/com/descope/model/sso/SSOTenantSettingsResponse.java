@@ -1,6 +1,6 @@
 package com.descope.model.sso;
 
-import java.util.List;
+import com.descope.model.tenant.Tenant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleMapping {
-  private List<String> groups;
-  private String roleName;
+public class SSOTenantSettingsResponse {
+  private Tenant tenant;
+  private SSOSAMLSettingsResponse saml;
+  private SSOOIDCSettings oidc;
 }

@@ -31,6 +31,7 @@ public class UserRequest {
   String picture;
   Boolean test;
   List<String> additionalLoginIds;
+  List<String> ssoAppIds;
 
   public Map<String, Object> toMap() {
     Map<String, Object> m = new HashMap<>();
@@ -48,6 +49,7 @@ public class UserRequest {
     addIfNotNull(m, "picture", picture);
     addIfNotNull(m, "test", test);
     addIfNotNull(m, "additionalLoginIds", additionalLoginIds);
+    addIfNotNull(m, "ssoAppIDs", ssoAppIds);
     return m;
   }
 }
