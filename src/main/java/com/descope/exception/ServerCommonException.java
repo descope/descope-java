@@ -19,6 +19,11 @@ public class ServerCommonException extends DescopeException {
     setCode(code);
   }
 
+  protected ServerCommonException(String message, String code, Throwable cause) {
+    super(message, cause);
+    setCode(code);
+  }
+
   public static ServerCommonException invalidArgument(String property) {
     String message = String.format("The %s argument is invalid", property);
     return new ServerCommonException(message, INVALID_ARGUMENT);
@@ -38,6 +43,12 @@ public class ServerCommonException extends DescopeException {
 
   public static ServerCommonException genericServerError(String message, String code, String serverResponse) {
     ServerCommonException e = new ServerCommonException(message, code);
+    e.serverResponse = serverResponse;
+    return e;
+  }
+
+  public static ServerCommonException parseResponseError(String message, String serverResponse, Throwable cause) {
+    ServerCommonException e = new ServerCommonException(message, null, cause);
     e.serverResponse = serverResponse;
     return e;
   }

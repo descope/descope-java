@@ -1,6 +1,5 @@
-package com.descope.model.sso;
+package com.descope.model.ssoapp;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleMapping {
-  private List<String> groups;
-  private String roleName;
+public class SSOApplicationOIDCSettings {
+  private String loginPageUrl;
+  private String issuer;
+  private String discoveryUrl;
 }

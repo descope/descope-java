@@ -20,6 +20,7 @@ import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.magiclink.response.Masked;
 import com.descope.model.otp.AuthenticationVerifyRequestBody;
 import com.descope.model.otp.SignInRequest;
@@ -40,7 +41,12 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   @Override
-  public String signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions)
+  public String signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions) {
+    return signIn(deliveryMethod, loginId, loginOptions, null);
+  }
+
+  @Override
+  public String signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions, String refreshToken)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -50,8 +56,10 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     URI otpSignInURL = composeSignInURL(deliveryMethod);
     SignInRequest signInRequest = new SignInRequest(loginId, loginOptions);
     if (JwtUtils.isJWTRequired(loginOptions)) {
-      String pwd = ""; // getValidRefreshToken(request);
-      apiProxy = getApiProxy(pwd);
+      if (StringUtils.isBlank(refreshToken)) {
+        throw ServerCommonException.invalidArgument("refreshToken");
+      }
+      apiProxy = getApiProxy(refreshToken);
     } else {
       apiProxy = getApiProxy();
     }
@@ -60,19 +68,25 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   @Override
-  public String signUp(DeliveryMethod deliveryMethod, String loginId, User user)
+  public String signUp(DeliveryMethod deliveryMethod, String loginId, User user) {
+    return signUp(deliveryMethod, loginId, user, null);
+  }
+
+  @Override
+  public String signUp(DeliveryMethod deliveryMethod, String loginId, User user, SignUpOptions signUpOptions)
       throws DescopeException {
     if (user == null) {
       user = new User();
     }
     verifyDeliveryMethod(deliveryMethod, loginId, user);
-    Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
-    URI otpSignUpURL = composeSignUpURI(deliveryMethod);
-
     SignUpRequest signUpRequest = newSignUpRequest(deliveryMethod, user);
     signUpRequest.setLoginId(loginId);
     signUpRequest.setUser(user);
-
+    if (signUpOptions != null) {
+      signUpRequest.setLoginOptions(signUpOptions);
+    }
+    Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
+    URI otpSignUpURL = composeSignUpURI(deliveryMethod);
     ApiProxy apiProxy = getApiProxy();
     Masked masked = apiProxy.post(otpSignUpURL, signUpRequest, maskedClass);
     return masked.getMasked();

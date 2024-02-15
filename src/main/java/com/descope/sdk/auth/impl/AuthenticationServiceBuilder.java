@@ -11,6 +11,7 @@ public class AuthenticationServiceBuilder {
         .authService(new AuthenticationServiceImpl(client))
         .otpService(new OTPServiceImpl(client))
         .samlService(new SAMLServiceImpl(client))
+        .ssoServiceProvider(new SSOServiceProviderImpl(client))
         .totpService(new TOTPServiceImpl(client))
         .oauthService(new OAuthServiceImpl(client))
         .passwordService(new PasswordServiceImpl(client))

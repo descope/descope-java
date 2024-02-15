@@ -54,6 +54,10 @@ public class Routes {
     public static final String COMPOSE_SAML_START_LINK = "/v1/auth/saml/authorize";
     public static final String EXCHANGE_SAML_LINK = "/v1/auth/saml/exchange";
 
+    // SSO
+    public static final String COMPOSE_SSO_START_LINK = "/v1/auth/sso/authorize";
+    public static final String EXCHANGE_SSO_LINK = "/v1/auth/sso/exchange";
+
     // Password
     public static final String SIGN_UP_PASSWORD_LINK = "/v1/auth/password/signup";
     public static final String SIGN_IN_PASSWORD_LINK = "/v1/auth/password/signin";
@@ -97,6 +101,9 @@ public class Routes {
     public static final String USER_SET_ROLES_LINK = "/v1/mgmt/user/update/role/set";
     public static final String USER_ADD_ROLES_LINK = "/v1/mgmt/user/update/role/add";
     public static final String USER_REMOVE_ROLES_LINK = "/v1/mgmt/user/update/role/remove";
+    public static final String USER_SET_SSO_APPS_LINK = "/v1/mgmt/user/update/ssoapp/set";
+    public static final String USER_ADD_SSO_APPS_LINK = "/v1/mgmt/user/update/ssoapp/add";
+    public static final String USER_REMOVE_SSO_APPS_LINK = "/v1/mgmt/user/update/ssoapp/remove";
     public static final String USER_ADD_TENANT_LINK = "/v1/mgmt/user/update/tenant/add";
     public static final String USER_REMOVE_TENANT_LINK = "/v1/mgmt/user/update/tenant/remove";
     public static final String GET_PROVIDER_TOKEN = "/v1/mgmt/user/provider/token";
@@ -118,11 +125,24 @@ public class Routes {
     public static final String GET_TENANT_SETTINGS_LINK = "/v1/mgmt/tenant/settings";
     
     // SSO
-    public static final String SSO_GET_SETTINGS_LINK = "/v2/mgmt/sso/settings";
+    public static final String SSO_GET_SETTINGS_LINK = "/v1/mgmt/sso/settings";
     public static final String SSO_DELETE_SETTINGS_LINK = "/v1/mgmt/sso/settings";
     public static final String SSO_CONFIGURE_SETTINGS_LINK = "/v1/mgmt/sso/settings";
     public static final String SSO_CONFIGURE_METADATA_LINK = "/v1/mgmt/sso/metadata";
     public static final String SSO_CONFIGURE_MAPPING_LINK = "/v1/mgmt/sso/mapping";
+    public static final String SSO_GET_SETTINGS_V2_LINK = "/v2/mgmt/sso/settings";
+    public static final String SSO_CONFIGURE_SAML_SETTINGS_LINK = "/v1/mgmt/sso/saml";
+    public static final String SSO_CONFIGURE_SAML_SETTINGS_BY_MD_LINK = "/v1/mgmt/sso/saml/metadata";
+    public static final String SSO_CONFIGURE_OIDC_SETTINGS_LINK = "/v1/mgmt/sso/oidc";
+
+    // SSO Application
+    public static final String SSO_APPLICATION_OIDC_CREATE_LINK = "/v1/mgmt/sso/idp/app/oidc/create";
+    public static final String SSO_APPLICATION_SAML_CREATE_LINK = "/v1/mgmt/sso/idp/app/saml/create";
+    public static final String SSO_APPLICATION_OIDC_UPDATE_LINK = "/v1/mgmt/sso/idp/app/oidc/update";
+    public static final String SSO_APPLICATION_SAML_UPDATE_LINK = "/v1/mgmt/sso/idp/app/saml/update";
+    public static final String SSO_APPLICATION_DELETE_LINK = "/v1/mgmt/sso/idp/app/delete";
+    public static final String SSO_APPLICATION_LOAD_LINK = "/v1/mgmt/sso/idp/app/load";
+    public static final String SSO_APPLICATION_LOAD_ALL_LINK = "/v1/mgmt/sso/idp/apps/load";
 
     // Group
     public static final String GROUP_LOAD_ALL_LINK = "/v1/mgmt/group/all";
