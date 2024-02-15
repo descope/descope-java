@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Represents a SAML mapping between Descope and IDP user attributes.
+ * Represents a OIDC mapping between Descope and IDP user attributes.
  */
 @Data
 @Builder

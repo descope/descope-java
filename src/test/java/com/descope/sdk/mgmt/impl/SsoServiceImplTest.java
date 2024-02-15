@@ -16,18 +16,22 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.sso.AttributeMapping;
+import com.descope.model.sso.GroupsMapping;
 import com.descope.model.sso.OIDCAttributeMapping;
 import com.descope.model.sso.RoleMapping;
 import com.descope.model.sso.SSOOIDCSettings;
 import com.descope.model.sso.SSOSAMLSettings;
+import com.descope.model.sso.SSOSAMLSettingsByMetadata;
 import com.descope.model.sso.SSOSettingsResponse;
 import com.descope.model.sso.SSOTenantSettingsResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
+import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.SsoService;
 import com.descope.sdk.mgmt.TenantService;
 import java.util.Arrays;
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +44,7 @@ class SsoServiceImplTest {
 
   private SsoService ssoService;
   private TenantService tenantService;
+  private RolesService rolesService;
 
 
   @BeforeEach
@@ -48,6 +53,7 @@ class SsoServiceImplTest {
     ManagementServices mgmt = ManagementServiceBuilder.buildServices(client);
     this.ssoService = mgmt.getSsoService();
     this.tenantService = mgmt.getTenantService();
+    this.rolesService = mgmt.getRolesService();
   }
 
   @Test
@@ -284,6 +290,34 @@ class SsoServiceImplTest {
     assertEquals("idpCert", resp.getSaml().getIdpCertificate());
     assertEquals("https://" + name + ".com", resp.getSaml().getIdpSSOUrl());
     assertEquals("https://" + name + ".com", resp.getSaml().getRedirectUrl());
+    ssoService.deleteSettings(tenantId);
+    tenantService.delete(tenantId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalFullCycleSAMLMetadata() {
+    String name = TestUtils.getRandomName("t-");
+    String tenantId = tenantService.create(name, Arrays.asList(name + ".com", name + "1.com"));
+    assertThat(tenantId).isNotBlank();
+    String roleName = TestUtils.getRandomName("rt-").substring(0, 20);
+    rolesService.create(roleName, tenantId, "ttt", null);
+    ssoService.configureSAMLSettingsByMetadata(tenantId, SSOSAMLSettingsByMetadata.builder()
+        .attributeMapping(AttributeMapping.builder()
+            .email("email")
+            .name("name")
+            .build())
+        .idpMetadataUrl("https://" + name + ".com/md")
+        .roleMappings(Arrays.asList(RoleMapping.builder().groups(Arrays.asList("a", "b")).roleName(roleName).build()))
+        .build(), "https://" + name + ".com", null);
+    SSOTenantSettingsResponse resp = ssoService.loadSettings(tenantId);
+    assertEquals(tenantId, resp.getTenant().getId());
+    assertThat(Arrays.asList(name + ".com", name + "1.com")).containsExactly(name + ".com", name + "1.com");
+    assertEquals(name, resp.getTenant().getName());
+    assertEquals("https://" + name + ".com/md", resp.getSaml().getIdpMetadataUrl());
+    List<GroupsMapping> groupsMapping = resp.getSaml().getGroupsMapping();
+    assertNotNull(groupsMapping);
+    assertThat(groupsMapping).hasSize(1);
+    assertThat(groupsMapping.get(0).getRole().getId()).isNotBlank();
     ssoService.deleteSettings(tenantId);
     tenantService.delete(tenantId);
   }

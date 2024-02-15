@@ -32,7 +32,7 @@ public interface SSOServiceProvider {
       throws DescopeException;
 
   /**
-   * ExchangeToken - Finalize SAML authentication.
+   * ExchangeToken - Finalize SAML/OIDC SSO authentication.
    *
    * @param code - Code to be validated
    * @return Authentication info
