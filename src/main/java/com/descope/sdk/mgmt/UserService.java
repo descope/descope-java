@@ -424,6 +424,20 @@ public interface UserService {
   void setPassword(String loginId, String password) throws DescopeException;
 
   /**
+   * Set a password for the given login ID. Note: The password will automatically be set as expired
+   * unless setActive flag set to True.
+   * The user will not be able to log-in with this password, and will be required to replace it on
+   * next login.
+   *
+   * @param loginId The loginID is required.
+   * @param password Password.
+   * @param setActive Keep the password active so it will not be expired on next log-in.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  void setPassword(String loginId, String password, Boolean setActive) throws DescopeException;
+
+  /**
    * Expire the password for the given login ID. Note: user sign-in with an expired password, the
    * user will get `Password Expired` error. Use the `ResetPassword` or `ReplacePassword` methods to
    * reset/replace the password.

@@ -483,6 +483,20 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public void setPassword(String loginId, String password, Boolean setActive) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(password)) {
+      throw ServerCommonException.invalidArgument("Password");
+    }
+    URI setPasswordUri = composeSetPasswordUri();
+    Map<String, Object> request = mapOf("loginId", loginId, "password", password, "setActive", setActive);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(setPasswordUri, request, Void.class);
+  }
+
+  @Override
   public void expirePassword(String loginId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");

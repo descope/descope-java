@@ -595,6 +595,17 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testSetPasswordForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      userService.setPassword("someLoginId", "somePassword", true);
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
   void testExpirePasswordForEmpty() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> userService.expirePassword(""));
     assertNotNull(thrown);
