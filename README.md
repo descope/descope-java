@@ -767,16 +767,23 @@ try {
 
 #### Set or Expire User Password
 
-You can set or expire a user's password.
-Note: When setting a password, it will automatically be set as expired unless setActive flag set to True.
+You can set (temporary/active) or expire a user's password.
+Note: When using SetTemporaryPassword password will automatically be set as expired.
 The user will not be able log-in using an expired password, and will be required replace it on next login.
 
 ```java
 UserService us = descopeClient.getManagementServices().getUserService();
 
+// Set a temporary user's password
+try {
+    us.setTemporaryPassword("my-custom-id", "some-password");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Set a user's password
 try {
-    us.setPassword("my-custom-id", "some-password", "set-active-flag");
+    us.setActivePassword("my-custom-id", "some-password");
 } catch (DescopeException de) {
     // Handle the error
 }

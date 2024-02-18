@@ -595,12 +595,23 @@ public class UserServiceImplTest {
   }
 
   @Test
-  void testSetPasswordForSuccess() {
+  void testSetTemporaryPasswordForSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      userService.setPassword("someLoginId", "somePassword", true);
+      userService.setTemporaryPassword("someLoginId", "somePassword");
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testSetActivePasswordForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      userService.setActivePassword("someLoginId", "somePassword");
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
