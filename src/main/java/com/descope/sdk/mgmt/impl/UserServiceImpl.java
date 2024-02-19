@@ -25,6 +25,8 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_TEMPORARY_PASSWORD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ACTIVE_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
@@ -476,7 +478,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(password)) {
       throw ServerCommonException.invalidArgument("Password");
     }
-    URI setPasswordUri = composeSetPasswordUri();
+    URI setPasswordUri = composeSetTemporaryPasswordUri();
     Map<String, Object> request = mapOf("loginId", loginId, "password", password, "setActive", false);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(setPasswordUri, request, Void.class);
@@ -490,7 +492,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(password)) {
       throw ServerCommonException.invalidArgument("Password");
     }
-    URI setPasswordUri = composeSetPasswordUri();
+    URI setPasswordUri = composeSetActivePasswordUri();
     Map<String, Object> request = mapOf("loginId", loginId, "password", password, "setActive", true);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(setPasswordUri, request, Void.class);
@@ -705,6 +707,14 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   private URI composeSetPasswordUri() {
+    return getUri(USER_SET_PASSWORD_LINK);
+  }
+
+   private URI composeSetTemporaryPasswordUri() {
+    return getUri(USER_SET_PASSWORD_LINK);
+  }
+
+   private URI composeSetActivePasswordUri() {
     return getUri(USER_SET_PASSWORD_LINK);
   }
 
