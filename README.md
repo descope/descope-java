@@ -767,9 +767,8 @@ try {
 
 #### Set or Expire User Password
 
-You can set a new active password for a user that they can sign in with.
-You can also set a temporary password that they user will be forced to change on the next login.
-For a user that already has an active password, you can expire their current password, effectively requiring them to change it on the next login.
+You can set a new active password for a user, which they can then use to sign in. You can also set a temporary
+password that the user will be forced to change on the next login.
 
 ```java
 UserService us = descopeClient.getManagementServices().getUserService();
