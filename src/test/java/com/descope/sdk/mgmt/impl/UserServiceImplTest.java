@@ -568,6 +568,7 @@ public class UserServiceImplTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void testSetPasswordForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.setPassword("", "somePassword"));
@@ -576,6 +577,7 @@ public class UserServiceImplTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void testSetPasswordForEmptyPassword() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.setPassword("someLoginId", ""));
@@ -584,6 +586,7 @@ public class UserServiceImplTest {
   }
 
   @Test
+  @SuppressWarnings("deprecation")
   void testSetPasswordForSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
@@ -1050,6 +1053,35 @@ public class UserServiceImplTest {
     assertNotNull(authInfo.getUser());
     assertEquals(email, authInfo.getUser().getEmail());
     assertEquals(name, authInfo.getUser().getName());
+    userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalSetActivePassword() {
+    String loginId = TestUtils.getRandomName("u-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    // Create
+    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder()
+        .email(email)
+        .verifiedEmail(true)
+        .phone(phone)
+        .verifiedPhone(true)
+        .displayName("Testing Test")
+        .build());
+    UserResponse user = createResponse.getUser();
+    assertNotNull(user);
+    Assertions.assertThat(user.getLoginIds()).contains(loginId);
+    assertEquals("Testing Test", user.getName());
+    assertEquals("invited", user.getStatus());
+    // Set password
+    String password = "1q2w3e4r5t6y!";
+    userService.setActivePassword(loginId, password);
+    AuthenticationInfo authInfo = passwordService.signIn(loginId, password);
+    assertNotNull(authInfo);
+    assertNotNull(authInfo.getUser());
+    Assertions.assertThat(authInfo.getUser().getLoginIds()).contains(loginId);
+    // Delete
     userService.delete(loginId);
   }
 }
