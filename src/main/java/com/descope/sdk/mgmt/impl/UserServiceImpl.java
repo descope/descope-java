@@ -24,11 +24,11 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_HISTORY_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ACTIVE_PASSWORD_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_TEMPORARY_PASSWORD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_SSO_APPS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_TEMPORARY_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
@@ -498,7 +498,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     apiProxy.post(setPasswordUri, request, Void.class);
   }
 
-  /* Deprecated */
+  @Deprecated
   @Override
   public void setPassword(String loginId, String password) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
@@ -711,11 +711,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   private URI composeSetTemporaryPasswordUri() {
-    return getUri(USER_SET_PASSWORD_LINK);
+    return getUri(USER_SET_TEMPORARY_PASSWORD_LINK);
   }
 
   private URI composeSetActivePasswordUri() {
-    return getUri(USER_SET_PASSWORD_LINK);
+    return getUri(USER_SET_ACTIVE_PASSWORD_LINK);
   }
 
   private URI composeExpirePasswordUri() {

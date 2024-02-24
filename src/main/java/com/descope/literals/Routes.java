@@ -110,7 +110,7 @@ public class Routes {
     public static final String COMPOSE_OTP_FOR_TEST_LINK = "/v1/mgmt/tests/generate/otp";
     public static final String MAGIC_LINK_FOR_TEST_LINK = "/v1/mgmt/tests/generate/magiclink";
     public static final String ENCHANTED_LINK_FOR_TEST_LINK = "/v1/mgmt/tests/generate/enchantedlink";
-	public static final String USER_SET_ACTIVE_PASSWORD_LINK = "/v1/mgmt/user/password/set/active";
+    public static final String USER_SET_ACTIVE_PASSWORD_LINK = "/v1/mgmt/user/password/set/active";
     public static final String USER_SET_PASSWORD_LINK = "/v1/mgmt/user/password/set";
     public static final String USER_SET_TEMPORARY_PASSWORD_LINK = "/v1/mgmt/user/password/set/temporary";
     public static final String USER_EXPIRE_PASSWORD_LINK = "/v1/mgmt/user/password/expire";

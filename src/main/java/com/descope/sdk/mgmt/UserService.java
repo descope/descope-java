@@ -412,7 +412,8 @@ public interface UserService {
       throws DescopeException;
 
   /**
-   * Set a temporary password for the given login ID. Note: The password will automatically be set as expired.
+   * Set a temporary password for the given login ID.
+   * Note: The password will automatically be set as expired.
    * The user will not be able to log-in with this password, and will be required to replace it on
    * next login.
    *
@@ -433,7 +434,8 @@ public interface UserService {
    */
   void setActivePassword(String loginId, String password) throws DescopeException;
 
-  /* Deprecated (use setTemporaryPassword() instead *
+  /**
+   * Deprecated (use setTemporaryPassword() instead.
    * Set a password for the given login ID. Note: The password will automatically be set as expired.
    * The user will not be able to log-in with this password, and will be required to replace it on
    * next login.
@@ -443,6 +445,7 @@ public interface UserService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
+  @Deprecated
   void setPassword(String loginId, String password) throws DescopeException;
 
   /**
