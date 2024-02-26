@@ -1075,7 +1075,7 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     // Set password
-    String password = "1q2w3e4r5t6y!";
+    String password = "WASD+ijklll12!";
     userService.setActivePassword(loginId, password);
     AuthenticationInfo authInfo = passwordService.signIn(loginId, password);
     assertNotNull(authInfo);
