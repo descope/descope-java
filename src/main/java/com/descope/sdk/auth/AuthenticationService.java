@@ -1,6 +1,7 @@
 package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
+import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.jwt.Token;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
@@ -49,6 +50,16 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error
    */
   Token exchangeAccessKey(String accessKey) throws DescopeException;
+
+  /**
+   * Use to exchange an access key for a session token with login options.
+   *
+   * @param accessKey - Access Key
+   * @param loginOptions - {@link AccessKeyLoginOptions loginOptions}
+   * @return {@link Token Token}
+   * @throws DescopeException if there is an error
+   */
+  Token exchangeAccessKey(String accessKey, AccessKeyLoginOptions loginOptions) throws DescopeException;
 
   /**
    * Use to ensure that a validated session token has been granted the specified permissions. This
