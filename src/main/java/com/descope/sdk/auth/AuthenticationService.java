@@ -5,6 +5,7 @@ import com.descope.model.jwt.Token;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
 import java.util.List;
+import com.descope.model.auth.AccessKeyLoginOptions;
 
 public interface AuthenticationService {
 
@@ -45,10 +46,11 @@ public interface AuthenticationService {
    * Use to exchange an access key for a session token.
    *
    * @param accessKey - Access Key
+   * @param loginOptions - {@link AccessKeyLoginOptions loginOptions}
    * @return {@link Token Token}
    * @throws DescopeException if there is an error
    */
-  Token exchangeAccessKey(String accessKey) throws DescopeException;
+  Token exchangeAccessKey(String accessKey, AccessKeyLoginOptions loginOptions) throws DescopeException;
 
   /**
    * Use to ensure that a validated session token has been granted the specified permissions. This

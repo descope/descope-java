@@ -28,6 +28,8 @@ import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import com.descope.model.auth.AccessKeyLoginOptions;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 public class AuthenticationServiceImplTest {
 
@@ -121,5 +123,19 @@ public class AuthenticationServiceImplTest {
     assertThat(u.getEmail()).isEqualTo(loginId);
     authenticationService.logout(authInfo.getRefreshToken().getJwt());
     userService.delete(loginId);
+  }
+
+  @Test
+  void exchangeAccessKey() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+	  Map<String, Object> customClaims = mapOf("k1", "v1");
+	  loginOptions = new AccessKeyLoginOptions(customClaims)
+	  token = this.authenticationService.exchangeAccessKey("dummyKey", loginOptions)
+    }
   }
 }

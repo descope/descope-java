@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import com.descope.model.auth.AccessKeyLoginOptions;
 
 class AuthenticationServiceImpl extends AuthenticationsBase {
 
@@ -70,11 +71,11 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   }
 
   @Override
-  public Token exchangeAccessKey(String accessKey) throws DescopeException {
+  public Token exchangeAccessKey(String accessKey, AccessKeyLoginOptions loginOptions) throws DescopeException {
     ApiProxy apiProxy = getApiProxy(accessKey);
     URI exchangeAccessKeyLinkURL = composeExchangeAccessKeyLinkURL();
 
-    JWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL, null, JWTResponse.class);
+    JWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL, loginOptions, JWTResponse.class);
     AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
     return authenticationInfo.getToken();
   }
