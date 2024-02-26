@@ -126,6 +126,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       addIfNotNull(req, "sendSMS", options.getSendSMS());
       addIfNotNull(req, "sendEmail", options.getSendEmail());
     }
+    req.putAll(request.toMap());
     URI createUserUri = composeCreateUserUri();
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(createUserUri, req, UserResponseDetails.class);
