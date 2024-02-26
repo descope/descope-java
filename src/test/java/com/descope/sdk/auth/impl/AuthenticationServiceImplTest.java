@@ -1,6 +1,7 @@
 package com.descope.sdk.auth.impl;
 
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -9,10 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
@@ -20,16 +23,16 @@ import com.descope.model.user.response.UserResponse;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
+import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import java.util.Arrays;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
-import com.descope.model.auth.AccessKeyLoginOptions;
-import static com.descope.utils.CollectionUtils.mapOf;
 
 public class AuthenticationServiceImplTest {
 
@@ -38,6 +41,7 @@ public class AuthenticationServiceImplTest {
   private OTPService otpService;
   private RolesService roleService;
   private TenantService tenantService;
+  private AccessKeyService accessKeyService;
 
   @BeforeEach
   void setUp() {
@@ -49,6 +53,7 @@ public class AuthenticationServiceImplTest {
     this.userService = mgmtServices.getUserService();
     this.roleService = mgmtServices.getRolesService();
     this.tenantService = mgmtServices.getTenantService();
+    this.accessKeyService = mgmtServices.getAccessKeyService();
   }
 
   @Test
@@ -125,17 +130,16 @@ public class AuthenticationServiceImplTest {
     userService.delete(loginId);
   }
 
-  @Test
-  void exchangeAccessKey() {
-    ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-
-	  Map<String, Object> customClaims = mapOf("k1", "v1");
-	  loginOptions = new AccessKeyLoginOptions(customClaims)
-	  token = this.authenticationService.exchangeAccessKey("dummyKey", loginOptions)
-    }
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalExchangeToken() throws Exception {
+    String name = TestUtils.getRandomName("ak-");
+    AccessKeyResponse resp = accessKeyService.create(name, 0, null, null);
+    Token token = authenticationService.exchangeAccessKey(resp.getCleartext(),
+        new AccessKeyLoginOptions(mapOf("kuku", "kiki")));
+    // temporary
+    @SuppressWarnings("unchecked")
+    Map<String, Object> nsecClaims = Map.class.cast(token.getClaims().get("nsec"));
+    assertEquals("kiki", nsecClaims.get("kuku"));
+    accessKeyService.delete(resp.getKey().getId());
   }
 }
