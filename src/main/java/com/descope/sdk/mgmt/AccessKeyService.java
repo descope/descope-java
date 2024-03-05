@@ -14,6 +14,9 @@ public interface AccessKeyService {
   AccessKeyResponse create(String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants,
       String userId) throws DescopeException;
 
+  AccessKeyResponse create(String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants,
+      String userId, Map<String, Object> customClaims) throws DescopeException;
+
   AccessKeyResponse load(String id) throws DescopeException;
 
   AccessKeyResponseList searchAll(List<String> tenantIDs) throws DescopeException;

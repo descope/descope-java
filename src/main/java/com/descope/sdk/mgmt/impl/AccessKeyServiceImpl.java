@@ -36,7 +36,7 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("Name");
     }
-    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, null);
+    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, null, null);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
   }
@@ -51,7 +51,22 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     if (StringUtils.isBlank(userId)) {
       throw ServerCommonException.invalidArgument("user id");
     }
-    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, userId);
+    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, userId, null);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
+  }
+
+  @Override
+  public AccessKeyResponse create(
+      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId, Map<String, Object> customClaims)
+      throws DescopeException {
+    if (StringUtils.isBlank(name)) {
+      throw ServerCommonException.invalidArgument("Name");
+    }
+    if (StringUtils.isBlank(userId)) {
+      throw ServerCommonException.invalidArgument("user id");
+    }
+    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, userId, customClaims);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
   }
@@ -124,13 +139,14 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
   }
 
   private AccessKeyRequest createAccessKeyBody(
-      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId) {
+      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId, Map<String, Object> customClaims) {
     return AccessKeyRequest.builder()
         .name(name)
         .expireTime(expireTime)
         .roleNames(roleNames)
         .keyTenants(MgmtUtils.createAssociatedTenantList(keyTenants))
         .userId(userId)
+		.customClaims(customClaims)
         .build();
   }
 }
