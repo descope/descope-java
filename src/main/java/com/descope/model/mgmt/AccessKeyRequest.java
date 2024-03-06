@@ -13,4 +13,5 @@ public class AccessKeyRequest {
   private List<String> roleNames;
   private List<Map<String, Object>> keyTenants;
   private String userId;
+  private Map<String, Object> customClaims;
 }
