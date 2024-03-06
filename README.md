@@ -1029,6 +1029,16 @@ try {
     // Handle the error
 }
 
+// Search roles
+try {
+    RoleResponse resp = rs.search(RoleSearchOptions.builder().tenantIds(Arrays.asList(tid)).build());
+    for (Role r : resp.getRoles()) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ### Query SSO Groups

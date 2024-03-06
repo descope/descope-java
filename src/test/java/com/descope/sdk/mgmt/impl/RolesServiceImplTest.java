@@ -19,6 +19,7 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.roles.Role;
 import com.descope.model.roles.RoleResponse;
+import com.descope.model.roles.RoleSearchOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -152,7 +153,7 @@ class RolesServiceImplTest {
     }
     assertTrue(found);
     rolesService.update(r1, r1 + "1", "zzz", Arrays.asList(p1));
-    roles = rolesService.loadAll();
+    roles = rolesService.search(RoleSearchOptions.builder().roleNames(Arrays.asList(r1 + "1")).build());
     assertThat(roles.getRoles()).isNotEmpty();
     found = false;
     for (Role r : roles.getRoles()) {
@@ -190,7 +191,7 @@ class RolesServiceImplTest {
     }
     assertTrue(found);
     rolesService.update(r1, tid, r1 + "1", "zzz", Arrays.asList(p1));
-    roles = rolesService.loadAll();
+    roles = rolesService.search(RoleSearchOptions.builder().tenantIds(Arrays.asList(tid)).build());
     assertThat(roles.getRoles()).isNotEmpty();
     found = false;
     for (Role r : roles.getRoles()) {
