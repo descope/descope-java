@@ -181,6 +181,7 @@ public class Routes {
     public static final String MANAGEMENT_ROLES_UPDATE_LINK = "/v1/mgmt/role/update";
     public static final String MANAGEMENT_ROLES_DELETE_LINK = "/v1/mgmt/role/delete";
     public static final String MANAGEMENT_ROLES_LOAD_ALL_LINK = "/v1/mgmt/role/all";
+    public static final String MANAGEMENT_ROLES_SEARCH_LINK = "/v1/mgmt/role/search";
 
     // Project
     public static final String MANAGEMENT_PROJECT_UPDATE_NAME = "/v1/mgmt/project/update/name";

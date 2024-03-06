@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt.impl;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_CREATE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_LOAD_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_SEARCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_UPDATE_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
@@ -10,6 +11,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.roles.RoleResponse;
+import com.descope.model.roles.RoleSearchOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.RolesService;
 import java.util.List;
@@ -81,5 +83,11 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
   public RoleResponse loadAll() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(getUri(MANAGEMENT_ROLES_LOAD_ALL_LINK), RoleResponse.class);
+  }
+
+  @Override
+  public RoleResponse search(RoleSearchOptions roleSearchOptions) throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_ROLES_SEARCH_LINK), roleSearchOptions, RoleResponse.class);
   }
 }
