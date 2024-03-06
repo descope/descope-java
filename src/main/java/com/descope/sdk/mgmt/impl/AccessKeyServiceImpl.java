@@ -33,38 +33,32 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
   public AccessKeyResponse create(
       String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants)
       throws DescopeException {
-    if (StringUtils.isBlank(name)) {
-      throw ServerCommonException.invalidArgument("Name");
-    }
-    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, null, null);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
+    return create(name, expireTime, roleNames, keyTenants, null, null);
+  }
+
+  @Override
+  public AccessKeyResponse create(
+      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants,
+      Map<String, Object> customClaims) throws DescopeException {
+    return create(name, expireTime, roleNames, keyTenants, null, customClaims);    
   }
 
   @Override
   public AccessKeyResponse create(
       String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId)
       throws DescopeException {
-    if (StringUtils.isBlank(name)) {
-      throw ServerCommonException.invalidArgument("Name");
-    }
     if (StringUtils.isBlank(userId)) {
       throw ServerCommonException.invalidArgument("user id");
     }
-    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, userId, null);
-    ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
+    return create(name, expireTime, roleNames, keyTenants, userId, null);
   }
 
   @Override
   public AccessKeyResponse create(
-      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId, Map<String, Object> customClaims)
-      throws DescopeException {
+      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId,
+      Map<String, Object> customClaims) throws DescopeException {
     if (StringUtils.isBlank(name)) {
       throw ServerCommonException.invalidArgument("Name");
-    }
-    if (StringUtils.isBlank(userId)) {
-      throw ServerCommonException.invalidArgument("user id");
     }
     AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, userId, customClaims);
     ApiProxy apiProxy = getApiProxy();
@@ -138,15 +132,15 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_DELETE_LINK), request, Void.class);
   }
 
-  private AccessKeyRequest createAccessKeyBody(
-      String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId, Map<String, Object> customClaims) {
+  private AccessKeyRequest createAccessKeyBody(String name, int expireTime, List<String> roleNames,
+      List<AssociatedTenant> keyTenants, String userId, Map<String, Object> customClaims) {
     return AccessKeyRequest.builder()
         .name(name)
         .expireTime(expireTime)
         .roleNames(roleNames)
         .keyTenants(MgmtUtils.createAssociatedTenantList(keyTenants))
         .userId(userId)
-		.customClaims(customClaims)
+        .customClaims(customClaims)
         .build();
   }
 }

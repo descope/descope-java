@@ -133,21 +133,17 @@ public class AuthenticationServiceImplTest {
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalExchangeToken() throws Exception {
     String name = TestUtils.getRandomName("ak-");
-	Map<String, Object> securedClaims = new HashMap<String, Object>() {{
-		put("k1", "v1");
-	}};
-    AccessKeyResponse resp = accessKeyService.create(name, 0, null, null, securedClaims);
+    AccessKeyResponse resp = accessKeyService.create(name, 0, null, null, null, mapOf("K1", "V1"));
     Token token = authenticationService.exchangeAccessKey(resp.getCleartext(),
         new AccessKeyLoginOptions(mapOf("kuku", "kiki")));
+
     // temporary
     @SuppressWarnings("unchecked")
-
-	// Validate the secured claims (passed through the Create method)
-    assertEquals("v1", Map.class.cast(token.getClaims().get("k1")));
-
-	// Validate the nsec claims (passed through the exchange method)
+    // Validate the nsec claims (passed through the exchange method)
     Map<String, Object> nsecClaims = Map.class.cast(token.getClaims().get("nsec"));
     assertEquals("kiki", nsecClaims.get("kuku"));
+    // Validate the secured claims (passed through the Create method)
+    assertEquals("V1", token.getClaims().get("K1"));
     accessKeyService.delete(resp.getKey().getId());
   }
 }
