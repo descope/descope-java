@@ -1,6 +1,7 @@
 package com.descope.model.otp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,4 +17,5 @@ public class UpdatePhoneRequestBody {
   @JsonProperty("addToLoginIDs")
   private boolean addToLoginIds;
   private boolean onMergeUseExisting;
+  private Map<String, String> templateOptions;
 }

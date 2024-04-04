@@ -5,6 +5,7 @@ import lombok.Getter;
 public enum DeliveryMethod {
   EMAIL("email"),
   SMS("sms"),
+  VOICE("voice"),
   WHATSAPP("whatsapp");
 
   @Getter

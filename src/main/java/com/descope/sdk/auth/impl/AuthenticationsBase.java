@@ -60,6 +60,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
 
     switch (deliveryMethod) {
       case SMS:
+      case VOICE:
       case WHATSAPP:
         String phone = user.getPhone();
         if (StringUtils.isBlank(phone)) {
@@ -87,6 +88,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   Class<? extends Masked> getMaskedValue(DeliveryMethod deliveryMethod) {
     switch (deliveryMethod) {
       case SMS:
+      case VOICE:
       case WHATSAPP:
         return MaskedPhoneRes.class;
       case EMAIL:
