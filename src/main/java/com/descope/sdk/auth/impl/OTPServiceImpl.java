@@ -174,7 +174,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   @Override
   public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
       UpdateOptions updateOptions) throws DescopeException {
-    return updateUserPhone(deliveryMethod, loginId, phone, refreshToken, null);
+    return updateUserPhone(deliveryMethod, loginId, phone, refreshToken, updateOptions, null);
   }
 
   @Override
