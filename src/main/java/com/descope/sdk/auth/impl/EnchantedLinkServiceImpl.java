@@ -29,6 +29,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.EnchantedLinkService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements EnchantedLinkService {
@@ -117,6 +118,12 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
       UpdateOptions updateOptions) throws DescopeException {
+    return updateUserEmail(loginId, email, uri, refreshToken, updateOptions, null);
+  }
+
+  @Override
+  public EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -138,6 +145,7 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
             .crossDevice(false)
             .addToLoginIds(updateOptions.isAddToLoginIds())
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+            .templateOptions(templateOptions)
             .build();
 
     ApiProxy apiProxy = getApiProxy(refreshToken);

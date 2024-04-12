@@ -7,6 +7,7 @@ import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
+import java.util.Map;
 
 public interface EnchantedLinkService {
   /**
@@ -94,4 +95,18 @@ public interface EnchantedLinkService {
   EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
       UpdateOptions updateOptions) throws DescopeException;
 
+  /**
+   * Use to update email and validate via enchanted link.
+   *
+   * @param loginId - User login ID
+   * @param email   - User email
+   * @param uri     - Base URI
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @return {@link EnchantedLinkResponse} including masked address where the link was sent (email),
+   *         link to chose and link to retrieve new session from
+   * @throws DescopeException - error upon failure
+   */
+  EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException;
 }

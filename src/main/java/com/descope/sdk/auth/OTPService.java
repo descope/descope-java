@@ -7,6 +7,7 @@ import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
+import java.util.Map;
 
 public interface OTPService {
   /**
@@ -100,6 +101,21 @@ public interface OTPService {
       throws DescopeException;
 
   /**
+   * Use to a update email, and verify via OTP.
+   *
+   * @param loginId - User login ID
+   * @param email - User email
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @param templateOptions - optional parameters for template
+   * @return - masked address where the link was sent (email or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String updateUserEmail(String loginId, String email, String refreshToken, UpdateOptions updateOptions,
+        Map<String, String> templateOptions)
+      throws DescopeException;
+
+  /**
    * Use to update phone and validate via OTP.
    *
    * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
@@ -112,4 +128,19 @@ public interface OTPService {
    */
   String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
       UpdateOptions updateOptions) throws DescopeException;
+
+  /**
+   * Use to update phone and validate via OTP.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param phone - User Phone
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @param templateOptions - optional parameters for template
+   * @return - masked address where the link was sent (email or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException;
 }

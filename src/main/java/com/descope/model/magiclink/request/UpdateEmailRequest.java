@@ -1,6 +1,7 @@
 package com.descope.model.magiclink.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,4 +20,5 @@ public class UpdateEmailRequest {
   @JsonProperty("addToLoginIDs")
   private boolean addToLoginIds;
   private boolean onMergeUseExisting;
+  private Map<String, String> templateOptions;
 }

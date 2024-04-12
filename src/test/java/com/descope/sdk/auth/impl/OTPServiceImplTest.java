@@ -252,6 +252,19 @@ public class OTPServiceImplTest {
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalFullCycleVoice() {
+    String loginId = TestUtils.getRandomName("u-");
+    userService.createTestUser(
+        loginId, UserRequest.builder().phone("+15555555555").verifiedPhone(true).build());
+    OTPTestUserResponse response = userService.generateOtpForTestUser(loginId, DeliveryMethod.VOICE);
+    assertThat(response.getCode()).isNotBlank();
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.VOICE, loginId, response.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalUpdateEmail() {
     String loginId = TestUtils.getRandomName("u-");
     userService.createTestUser(
@@ -285,6 +298,26 @@ public class OTPServiceImplTest {
     otpService.updateUserPhone(
         DeliveryMethod.SMS, loginId, "+1-555-555-5556", authInfo.getRefreshToken().getJwt(), null);
     authInfo = otpService.verifyCode(DeliveryMethod.SMS, loginId, response2.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalUpdatePhoneVoice() {
+    String loginId = TestUtils.getRandomName("u-");
+    userService.createTestUser(
+        loginId, UserRequest.builder().phone(MOCK_PHONE).build());
+    OTPTestUserResponse response = userService.generateOtpForTestUser(loginId, DeliveryMethod.VOICE);
+    assertThat(response.getCode()).isNotBlank();
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.VOICE, loginId, response.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    OTPTestUserResponse response2 = userService.generateOtpForTestUser(loginId, DeliveryMethod.VOICE);
+    assertThat(response.getCode()).isNotBlank();
+    otpService.updateUserPhone(
+        DeliveryMethod.VOICE, loginId, "+1-555-555-5556", authInfo.getRefreshToken().getJwt(), null);
+    authInfo = otpService.verifyCode(DeliveryMethod.VOICE, loginId, response2.getCode());
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
     userService.delete(loginId);

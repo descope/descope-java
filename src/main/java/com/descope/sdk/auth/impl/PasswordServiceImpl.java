@@ -21,6 +21,7 @@ import com.descope.model.password.PasswordPolicy;
 import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.PasswordService;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordService {
@@ -68,6 +69,12 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
 
   @Override
   public void sendPasswordReset(String loginId, String redirectURL) throws DescopeException {
+    sendPasswordReset(loginId, redirectURL, null);
+  }
+
+  @Override
+  public void sendPasswordReset(String loginId, String redirectURL, Map<String, String> templateOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -76,6 +83,7 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
         AuthenticationPasswordResetRequestBody.builder()
             .loginId(loginId)
             .redirectURL(redirectURL)
+            .templateOptions(templateOptions)
             .build();
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SEND_RESET_PASSWORD_LINK), pwdResetRequest, Void.class);

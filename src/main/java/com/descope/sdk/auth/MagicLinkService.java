@@ -7,6 +7,7 @@ import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
+import java.util.Map;
 
 public interface MagicLinkService {
 
@@ -100,6 +101,22 @@ public interface MagicLinkService {
       throws DescopeException;
 
   /**
+   * Use to update email and validate via magiclink.
+   *
+   * @param loginId - User login ID
+   * @param email - User email
+   * @param uri - Base URI
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @param templateOptions - optional parameters for template
+   * @return masked address where the link was sent (email)
+   * @throws DescopeException - error upon failure
+   */
+  String updateUserEmail(String loginId, String email, String uri, String refreshToken, UpdateOptions updateOptions,
+        Map<String, String> templateOptions)
+      throws DescopeException;
+
+  /**
    * Use to update phone and validate via magiclink. Allowed methods are phone based methods -
    * whatsapp and SMS
    *
@@ -115,4 +132,22 @@ public interface MagicLinkService {
   String updateUserPhone(
       DeliveryMethod deliveryMethod, String loginId, String phone, String uri, String refreshToken,
       UpdateOptions updateOptions) throws DescopeException;
+
+  /**
+   * Use to update phone and validate via magiclink. Allowed methods are phone based methods -
+   * whatsapp and SMS
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param phone - User phone
+   * @param uri - Base URI
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @param templateOptions - optional parameters for template
+   * @return masked address where the link was sent (whatsapp or sms)
+   * @throws DescopeException - error upon failure
+   */
+  String updateUserPhone(
+      DeliveryMethod deliveryMethod, String loginId, String phone, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException;
 }

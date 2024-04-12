@@ -2,6 +2,7 @@ package com.descope.sdk.auth.impl;
 
 import static com.descope.enums.DeliveryMethod.EMAIL;
 import static com.descope.enums.DeliveryMethod.SMS;
+import static com.descope.enums.DeliveryMethod.VOICE;
 import static com.descope.enums.DeliveryMethod.WHATSAPP;
 import static com.descope.literals.Routes.AuthEndPoints.OTP_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.OTP_UPDATE_PHONE_LINK;
@@ -32,6 +33,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.OTPService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
@@ -113,10 +115,12 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    if (PHONE_PATTERN.matcher(loginId).matches()) {
-      deliveryMethod = SMS;
-    } else if (EMAIL_PATTERN.matcher(loginId).matches()) {
-      deliveryMethod = EMAIL;
+    if (deliveryMethod == null) {
+      if (PHONE_PATTERN.matcher(loginId).matches()) {
+        deliveryMethod = SMS;
+      } else if (EMAIL_PATTERN.matcher(loginId).matches()) {
+        deliveryMethod = EMAIL;
+      }
     }
     if (deliveryMethod == null) {
       throw ServerCommonException.invalidArgument("Method");
@@ -134,6 +138,12 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   @Override
   public String updateUserEmail(String loginId, String email, String refreshToken, UpdateOptions updateOptions)
       throws DescopeException {
+    return updateUserEmail(loginId, email, refreshToken, updateOptions, null);
+  }
+
+  @Override
+  public String updateUserEmail(String loginId, String email, String refreshToken, UpdateOptions updateOptions,
+      Map<String, String> templateOptions) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -154,6 +164,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
         .loginId(loginId)
         .addToLoginIds(updateOptions.isAddToLoginIds())
         .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+        .templateOptions(templateOptions)
         .build();
     ApiProxy apiProxy = getApiProxy(refreshToken);
     Masked masked = apiProxy.post(otpUpdateUserEmail, updateEmailRequest, maskedClass);
@@ -163,13 +174,20 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   @Override
   public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
       UpdateOptions updateOptions) throws DescopeException {
+    return updateUserPhone(deliveryMethod, loginId, phone, refreshToken, updateOptions, null);
+  }
+
+  @Override
+  public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     if (StringUtils.isBlank(phone) || !PHONE_PATTERN.matcher(phone).matches()) {
       throw ServerCommonException.invalidArgument("Phone");
     }
-    if (deliveryMethod != DeliveryMethod.WHATSAPP && deliveryMethod != DeliveryMethod.SMS) {
+    if (deliveryMethod != DeliveryMethod.WHATSAPP && deliveryMethod != DeliveryMethod.SMS
+        && deliveryMethod != DeliveryMethod.VOICE) {
       throw ServerCommonException.invalidArgument("Method");
     }
     if (StringUtils.isBlank(refreshToken)) {
@@ -186,6 +204,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
         .loginId(loginId)
         .addToLoginIds(updateOptions.isAddToLoginIds())
         .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+        .templateOptions(templateOptions)
         .build();
     ApiProxy apiProxy = getApiProxy(refreshToken);
     Masked masked = apiProxy.post(otpUpdateUserPhone, updatePhoneRequestBody, maskedClass);
@@ -209,7 +228,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   private SignUpRequest newSignUpRequest(DeliveryMethod deliveryMethod, User user) {
-    if (SMS.equals(deliveryMethod)) {
+    if (SMS.equals(deliveryMethod) || VOICE.equals(deliveryMethod)) {
       return SignUpRequest.builder().phone(user.getPhone()).build();
     } else if (WHATSAPP.equals(deliveryMethod)) {
       return SignUpRequest.builder().whatsApp(user.getPhone()).build();
