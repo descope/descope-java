@@ -1,6 +1,7 @@
 package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
+import com.descope.model.audit.AuditCreateRequest;
 import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.audit.AuditSearchResponse;
 
@@ -12,8 +13,15 @@ public interface AuditService {
    *
    * @param request request is optional, and if provided, all attributes within it are optional.
    * @return {@link AuditSearchResponse}
-   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
-   *     thrown.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   AuditSearchResponse search(AuditSearchRequest request) throws DescopeException;
+
+  /**
+   * Create an audit event.
+   *
+   * @param request the parameters for the event
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  void createEvent(AuditCreateRequest request) throws DescopeException;
 }
