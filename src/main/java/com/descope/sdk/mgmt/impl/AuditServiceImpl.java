@@ -144,6 +144,9 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
     if (StringUtils.isBlank(request.getActorId())) {
       throw ServerCommonException.invalidArgument("request.actorId");
     }
+    if (StringUtils.isBlank(request.getTenantId())) {
+      throw ServerCommonException.invalidArgument("request.tenantId");
+    }
     if (request.getType() == null) {
       throw ServerCommonException.invalidArgument("request.type");
     }
