@@ -1,9 +1,12 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUDIT_CREATE_EVENT;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUDIT_SEARCH_LINK;
 
+import com.descope.enums.AuditType;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.audit.AuditCreateRequest;
 import com.descope.model.audit.AuditRecord;
 import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.audit.AuditSearchResponse;
@@ -19,6 +22,7 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 class AuditServiceImpl extends ManagementsBase implements AuditService {
 
@@ -44,6 +48,7 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
     ApiProxy apiProxy = getApiProxy();
     ActualAuditSearchRequest actualReq = new ActualAuditSearchRequest(
         request.getUserIds(),
+        request.getActorIds(),
         request.getActions(),
         request.getExcludedActions(),
         request.getDevices(),
@@ -64,6 +69,8 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
           new AuditRecord(
               auditRecord.projectId,
               auditRecord.userId,
+              auditRecord.actorId,
+              AuditType.fromString(auditRecord.type),
               auditRecord.action,
               Instant.ofEpochMilli(
                   auditRecord.occurred != null ? Long.parseLong(auditRecord.occurred) : 0),
@@ -86,6 +93,7 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
   @AllArgsConstructor
   static class ActualAuditSearchRequest {
     List<String> userIds;
+    List<String> actorIds;
     List<String> actions;
     List<String> excludedActions;
     List<String> devices;
@@ -106,6 +114,8 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
   static class ActualAuditRecord {
     String projectId;
     String userId;
+    String actorId;
+    String type;
     String action;
     String occurred;
     String device;
@@ -122,5 +132,25 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
   @AllArgsConstructor
   static class ActualAuditSearchResponse {
     List<ActualAuditRecord> audits;
+  }
+
+  public void createEvent(AuditCreateRequest request) throws DescopeException {
+    if (request == null) {
+      throw ServerCommonException.invalidArgument("request");
+    }
+    if (StringUtils.isBlank(request.getAction())) {
+      throw ServerCommonException.invalidArgument("request.action");
+    }
+    if (StringUtils.isBlank(request.getActorId())) {
+      throw ServerCommonException.invalidArgument("request.actorId");
+    }
+    if (StringUtils.isBlank(request.getTenantId())) {
+      throw ServerCommonException.invalidArgument("request.tenantId");
+    }
+    if (request.getType() == null) {
+      throw ServerCommonException.invalidArgument("request.type");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(MANAGEMENT_AUDIT_CREATE_EVENT), request, Void.class);
   }
 }

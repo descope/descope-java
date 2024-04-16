@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.descope</groupId>
             <artifactId>java-sdk</artifactId>
-            <version>1.0.16</version>
+            <version>1.0.17</version>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>

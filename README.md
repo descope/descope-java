@@ -69,7 +69,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 7. [Query SSO Groups](#query-sso-groups)
 8. [Manage Flows](#manage-flows)
 9. [Manage JWTs](#manage-jwts)
-10. [Search Audit](#search-audit)
+10. [Audit](#audit)
 11. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
@@ -1158,7 +1158,7 @@ try {
 
 ```
 
-### Search Audit
+### Audit
 
 You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
 
@@ -1176,13 +1176,26 @@ try {
 try {
     AuditSearchResponse resp = as.search(AuditSearchRequest.builder()
             .from(Instant.now().minus(Duration.ofDays(30)))
-            .actions(Arrays.asList("LoginSucceed")));
+            .actions(Arrays.asList("LoginSucceed"))
+            .build());
 } catch (DescopeException de) {
     // Handle the error
 }
 
-```
+You can also create audit event with data
 
+```java
+try {
+    as.createEvent(AuditCreateRequest.builder()
+            .userId("some-id")
+            .actorId("some-actor-id")
+            .type(AuditType.INFO)
+            .action("some-action-name")
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
 ### Manage Project
 
 You can change the project name, as well as to clone the current project to a new one.

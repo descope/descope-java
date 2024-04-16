@@ -17,6 +17,8 @@ import lombok.NoArgsConstructor;
 public class AuditSearchRequest {
   /** List of user IDs to filter by. */
   List<String> userIds;
+  /** List of actor user IDs to filter by. */
+  List<String> actorIds;
   /** List of actions to filter by. */
   List<String> actions;
   /** List of actions to exclude. */
