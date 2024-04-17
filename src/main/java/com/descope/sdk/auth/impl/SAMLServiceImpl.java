@@ -23,7 +23,7 @@ class SAMLServiceImpl extends AuthenticationServiceImpl implements SAMLService {
   @Override
   public String start(String tenant, String returnURL, LoginOptions loginOptions)
       throws DescopeException {
-    Map<String, String> request = mapOf("provider", tenant);
+    Map<String, String> request = mapOf("tenant", tenant);
     if (StringUtils.isNotBlank(returnURL)) {
       request.put("redirectURL", returnURL);
     }
