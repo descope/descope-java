@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.SAMLResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
@@ -36,17 +37,16 @@ public class SamlLinkServiceImplTest {
   @BeforeEach
   void setUp() {
     Client client = TestUtils.getClient();
-    this.samlService =
-        AuthenticationServiceBuilder.buildServices(client).getSamlService();
+    this.samlService = AuthenticationServiceBuilder.buildServices(client).getSamlService();
   }
 
   @Test
   void testStart() {
     ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(MOCK_URL).when(apiProxy).post(any(), any(), any());
+    doReturn(new SAMLResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
-        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String start = samlService.start("tenant", "returnurl", new LoginOptions());
       Assertions.assertThat(start).isNotBlank().contains(MOCK_URL);
     }
@@ -57,12 +57,12 @@ public class SamlLinkServiceImplTest {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
     doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
-      .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
+        .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
 
     AuthenticationInfo authenticationInfo;
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
-        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
 
       try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
         mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
