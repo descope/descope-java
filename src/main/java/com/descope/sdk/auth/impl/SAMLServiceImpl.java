@@ -4,11 +4,6 @@ import static com.descope.literals.Routes.AuthEndPoints.COMPOSE_SAML_START_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_SAML_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
-import java.net.URI;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.SAMLResponse;
@@ -16,6 +11,9 @@ import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.SAMLService;
+import java.net.URI;
+import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
 class SAMLServiceImpl extends AuthenticationServiceImpl implements SAMLService {
 
