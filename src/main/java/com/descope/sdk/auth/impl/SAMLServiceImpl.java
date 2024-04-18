@@ -6,6 +6,7 @@ import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.SAMLResponse;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
@@ -23,22 +24,19 @@ class SAMLServiceImpl extends AuthenticationServiceImpl implements SAMLService {
   @Override
   public String start(String tenant, String returnURL, LoginOptions loginOptions)
       throws DescopeException {
-    Map<String, String> request = mapOf("tenant", tenant);
+    Map<String, String> params = mapOf("tenant", tenant);
     if (StringUtils.isNotBlank(returnURL)) {
-      request.put("redirectURL", returnURL);
+      params.put("redirectURL", returnURL);
     }
-    URI samlStartURLAML = composeSAMLStartURL();
+    URI samlStartURL = getQueryParamUri(COMPOSE_SAML_START_LINK, params);
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(samlStartURLAML, request, String.class);
+    SAMLResponse response = apiProxy.post(samlStartURL, loginOptions, SAMLResponse.class);
+    return response.getUrl();
   }
 
   @Override
   public AuthenticationInfo exchangeToken(String code) throws DescopeException {
     return exchangeToken(code, composeOAuthExchangeTokenURL());
-  }
-
-  private URI composeSAMLStartURL() {
-    return getUri(COMPOSE_SAML_START_LINK);
   }
 
   private URI composeOAuthExchangeTokenURL() {
