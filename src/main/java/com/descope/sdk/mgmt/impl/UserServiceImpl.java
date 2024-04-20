@@ -466,7 +466,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI removeTenantRolesUri = composeRemoveTenantRolesUri();
-    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", "", "roleNames", roles);
+    Map<String, Object> request = mapOf("loginId", loginId, "tenantId", tenantId, "roleNames", roles);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(removeTenantRolesUri, request, UserResponseDetails.class);
   }
