@@ -688,7 +688,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   private URI composeRemoveTenantRolesUri() {
-    return getUri(USER_REMOVE_TENANT_LINK);
+    return getUri(USER_REMOVE_ROLES_LINK);
   }
 
   private URI composeGetProviderTokenUri(Map<String, String> params) {
