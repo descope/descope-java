@@ -753,7 +753,7 @@ public class UserServiceImplTest {
   @Test
   void testSearchAllForSuccess() {
     UserResponse userResponse = mock(UserResponse.class);
-    AllUsersResponseDetails allUsersResponse = new AllUsersResponseDetails(Arrays.asList(userResponse));
+    AllUsersResponseDetails allUsersResponse = new AllUsersResponseDetails(Arrays.asList(userResponse), 0);
     UserSearchRequest userSearchRequest = UserSearchRequest.builder().limit(6).page(1).build();
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
@@ -853,6 +853,7 @@ public class UserServiceImplTest {
       }
     }
     assertTrue(found);
+    assertTrue(searchResponse.getTotal() > 0);
     // Delete
     userService.delete(newLoginId);
   }
@@ -886,6 +887,7 @@ public class UserServiceImplTest {
       }
     }
     assertTrue(found);
+    assertTrue(searchResponse.getTotal() > 0);
     searchResponse = userService
         .searchAll(UserSearchRequest.builder().testUsersOnly(true).emails(Arrays.asList(user.getEmail())).build());
     found = false;
@@ -896,6 +898,7 @@ public class UserServiceImplTest {
       }
     }
     assertTrue(found);
+    assertTrue(searchResponse.getTotal() > 0);
     // Delete
     userService.delete(loginId);
   }

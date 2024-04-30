@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AllUsersResponseDetails {
   private List<UserResponse> users;
+  private int total;
 }
