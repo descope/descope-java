@@ -230,6 +230,7 @@ public class TenantServiceImplTest {
     TenantSettings tenantSettings = tenantService.getSettings(tenantId);
     assertThat(tenantSettings).isNotNull();
     assertThat(tenantSettings.getSelfProvisioningDomains()).containsOnly(name + ".com", name + "1.com");
+    assertThat(tenantSettings.getJitDisabled()).isFalse();
     tenantService.update(tenantId, name + "1", Arrays.asList(name + ".com"), null);
     tenants = tenantService.loadAll();
     assertThat(tenants).isNotEmpty();
@@ -256,6 +257,12 @@ public class TenantServiceImplTest {
     tenantSearchRequest = TenantSearchRequest.builder().names(Arrays.asList("doesnotexists")).build();
     tenants = tenantService.searchAll(tenantSearchRequest);
     assertThat(tenants).isEmpty();
+
+    tenantSettings.setJitDisabled(true);
+    tenantService.configureSettings(tenantId, tenantSettings);
+    tenantSettings = tenantService.getSettings(tenantId);
+    assertThat(tenantSettings).isNotNull();
+    assertThat(tenantSettings.getJitDisabled()).isTrue();
     tenantService.delete(tenantId);
   }
 }
