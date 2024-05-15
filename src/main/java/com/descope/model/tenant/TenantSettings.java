@@ -23,4 +23,6 @@ public class TenantSettings {
   Boolean enableInactivity;
   Integer inactivityTime;
   String inactivityTimeUnit;
+  @JsonAlias({"JITDisabled"})
+  Boolean jitDisabled;
 }

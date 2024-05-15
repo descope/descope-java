@@ -172,6 +172,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     addIfNotNull(req, "inactivityTimeUnit", settings.getInactivityTimeUnit());
     addIfNotNull(req, "enableInactivity", settings.getEnableInactivity());
     addIfNotNull(req, "domains", settings.getDomains());
+    addIfNotNull(req, "JITDisabled", settings.getJitDisabled());
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(configureSettingsUri(), req, Void.class);
   }
