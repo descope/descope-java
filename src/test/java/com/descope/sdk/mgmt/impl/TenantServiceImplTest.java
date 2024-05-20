@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.descope.enums.TenantAuthType;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
@@ -259,10 +260,12 @@ public class TenantServiceImplTest {
     assertThat(tenants).isEmpty();
 
     tenantSettings.setJitDisabled(true);
+    tenantSettings.setAuthType(TenantAuthType.OIDC);
     tenantService.configureSettings(tenantId, tenantSettings);
     tenantSettings = tenantService.getSettings(tenantId);
     assertThat(tenantSettings).isNotNull();
     assertThat(tenantSettings.getJitDisabled()).isTrue();
+    assertThat(tenantSettings.getAuthType()).isEqualTo(TenantAuthType.OIDC);
     tenantService.delete(tenantId);
   }
 }
