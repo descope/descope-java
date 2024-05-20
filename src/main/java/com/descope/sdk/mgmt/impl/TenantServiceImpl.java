@@ -161,6 +161,9 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     if (settings == null) {
       throw ServerCommonException.invalidArgument("settings");
     }
+    if (settings.getAuthType() == null && settings.getJitDisabled() != null) {
+      throw ServerCommonException.invalidArgument("settings.authType");
+    }
     Map<String, Object> req = mapOf("tenantId", id);
     addIfNotNull(req, "selfProvisioningDomains", settings.getSelfProvisioningDomains());
     addIfNotNull(req, "enabled", settings.getSessionSettingsEnabled());
@@ -173,6 +176,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     addIfNotNull(req, "enableInactivity", settings.getEnableInactivity());
     addIfNotNull(req, "domains", settings.getDomains());
     addIfNotNull(req, "JITDisabled", settings.getJitDisabled());
+    addIfNotNull(req, "authType", settings.getAuthType());
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(configureSettingsUri(), req, Void.class);
   }
