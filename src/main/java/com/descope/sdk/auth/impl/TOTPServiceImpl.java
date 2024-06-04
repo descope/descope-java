@@ -1,5 +1,9 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_TOTP_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_TOTP_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_LINK;
+
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
@@ -15,10 +19,6 @@ import com.descope.sdk.auth.TOTPService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
-
-import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_TOTP_LINK;
-import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_TOTP_LINK;
-import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_LINK;
 
 class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
 
