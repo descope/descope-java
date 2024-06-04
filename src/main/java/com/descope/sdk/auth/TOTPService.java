@@ -37,6 +37,23 @@ public interface TOTPService {
       throws DescopeException;
 
   /**
+   * Use to verify a SignIn/SignUp based on the given loginID.
+   *
+   * @param loginId      - User login ID
+   * @param code         - code to verify
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param refreshToken - Refresh Token
+   * @return a list of cookies
+   * @throws DescopeException - error upon failure
+   */
+  AuthenticationInfo signInCode(
+      String loginId,
+      String code,
+      LoginOptions loginOptions,
+      String refreshToken)
+      throws DescopeException;
+
+  /**
    * Set a seed to an existing user, so the user can use an authenticator app.
    *
    * @param loginId - User login ID
