@@ -4,6 +4,10 @@ import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_TOTP_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.UPDATE_USER_TOTP_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_LINK;
 
+import java.net.URI;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
@@ -16,8 +20,7 @@ import com.descope.model.totp.TotpSignUpRequestBody;
 import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.TOTPService;
-import java.net.URI;
-import org.apache.commons.lang3.StringUtils;
+import com.descope.utils.JwtUtils;
 
 class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
 
@@ -40,16 +43,29 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
   @Override
   public AuthenticationInfo signInCode(String loginId, String code, LoginOptions loginOptions)
       throws DescopeException {
+    return signInCode(loginId, code, loginOptions, null);
+  }
+
+  @Override
+  public AuthenticationInfo signInCode(String loginId, String code, LoginOptions loginOptions, String refreshToken)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("loginId");
     }
 
-    AuthenticationVerifyRequestBody authenticationVerifyRequestBody =
-        new AuthenticationVerifyRequestBody(loginId, code, loginOptions);
+    AuthenticationVerifyRequestBody authenticationVerifyRequestBody = new AuthenticationVerifyRequestBody(loginId, code,
+        loginOptions);
     URI totpVerifyCode = composeVerifyTOTPCodeURL();
-    ApiProxy apiProxy = getApiProxy();
-    JWTResponse jwtResponse =
-        apiProxy.post(totpVerifyCode, authenticationVerifyRequestBody, JWTResponse.class);
+    ApiProxy apiProxy;
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      if (StringUtils.isBlank(refreshToken)) {
+        throw ServerCommonException.invalidArgument("refreshToken");
+      }
+      apiProxy = getApiProxy(refreshToken);
+    } else {
+      apiProxy = getApiProxy();
+    }
+    JWTResponse jwtResponse = apiProxy.post(totpVerifyCode, authenticationVerifyRequestBody, JWTResponse.class);
 
     return getAuthenticationInfo(jwtResponse);
   }
