@@ -6,8 +6,6 @@ import static com.descope.literals.Routes.AuthEndPoints.VERIFY_TOTP_LINK;
 
 import java.net.URI;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
@@ -21,6 +19,7 @@ import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.TOTPService;
 import com.descope.utils.JwtUtils;
+import org.apache.commons.lang3.StringUtils;
 
 class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
 
