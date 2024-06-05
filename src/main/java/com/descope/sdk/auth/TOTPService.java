@@ -62,4 +62,16 @@ public interface TOTPService {
    */
   TOTPResponse updateUser(String loginId)
       throws DescopeException;
+
+
+  /**
+   * Set a seed to an existing user, so the user can use an authenticator app.
+   *
+   * @param loginId - User login ID
+   * @param refreshToken - Refresh Token
+   * @return TOTPResponse
+   * @throws DescopeException - error upon failure
+   */
+  TOTPResponse updateUser(String loginId, String refreshToken)
+      throws DescopeException;
 }
