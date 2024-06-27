@@ -16,4 +16,7 @@ public class SSOSAMLSettings {
   private String idpCert;
   private AttributeMapping attributeMapping;
   private List<RoleMapping> roleMappings;
+  private String spEncryptionKey;
+  private String spSignKey;
+  private String subjectNameIdFormat;
 }
