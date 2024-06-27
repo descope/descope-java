@@ -273,6 +273,7 @@ class SsoServiceImplTest {
     String name = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(name, Arrays.asList(name + ".com", name + "1.com"));
     assertThat(tenantId).isNotBlank();
+    String unspecifiedFormat = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
     SSOTenantSettingsResponse beforeUpdateResp = ssoService.loadSettings(tenantId);
     assertEquals(tenantId, beforeUpdateResp.getTenant().getId());
     String encryptCert = beforeUpdateResp.getSaml().getSpCertificate();
@@ -289,7 +290,7 @@ class SsoServiceImplTest {
         .idpUrl("https://" + name + ".com")
         .spEncryptionKey(TestUtils.MOCK_PRIVATE_KEY_STRING)
         .spSignKey(TestUtils.MOCK_PRIVATE_KEY_STRING)
-        .subjectNameIdFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified")
+        .subjectNameIdFormat(unspecifiedFormat)
         .build(), "https://" + name + ".com", null);
     SSOTenantSettingsResponse resp = ssoService.loadSettings(tenantId);
     assertEquals(tenantId, resp.getTenant().getId());
@@ -305,7 +306,7 @@ class SsoServiceImplTest {
     String newSignCert = resp.getSaml().getSpSignCertificate();
     assertThat(signCert).isNotBlank();
     assertThat(newSignCert).isNotEqualTo(signCert);
-    assertThat("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified").isEqualTo(resp.getSaml().getSubjectNameIdFormat());
+    assertThat(unspecifiedFormat).isEqualTo(resp.getSaml().getSubjectNameIdFormat());
     ssoService.deleteSettings(tenantId);
     tenantService.delete(tenantId);
   }
@@ -315,6 +316,7 @@ class SsoServiceImplTest {
     String name = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(name, Arrays.asList(name + ".com", name + "1.com"));
     assertThat(tenantId).isNotBlank();
+    String unspecifiedFormat = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
     SSOTenantSettingsResponse beforeUpdateResp = ssoService.loadSettings(tenantId);
     assertEquals(tenantId, beforeUpdateResp.getTenant().getId());
     String encryptCert = beforeUpdateResp.getSaml().getSpCertificate();
@@ -332,7 +334,7 @@ class SsoServiceImplTest {
         .roleMappings(Arrays.asList(RoleMapping.builder().groups(Arrays.asList("a", "b")).roleName(roleName).build()))
         .spEncryptionKey(TestUtils.MOCK_PRIVATE_KEY_STRING)
         .spSignKey(TestUtils.MOCK_PRIVATE_KEY_STRING)
-        .subjectNameIdFormat("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified")
+        .subjectNameIdFormat(unspecifiedFormat)
         .build(), "https://" + name + ".com", null);
     SSOTenantSettingsResponse resp = ssoService.loadSettings(tenantId);
     assertEquals(tenantId, resp.getTenant().getId());
@@ -349,7 +351,7 @@ class SsoServiceImplTest {
     String newSignCert = resp.getSaml().getSpSignCertificate();
     assertThat(signCert).isNotBlank();
     assertThat(newSignCert).isNotEqualTo(signCert);
-    assertThat("urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified").isEqualTo(resp.getSaml().getSubjectNameIdFormat());
+    assertThat(unspecifiedFormat).isEqualTo(resp.getSaml().getSubjectNameIdFormat());
     ssoService.deleteSettings(tenantId);
     tenantService.delete(tenantId);
   }
