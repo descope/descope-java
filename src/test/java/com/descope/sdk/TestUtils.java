@@ -93,6 +93,7 @@ public class TestUtils {
       + "p6by4+uOjZXZA6hpw7zfN7hx1I4MugEZRjPiWI7f5/ZN8bjBdylcwQIvAQp1f9vQ\n"
       + "S+P5ktRlO7vEm10LtKotJ85Rp+le7PX56re+nntKVZFsliKW0yPmWJE=\n"
       + "-----END PRIVATE KEY-----";
+  
   private static SdkInfo getSdkInfo() {
     String name = "java";
     String version = System.getProperty("java.version");
