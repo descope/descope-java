@@ -273,13 +273,13 @@ class SsoServiceImplTest {
     String name = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(name, Arrays.asList(name + ".com", name + "1.com"));
     assertThat(tenantId).isNotBlank();
-    String unspecifiedFormat = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
     SSOTenantSettingsResponse beforeUpdateResp = ssoService.loadSettings(tenantId);
     assertEquals(tenantId, beforeUpdateResp.getTenant().getId());
     String encryptCert = beforeUpdateResp.getSaml().getSpCertificate();
     assertThat(encryptCert).isNotBlank();
     String signCert = beforeUpdateResp.getSaml().getSpSignCertificate();
     assertThat(signCert).isNotBlank();
+    final String unspecifiedFormat = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
     ssoService.configureSAMLSettings(tenantId, SSOSAMLSettings.builder()
         .attributeMapping(AttributeMapping.builder()
             .email("email")
@@ -316,7 +316,6 @@ class SsoServiceImplTest {
     String name = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(name, Arrays.asList(name + ".com", name + "1.com"));
     assertThat(tenantId).isNotBlank();
-    String unspecifiedFormat = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
     SSOTenantSettingsResponse beforeUpdateResp = ssoService.loadSettings(tenantId);
     assertEquals(tenantId, beforeUpdateResp.getTenant().getId());
     String encryptCert = beforeUpdateResp.getSaml().getSpCertificate();
@@ -325,6 +324,7 @@ class SsoServiceImplTest {
     assertThat(signCert).isNotBlank();
     String roleName = TestUtils.getRandomName("rt-").substring(0, 20);
     rolesService.create(roleName, tenantId, "ttt", null);
+    final String unspecifiedFormat = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified";
     ssoService.configureSAMLSettingsByMetadata(tenantId, SSOSAMLSettingsByMetadata.builder()
         .attributeMapping(AttributeMapping.builder()
             .email("email")

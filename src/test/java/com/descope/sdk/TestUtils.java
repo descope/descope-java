@@ -82,17 +82,17 @@ public class TestUtils {
           "w8b3KRCep717H4MdVbwYHeb0vr891Ok1BL_TmC0XFUIKjRoKsWOcUZ9BFd6wR_5mnJuE7M8ZjVQRCbRlVgnh6AsEL3JA9Z6c1TpURTIXZxSE6NbeB7IMLMn5HWW7cjbnG4WO7E1PUCT6zCcBVz6EhA925GIJpyUxuY7oqJG-6NoOltI0Ocm6M2_7OIFMzFdw42RslqyX6l-SDdo_ZLq-XtcsCVRyj2YvmXUNF4Vq1x5syPOEQ-SezkvpBcb5Szi0ULpW5CvX2ieHAeHeQ2x8gkv6Dn2AW_dllQ--ZO-QH2QkxEXlMVqilwAdbA0k6BBtSkMC-7kD3A86bGGplpzz5Q")
       .build();
   public static final String MOCK_PRIVATE_KEY_STRING = "-----BEGIN PRIVATE KEY-----\n"
-    + "MIIB1QIBADANBgkqhkiG9w0BAQEFAASCAb8wggG7AgEAAl0DH3YqFv4mzt67RAAm\n"
-    + "KqZSY32GtoUqkLXzSJOIew2ofiKx3ojdJvL69pXZLKNoKkKb8RQKyWdhAIkbTEFX\n"
-    + "3k8mroXea5NMfB9NAH0AASQ6uoK5XYs7mMubQgu1dhcCAwEAAQJdAjrb+LAUaQe8\n"
-    + "+cFTze0UeK48Ow5nxn4wvniriIA9v3vaMGJ0Hl6qkFO1qq76O+uvSehxPHnzBrfs\n"
-    + "SXkQ8nScyeGpoTpn0DCnMnFRiY1hAMy6SqVdC4t7UP9u6oCBAi8B+POU6nCyUOnL\n"
-    + "FlPVGFoBxSoxC7q7tJytq+xaPfGBN63AT3sdnXm06YAH1uE/1wIvAZVPf+1sDjIP\n"
-    + "c4hFNPzIPh/x1M3qDN9eBr6tdPwymuPmpQ1lik/b9ZpMfXGns8ECLwDTVfcci+BF\n"
-    + "tyP1i06jq4AUKg1u8E+BTxXs37YBOOOxDvpvCYMiln6eP6SITavvAi8A6n71d8rl\n"
-    + "p6by4+uOjZXZA6hpw7zfN7hx1I4MugEZRjPiWI7f5/ZN8bjBdylcwQIvAQp1f9vQ\n"
-    + "S+P5ktRlO7vEm10LtKotJ85Rp+le7PX56re+nntKVZFsliKW0yPmWJE=\n"
-    + "-----END PRIVATE KEY-----";
+      + "MIIB1QIBADANBgkqhkiG9w0BAQEFAASCAb8wggG7AgEAAl0DH3YqFv4mzt67RAAm\n"
+      + "KqZSY32GtoUqkLXzSJOIew2ofiKx3ojdJvL69pXZLKNoKkKb8RQKyWdhAIkbTEFX\n"
+      + "3k8mroXea5NMfB9NAH0AASQ6uoK5XYs7mMubQgu1dhcCAwEAAQJdAjrb+LAUaQe8\n"
+      + "+cFTze0UeK48Ow5nxn4wvniriIA9v3vaMGJ0Hl6qkFO1qq76O+uvSehxPHnzBrfs\n"
+      + "SXkQ8nScyeGpoTpn0DCnMnFRiY1hAMy6SqVdC4t7UP9u6oCBAi8B+POU6nCyUOnL\n"
+      + "FlPVGFoBxSoxC7q7tJytq+xaPfGBN63AT3sdnXm06YAH1uE/1wIvAZVPf+1sDjIP\n"
+      + "c4hFNPzIPh/x1M3qDN9eBr6tdPwymuPmpQ1lik/b9ZpMfXGns8ECLwDTVfcci+BF\n"
+      + "tyP1i06jq4AUKg1u8E+BTxXs37YBOOOxDvpvCYMiln6eP6SITavvAi8A6n71d8rl\n"
+      + "p6by4+uOjZXZA6hpw7zfN7hx1I4MugEZRjPiWI7f5/ZN8bjBdylcwQIvAQp1f9vQ\n"
+      + "S+P5ktRlO7vEm10LtKotJ85Rp+le7PX56re+nntKVZFsliKW0yPmWJE=\n"
+      + "-----END PRIVATE KEY-----";
   private static SdkInfo getSdkInfo() {
     String name = "java";
     String version = System.getProperty("java.version");
