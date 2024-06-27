@@ -21,4 +21,6 @@ public class SSOSAMLSettingsResponse {
   private AttributeMapping attributeMapping;
   private List<GroupsMapping> groupsMapping;
   private String redirectUrl;
+  private String spSignCertificate;
+  private String subjectNameIdFormat;
 }
