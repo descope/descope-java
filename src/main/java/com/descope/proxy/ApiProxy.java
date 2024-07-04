@@ -10,6 +10,8 @@ public interface ApiProxy {
 
   <B, R> R post(URI uri, B body, Class<R> returnClz);
 
+  <B, R> R patch(URI uri, B body, Class<R> returnClz);
+
   <B, R> R postAndGetArray(URI uri, B body, TypeReference<R> typeReference);
 
   <B, R> R delete(URI uri, B body, Class<R> returnClz);

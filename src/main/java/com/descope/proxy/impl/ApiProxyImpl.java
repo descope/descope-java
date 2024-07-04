@@ -23,6 +23,11 @@ class ApiProxyImpl extends AbstractProxyImpl implements ApiProxy {
   }
 
   @Override
+  public <B, R> R patch(URI uri, B body, Class<R> returnClz) {
+    return super.patch(uri, body, returnClz);
+  }
+
+  @Override
   public <B, R> R postAndGetArray(URI uri, B body, TypeReference<R> typeReference) {
     return super.post(uri, body, typeReference);
   }

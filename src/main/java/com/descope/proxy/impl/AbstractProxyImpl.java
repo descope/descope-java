@@ -75,13 +75,13 @@ abstract class AbstractProxyImpl {
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             final ByteArrayOutputStream bs = new ByteArrayOutputStream();
             final TeeInputStream tee = new TeeInputStream(res.getEntity().getContent(), bs, true);
-            
+
             if (res.getCode() < 200 || response.getCode() > 299) {
               if (res.getCode() == 429) { // Rate limit from infra
                 throw new RateLimitExceededException(
-                  "Rate limit exceeded",
-                  ErrorCode.RATE_LIMIT_EXCEEDED,
-                  getRetryHeader(res));
+                    "Rate limit exceeded",
+                    ErrorCode.RATE_LIMIT_EXCEEDED,
+                    getRetryHeader(res));
               }
               try {
                 ErrorDetails errorDetails = objectMapper.readValue(tee, ErrorDetails.class);
@@ -89,19 +89,19 @@ abstract class AbstractProxyImpl {
                 log.debug(bs.toString());
                 if (ErrorCode.RATE_LIMIT_EXCEEDED.equals(errorDetails.getErrorCode())) {
                   throw new RateLimitExceededException(
-                    errorDetails.getActualMessage(),
-                    errorDetails.getErrorCode(),
-                    getRetryHeader(res));
+                      errorDetails.getActualMessage(),
+                      errorDetails.getErrorCode(),
+                      getRetryHeader(res));
                 }
                 throw ServerCommonException.genericServerError(
-                  errorDetails.getActualMessage(),
-                  StringUtils.isBlank(errorDetails.getErrorCode())
-                    ? String.valueOf(res.getCode())
-                    : errorDetails.getErrorCode(),
-                  bs.toString());
+                    errorDetails.getActualMessage(),
+                    StringUtils.isBlank(errorDetails.getErrorCode())
+                        ? String.valueOf(res.getCode())
+                        : errorDetails.getErrorCode(),
+                    bs.toString());
               } catch (IOException e) {
                 throw ServerCommonException.genericServerError(
-                  bs.toString(), String.valueOf(res.getCode()), bs.toString());
+                    bs.toString(), String.valueOf(res.getCode()), bs.toString());
               }
             }
             try {
@@ -118,7 +118,7 @@ abstract class AbstractProxyImpl {
               throw ServerCommonException.parseResponseError("Error parsing response", bs.toString(), e);
             }
           }
-        }        
+        }
       });
     }
   }
@@ -165,6 +165,17 @@ abstract class AbstractProxyImpl {
       builder.setEntity(new ByteArrayEntity(payload, ContentType.APPLICATION_JSON));
     }
     return exchange(builder.build(), null, typeReference);
+  }
+
+  @SneakyThrows
+  protected <B, R> R patch(URI uri, B body, Class<R> returnClz) {
+    final ClassicRequestBuilder builder = ClassicRequestBuilder.patch(uri);
+    if (body != null) {
+      final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(Include.NON_NULL);
+      final byte[] payload = objectMapper.writeValueAsBytes(body);
+      builder.setEntity(new ByteArrayEntity(payload, ContentType.APPLICATION_JSON));
+    }
+    return exchange(builder.build(), returnClz, null);
   }
 
   protected <R> R get(URI uri, Class<R> returnClz) {

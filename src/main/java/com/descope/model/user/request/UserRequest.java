@@ -1,6 +1,5 @@
 package com.descope.model.user.request;
 
-
 import static com.descope.utils.CollectionUtils.addIfNotNull;
 
 import com.descope.model.auth.AssociatedTenant;
