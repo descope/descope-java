@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -50,7 +49,6 @@ import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.MagicLinkService;
 import com.descope.sdk.auth.PasswordService;
 import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
-import com.descope.sdk.mgmt.ManagementService;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
@@ -59,7 +57,6 @@ import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -169,7 +166,7 @@ public class UserServiceImplTest {
   }
 
   @Test
-  void TestPatchForEmptyLoginId() {
+  void testPatchForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.patch("", new PatchUserRequest()));
     assertNotNull(thrown);
@@ -848,9 +845,9 @@ public class UserServiceImplTest {
     String phone = "+1-555-555-5555";
     List<String> additionalLoginIds = Arrays.asList(TestUtils.getRandomName("u-"), TestUtils.getRandomName("u-"));
     // Create
-    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().email(email)
-        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test")
-        .additionalLoginIds(additionalLoginIds).build());
+    UserResponseDetails createResponse = userService.create(loginId,
+        UserRequest.builder().email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
+            .displayName("Testing Test").additionalLoginIds(additionalLoginIds).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -915,6 +912,12 @@ public class UserServiceImplTest {
     }
     assertTrue(found);
     assertTrue(searchResponse.getTotal() > 0);
+    PatchUserRequest pur = new PatchUserRequest();
+    pur.setFamilyName("hurray patch works");
+    userService.patch(newLoginId, pur);
+
+    loadResponse = userService.loadByUserId(createResponse.getUser().getUserId());
+    assertEquals(loadResponse.getUser().getFamilyName(), pur.getFamilyName());
     // Delete
     userService.delete(newLoginId);
   }
@@ -925,9 +928,8 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    UserResponseDetails createResponse = userService.createTestUser(loginId, UserRequest.builder()
-        .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
-        .displayName("Testing Test").build());
+    UserResponseDetails createResponse = userService.createTestUser(loginId, UserRequest.builder().email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -990,12 +992,11 @@ public class UserServiceImplTest {
     assertEquals(true, user.getVerifiedPhone());
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
-    assertThat(user.getUserTenants()).containsExactly(
-        AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(
-            Arrays.asList(roleName)).build());
+    assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
+        .tenantName(tenantName).roleNames(Arrays.asList(roleName)).build());
     UserResponseDetails updateResponse = userService.update(loginId,
-        UserRequest.builder().roleNames(Arrays.asList(roleName)).email(email).verifiedEmail(true)
-            .phone(phone).verifiedPhone(true).displayName("Testing Test").build());
+        UserRequest.builder().roleNames(Arrays.asList(roleName)).email(email).verifiedEmail(true).phone(phone)
+            .verifiedPhone(true).displayName("Testing Test").build());
     user = updateResponse.getUser();
     assertNotNull(user);
     assertThat(user.getRoleNames()).containsExactly(roleName);
@@ -1064,8 +1065,8 @@ public class UserServiceImplTest {
     String phone = "+1-555-555-" + randomSaffix;
     String cleanPhone = "+1555555" + randomSaffix;
     // Create
-    UserResponseDetails createResponse = userService.create(phone, UserRequest.builder().phone(phone)
-        .verifiedPhone(true).displayName("Testing Test").build());
+    UserResponseDetails createResponse = userService.create(phone,
+        UserRequest.builder().phone(phone).verifiedPhone(true).displayName("Testing Test").build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(cleanPhone);
@@ -1094,19 +1095,11 @@ public class UserServiceImplTest {
     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
     byte[] hash = factory.generateSecret(spec).getEncoded();
 
-    UsersBatchResponse res = userService.createBatch(Arrays.asList(BatchUserRequest.builder()
-        .loginId(loginId)
-        .email(email)
-        .verifiedEmail(true)
-        .phone(phone)
-        .verifiedPhone(true)
-        .displayName(name)
+    UsersBatchResponse res = userService.createBatch(Arrays.asList(BatchUserRequest.builder().loginId(loginId)
+        .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true).displayName(name)
         .hashedPassword(BatchUserPasswordHashed.builder()
-            .algorithm(BatchUserPasswordAlgorithm.BATCH_USER_PASSWORD_ALGORITHM_PBKDF2SHA1)
-            .hash(hash)
-            .salt(salt)
-            .iterations(65536)
-            .build())
+            .algorithm(BatchUserPasswordAlgorithm.BATCH_USER_PASSWORD_ALGORITHM_PBKDF2SHA1).hash(hash).salt(salt)
+            .iterations(65536).build())
         .build()));
     assertNotNull(res);
     assertNotNull(res.getCreatedUsers());
@@ -1126,13 +1119,8 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder()
-        .email(email)
-        .verifiedEmail(true)
-        .phone(phone)
-        .verifiedPhone(true)
-        .displayName("Testing Test")
-        .build());
+    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
