@@ -79,9 +79,9 @@ abstract class AbstractProxyImpl {
             if (res.getCode() < 200 || response.getCode() > 299) {
               if (res.getCode() == 429) { // Rate limit from infra
                 throw new RateLimitExceededException(
-                    "Rate limit exceeded",
-                    ErrorCode.RATE_LIMIT_EXCEEDED,
-                    getRetryHeader(res));
+                  "Rate limit exceeded",
+                  ErrorCode.RATE_LIMIT_EXCEEDED,
+                  getRetryHeader(res));
               }
               try {
                 ErrorDetails errorDetails = objectMapper.readValue(tee, ErrorDetails.class);
@@ -89,19 +89,19 @@ abstract class AbstractProxyImpl {
                 log.debug(bs.toString());
                 if (ErrorCode.RATE_LIMIT_EXCEEDED.equals(errorDetails.getErrorCode())) {
                   throw new RateLimitExceededException(
-                      errorDetails.getActualMessage(),
-                      errorDetails.getErrorCode(),
-                      getRetryHeader(res));
+                    errorDetails.getActualMessage(),
+                    errorDetails.getErrorCode(),
+                    getRetryHeader(res));
                 }
                 throw ServerCommonException.genericServerError(
-                    errorDetails.getActualMessage(),
-                    StringUtils.isBlank(errorDetails.getErrorCode())
-                        ? String.valueOf(res.getCode())
-                        : errorDetails.getErrorCode(),
-                    bs.toString());
+                  errorDetails.getActualMessage(),
+                  StringUtils.isBlank(errorDetails.getErrorCode())
+                    ? String.valueOf(res.getCode())
+                    : errorDetails.getErrorCode(),
+                  bs.toString());
               } catch (IOException e) {
                 throw ServerCommonException.genericServerError(
-                    bs.toString(), String.valueOf(res.getCode()), bs.toString());
+                  bs.toString(), String.valueOf(res.getCode()), bs.toString());
               }
             }
             try {

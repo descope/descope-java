@@ -600,8 +600,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.postAndGetArray(getUri(USER_HISTORY_LINK), userIds,
-        new TypeReference<List<UserHistoryResponse>>() {
-        });
+      new TypeReference<List<UserHistoryResponse>>() {});
   }
 
   public String generateEmbeddedLink(
