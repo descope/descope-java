@@ -104,8 +104,8 @@ public interface UserService {
 
   /**
    * Patches an existing user.
-   * <p>
-   * Only the fields that are set in the request will be updated.
+   * 
+   * <p>Only the fields that are set in the request will be updated.
    *
    * @param loginId The loginID is required and will determine which user to update.
    * @param request The request containing the fields to be updated. Fields not set will remain unchanged.
