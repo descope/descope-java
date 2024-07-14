@@ -15,21 +15,19 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRequest {
-  String email;
-  Boolean verifiedEmail;
-  String phone;
-  Boolean verifiedPhone;
-  String displayName;
+public class PatchUserRequest {
+  String name;
   String givenName;
   String middleName;
   String familyName;
+  String phone;
+  String email;
   List<String> roleNames;
   List<AssociatedTenant> userTenants;
   Map<String, Object> customAttributes;
   String picture;
-  Boolean test;
-  List<String> additionalLoginIds;
+  Boolean verifiedEmail;
+  Boolean verifiedPhone;
   List<String> ssoAppIds;
 
   public Map<String, Object> toMap() {
@@ -38,7 +36,6 @@ public class UserRequest {
     addIfNotNull(m, "verifiedEmail", verifiedEmail);
     addIfNotNull(m, "phone", phone);
     addIfNotNull(m, "verifiedPhone", verifiedPhone);
-    addIfNotNull(m, "displayName", displayName);
     addIfNotNull(m, "givenName", givenName);
     addIfNotNull(m, "middleName", middleName);
     addIfNotNull(m, "familyName", familyName);
@@ -46,8 +43,6 @@ public class UserRequest {
     addIfNotNull(m, "userTenants", userTenants);
     addIfNotNull(m, "customAttributes", customAttributes);
     addIfNotNull(m, "picture", picture);
-    addIfNotNull(m, "test", test);
-    addIfNotNull(m, "additionalLoginIds", additionalLoginIds);
     addIfNotNull(m, "ssoAppIDs", ssoAppIds);
     return m;
   }

@@ -10,6 +10,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.GET_PROVIDER_TOKEN
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOGOUT_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TEST_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.PATCH_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_CUSTOM_ATTRIBUTE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_PICTURE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
@@ -46,6 +47,7 @@ import com.descope.model.user.request.EnchantedLinkTestUserRequest;
 import com.descope.model.user.request.GenerateEmbeddedLinkRequest;
 import com.descope.model.user.request.MagicLinkTestUserRequest;
 import com.descope.model.user.request.OTPTestUserRequest;
+import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -149,6 +151,21 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI createUsersUri = composeCreateBatchUsersUri();
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(createUsersUri, req, UsersBatchResponse.class);
+  }
+
+  @Override
+  public UserResponseDetails patch(String loginId, PatchUserRequest request) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (request == null) {
+      request = new PatchUserRequest();
+    }
+    Map<String, Object> req = mapOf("loginId", loginId);
+    req.putAll(request.toMap());
+    URI patchUserUri = composePatchUserUri();
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.patch(patchUserUri, req, UserResponseDetails.class);
   }
 
   @Override
@@ -583,7 +600,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.postAndGetArray(getUri(USER_HISTORY_LINK), userIds,
-        new TypeReference<List<UserHistoryResponse>>() {});
+      new TypeReference<List<UserHistoryResponse>>() {});
   }
 
   public String generateEmbeddedLink(
@@ -594,8 +611,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI generateEmbeddedLinkUri = composeGenerateEmbeddedLink();
     GenerateEmbeddedLinkRequest request = new GenerateEmbeddedLinkRequest(loginId, customClaims);
     ApiProxy apiProxy = getApiProxy();
-    GenerateEmbeddedLinkResponse response =
-        apiProxy.post(generateEmbeddedLinkUri, request, GenerateEmbeddedLinkResponse.class);
+    GenerateEmbeddedLinkResponse response = apiProxy.post(generateEmbeddedLinkUri, request,
+        GenerateEmbeddedLinkResponse.class);
     return response.getToken();
   }
 
@@ -605,6 +622,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeCreateBatchUsersUri() {
     return getUri(CREATE_USERS_BATCH_LINK);
+  }
+
+  private URI composePatchUserUri() {
+    return getUri(PATCH_USER_LINK);
   }
 
   private URI composeUpdateUserUri() {

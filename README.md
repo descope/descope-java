@@ -713,7 +713,7 @@ try {
     // Handle the error
 }
 
-// Update will override all fields as is. Use carefully.
+// Update will override all fields as is. Use carefully. Use patch instead if providing select fields.
 try {
     us.update("desmond@descope.com", UserRequest.builder()
             .email("desmond@descope.com")
@@ -723,7 +723,17 @@ try {
                     .tenantId("tenant-ID1")
                     .roleNames(Arrays.asList("role-name1"),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2")))));
+                    .tenantId("tenant-ID2"))))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Patch will override provided fields but will leave other fields untouched.
+try {
+    us.patch("desmond@descope.com", PatchUserRequest.builder()
+            .name("Desmond Copeland")
+            .build());
 } catch (DescopeException de) {
     // Handle the error
 }

@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.descope.enums.BatchUserPasswordAlgorithm;
 import com.descope.enums.DeliveryMethod;
@@ -27,6 +29,7 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.BatchUserPasswordHashed;
 import com.descope.model.user.request.BatchUserRequest;
+import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -159,6 +162,61 @@ public class UserServiceImplTest {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       UserResponseDetails response = userService.update("someLoginId", userRequest);
       Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testPatchForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.patch("", new PatchUserRequest()));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUserPatchError() {
+    UserService userService = mock(UserService.class);
+    PatchUserRequest user = new PatchUserRequest();
+    String email = "foo@bar.com";
+    user.setEmail(email);
+
+    when(userService.patch(anyString(), any(PatchUserRequest.class))).thenThrow(new RuntimeException("Error"));
+
+    assertThrows(RuntimeException.class, () -> userService.patch("123", user));
+  }
+
+  @Test
+  void testUserPatchSuccess() {
+    PatchUserRequest user = new PatchUserRequest();
+    user.setName("name1");
+    user.setMiddleName("middleName1");
+    user.setPhone("+9724567890");
+    user.setVerifiedPhone(true);
+    user.setPicture("https://test.com");
+    user.setRoleNames(Arrays.asList("foo", "bar"));
+
+    UserResponseDetails expectedResponse = new UserResponseDetails();
+    expectedResponse.setUser(new UserResponse());
+    expectedResponse.getUser().setName("name1");
+    expectedResponse.getUser().setMiddleName("middleName1");
+    expectedResponse.getUser().setPhone("+9724567890");
+    expectedResponse.getUser().setVerifiedPhone(true);
+    expectedResponse.getUser().setPicture("https://test.com");
+    expectedResponse.getUser().setRoleNames(Arrays.asList("foo", "bar"));
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(expectedResponse).when(apiProxy).patch(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.patch("someLoginId", user);
+      Assertions.assertThat(response).isNotNull();
+      assertNotNull(response.getUser());
+      assertEquals(expectedResponse.getUser().getName(), response.getUser().getName());
+      assertEquals(expectedResponse.getUser().getMiddleName(), response.getUser().getMiddleName());
+      assertEquals(expectedResponse.getUser().getPhone(), response.getUser().getPhone());
+      assertTrue(response.getUser().getVerifiedPhone());
+      assertEquals(expectedResponse.getUser().getPicture(), response.getUser().getPicture());
+      assertEquals(expectedResponse.getUser().getRoleNames(), response.getUser().getRoleNames());
     }
   }
 
@@ -704,8 +762,8 @@ public class UserServiceImplTest {
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      MagicLinkTestUserResponse response =
-          userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.EMAIL);
+      MagicLinkTestUserResponse response = userService.generateMagicLinkForTestUser("someLoginId", mockUrl,
+          DeliveryMethod.EMAIL);
       Assertions.assertThat(response.getLink()).isEqualTo("link");
     }
   }
@@ -787,9 +845,9 @@ public class UserServiceImplTest {
     String phone = "+1-555-555-5555";
     List<String> additionalLoginIds = Arrays.asList(TestUtils.getRandomName("u-"), TestUtils.getRandomName("u-"));
     // Create
-    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().email(email)
-        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test")
-        .additionalLoginIds(additionalLoginIds).build());
+    UserResponseDetails createResponse = userService.create(loginId,
+        UserRequest.builder().email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
+            .displayName("Testing Test").additionalLoginIds(additionalLoginIds).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -854,6 +912,12 @@ public class UserServiceImplTest {
     }
     assertTrue(found);
     assertTrue(searchResponse.getTotal() > 0);
+    PatchUserRequest pur = new PatchUserRequest();
+    pur.setFamilyName("hurray patch works");
+    userService.patch(newLoginId, pur);
+
+    loadResponse = userService.loadByUserId(createResponse.getUser().getUserId());
+    assertEquals(loadResponse.getUser().getFamilyName(), pur.getFamilyName());
     // Delete
     userService.delete(newLoginId);
   }
@@ -864,9 +928,8 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    UserResponseDetails createResponse = userService.createTestUser(loginId, UserRequest.builder()
-        .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
-        .displayName("Testing Test").build());
+    UserResponseDetails createResponse = userService.createTestUser(loginId, UserRequest.builder().email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
@@ -918,7 +981,7 @@ public class UserServiceImplTest {
         UserRequest.builder().email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
             .displayName("Testing Test")
             .userTenants(
-              Arrays.asList(AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName)).build()))
+                Arrays.asList(AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName)).build()))
             .build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
@@ -929,12 +992,11 @@ public class UserServiceImplTest {
     assertEquals(true, user.getVerifiedPhone());
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
-    assertThat(user.getUserTenants()).containsExactly(
-        AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName).roleNames(
-          Arrays.asList(roleName)).build());
+    assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
+        .tenantName(tenantName).roleNames(Arrays.asList(roleName)).build());
     UserResponseDetails updateResponse = userService.update(loginId,
-        UserRequest.builder().roleNames(Arrays.asList(roleName)).email(email).verifiedEmail(true)
-            .phone(phone).verifiedPhone(true).displayName("Testing Test").build());
+        UserRequest.builder().roleNames(Arrays.asList(roleName)).email(email).verifiedEmail(true).phone(phone)
+            .verifiedPhone(true).displayName("Testing Test").build());
     user = updateResponse.getUser();
     assertNotNull(user);
     assertThat(user.getRoleNames()).containsExactly(roleName);
@@ -1003,8 +1065,8 @@ public class UserServiceImplTest {
     String phone = "+1-555-555-" + randomSaffix;
     String cleanPhone = "+1555555" + randomSaffix;
     // Create
-    UserResponseDetails createResponse = userService.create(phone, UserRequest.builder().phone(phone)
-        .verifiedPhone(true).displayName("Testing Test").build());
+    UserResponseDetails createResponse = userService.create(phone,
+        UserRequest.builder().phone(phone).verifiedPhone(true).displayName("Testing Test").build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(cleanPhone);
@@ -1033,19 +1095,11 @@ public class UserServiceImplTest {
     SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
     byte[] hash = factory.generateSecret(spec).getEncoded();
 
-    UsersBatchResponse res = userService.createBatch(Arrays.asList(BatchUserRequest.builder()
-        .loginId(loginId)
-        .email(email)
-        .verifiedEmail(true)
-        .phone(phone)
-        .verifiedPhone(true)
-        .displayName(name)
+    UsersBatchResponse res = userService.createBatch(Arrays.asList(BatchUserRequest.builder().loginId(loginId)
+        .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true).displayName(name)
         .hashedPassword(BatchUserPasswordHashed.builder()
-            .algorithm(BatchUserPasswordAlgorithm.BATCH_USER_PASSWORD_ALGORITHM_PBKDF2SHA1)
-            .hash(hash)
-            .salt(salt)
-            .iterations(65536)
-            .build())
+            .algorithm(BatchUserPasswordAlgorithm.BATCH_USER_PASSWORD_ALGORITHM_PBKDF2SHA1).hash(hash).salt(salt)
+            .iterations(65536).build())
         .build()));
     assertNotNull(res);
     assertNotNull(res.getCreatedUsers());
@@ -1065,13 +1119,8 @@ public class UserServiceImplTest {
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
     // Create
-    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder()
-        .email(email)
-        .verifiedEmail(true)
-        .phone(phone)
-        .verifiedPhone(true)
-        .displayName("Testing Test")
-        .build());
+    UserResponseDetails createResponse = userService.create(loginId, UserRequest.builder().email(email)
+        .verifiedEmail(true).phone(phone).verifiedPhone(true).displayName("Testing Test").build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
