@@ -34,4 +34,8 @@ public class OIDCApplicationRequest {
    * The URL where login page is hosted.
    */
   private String loginPageUrl;
+  /**
+   * Optional determine if the IdP should force the user to re-authenticate.
+   */
+  private Boolean forceAuthentication;
 }
