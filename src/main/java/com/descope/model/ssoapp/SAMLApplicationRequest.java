@@ -79,4 +79,16 @@ public class SAMLApplicationRequest {
    * "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified".
    */
   private String subjectNameIdFormat;
+  /**
+   * Optional default relay state value that will be used in the SAML request.
+   */
+  private String defaultRelayState;
+  /**
+   * Optional determine if the IdP should force the user to re-authenticate.
+   */
+  private Boolean forceAuthentication;
+  /**
+   * Optional Target URL to which the user will be redirected upon logout completion.
+   */
+  private String logoutRedirectURL;
 }

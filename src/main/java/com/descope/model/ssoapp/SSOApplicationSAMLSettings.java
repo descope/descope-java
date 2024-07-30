@@ -26,4 +26,8 @@ public class SSOApplicationSAMLSettings {
   private List<String> acsAllowedCallbacks;
   private String subjectNameIdType;
   private String subjectNameIdFormat;
+  private String defaultRelayState;
+  private Boolean forceAuthentication;
+  private String idpLogoutUrl;
+  private String logoutRedirectURL;
 }
