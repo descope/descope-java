@@ -25,4 +25,6 @@ public class UserSearchRequest {
   List<UserStatus> statuses;
   List<String> emails;
   List<String> phones;
+  List<String> loginIds;
+  List<String> ssoAppIds;
 }
