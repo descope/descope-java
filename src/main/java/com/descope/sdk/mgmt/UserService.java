@@ -4,6 +4,7 @@ import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.user.request.BatchUserRequest;
+import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -90,6 +91,7 @@ public interface UserService {
    *
    * <p>IMPORTANT: All parameters will override whatever values are currently set in the existing
    * user. Use carefully.
+   * Instead, use Patch if you don't want to pass all parameters.
    *
    * @param loginId The loginID is required and will determine what the user will use to sign in,
    *     make sure the login id is unique for test.
@@ -99,6 +101,18 @@ public interface UserService {
    *     thrown.
    */
   UserResponseDetails update(String loginId, UserRequest request) throws DescopeException;
+
+  /**
+   * Patches an existing user.
+   * 
+   * <p>Only the fields that are set in the request will be updated.
+   *
+   * @param loginId The loginID is required and will determine which user to update.
+   * @param request The request containing the fields to be updated. Fields not set will remain unchanged.
+   * @return {@link UserResponseDetails UserResponseDetails} containing the updated user details.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  UserResponseDetails patch(String loginId, PatchUserRequest request) throws DescopeException;
 
   /**
    * Logout user from all devices.

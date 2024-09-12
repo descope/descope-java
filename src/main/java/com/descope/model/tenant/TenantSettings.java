@@ -1,5 +1,6 @@
 package com.descope.model.tenant;
 
+import com.descope.enums.TenantAuthType;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -23,4 +24,7 @@ public class TenantSettings {
   Boolean enableInactivity;
   Integer inactivityTime;
   String inactivityTimeUnit;
+  @JsonAlias({"JITDisabled"})
+  Boolean jitDisabled;
+  TenantAuthType authType; // authType can be either "oidc" or "saml"
 }

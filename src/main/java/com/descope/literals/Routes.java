@@ -85,6 +85,7 @@ public class Routes {
     // User
     public static final String CREATE_USER_LINK = "/v1/mgmt/user/create";
     public static final String CREATE_USERS_BATCH_LINK = "/v1/mgmt/user/create/batch";
+    public static final String PATCH_USER_LINK = "/v1/mgmt/user/patch";
     public static final String UPDATE_USER_LINK = "/v1/mgmt/user/update";
     public static final String DELETE_USER_LINK = "/v1/mgmt/user/delete";
     public static final String DELETE_ALL_TEST_USERS_LINK = "/v1/mgmt/user/test/delete/all";
@@ -125,7 +126,7 @@ public class Routes {
     public static final String LOAD_ALL_TENANTS_LINK = "/v1/mgmt/tenant/all";
     public static final String TENANT_SEARCH_ALL_LINK = "/v1/mgmt/tenant/search";
     public static final String GET_TENANT_SETTINGS_LINK = "/v1/mgmt/tenant/settings";
-    
+
     // SSO
     public static final String SSO_GET_SETTINGS_LINK = "/v1/mgmt/sso/settings";
     public static final String SSO_DELETE_SETTINGS_LINK = "/v1/mgmt/sso/settings";

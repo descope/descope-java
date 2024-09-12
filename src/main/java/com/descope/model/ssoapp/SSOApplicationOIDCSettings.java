@@ -13,4 +13,5 @@ public class SSOApplicationOIDCSettings {
   private String loginPageUrl;
   private String issuer;
   private String discoveryUrl;
+  private Boolean forceAuthentication;
 }
