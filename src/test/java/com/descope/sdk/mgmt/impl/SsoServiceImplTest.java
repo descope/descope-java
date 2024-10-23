@@ -291,6 +291,8 @@ class SsoServiceImplTest {
         .spEncryptionKey(TestUtils.MOCK_PRIVATE_KEY_STRING)
         .spSignKey(TestUtils.MOCK_PRIVATE_KEY_STRING)
         .subjectNameIdFormat(unspecifiedFormat)
+        .spACSUrl("https://spacsurl.com")
+        .spEntityId("spEntityId")
         .build(), "https://" + name + ".com", null);
     SSOTenantSettingsResponse resp = ssoService.loadSettings(tenantId);
     assertEquals(tenantId, resp.getTenant().getId());
@@ -307,6 +309,8 @@ class SsoServiceImplTest {
     assertThat(signCert).isNotBlank();
     assertThat(newSignCert).isNotEqualTo(signCert);
     assertThat(unspecifiedFormat).isEqualTo(resp.getSaml().getSubjectNameIdFormat());
+    assertEquals("https://spacsurl.com", resp.getSaml().getSpACSUrl());
+    assertEquals("spEntityId", resp.getSaml().getSpEntityId());
     ssoService.deleteSettings(tenantId);
     tenantService.delete(tenantId);
   }
