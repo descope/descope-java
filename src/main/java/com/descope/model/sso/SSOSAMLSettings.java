@@ -19,4 +19,8 @@ public class SSOSAMLSettings {
   private String spEncryptionKey;
   private String spSignKey;
   private String subjectNameIdFormat;
+  // NOTICE - the following fields should be overridden only in case of SSO migration,
+  //          otherwise, do not modify these fields
+  private String spACSUrl;
+  private String spEntityId;
 }
