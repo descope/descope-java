@@ -928,26 +928,6 @@ try {
     // Handle the error
 }
 
-
-public class SSOOIDCSettings {
-  private String name;
-  private String clientId;
-  private String clientSecret;
-  private String redirectUrl;
-  private String authUrl;
-  private String tokenUrl;
-  private String userDataUrl;
-  private List<String> scope;
-  @JsonProperty("JWKsUrl")
-  private String jwksUrl;
-  private OIDCAttributeMapping userAttrMapping;
-  private Boolean manageProviderTokens;
-  private String callbackDomain;
-  private List<String> prompt;
-  private String grantType;
-  private String issuer;
-}
-
 // Configure SSO - OIDC
 String name = "Provider"; // Name of the provider
 String clientId = "<oidc-client-id>"; // The client id set on the IdP
