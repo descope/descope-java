@@ -944,7 +944,7 @@ List<String> domains = Arrays.asList("domain.com"); // Users logging in from thi
 SSOOIDCSettings oidcSettings = new SSOOIDCSettings(name, clientId, clientSecret, redirectUrl, authUrl, tokenUrl, userDataUrl, scope, grantType);
 
 try {
-    ss.configureSAMLSettingsByMetadata(tenantId, oidcSettings, domains);
+    ss.configureOIDCSettings(tenantId, oidcSettings, domains);
 } catch (DescopeException de) {
     // Handle the error
 }
