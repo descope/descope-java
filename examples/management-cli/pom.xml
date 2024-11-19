@@ -12,34 +12,34 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <org.projectlombok.version>1.18.28</org.projectlombok.version>
+        <org.projectlombok.version>1.18.36</org.projectlombok.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.descope</groupId>
             <artifactId>java-sdk</artifactId>
-            <version>1.0.30</version>
+            <version>[1.0.0,)</version>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>4.7.4</version>
+            <version>4.7.6</version>
         </dependency>
         <dependency>
             <artifactId>jackson-databind</artifactId>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <version>2.15.2</version>
+            <version>2.18.1</version>
         </dependency>
         <dependency>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <groupId>com.fasterxml.jackson.datatype</groupId>
-            <version>2.15.2</version>
+            <version>2.18.1</version>
         </dependency>
         <dependency>
             <artifactId>commons-lang3</artifactId>
             <groupId>org.apache.commons</groupId>
-            <version>3.12.0</version>
+            <version>3.17.0</version>
         </dependency>
 
         <!--  LOMBOK  -->
@@ -55,7 +55,7 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <groupId>org.apache.maven.plugins</groupId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -71,6 +71,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.3.5</version>
                 <configuration>
                     <mainClass>com.descope.ManagementCLI</mainClass>
                     <layout>JAR</layout>

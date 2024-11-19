@@ -21,7 +21,6 @@ public class UserUpdate extends UserChangeBase implements Callable<Integer> {
           .phone(phone)
           .verifiedEmail(true)
           .verifiedPhone(true)
-          .invite(false)
           .build();
       userService.update(loginId, req);
       System.out.printf("User %s updated\n", loginId);

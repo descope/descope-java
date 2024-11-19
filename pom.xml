@@ -9,7 +9,7 @@
     <description>Java library used to integrate with Descope.</description>
     <url>https://github.com/descope/descope-java</url>
     <properties>
-        <org.projectlombok.version>1.18.28</org.projectlombok.version>
+        <org.projectlombok.version>1.18.36</org.projectlombok.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -64,17 +64,17 @@
         <dependency>
             <artifactId>log4j-api</artifactId>
             <groupId>org.apache.logging.log4j</groupId>
-            <version>2.20.0</version>
+            <version>2.24.1</version>
         </dependency>
         <dependency>
             <artifactId>log4j-core</artifactId>
             <groupId>org.apache.logging.log4j</groupId>
-            <version>2.20.0</version>
+            <version>2.24.1</version>
         </dependency>
         <dependency>
             <artifactId>log4j-slf4j-impl</artifactId>
             <groupId>org.apache.logging.log4j</groupId>
-            <version>2.20.0</version>
+            <version>2.24.1</version>
         </dependency>
 
         <!--  DOTENV-->
@@ -89,7 +89,7 @@
             <artifactId>assertj-core</artifactId>
             <groupId>org.assertj</groupId>
             <scope>test</scope>
-            <version>3.24.2</version>
+            <version>3.26.3</version>
         </dependency>
         <dependency>
             <artifactId>junit-jupiter</artifactId>
@@ -100,44 +100,44 @@
         <dependency>
             <groupId>org.junit-pioneer</groupId>
             <artifactId>junit-pioneer</artifactId>
-            <version>1.9.1</version>
+            <version>2.3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <artifactId>mockito-junit-jupiter</artifactId>
             <groupId>org.mockito</groupId>
             <scope>test</scope>
-            <version>4.11.0</version>
+            <version>5.14.2</version>
         </dependency>
         <dependency>
-            <artifactId>mockito-inline</artifactId>
+            <artifactId>mockito-core</artifactId>
             <groupId>org.mockito</groupId>
             <scope>test</scope>
-            <version>4.11.0</version>
+            <version>5.14.2</version>
         </dependency>
         <dependency>
             <groupId>uk.org.webcompere</groupId>
             <artifactId>system-stubs-core</artifactId>
-            <version>2.0.2</version>
+            <version>2.1.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>uk.org.webcompere</groupId>
             <artifactId>system-stubs-jupiter</artifactId>
-            <version>2.0.2</version>
+            <version>2.1.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.16.0</version>
+            <version>1.17.1</version>
             <scope>test</scope>
         </dependency>
         <!--  UTILS  -->
         <dependency>
             <artifactId>commons-lang3</artifactId>
             <groupId>org.apache.commons</groupId>
-            <version>3.12.0</version>
+            <version>3.17.0</version>
         </dependency>
         <dependency>
             <artifactId>commons-collections4</artifactId>
@@ -147,7 +147,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.14.0</version>
+            <version>2.17.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
@@ -157,12 +157,12 @@
         <dependency>
             <artifactId>jackson-databind</artifactId>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <version>2.18.0</version>
+            <version>2.18.1</version>
         </dependency>
         <dependency>
             <artifactId>jackson-dataformat-yaml</artifactId>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <version>2.18.0</version>
+            <version>2.18.1</version>
         </dependency>
     </dependencies>
     <build>
@@ -198,7 +198,7 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <groupId>org.apache.maven.plugins</groupId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -222,7 +222,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -234,7 +234,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.5.2</version>
             </plugin>
         </plugins>
     </build>
@@ -262,7 +262,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.13</version>
+                        <version>1.6.14</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
@@ -273,7 +273,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.0</version>
+                        <version>3.3.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -302,7 +302,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.2.7</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
