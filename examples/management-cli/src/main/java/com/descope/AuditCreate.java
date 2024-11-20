@@ -3,6 +3,7 @@ package com.descope;
 import com.descope.client.DescopeClient;
 import com.descope.enums.AuditType;
 import com.descope.exception.DescopeException;
+import com.descope.model.audit.AuditCreateRequest;
 import com.descope.model.audit.AuditSearchRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +37,7 @@ public class AuditCreate extends HelpBase implements Callable<Integer> {
   public Integer call() throws JsonProcessingException {
     int exitCode = 0;
     try {
-      var builder = AuditCreate.builder();
+      var builder = AuditCreateRequest.builder();
       if (StringUtils.isNotBlank(userId)) {
         builder.userId(userId);
       }
@@ -50,7 +51,7 @@ public class AuditCreate extends HelpBase implements Callable<Integer> {
         builder.action(action);
       }
       if (StringUtils.isNotBlank(tenant)) {
-        builder.tenant(tenant);
+        builder.tenantId(tenant);
       }
       var client = new DescopeClient();
       var auditService = client.getManagementServices().getAuditService();
