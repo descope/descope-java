@@ -25,7 +25,6 @@ public class UserCreate extends UserChangeBase implements Callable<Integer> {
           .phone(phone)
           .verifiedEmail(true)
           .verifiedPhone(true)
-          .invite(false)
           .build();
       if (test) {
         var res = userService.createTestUser(loginId, req);

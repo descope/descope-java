@@ -19,7 +19,7 @@ Using [maven](https://maven.apache.org) add the following dependency to your pom
     <dependency>
         <artifactId>java-sdk</artifactId>
         <groupId>com.descope</groupId>
-        <version>1.0</version>
+        <version>[1.0.0,)</version>
     </dependency>
     ...
 </dependencies>
