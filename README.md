@@ -890,38 +890,61 @@ You can manage SSO settings and map SSO group roles and user attributes.
 SsoService ss = descopeClient.getManagementServices().getSsoService();
 // You can get SSO settings for a specific tenant ID
 try {
-    SSOSettingsResponse resp = ss.getSettings("tenant-id");
+    SSOSettingsResponse resp = ss.loadSettings("tenant-id");
 } catch (DescopeException de) {
     // Handle the error
 }
 
-// You can configure SSO settings manually by setting the required fields directly
+// Configure SSO - SAML
 String tenantId = "tenant-id"; // Which tenant this configuration is for
 String idpUrl = "https://idp.com";
 String entityId = "my-idp-entity-id";
 String idpCert = "<your-cert-here>";
+String idpMetadataUrl = "https://idp.com/metadata";
 String redirectUrl = "https://my-app.com/handle-saml"; // Global redirect URL for SSO/SAML
 List<String> domains = Arrays.asList("domain.com"); // Users logging in from this domain will be logged in to this tenant
-
-try {
-    ss.configureSettings(tenantId, idpUrl, idpCert, entityId, redirectUrl, domains);
-} catch (DescopeException de) {
-    // Handle the error
-}
-
-// Alternatively, configure using an SSO metadata URL
-try {
-    ss.configureMetadata(tenantId, "https://idp.com/my-idp-metadata");
-} catch (DescopeException de) {
-    // Handle the error
-}
 
 // Map IDP groups to Descope roles, or map user attributes.
 // This function overrides any previous mapping (even when empty). Use carefully.
 List<RoleMapping> rm = Arrays.asList(new RoleMapping(Arrays.asList("Groups"), "Tenant Role"));
 AttributeMapping am = new AttributeMapping("Tenant Name", "Tenant Email", "Tenant Phone Num", "Tenant Group");
+
+
+// Using Manual Configuration
+SSOSAMLSettings manualSettings = new SSOSAMLSettings(idpUrl, entityId, idpCert, am, rm);
+
 try {
-    ss.configureMapping(tenantId, rm, am);
+    ss.configureSAMLSettings(tenantId, manualSettings, domains);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Using metadata URL
+SSOSAMLSettingsByMetadata metadataSettings = new SSOSAMLSettingsByMetadata(idpMetadataUrl ,am, rm);
+
+try {
+    ss.configureSAMLSettingsByMetadata(tenantId, metadataSettings, domains);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Configure SSO - OIDC
+String name = "Provider"; // Name of the provider
+String clientId = "<oidc-client-id>"; // The client id set on the IdP
+String clientSecret = "<oidc-client-secret>"; // The client secret on the IdP
+String redirectUrl = "https://my-app.com/redirect"; // Optional - a custom redirect url
+String authUrl = "https://idp.com/auth"; // The IdP's authentication endpoint
+String tokenUrl = "https://idp.com/token"; // The IdP's token endpoint
+String userDataUrl = "https://idp.com/user"; // The IdP's user endpoint
+List<String> scope = Arrays.asList("openid", "profile"); // The scopes
+String grantType = "implicit"; // The grant type
+List<String> domains = Arrays.asList("domain.com"); // Users logging in from this domain will be logged in to this tenant
+
+
+SSOOIDCSettings oidcSettings = new SSOOIDCSettings(name, clientId, clientSecret, redirectUrl, authUrl, tokenUrl, userDataUrl, scope, grantType);
+
+try {
+    ss.configureOIDCSettings(tenantId, oidcSettings, domains);
 } catch (DescopeException de) {
     // Handle the error
 }
