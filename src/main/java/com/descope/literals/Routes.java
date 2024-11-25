@@ -100,7 +100,7 @@ public class Routes {
     public static final String UPDATE_CUSTOM_ATTRIBUTE_LINK = "/v1/mgmt/user/update/customAttribute";
     public static final String UPDATE_USER_LOGIN_ID_LINK = "/v1/mgmt/user/update/loginid";
     public static final String USER_SET_ROLES_LINK = "/v1/mgmt/user/update/role/set";
-    public static final String USER_ADD_ROLES_LINK = "/v1/mgmt/user/update/role/add";
+    public static final String USER_ADD_ROLES_LINK = "/v2/mgmt/user/update/role/add";
     public static final String USER_REMOVE_ROLES_LINK = "/v1/mgmt/user/update/role/remove";
     public static final String USER_SET_SSO_APPS_LINK = "/v1/mgmt/user/update/ssoapp/set";
     public static final String USER_ADD_SSO_APPS_LINK = "/v1/mgmt/user/update/ssoapp/add";
