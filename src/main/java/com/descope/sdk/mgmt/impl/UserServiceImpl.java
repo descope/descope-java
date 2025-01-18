@@ -102,8 +102,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails createTestUser(String loginId, UserRequest request)
-      throws DescopeException {
+  public UserResponseDetails createTestUser(String loginId, UserRequest request) throws DescopeException {
     if (request == null) {
       request = new UserRequest();
     }
@@ -127,6 +126,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       addIfNotBlank(req, "inviteUrl", options.getInviteUrl());
       addIfNotNull(req, "sendSMS", options.getSendSMS());
       addIfNotNull(req, "sendEmail", options.getSendEmail());
+      addIfNotNull(req, "templateId", options.getTemplateId());
     }
     req.putAll(request.toMap());
     URI createUserUri = composeCreateUserUri();
@@ -241,8 +241,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public AllUsersResponseDetails searchAll(UserSearchRequest request)
-      throws DescopeException {
+  public AllUsersResponseDetails searchAll(UserSearchRequest request) throws DescopeException {
     if (request == null) {
       request = UserSearchRequest.builder().limit(0).page(0).build();
     }
@@ -281,8 +280,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified)
-      throws DescopeException {
+  public UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -293,8 +291,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified)
-      throws DescopeException {
+  public UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -305,8 +302,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails updateDisplayName(String loginId, String displayName)
-      throws DescopeException {
+  public UserResponseDetails updateDisplayName(String loginId, String displayName) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -317,8 +313,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails updateDisplayNames(String loginId, String givenName, String middleName,
-      String familyName) throws DescopeException {
+  public UserResponseDetails updateDisplayNames(String loginId, String givenName, String middleName, String familyName)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -341,8 +337,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails updateCustomAttributes(String loginId, String key, Object value)
-      throws DescopeException {
+  public UserResponseDetails updateCustomAttributes(String loginId, String key, Object value) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -389,8 +384,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails removeRoles(String loginId, List<String> roles)
-      throws DescopeException {
+  public UserResponseDetails removeRoles(String loginId, List<String> roles) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -543,8 +537,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public ProviderTokenResponse getProviderToken(String loginId, String provider)
-      throws DescopeException {
+  public ProviderTokenResponse getProviderToken(String loginId, String provider) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -569,9 +562,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public MagicLinkTestUserResponse generateMagicLinkForTestUser(
-      String loginId, String uri, DeliveryMethod deliveryMethod)
-      throws DescopeException {
+  public MagicLinkTestUserResponse generateMagicLinkForTestUser(String loginId, String uri,
+      DeliveryMethod deliveryMethod) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -582,8 +574,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(
-      String loginId, String uri) throws DescopeException {
+  public EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(String loginId, String uri)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -599,12 +591,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throw ServerCommonException.invalidArgument("User IDs");
     }
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.postAndGetArray(getUri(USER_HISTORY_LINK), userIds,
-      new TypeReference<List<UserHistoryResponse>>() {});
+    return apiProxy.postAndGetArray(getUri(USER_HISTORY_LINK), userIds, new TypeReference<List<UserHistoryResponse>>() {
+    });
   }
 
-  public String generateEmbeddedLink(
-      String loginId, Map<String, Object> customClaims) throws DescopeException {
+  public String generateEmbeddedLink(String loginId, Map<String, Object> customClaims) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
