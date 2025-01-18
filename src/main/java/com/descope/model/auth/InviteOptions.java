@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InviteOptions {
   private String inviteUrl;
+  private String templateId;
   private Boolean sendEmail;
   private Boolean sendSMS;
 }
