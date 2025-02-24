@@ -1,6 +1,9 @@
 package com.descope.model.user.request;
 
 import com.descope.enums.UserStatus;
+import com.descope.utils.InstantToMillisSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -27,4 +30,16 @@ public class UserSearchRequest {
   List<String> phones;
   List<String> loginIds;
   List<String> ssoAppIds;
+  /** Retrieve only users created after the given time. */
+  @JsonSerialize(using = InstantToMillisSerializer.class)
+  Instant fromCreatedTime;
+  /** Retrieve only users created before the given time. */
+  @JsonSerialize(using = InstantToMillisSerializer.class)
+  Instant toCreatedTime;
+  /** Retrieve only users updated after the given time. */
+  @JsonSerialize(using = InstantToMillisSerializer.class)
+  Instant fromModifiedTime;
+  /** Retrieve only users updated before the given time. */
+  @JsonSerialize(using = InstantToMillisSerializer.class)
+  Instant toModifiedTime;
 }
