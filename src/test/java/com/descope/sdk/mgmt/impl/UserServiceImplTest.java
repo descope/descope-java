@@ -54,6 +54,8 @@ import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -902,7 +904,8 @@ public class UserServiceImplTest {
     assertEquals(true, user.getVerifiedPhone());
     assertEquals("Testing Test", user.getName());
     assertEquals("enabled", user.getStatus());
-    AllUsersResponseDetails searchResponse = userService.searchAll(null);
+    AllUsersResponseDetails searchResponse = userService.searchAll(
+        UserSearchRequest.builder().fromCreatedTime(Instant.now().minus(Duration.ofMinutes(5))).build());
     boolean found = false;
     for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
