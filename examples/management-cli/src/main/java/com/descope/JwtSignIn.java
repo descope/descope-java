@@ -3,13 +3,7 @@ package com.descope;
 import com.descope.client.DescopeClient;
 import com.descope.exception.DescopeException;
 import com.descope.model.magiclink.LoginOptions;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.concurrent.Callable;
-import org.apache.commons.lang3.StringUtils;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 

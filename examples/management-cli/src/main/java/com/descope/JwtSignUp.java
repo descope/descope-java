@@ -4,11 +4,10 @@ import com.descope.client.DescopeClient;
 import com.descope.exception.DescopeException;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.user.User;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-
 import java.util.Map;
 import java.util.concurrent.Callable;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 @Command(name = "jwt-signup", description = "Sign up and receive verified JWT")
 public class JwtSignUp extends HelpBase implements Callable<Integer> {

@@ -87,8 +87,6 @@ class JwtServiceImplSignInSignUpTest {
   @Test
   void signIn_shouldReturnAuthenticationInfo_whenValidJWT() throws DescopeException {
     // Given
-    String loginId = "mario@descope.com";
-    LoginOptions loginOptions = new LoginOptions();
     String validJwt = MOCK_JWT_RESPONSE.getSessionJwt();
     String validRefreshJwt = MOCK_JWT_RESPONSE.getRefreshJwt();
     mockedJwtUtils.when(() -> JwtUtils.getToken(eq(validJwt), any())).thenReturn(MOCK_SESSION_TOKEN);
@@ -99,6 +97,8 @@ class JwtServiceImplSignInSignUpTest {
     when(apiProxy.post(any(URI.class), any(ManagementSignInRequest.class), eq(JWTResponse.class)))
         .thenReturn(mockResponse);
     // When
+    String loginId = "mario@descope.com";
+    LoginOptions loginOptions = new LoginOptions();
     AuthenticationInfo authInfo = jwtService.signIn(loginId, loginOptions);
     // Then
     assertNotNull(authInfo);
