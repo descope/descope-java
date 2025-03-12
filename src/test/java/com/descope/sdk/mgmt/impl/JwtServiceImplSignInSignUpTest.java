@@ -1,11 +1,18 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.sdk.TestUtils.*;
+import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
+import static com.descope.sdk.TestUtils.TENANTS_AUTHZ;
 import static com.descope.utils.CollectionUtils.mapOf;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.DescopeException;
@@ -23,11 +30,9 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.JwtService;
 import com.descope.utils.JwtUtils;
-
 import java.net.URI;
 import java.util.Arrays;
 import java.util.stream.Stream;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
