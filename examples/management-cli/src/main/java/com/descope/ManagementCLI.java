@@ -6,33 +6,36 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 @Command(name = "management-cli", subcommands = {
-  UserCreate.class,
-  UserUpdate.class,
-  UserDelete.class,
-  UserLoad.class,
-  UserSearch.class,
-  AccessKeyCreate.class,
-  AccessKeyUpdate.class,
-  AccessKeyDelete.class,
-  AccessKeyLoad.class,
-  AccessKeySearch.class,
-  TenantCreate.class,
-  TenantLoad.class,
-  TenantUpdate.class,
-  TenantDelete.class,
-  PermissionCreate.class,
-  PermissionUpdate.class,
-  PermissionDelete.class,
-  PermissionLoadAll.class,
-  RoleCreate.class,
-  RoleDelete.class,
-  RoleUpdate.class,
-  RoleLoadAll.class,
-  AuditSearch.class,
-  AuditCreate.class
+    UserCreate.class,
+    UserUpdate.class,
+    UserDelete.class,
+    UserLoad.class,
+    UserSearch.class,
+    AccessKeyCreate.class,
+    AccessKeyUpdate.class,
+    AccessKeyDelete.class,
+    AccessKeyLoad.class,
+    AccessKeySearch.class,
+    TenantCreate.class,
+    TenantLoad.class,
+    TenantUpdate.class,
+    TenantDelete.class,
+    PermissionCreate.class,
+    PermissionUpdate.class,
+    PermissionDelete.class,
+    PermissionLoadAll.class,
+    RoleCreate.class,
+    RoleDelete.class,
+    RoleUpdate.class,
+    RoleLoadAll.class,
+    AuditSearch.class,
+    AuditCreate.class,
+    JwtSignIn.class,
+    JwtSignUp.class,
+    JwtSignUpOrIn.class
 })
 public class ManagementCLI implements Callable<Integer> {
-  @Option(names = { "-h", "--help"}, usageHelp = true, description = "show this help message and exit")
+  @Option(names = { "-h", "--help" }, usageHelp = true, description = "show this help message and exit")
   boolean help;
 
   static CommandLine cli;

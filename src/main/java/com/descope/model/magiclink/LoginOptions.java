@@ -15,4 +15,10 @@ public class LoginOptions {
   private boolean mfa;
   private Map<String, Object> customClaims;
   private Map<String, String> templateOptions;
+  private boolean revokeOtherSessions;
+  private String jwt;
+
+  public boolean isJWTRequired() {
+    return this.isStepup() || this.isMfa();
+  }
 }
