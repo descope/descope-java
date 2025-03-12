@@ -39,7 +39,6 @@ public class JwtSignUp extends HelpBase implements Callable<Integer> {
   @Override
   public Integer call() {
     try {
-      var client = new DescopeClient(); // Assume Client is properly initialized
 
       // Create User object if any user-related field is set
       User user = null;
@@ -64,6 +63,7 @@ public class JwtSignUp extends HelpBase implements Callable<Integer> {
       signUpUser.setSsoAppId(ssoAppId);
       signUpUser.setCustomClaims(customClaims);
 
+      var client = new DescopeClient(); // Assume Client is properly initialized
       var authInfo = client.getManagementServices().getJwtService().signUp(loginId, signUpUser);
 
       System.out.println("Signup successful!");
