@@ -124,7 +124,6 @@ class JwtServiceImplSignInSignUpTest {
   @MethodSource("signUpMethods")
   void signUp_shouldReturnAuthenticationInfo_whenValidJWT(String method) throws DescopeException {
     // Given
-    String loginId = "mario@descope.com";
     String validJwt = MOCK_JWT_RESPONSE.getSessionJwt();
     String validRefreshJwt = MOCK_JWT_RESPONSE.getRefreshJwt();
 
@@ -139,6 +138,7 @@ class JwtServiceImplSignInSignUpTest {
         .thenReturn(mockResponse);
 
     // When
+    String loginId = "mario@descope.com";
     AuthenticationInfo authInfo;
     if ("signUp".equals(method)) {
       authInfo = jwtService.signUp(loginId, new MgmtSignUpUser());
@@ -161,7 +161,6 @@ class JwtServiceImplSignInSignUpTest {
   @MethodSource("signInAndUpMethods")
   void signIn_shouldThrowException_whenInvalidJWT(String method) {
     // Given
-    String loginId = "user@example.com";
     JWTResponse mockResponse = new JWTResponse();
     mockResponse.setSessionJwt(null); // Simulating an invalid JWT response
     when(apiProxy.post(any(URI.class), any(ManagementSignInRequest.class), eq(JWTResponse.class)))
@@ -169,6 +168,7 @@ class JwtServiceImplSignInSignUpTest {
     when(apiProxy.post(any(URI.class), any(ManagementSignUpRequest.class), eq(JWTResponse.class)))
         .thenReturn(mockResponse);
     // When & Then
+    final String loginId = "user@example.com";
     DescopeException exception = assertThrows(ClientFunctionalException.class, () -> {
       switch (method) {
         case "signIn":
