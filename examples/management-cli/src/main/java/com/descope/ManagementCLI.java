@@ -35,6 +35,7 @@ public class ManagementCLI implements Callable<Integer> {
   @Option(names = { "-h", "--help"}, usageHelp = true, description = "show this help message and exit")
   boolean help;
 
+  // dummy comment
   static CommandLine cli;
 
   @Override
