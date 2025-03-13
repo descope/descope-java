@@ -161,6 +161,9 @@ public class Routes {
 
     // JWT
     public static final String UPDATE_JWT_LINK = "/v1/mgmt/jwt/update";
+    public static final String MANAGEMENT_SIGN_IN = "/v1/mgmt/auth/signin";
+    public static final String MANAGEMENT_SIGN_UP = "/v1/mgmt/auth/signup";
+    public static final String MANAGEMENT_SIGN_UP_OR_IN = "/v1/mgmt/auth/signup-in";
 
     // Access key
     public static final String MANAGEMENT_ACCESS_KEY_CREATE_LINK = "/v1/mgmt/accesskey/create";

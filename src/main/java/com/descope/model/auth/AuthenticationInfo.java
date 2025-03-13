@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class AuthenticationInfo {
-  private Token token;
+  private Token token; // session token
   private Token refreshToken;
   private UserResponse user;
   private Boolean firstSeen;
