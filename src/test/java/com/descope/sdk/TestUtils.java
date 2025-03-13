@@ -81,34 +81,34 @@ public class TestUtils {
       .n(
           "w8b3KRCep717H4MdVbwYHeb0vr891Ok1BL_TmC0XFUIKjRoKsWOcUZ9BFd6wR_5mnJuE7M8ZjVQRCbRlVgnh6AsEL3JA9Z6c1TpURTIXZxSE6NbeB7IMLMn5HWW7cjbnG4WO7E1PUCT6zCcBVz6EhA925GIJpyUxuY7oqJG-6NoOltI0Ocm6M2_7OIFMzFdw42RslqyX6l-SDdo_ZLq-XtcsCVRyj2YvmXUNF4Vq1x5syPOEQ-SezkvpBcb5Szi0ULpW5CvX2ieHAeHeQ2x8gkv6Dn2AW_dllQ--ZO-QH2QkxEXlMVqilwAdbA0k6BBtSkMC-7kD3A86bGGplpzz5Q")
       .build();
-  public static final String MOCK_PRIVATE_KEY_STRING = "-----BEGIN PRIVATE KEY-----\n" + //
-            "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCME/Mz+6rLT3gZ\n" + //
-            "U3TRyvk/fGoN7qe0RFH9dvLBkwocM3HS1R9clWiXu6bx3vgSgnusHVPpuvJ94R92\n" + //
-            "WWJAZJET0Cjlvn2lTPuSXfAZ5XkJqO7skoLhVRCvOQ/AH32ULyAfiv3NlPhwXwF9\n" + //
-            "7xq4pRMDOQUhfOcoZQt25Fpsz28lkL+Aqub5p0JgsdEFMkVdxX7IpyZm6vmSKrIj\n" + //
-            "asg1Mb9+0Rzvvci5JnJN1x4Tg8eeSajALWESI4wABSi9/qhhF8alPUQWuCguzPdn\n" + //
-            "Xp8idccqczgfnp5dhoCPqVUwcZtmpFsmuZfQnmXIVIoI1HN229ndeH+i+zDtVl/G\n" + //
-            "JWRVV8m/AgMBAAECggEABtWUWJVvTFMYw3eQbAnwpjnOPNbHhOKOc4ThrDMd26lg\n" + //
-            "5M30JUK+4yRLLWLZDKIkIY4ewXkXCrA4pkAPLKAbefF+hVMJc06xuX7uz3ykLqX4\n" + //
-            "3j75tr+9PCdXDuMab+fqs89GuciKZIUmH/xR++9F4bLe/rbG2nAvooHarZNjU1xN\n" + //
-            "mPEy/lyqxJlYITsGZeP4XDD0qGCU7onpOa1ej4EqWnLWQvQVxHmwOFvEETiXHyTA\n" + //
-            "kGYjkjnhrC320KL9u/OvLdRjuiFhMP1W4XpvKTg/EEXhGooMI7mx74/mLiUcFbeq\n" + //
-            "vzsbeH1MMRZvrRT4xHXWO4MPkM3426pTxnI+mWKoyQKBgQC/DHYv5yyADdwDz7+I\n" + //
-            "rdOvYBwJMgEZqCf6knq6D/XTk8I1X0utiQOitWYMW3PqS1xcXcrLfi+Ru6dlEbwk\n" + //
-            "aFOIIiU6tURlB+8XdowpHmccUIgVL7E5X5TstQCD8pcFkds3C0OV8Uuojm3U9EWM\n" + //
-            "GDYwc8UIrHouxl2RYQyn5ns5xwKBgQC7s1n9SDqJ27FvVFcGboEFo0i23C9iXcss\n" + //
-            "K5IpsnJBYDbrQ47UumhUYB5pG7orkPxLIZkmOMP8+/qRObSx7qUrYELdlbl4lYK7\n" + //
-            "4xsvyeY2jxCJGoItKqG+BsmA5TOOcHJ55wga9tcRa89ZFkSJqXUMYd8XswIYo4jN\n" + //
-            "sUZJu6kwSQKBgCEQOQwFSBBJVcBbHdy7qJz7Vx7IRqR4E6Mr4o184aBiPAQcn+5C\n" + //
-            "fhyUpDqTQTZVIIDjwosBJZ5lCY1WSmdKnto6fpLweAu8GcbHv24GUvX1gfeYr2Us\n" + //
-            "g4uLr7EmNLjEC1o1WtcCUYO0UpG+TKL4Nbig8IKVxvd9YQgd8aDFJKJVAoGAbVCO\n" + //
-            "4Evoi9E/DS95X22MBtSJzLV/gzJM2XSms1IR6LE4StwVmx7VFA7Gp0BWtHjD9p2i\n" + //
-            "q/fzbKrzyxBohBgQaaquRo6kbe3lLbeeZb6YLL41SyP9HIDvodQiFsdlt1cV1JkQ\n" + //
-            "x2Nq7eJz59ZoJCRk3slBPHQsjFzxl5ne7aI1bsECgYBmYUaBVLyycj1NaTeKAVED\n" + //
-            "gYyGRvuYEvffrhFLIzgvrm32hUAbaQ7GJ/LlJZ1jzLSrj1zKPp7WwZiGZwUrWO+v\n" + //
-            "zOJQZ3JvnxGrhCOPOcirAyVXuQB3cUhSLSqCZlppaH4grJiAy4Hsmym3bPn2C1OU\n" + //
-            "0tlYYB3U3TigQoZxseUNOw==\n" + //
-            "-----END PRIVATE KEY-----\n";
+  public static final String MOCK_PRIVATE_KEY_STRING = "-----BEGIN PRIVATE KEY-----\n"
+          + "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCME/Mz+6rLT3gZ\n"
+          + "U3TRyvk/fGoN7qe0RFH9dvLBkwocM3HS1R9clWiXu6bx3vgSgnusHVPpuvJ94R92\n"
+          + "WWJAZJET0Cjlvn2lTPuSXfAZ5XkJqO7skoLhVRCvOQ/AH32ULyAfiv3NlPhwXwF9\n"
+          + "7xq4pRMDOQUhfOcoZQt25Fpsz28lkL+Aqub5p0JgsdEFMkVdxX7IpyZm6vmSKrIj\n"
+          + "asg1Mb9+0Rzvvci5JnJN1x4Tg8eeSajALWESI4wABSi9/qhhF8alPUQWuCguzPdn\n"
+          + "Xp8idccqczgfnp5dhoCPqVUwcZtmpFsmuZfQnmXIVIoI1HN229ndeH+i+zDtVl/G\n"
+          + "JWRVV8m/AgMBAAECggEABtWUWJVvTFMYw3eQbAnwpjnOPNbHhOKOc4ThrDMd26lg\n"
+          + "5M30JUK+4yRLLWLZDKIkIY4ewXkXCrA4pkAPLKAbefF+hVMJc06xuX7uz3ykLqX4\n"
+          + "3j75tr+9PCdXDuMab+fqs89GuciKZIUmH/xR++9F4bLe/rbG2nAvooHarZNjU1xN\n"
+          + "mPEy/lyqxJlYITsGZeP4XDD0qGCU7onpOa1ej4EqWnLWQvQVxHmwOFvEETiXHyTA\n"
+          + "kGYjkjnhrC320KL9u/OvLdRjuiFhMP1W4XpvKTg/EEXhGooMI7mx74/mLiUcFbeq\n"
+          + "vzsbeH1MMRZvrRT4xHXWO4MPkM3426pTxnI+mWKoyQKBgQC/DHYv5yyADdwDz7+I\n"
+          + "rdOvYBwJMgEZqCf6knq6D/XTk8I1X0utiQOitWYMW3PqS1xcXcrLfi+Ru6dlEbwk\n"
+          + "aFOIIiU6tURlB+8XdowpHmccUIgVL7E5X5TstQCD8pcFkds3C0OV8Uuojm3U9EWM\n"
+          + "GDYwc8UIrHouxl2RYQyn5ns5xwKBgQC7s1n9SDqJ27FvVFcGboEFo0i23C9iXcss\n"
+          + "K5IpsnJBYDbrQ47UumhUYB5pG7orkPxLIZkmOMP8+/qRObSx7qUrYELdlbl4lYK7\n"
+          + "4xsvyeY2jxCJGoItKqG+BsmA5TOOcHJ55wga9tcRa89ZFkSJqXUMYd8XswIYo4jN\n"
+          + "sUZJu6kwSQKBgCEQOQwFSBBJVcBbHdy7qJz7Vx7IRqR4E6Mr4o184aBiPAQcn+5C\n"
+          + "fhyUpDqTQTZVIIDjwosBJZ5lCY1WSmdKnto6fpLweAu8GcbHv24GUvX1gfeYr2Us\n"
+          + "g4uLr7EmNLjEC1o1WtcCUYO0UpG+TKL4Nbig8IKVxvd9YQgd8aDFJKJVAoGAbVCO\n"
+          + "4Evoi9E/DS95X22MBtSJzLV/gzJM2XSms1IR6LE4StwVmx7VFA7Gp0BWtHjD9p2i\n"
+          + "q/fzbKrzyxBohBgQaaquRo6kbe3lLbeeZb6YLL41SyP9HIDvodQiFsdlt1cV1JkQ\n"
+          + "x2Nq7eJz59ZoJCRk3slBPHQsjFzxl5ne7aI1bsECgYBmYUaBVLyycj1NaTeKAVED\n"
+          + "gYyGRvuYEvffrhFLIzgvrm32hUAbaQ7GJ/LlJZ1jzLSrj1zKPp7WwZiGZwUrWO+v\n"
+          + "zOJQZ3JvnxGrhCOPOcirAyVXuQB3cUhSLSqCZlppaH4grJiAy4Hsmym3bPn2C1OU\n"
+          + "0tlYYB3U3TigQoZxseUNOw==\n"
+          + "-----END PRIVATE KEY-----\n";
   
   private static SdkInfo getSdkInfo() {
     String name = "java";
