@@ -18,6 +18,14 @@ public class LoginOptions {
   private boolean revokeOtherSessions;
   private String jwt;
 
+  public LoginOptions(boolean stepup, boolean mfa, Map<String, Object> customClaims,
+                      Map<String, String> templateOptions) {
+    this.stepup = stepup;
+    this.mfa = mfa;
+    this.customClaims = customClaims;
+    this.templateOptions = templateOptions;
+  }
+
   public boolean isJWTRequired() {
     return this.isStepup() || this.isMfa();
   }

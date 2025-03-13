@@ -168,7 +168,7 @@ public class WebAuthnServiceImplTest {
   void testSignInStartEmptyToken() {
     ServerCommonException thrown =
         assertThrows(ServerCommonException.class,
-            () -> webAuthnService.signInStart("x", "x", null, new LoginOptions(true, false, null, null, false, null)));
+            () -> webAuthnService.signInStart("x", "x", null, new LoginOptions(true, false, null, null)));
     assertNotNull(thrown);
     assertEquals("The Token argument is invalid", thrown.getMessage());
   }
