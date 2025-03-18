@@ -29,6 +29,7 @@ public class UserSearchRequest {
   List<String> emails;
   List<String> phones;
   List<String> loginIds;
+  List<String> userIds;
   List<String> ssoAppIds;
   /** Retrieve only users created after the given time. */
   @JsonSerialize(using = InstantToMillisSerializer.class)
