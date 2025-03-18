@@ -15,10 +15,12 @@ public interface OutboundAppsService {
    * @return The requested token
    * @throws DescopeException in case of errors
    */
-  FetchOutboundAppUserTokenResponse fetchOutboundAppUserToken(FetchOutboundAppUserTokenRequest request) throws DescopeException;
+  FetchOutboundAppUserTokenResponse fetchOutboundAppUserToken(FetchOutboundAppUserTokenRequest request)
+      throws DescopeException;
 
   /**
    * Delete the outbound application token for the given ID.
+   *
    * @param id required token ID
    * @throws DescopeException in case of errors
    */
@@ -26,6 +28,7 @@ public interface OutboundAppsService {
 
   /**
    * Delete all outbound application tokens for the given user.
+   *
    * @param request required request containing user ID and app ID
    * @throws DescopeException in case of errors
    */

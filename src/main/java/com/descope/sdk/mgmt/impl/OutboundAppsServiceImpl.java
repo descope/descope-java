@@ -7,11 +7,11 @@ import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
+import com.descope.model.outbound.DeleteOutboundAppUserTokensRequest;
 import com.descope.model.outbound.FetchOutboundAppUserTokenRequest;
 import com.descope.model.outbound.FetchOutboundAppUserTokenResponse;
 import com.descope.proxy.ApiProxy;
-import com.descope.model.client.Client;
-import com.descope.model.outbound.DeleteOutboundAppUserTokensRequest;
 import com.descope.sdk.mgmt.OutboundAppsService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +23,8 @@ public class OutboundAppsServiceImpl extends ManagementsBase implements Outbound
   }
 
   @Override
-  public FetchOutboundAppUserTokenResponse fetchOutboundAppUserToken(FetchOutboundAppUserTokenRequest request) throws DescopeException {
+  public FetchOutboundAppUserTokenResponse fetchOutboundAppUserToken(FetchOutboundAppUserTokenRequest request)
+      throws DescopeException {
     if (request == null) {
       throw ServerCommonException.invalidArgument("request");
     }
