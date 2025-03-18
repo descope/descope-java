@@ -30,8 +30,9 @@ public class UserSearchRequestTest {
     String expectedJson = String.format(
         "{\"tenantIds\":[\"tenant1\"],\"roles\":[\"role1\"],\"limit\":0,\"page\":0,\"withTestUser\":null,"
         + "\"testUsersOnly\":null,\"customAttributes\":null,\"statuses\":null,\"emails\":null,\"phones\":null,"
-        + "\"loginIds\":null,\"ssoAppIds\":null,\"fromCreatedTime\":%d,\"toCreatedTime\":%d,\"fromModifiedTime\":%d,"
-        + "\"toModifiedTime\":%d}", expectedMillis, expectedMillis, expectedMillis, expectedMillis);
+        + "\"loginIds\":null,\"userIds\":null,\"ssoAppIds\":null,\"fromCreatedTime\":%d,\"toCreatedTime\":%d,"
+        + "\"fromModifiedTime\":%d,\"toModifiedTime\":%d}",
+        expectedMillis, expectedMillis, expectedMillis, expectedMillis);
 
     assertEquals(expectedJson, json);
   }
