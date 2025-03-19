@@ -217,5 +217,10 @@ public class Routes {
 
     // Password settings
     public static final String MANAGEMENT_PASSWORD_SETTINGS = "/v1/mgmt/password/settings";
+
+    // Outbound
+    public static final String MANAGEMENT_FETCH_OUTBOUND_APP_USER_TOKEN = "/v1/mgmt/outbound/app/user/token";
+    public static final String MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKEN_BY_ID = "/v1/mgmt/outbound/token";
+    public static final String MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKENS = "/v1/mgmt/outbound/tokens";
   }
 }
