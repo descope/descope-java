@@ -38,7 +38,8 @@ public class OutboundAppsServiceImpl extends ManagementsBase implements Outbound
       throw ServerCommonException.invalidArgument("scopes");
     }
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_FETCH_OUTBOUND_APP_USER_TOKEN), request, FetchOutboundAppUserTokenResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_FETCH_OUTBOUND_APP_USER_TOKEN), request, 
+      FetchOutboundAppUserTokenResponse.class);
   }
 
   @Override
