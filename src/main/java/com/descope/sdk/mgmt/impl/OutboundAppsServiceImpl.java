@@ -1,8 +1,8 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_DELETE_OUTBOUND_APP_TOKENS;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_DELETE_OUTBOUND_APP_TOKEN_BY_ID;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FETCH_OUTBOUND_APP_TOKEN;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKENS;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKEN_BY_ID;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FETCH_OUTBOUND_APP_USER_TOKEN;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
@@ -38,7 +38,7 @@ public class OutboundAppsServiceImpl extends ManagementsBase implements Outbound
       throw ServerCommonException.invalidArgument("scopes");
     }
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_FETCH_OUTBOUND_APP_TOKEN), request, FetchOutboundAppUserTokenResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_FETCH_OUTBOUND_APP_USER_TOKEN), request, FetchOutboundAppUserTokenResponse.class);
   }
 
   @Override
@@ -47,7 +47,7 @@ public class OutboundAppsServiceImpl extends ManagementsBase implements Outbound
       throw ServerCommonException.invalidArgument("id");
     }
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.delete(getUri(MANAGEMENT_DELETE_OUTBOUND_APP_TOKEN_BY_ID), mapOf("id", id), Void.class);
+    apiProxy.delete(getUri(MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKEN_BY_ID), mapOf("id", id), Void.class);
   }
 
   @Override
@@ -62,6 +62,6 @@ public class OutboundAppsServiceImpl extends ManagementsBase implements Outbound
       throw ServerCommonException.invalidArgument("userId");
     }
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.delete(getUri(MANAGEMENT_DELETE_OUTBOUND_APP_TOKENS), request, Void.class);
+    apiProxy.delete(getUri(MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKENS), request, Void.class);
   }
 }
