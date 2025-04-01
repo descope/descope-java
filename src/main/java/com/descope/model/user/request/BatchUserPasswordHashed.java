@@ -1,6 +1,5 @@
 package com.descope.model.user.request;
 
-import com.descope.enums.BatchUserPasswordAlgorithm;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,8 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BatchUserPasswordHashed {
-  BatchUserPasswordAlgorithm algorithm;
-  byte[] hash;
-  byte[] salt;
-  int iterations;
+  BatchUserPasswordBcrypt bcrypt;
+  BatchUserPasswordFirebase firebase;
+  BatchUserPasswordPbkdf2 pbkdf2;
+  BatchUserPasswordDjango django;
+  BatchUserPasswordPhpass phpass;
+  BatchUserPasswordMd5 md5;
+  BatchUserPasswordArgon2 argon2;
 }

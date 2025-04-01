@@ -16,7 +16,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.descope.enums.BatchUserPasswordAlgorithm;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.exception.RateLimitExceededException;
@@ -28,6 +27,7 @@ import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.BatchUserPasswordHashed;
+import com.descope.model.user.request.BatchUserPasswordPbkdf2;
 import com.descope.model.user.request.BatchUserRequest;
 import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.UserRequest;
@@ -904,8 +904,8 @@ public class UserServiceImplTest {
     assertEquals(true, user.getVerifiedPhone());
     assertEquals("Testing Test", user.getName());
     assertEquals("enabled", user.getStatus());
-    AllUsersResponseDetails searchResponse = userService.searchAll(
-        UserSearchRequest.builder().fromCreatedTime(Instant.now().minus(Duration.ofMinutes(5))).build());
+    AllUsersResponseDetails searchResponse = userService
+        .searchAll(UserSearchRequest.builder().fromCreatedTime(Instant.now().minus(Duration.ofMinutes(5))).build());
     boolean found = false;
     for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
@@ -1101,8 +1101,8 @@ public class UserServiceImplTest {
     UsersBatchResponse res = userService.createBatch(Arrays.asList(BatchUserRequest.builder().loginId(loginId)
         .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true).displayName(name)
         .hashedPassword(BatchUserPasswordHashed.builder()
-            .algorithm(BatchUserPasswordAlgorithm.BATCH_USER_PASSWORD_ALGORITHM_PBKDF2SHA1).hash(hash).salt(salt)
-            .iterations(65536).build())
+            .pbkdf2(BatchUserPasswordPbkdf2.builder().type("sha1").hash(hash).salt(salt).iterations(65536).build())
+            .build())
         .build()));
     assertNotNull(res);
     assertNotNull(res.getCreatedUsers());
