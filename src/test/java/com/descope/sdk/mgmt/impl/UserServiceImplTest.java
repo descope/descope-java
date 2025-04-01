@@ -1,14 +1,30 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.utils.CollectionUtils.mapOf;
+import java.security.SecureRandom;
+import java.security.spec.KeySpec;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
+import org.assertj.core.api.Assertions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.RetryingTest;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import org.mockito.MockedStatic;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -16,8 +32,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.descope.enums.BatchUserPasswordAlgorithm;
 import com.descope.enums.DeliveryMethod;
+import com.descope.enums.Pbkdf2Type;
 import com.descope.exception.DescopeException;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
@@ -52,21 +68,7 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
-import java.security.SecureRandom;
-import java.security.spec.KeySpec;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.RetryingTest;
-import org.mockito.MockedStatic;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 public class UserServiceImplTest {
 
@@ -1100,9 +1102,7 @@ public class UserServiceImplTest {
 
     UsersBatchResponse res = userService.createBatch(Arrays.asList(BatchUserRequest.builder().loginId(loginId)
         .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true).displayName(name)
-        .hashedPassword(BatchUserPasswordHashed.builder()
-            .algorithm(BatchUserPasswordAlgorithm.BATCH_USER_PASSWORD_ALGORITHM_PBKDF2SHA1).hash(hash).salt(salt)
-            .iterations(65536).build())
+        .hashedPassword(BatchUserPasswordHashed.pbkdf2(hash, salt, 65536, Pbkdf2Type.SHA256))
         .build()));
     assertNotNull(res);
     assertNotNull(res.getCreatedUsers());
