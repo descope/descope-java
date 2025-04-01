@@ -22,8 +22,8 @@ class OAuthServiceImpl extends AuthenticationServiceImpl implements OAuthService
     super(client);
   }
 
-  protected String startWithUrl(String url, String provider, String redirectURL, LoginOptions loginOptions)
-      throws DescopeException {
+  protected String startWithUrl(String url, String provider, String redirectURL, LoginOptions loginOptions,
+      Map<String, String> authParams) throws DescopeException {
     Map<String, String> params = mapOf("provider", provider);
     if (StringUtils.isNotBlank(redirectURL)) {
       params.put("redirectURL", redirectURL);
@@ -31,25 +31,42 @@ class OAuthServiceImpl extends AuthenticationServiceImpl implements OAuthService
     URI oauthURL = getQueryParamUri(url, params);
     ApiProxy apiProxy = getApiProxy();
     OAuthResponse res = apiProxy.post(oauthURL, loginOptions, OAuthResponse.class);
-    return res.getUrl();
+    url = res.getUrl();
+    URI resUrl = getQueryParamUri(url, authParams);
+    return resUrl.toString();
   }
 
   @Override
-  public String start(String provider, String redirectURL, LoginOptions loginOptions)
-      throws DescopeException {
-    return startWithUrl(COMPOSE_OAUTH_LINK, provider, redirectURL, loginOptions);
+  public String start(String provider, String redirectURL, LoginOptions loginOptions) throws DescopeException {
+    return startWithUrl(COMPOSE_OAUTH_LINK, provider, redirectURL, loginOptions, null);
   }
 
   @Override
-  public String startSignIn(String provider, String redirectURL, LoginOptions loginOptions)
+  public String start(String provider, String redirectURL, LoginOptions loginOptions, Map<String, String> authParams)
       throws DescopeException {
-    return startWithUrl(COMPOSE_OAUTH_LINK_SIGN_IN, provider, redirectURL, loginOptions);
+    return startWithUrl(COMPOSE_OAUTH_LINK, provider, redirectURL, loginOptions, authParams);
   }
 
   @Override
-  public String startSignUp(String provider, String redirectURL, LoginOptions loginOptions)
-      throws DescopeException {
-    return startWithUrl(COMPOSE_OAUTH_LINK_SIGN_UP, provider, redirectURL, loginOptions);
+  public String startSignIn(String provider, String redirectURL, LoginOptions loginOptions) throws DescopeException {
+    return startWithUrl(COMPOSE_OAUTH_LINK_SIGN_IN, provider, redirectURL, loginOptions, null);
+  }
+
+  @Override
+  public String startSignIn(String provider, String redirectURL, LoginOptions loginOptions,
+      Map<String, String> authParams) throws DescopeException {
+    return startWithUrl(COMPOSE_OAUTH_LINK_SIGN_IN, provider, redirectURL, loginOptions, authParams);
+  }
+
+  @Override
+  public String startSignUp(String provider, String redirectURL, LoginOptions loginOptions) throws DescopeException {
+    return startWithUrl(COMPOSE_OAUTH_LINK_SIGN_UP, provider, redirectURL, loginOptions, null);
+  }
+
+  @Override
+  public String startSignUp(String provider, String redirectURL, LoginOptions loginOptions,
+      Map<String, String> authParams) throws DescopeException {
+    return startWithUrl(COMPOSE_OAUTH_LINK_SIGN_UP, provider, redirectURL, loginOptions, authParams);
   }
 
   @Override

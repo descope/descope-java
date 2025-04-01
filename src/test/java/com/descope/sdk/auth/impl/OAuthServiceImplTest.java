@@ -6,6 +6,7 @@ import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_URL;
 import static com.descope.sdk.TestUtils.PROJECT_ID;
+import static com.descope.utils.CollectionUtils.mapOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,6 +29,7 @@ import com.descope.sdk.auth.OAuthService;
 import com.descope.utils.JwtUtils;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,12 +38,11 @@ import org.mockito.MockedStatic;
 public class OAuthServiceImplTest {
 
   private OAuthService oauthService;
-  
+
   @BeforeEach
   void setUp() {
     Client client = TestUtils.getClient();
-    this.oauthService =
-        AuthenticationServiceBuilder.buildServices(client).getOauthService();
+    this.oauthService = AuthenticationServiceBuilder.buildServices(client).getOauthService();
   }
 
   @Test
@@ -49,10 +50,27 @@ public class OAuthServiceImplTest {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String start = oauthService.start("provider", "returnurl", new LoginOptions());
       Assertions.assertThat(start).isNotBlank().contains(MOCK_URL);
+    }
+  }
+
+  @Test
+  void testStartWithAuthParams() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      Map<String, String> params = mapOf("aa", "val1");
+      params.put("bb", "val2");
+
+      String start = oauthService.start("provider", "returnurl", new LoginOptions(), params);
+      Assertions.assertThat(start).isNotBlank().contains(MOCK_URL);
+      Assertions.assertThat(start).isNotBlank().contains("val1");
+      Assertions.assertThat(start).isNotBlank().contains("val2");
+      Assertions.assertThat(start).isNotBlank().contains("aa");
+      Assertions.assertThat(start).isNotBlank().contains("bb");
     }
   }
 
@@ -60,13 +78,12 @@ public class OAuthServiceImplTest {
   void testExchangeToken() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
-    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
-      .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY))).when(apiProxy).get(any(),
+        eq(SigningKeysResponse.class));
 
     AuthenticationInfo authenticationInfo;
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
 
       try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
         mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
