@@ -18,6 +18,18 @@ public interface OAuthService {
       throws DescopeException;
 
   /**
+   * Use to start an OAuth authentication using the given OAuthProvider with sign up or in and options.
+   *
+   * @param provider     - provider
+   * @param returnURL    - return url
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @param authParams - additional query params to append to the return URL
+   * @return a string represent the redirect URL
+   */
+  String start(String provider, String returnURL, LoginOptions loginOptions, Map<String, String> authParams)
+      throws DescopeException;
+
+  /**
    * Use to start an OAuth authentication using the given OAuthProvider with sign in and options.
    *
    * @param provider     - provider
@@ -26,6 +38,18 @@ public interface OAuthService {
    * @return a string represent the redirect URL
    */
   String startSignIn(String provider, String returnURL, LoginOptions loginOptions)
+      throws DescopeException;
+
+  /** 
+   * Use to start an OAuth authentication using the given OAuthProvider with sign in and options.
+   *
+   * @param provider     - provider
+   * @param returnURL    - return url
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @param authParams - additional query params to append to the return URL
+   * @return a string represent the redirect URL
+   */
+  String startSignIn(String provider, String returnURL, LoginOptions loginOptions, Map<String, String> authParams)
       throws DescopeException;
 
   /**
@@ -37,6 +61,18 @@ public interface OAuthService {
    * @return a string represent the redirect URL
    */
   String startSignUp(String provider, String returnURL, LoginOptions loginOptions)
+      throws DescopeException;
+
+  /**
+   * Use to start an OAuth authentication using the given OAuthProvider with sign up and options.
+   *
+   * @param provider     - provider
+   * @param returnURL    - return url
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @param authParams - additional query params to append to the return URL
+   * @return a string represent the redirect URL
+   */
+  String startSignUp(String provider, String returnURL, LoginOptions loginOptions, Map<String, String> authParams)
       throws DescopeException;
 
   /**
