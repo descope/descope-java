@@ -59,7 +59,7 @@ public class OAuthServiceImplTest {
   @Test
   void testStartWithAuthParams() {
     ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
+    doReturn(new OAuthResponse(MOCK_URL + "?q=t")).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       Map<String, String> params = mapOf("aa", "val1");
