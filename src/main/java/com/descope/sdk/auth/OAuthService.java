@@ -3,6 +3,7 @@ package com.descope.sdk.auth;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.magiclink.LoginOptions;
+import java.util.Map;
 
 public interface OAuthService {
 
