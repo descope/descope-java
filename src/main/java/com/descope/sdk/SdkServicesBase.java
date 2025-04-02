@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 
-
 public abstract class SdkServicesBase {
   protected final Client client;
 
@@ -40,9 +39,7 @@ public abstract class SdkServicesBase {
         if (sb.length() > 1) {
           sb.append('&');
         }
-        sb.append(
-            URLEncoder.encode(e.getKey(), "UTF-8")).append('=').append(
-            URLEncoder.encode(e.getValue(), "UTF-8"));
+        sb.append(URLEncoder.encode(e.getKey(), "UTF-8")).append('=').append(URLEncoder.encode(e.getValue(), "UTF-8"));
       }
       return UriUtils.getUri(client.getUri(), path.concat(sb.toString()));
     }
@@ -56,4 +53,26 @@ public abstract class SdkServicesBase {
     return JwtUtils.getToken(jwt, client);
   }
 
+  @SneakyThrows
+  protected String appendQueryParams(String url, Map<String, String> params) {
+    if (isNotEmpty(params)) {
+      URI oldUri = new URI(url);
+
+      String newQuery = oldUri.getQuery();
+      StringBuilder sb = new StringBuilder("");
+      if (newQuery != null) {
+        sb.append(newQuery);
+      }
+      for (Entry<String, String> e : params.entrySet()) {
+        if (sb.length() > 0) {
+          sb.append("&");
+        }
+        sb.append(URLEncoder.encode(e.getKey(), "UTF-8")).append('=').append(URLEncoder.encode(e.getValue(), "UTF-8"));
+      }
+
+      return new URI(oldUri.getScheme(), oldUri.getAuthority(), oldUri.getPath(), sb.toString(), oldUri.getFragment())
+          .toString();
+    }
+    return url;
+  }
 }

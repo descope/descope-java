@@ -32,8 +32,8 @@ class OAuthServiceImpl extends AuthenticationServiceImpl implements OAuthService
     ApiProxy apiProxy = getApiProxy();
     OAuthResponse res = apiProxy.post(oauthURL, loginOptions, OAuthResponse.class);
     url = res.getUrl();
-    URI resUrl = getQueryParamUri(url, authParams);
-    return resUrl.toString();
+    String resUrl = appendQueryParams(url, authParams);
+    return resUrl;
   }
 
   @Override

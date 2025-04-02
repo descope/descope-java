@@ -24,7 +24,7 @@ public interface OAuthService {
    * @param provider     - provider
    * @param returnURL    - return url
    * @param loginOptions - {@link LoginOptions loginOptions}
-   * @param authParams - additional query params to append to the return URL
+   * @param authParams - additional query params to append to the authorize URL
    * @return a string represent the redirect URL
    */
   String start(String provider, String returnURL, LoginOptions loginOptions, Map<String, String> authParams)
@@ -47,7 +47,7 @@ public interface OAuthService {
    * @param provider     - provider
    * @param returnURL    - return url
    * @param loginOptions - {@link LoginOptions loginOptions}
-   * @param authParams - additional query params to append to the return URL
+   * @param authParams - additional query params to append to the authorize URL
    * @return a string represent the redirect URL
    */
   String startSignIn(String provider, String returnURL, LoginOptions loginOptions, Map<String, String> authParams)
@@ -70,7 +70,7 @@ public interface OAuthService {
    * @param provider     - provider
    * @param returnURL    - return url
    * @param loginOptions - {@link LoginOptions loginOptions}
-   * @param authParams - additional query params to append to the return URL
+   * @param authParams - additional query params to append to the authorize URL
    * @return a string represent the redirect URL
    */
   String startSignUp(String provider, String returnURL, LoginOptions loginOptions, Map<String, String> authParams)
