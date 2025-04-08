@@ -23,6 +23,7 @@ public class ManagementServiceBuilder {
         .passwordSettingsService(new PasswordSettingsServiceImpl(client))
         .ssoApplicationService(new SsoApplicationServiceImpl(client))
         .outboundAppsService(new OutboundAppsServiceImpl(client))
+        .inboundAppsService(new InboundAppsServiceImpl(client))
         .build();
   }
 }
