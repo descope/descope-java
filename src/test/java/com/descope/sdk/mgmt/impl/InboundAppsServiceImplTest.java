@@ -27,6 +27,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.InboundAppsService;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -36,9 +37,8 @@ class InboundAppsServiceImplTest {
 
   private final InboundApp mockInboundApp = InboundApp.builder().id("someId").build();
   private final InboundAppSecret mockSecret = InboundAppSecret.builder().secret("secret").build();
-  private final InboundAppConsentSearchResponse mockSearchConsentResponse = InboundAppConsentSearchResponse
-      .builder().total(1).consents(new InboundAppConsent[] { InboundAppConsent.builder().build() })
-      .build();
+  private final InboundAppConsentSearchResponse mockSearchConsentResponse = InboundAppConsentSearchResponse.builder()
+      .total(1).consents(new InboundAppConsent[] { InboundAppConsent.builder().build() }).build();
   private InboundAppsService inboundAppsService;
 
   @BeforeEach
@@ -54,25 +54,25 @@ class InboundAppsServiceImplTest {
     assertNotNull(thrown);
     assertEquals("The request argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class,
-      () -> inboundAppsService.createApplication(InboundAppRequest.builder().build()));
+        () -> inboundAppsService.createApplication(InboundAppRequest.builder().build()));
     assertNotNull(thrown);
     assertEquals("The request.name argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.updateApplication(null));
     assertNotNull(thrown);
     assertEquals("The request argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class,
-      () -> inboundAppsService.updateApplication(InboundAppRequest.builder().build()));
+        () -> inboundAppsService.updateApplication(InboundAppRequest.builder().build()));
     assertNotNull(thrown);
     assertEquals("The request.id argument is invalid", thrown.getMessage());
-    thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService
-      .updateApplication(InboundAppRequest.builder().id("a").build()));
+    thrown = assertThrows(ServerCommonException.class,
+        () -> inboundAppsService.updateApplication(InboundAppRequest.builder().id("a").build()));
     assertNotNull(thrown);
     assertEquals("The request.name argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.patchApplication(null));
     assertNotNull(thrown);
     assertEquals("The request argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class,
-      () -> inboundAppsService.patchApplication(InboundAppRequest.builder().build()));
+        () -> inboundAppsService.patchApplication(InboundAppRequest.builder().build()));
     assertNotNull(thrown);
     assertEquals("The request.id argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.deleteApplication(""));
@@ -84,8 +84,7 @@ class InboundAppsServiceImplTest {
     thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.getApplicationSecret(""));
     assertNotNull(thrown);
     assertEquals("The id argument is invalid", thrown.getMessage());
-    thrown = assertThrows(ServerCommonException.class,
-      () -> inboundAppsService.rotateApplicationSecret(""));
+    thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.rotateApplicationSecret(""));
     assertNotNull(thrown);
     assertEquals("The id argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.deleteConsents(null));
@@ -102,8 +101,8 @@ class InboundAppsServiceImplTest {
   @Test
   void testCreateApplicationSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(InboundAppCreateResponse.builder().id(mockInboundApp.getId()).build()).when(apiProxy)
-      .post(any(), any(), any());
+    doReturn(InboundAppCreateResponse.builder().id(mockInboundApp.getId()).build()).when(apiProxy).post(any(), any(),
+        any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       InboundAppCreateResponse app = inboundAppsService
@@ -180,8 +179,8 @@ class InboundAppsServiceImplTest {
   @Test
   void testLoadAllApplicationsSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(LoadAllApplicationsResponse.builder().apps(new InboundApp[] { mockInboundApp }).build())
-      .when(apiProxy).get(any(), any());
+    doReturn(LoadAllApplicationsResponse.builder().apps(new InboundApp[] { mockInboundApp }).build()).when(apiProxy)
+        .get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       InboundApp[] apps = inboundAppsService.loadAllApplications();
@@ -190,7 +189,7 @@ class InboundAppsServiceImplTest {
   }
 
   @Test
-  void testDeleteConsentsSuccess() {    
+  void testDeleteConsentsSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -201,9 +200,9 @@ class InboundAppsServiceImplTest {
 
   @Test
   void testDeleteTenantConsentsSuccess() {
-    ApiProxy apiProxy = mock(ApiProxy.class); 
+    ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(Void.class).when(apiProxy).post(any(), any(), any());
-    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {  
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       inboundAppsService.deleteTenantConsents(InboundAppTenantConsentDeleteOptions.builder().build());
     }
@@ -227,9 +226,9 @@ class InboundAppsServiceImplTest {
     // create app
     String name = TestUtils.getRandomName("iban-");
     InboundAppScope[] scopes = new InboundAppScope[] {
-        InboundAppScope.builder().name("s1").values(new String[] { "v1", "v2" }).build()};
-    InboundAppCreateResponse initialApp = inboundAppsService.createApplication(InboundAppRequest.builder()
-        .name(name).id(TestUtils.getRandomName("ibaid-")).permissionsScopes(scopes).build());
+        InboundAppScope.builder().name("s1").values(new String[] { "v1", "v2" }).build() };
+    InboundAppCreateResponse initialApp = inboundAppsService.createApplication(
+        InboundAppRequest.builder().name(name).id(TestUtils.getRandomName("ibaid-")).permissionsScopes(scopes).build());
     try {
       // get secret
       String secret = inboundAppsService.getApplicationSecret(initialApp.getId());
@@ -241,19 +240,20 @@ class InboundAppsServiceImplTest {
       String newSecret = inboundAppsService.getApplicationSecret(initialApp.getId());
       assertEquals(secret, newSecret);
       // load all apps
-      InboundApp[] apps = inboundAppsService.loadAllApplications();
+      InboundApp[] allApps = inboundAppsService.loadAllApplications();
+      InboundApp[] apps = Arrays.stream(allApps).filter(a -> a.getId().equals(initialApp.getId()))
+          .toArray(InboundApp[]::new);
       assertEquals(1, apps.length);
       assertEquals(initialApp.getId(), apps[0].getId());
       // update app
-      inboundAppsService.updateApplication(InboundAppRequest.builder().id(initialApp.getId())
-          .name(name + "2").permissionsScopes(scopes).build());
+      inboundAppsService.updateApplication(
+          InboundAppRequest.builder().id(initialApp.getId()).name(name + "2").permissionsScopes(scopes).build());
       // load app validate
       InboundApp lapp = inboundAppsService.loadApplication(initialApp.getId());
       assertEquals(initialApp.getId(), lapp.getId());
       assertEquals(name + "2", lapp.getName());
       // patch app
-      inboundAppsService.patchApplication(
-          InboundAppRequest.builder().id(initialApp.getId()).name(name + "3").build());
+      inboundAppsService.patchApplication(InboundAppRequest.builder().id(initialApp.getId()).name(name + "3").build());
       // load app validate
       lapp = inboundAppsService.loadApplication(initialApp.getId());
       assertEquals(initialApp.getId(), lapp.getId());
@@ -262,7 +262,9 @@ class InboundAppsServiceImplTest {
       // delete app
       inboundAppsService.deleteApplication(initialApp.getId());
       // load all apps
-      InboundApp[] apps = inboundAppsService.loadAllApplications();
+      InboundApp[] allApps = inboundAppsService.loadAllApplications();
+      InboundApp[] apps = Arrays.stream(allApps).filter(a -> a.getId().equals(initialApp.getId()))
+          .toArray(InboundApp[]::new);
       assertEquals(0, apps.length);
     }
   }
