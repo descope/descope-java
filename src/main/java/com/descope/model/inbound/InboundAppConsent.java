@@ -15,7 +15,7 @@ public class InboundAppConsent {
   private String userId;
   private String []scopes;
   private String grantedBy;
-  private int createdTime;
+  private long createdTime;
   private String tenantId;
 }
 

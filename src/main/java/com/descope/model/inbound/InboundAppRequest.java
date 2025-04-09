@@ -15,7 +15,7 @@ public class InboundAppRequest {
   private String description;
   private String logo;
   private String loginPageUrl;
-  private String approvedCallbackUrls;
+  private String[] approvedCallbackUrls;
   private InboundAppScope[] permissionsScopes;
   private InboundAppScope[] attributesScopes;
 }
