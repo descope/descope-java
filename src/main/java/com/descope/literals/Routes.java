@@ -222,5 +222,18 @@ public class Routes {
     public static final String MANAGEMENT_FETCH_OUTBOUND_APP_USER_TOKEN = "/v1/mgmt/outbound/app/user/token";
     public static final String MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKEN_BY_ID = "/v1/mgmt/outbound/token";
     public static final String MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKENS = "/v1/mgmt/outbound/tokens";
+
+    // Inbound
+    public static final String MANAGEMENT_INBOUND_CREATE_APP = "/v1/mgmt/thirdparty/app/create";
+    public static final String MANAGEMENT_INBOUND_UPDATE_APP = "/v1/mgmt/thirdparty/app/update";
+    public static final String MANAGEMENT_INBOUND_PATCH_APP = "/v1/mgmt/thirdparty/app/patch";
+    public static final String MANAGEMENT_INBOUND_DELETE_APP = "/v1/mgmt/thirdparty/app/delete";
+    public static final String MANAGEMENT_INBOUND_LOAD_APP = "/v1/mgmt/thirdparty/app/load";
+    public static final String MANAGEMENT_INBOUND_LOAD_APPS = "/v1/mgmt/thirdparty/apps/load";
+    public static final String MANAGEMENT_INBOUND_GET_SECRET = "/v1/mgmt/thirdparty/app/secret";
+    public static final String MANAGEMENT_INBOUND_ROTATE_SECRET = "/v1/mgmt/thirdparty/app/rotate";
+    public static final String MANAGEMENT_INBOUND_DELETE_CONSENT = "/v1/mgmt/thirdparty/consents/delete";
+    public static final String MANAGEMENT_INBOUND_DELETE_TENANT_CONSENT = "/v1/mgmt/thirdparty/consents/delete/tenant";
+    public static final String MANAGEMENT_INBOUND_SEARCH_CONSENT = "/v1/mgmt/thirdparty/consents/search";
   }
 }
