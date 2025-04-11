@@ -25,6 +25,8 @@ public class DescopeClient {
 
   private static final String REGION_PLACEHOLDER = "<region>";
   private static final String DEFAULT_BASE_URL = "https://api." + REGION_PLACEHOLDER + "descope.com";
+  private static final String DEFAULT_URL_PREFIX = "https://api";
+  private static final String DEFAULT_DOMAIN = "descope.com";
 
   private final Config config;
   private final ManagementServices managementServices;
@@ -63,8 +65,15 @@ public class DescopeClient {
     if (projectId.length() < 28) {
       throw ClientSetupException.invalidProjectId();
     }
-    final String region = projectId.substring(1, projectId.length() - 27);
-    final String baseUrl = DEFAULT_BASE_URL.replace(REGION_PLACEHOLDER, region.length() > 0 ? region + "." : "");
+    
+    String baseUrl;
+    if (projectId.length() >= 32) {
+      String region = projectId.substring(1, 5);
+      baseUrl = DEFAULT_URL_PREFIX + "." + region + "." + DEFAULT_DOMAIN;
+    } else {
+      baseUrl = DEFAULT_BASE_URL.replace(REGION_PLACEHOLDER, "");
+    }
+    
     Client c = Client.builder()
         .uri(StringUtils.isBlank(config.getDescopeBaseUrl()) ? baseUrl : config.getDescopeBaseUrl())
         .projectId(projectId)
