@@ -100,6 +100,24 @@ class DescopeClientTest {
   }
 
   @Test
+  void testProjectIDRegion() throws Exception {
+    String invalidRegionProjectId = "Pus11456789012345678901234567";
+    EnvironmentVariables env = new EnvironmentVariables(PROJECT_ID_ENV_VAR, invalidRegionProjectId);
+    env.execute(() -> {
+      DescopeClient descopeClient = new DescopeClient();
+      ApiProxy apiProxy = mock(ApiProxy.class);
+      UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+      when(apiProxy.get(eq(new URI("https://api.descope.com/v1/mgmt/user?loginId=test")), any()))
+          .thenReturn(userResponseDetails);
+      try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+        mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+        UserResponseDetails u = descopeClient.getManagementServices().getUserService().load("test");
+        Assertions.assertThat(u).isNotNull();
+      }
+    });
+  }
+
+  @Test
   void testEmptyConfig() {
     Assertions.assertThatThrownBy(() -> new DescopeClient(null))
         .isInstanceOf(ServerCommonException.class)
