@@ -63,7 +63,7 @@ public class DescopeClient {
     if (projectId.length() < 28) {
       throw ClientSetupException.invalidProjectId();
     }
-    final String region = projectId.substring(1, projectId.length() - 27);
+    final String region = projectId.substring(3, projectId.length() - 27);
     final String baseUrl = DEFAULT_BASE_URL.replace(REGION_PLACEHOLDER, region.length() > 0 ? region + "." : "");
     Client c = Client.builder()
         .uri(StringUtils.isBlank(config.getDescopeBaseUrl()) ? baseUrl : config.getDescopeBaseUrl())
