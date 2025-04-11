@@ -91,8 +91,8 @@ class DescopeClientTest {
   void testShortProjectID() throws Exception {
     // Project ID too short (< 28 characters)
     String shortProjectId = "P1234567890123456789012345";
-    EnvironmentVariables env1 = new EnvironmentVariables(PROJECT_ID_ENV_VAR, shortProjectId);
-    env1.execute(() -> {
+    EnvironmentVariables env = new EnvironmentVariables(PROJECT_ID_ENV_VAR, shortProjectId);
+    env.execute(() -> {
       Assertions.assertThatThrownBy(DescopeClient::new)
           .isInstanceOf(ClientSetupException.class)
           .hasMessage("Invalid project ID - must be over 27 characters long");
