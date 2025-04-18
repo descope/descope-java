@@ -4,7 +4,7 @@
     <groupId>com.descope</groupId>
     <artifactId>java-sdk</artifactId>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.38</version>
+    <version>1.0.39</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Java library used to integrate with Descope.</description>
     <url>https://github.com/descope/descope-java</url>
