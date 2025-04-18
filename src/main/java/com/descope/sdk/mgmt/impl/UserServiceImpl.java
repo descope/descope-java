@@ -127,6 +127,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       addIfNotNull(req, "sendSMS", options.getSendSMS());
       addIfNotNull(req, "sendEmail", options.getSendEmail());
       addIfNotNull(req, "templateId", options.getTemplateId());
+      addIfNotNull(req, "templateOptions", options.getTemplateOptions());
     }
     req.putAll(request.toMap());
     URI createUserUri = composeCreateUserUri();
@@ -147,6 +148,8 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       addIfNotBlank(req, "inviteUrl", options.getInviteUrl());
       addIfNotNull(req, "sendSMS", options.getSendSMS());
       addIfNotNull(req, "sendEmail", options.getSendEmail());
+      addIfNotNull(req, "templateId", options.getTemplateId());
+      addIfNotNull(req, "templateOptions", options.getTemplateOptions());
     }
     URI createUsersUri = composeCreateBatchUsersUri();
     ApiProxy apiProxy = getApiProxy();
