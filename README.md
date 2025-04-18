@@ -687,7 +687,8 @@ try {
                     .tenantId("tenant-ID1")
                     .roleNames(Arrays.asList("role-name1"),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2")))));
+                    .tenantId("tenant-ID2"))))
+            .build());
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -705,10 +706,11 @@ try {
                     .tenantId("tenant-ID1")
                     .roleNames(Arrays.asList("role-name1"),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2")))),
-						InviteOptions.builder()
-						.inviteUrl("https://my-app.com/invite")
-					);
+                    .tenantId("tenant-ID2"))))
+            .build(),
+			InviteOptions.builder()
+				.inviteUrl("https://my-app.com/invite")
+                .build());
 } catch (DescopeException de) {
     // Handle the error
 }
