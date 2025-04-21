@@ -9,7 +9,7 @@
     <description>Java library used to integrate with Descope.</description>
     <url>https://github.com/descope/descope-java</url>
     <properties>
-        <org.projectlombok.version>1.18.36</org.projectlombok.version>
+        <org.projectlombok.version>1.18.38</org.projectlombok.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
