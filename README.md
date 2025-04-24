@@ -1195,7 +1195,7 @@ Generate a JWT for a user, simulating a signin request.
 
 ```java
 JwtService jwts = descopeClient.getManagementServices().getJwtService();
-AuthenticationInfo res = jwts.mgmt.jwt.signIn("dummy");
+AuthenticationInfo res = jwts.signIn("dummy");
 ```
 
 Generate a JWT for a user, simulating a signup request.
@@ -1209,7 +1209,7 @@ Generate a JWT for a user, simulating a signup or in request.
 
 ```java
 JwtService jwts = descopeClient.getManagementServices().getJwtService();
-AuthenticationInfo res = jwts.mgmt.jwt.signUpOrIn("dummy");
+AuthenticationInfo res = jwts.signUpOrIn("dummy");
 ```
 
 ### Audit
