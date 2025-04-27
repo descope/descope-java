@@ -1207,24 +1207,24 @@ Generate a JWT for a user, simulating a signup request.
 
 ```java
 JwtService jwtService = descopeClient.getManagementServices().getJwtService();
-LoginOptions loginOptions = new LoginOptions();
-loginOptions.setCustomClaims(new HashMap<String, Object>() {{
+MgmtSignUpUser mgmtSignUpUser = new MgmtSignUpUser();
+mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
 	put("custom-key1", "custom-value1");
 	put("custom-key2", "custom-value2");
-}});
-AuthenticationInfo res = jwtService.signUp("dummy", loginOptions);
+		}});
+AuthenticationInfo res = jwtService.signUp("Dummy", mgmtSignUpUser);
 ```
 
 Generate a JWT for a user, simulating a signup or in request.
 
 ```java
 JwtService jwtService = descopeClient.getManagementServices().getJwtService();
-LoginOptions loginOptions = new LoginOptions();
-loginOptions.setCustomClaims(new HashMap<String, Object>() {{
+MgmtSignUpUser mgmtSignUpUser = new MgmtSignUpUser();
+mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
 	put("custom-key1", "custom-value1");
 	put("custom-key2", "custom-value2");
-}});
-AuthenticationInfo res = jwtService.signUpOrIn("dummy", loginOptions);
+		}});
+AuthenticationInfo res = jwtService.signUpOrIn("Dummy", mgmtSignUpUser);
 ```
 
 ### Audit
