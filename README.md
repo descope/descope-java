@@ -1194,22 +1194,37 @@ try {
 Generate a JWT for a user, simulating a signin request.
 
 ```java
-JwtService jwts = descopeClient.getManagementServices().getJwtService();
-AuthenticationInfo res = jwts.signIn("dummy");
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+LoginOptions loginOptions = new LoginOptions();
+loginOptions.setCustomClaims(new HashMap<String, Object>() {{
+	put("custom-key1", "custom-value1");
+	put("custom-key2", "custom-value2");
+}});
+AuthenticationInfo res = jwtService.signIn("dummy", loginOptions);
 ```
 
 Generate a JWT for a user, simulating a signup request.
 
 ```java
-JwtService jwts = descopeClient.getManagementServices().getJwtService();
-AuthenticationInfo res = jwts.signUp("dummy");
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+LoginOptions loginOptions = new LoginOptions();
+loginOptions.setCustomClaims(new HashMap<String, Object>() {{
+	put("custom-key1", "custom-value1");
+	put("custom-key2", "custom-value2");
+}});
+AuthenticationInfo res = jwtService.signUp("dummy", loginOptions);
 ```
 
 Generate a JWT for a user, simulating a signup or in request.
 
 ```java
-JwtService jwts = descopeClient.getManagementServices().getJwtService();
-AuthenticationInfo res = jwts.signUpOrIn("dummy");
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+LoginOptions loginOptions = new LoginOptions();
+loginOptions.setCustomClaims(new HashMap<String, Object>() {{
+	put("custom-key1", "custom-value1");
+	put("custom-key2", "custom-value2");
+}});
+AuthenticationInfo res = jwtService.signUpOrIn("dummy", loginOptions);
 ```
 
 ### Audit
