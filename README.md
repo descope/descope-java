@@ -1215,7 +1215,7 @@ mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
 AuthenticationInfo res = jwtService.signUp("Dummy", mgmtSignUpUser);
 ```
 
-Generate a JWT for a user, simulating a signup or in request.
+Generate a JWT for a user, simulates a signup or in request.
 
 ```java
 JwtService jwtService = descopeClient.getManagementServices().getJwtService();
