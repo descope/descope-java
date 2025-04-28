@@ -4,7 +4,7 @@
     <groupId>com.descope</groupId>
     <artifactId>java-sdk</artifactId>
     <modelVersion>4.0.0</modelVersion>
-    <version>1.0.39</version>
+    <version>1.0.40</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Java library used to integrate with Descope.</description>
     <url>https://github.com/descope/descope-java</url>
@@ -31,19 +31,19 @@
         <dependency>
             <artifactId>jjwt-api</artifactId>
             <groupId>io.jsonwebtoken</groupId>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
         </dependency>
         <dependency>
             <artifactId>jjwt-impl</artifactId>
             <groupId>io.jsonwebtoken</groupId>
             <scope>runtime</scope>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
         </dependency>
         <dependency>
             <artifactId>jjwt-jackson</artifactId>
             <groupId>io.jsonwebtoken</groupId>
             <scope>runtime</scope>
-            <version>0.11.5</version>
+            <version>0.12.6</version>
         </dependency>
         <dependency>
             <artifactId>bcprov-jdk18on</artifactId>

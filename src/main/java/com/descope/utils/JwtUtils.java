@@ -6,11 +6,12 @@ import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.magiclink.LoginOptions;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SigningKeyResolverAdapter;
+import io.jsonwebtoken.Locator;
 import java.security.Key;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +23,7 @@ public class JwtUtils {
 
   public static Token getToken(String jwt, Client client) {
     Jws<Claims> claimsJws = getClaimsJws(jwt, client);
-    Claims claims = claimsJws.getBody();
+    Claims claims = claimsJws.getPayload();
 
     return Token.builder()
         .jwt(jwt)
@@ -35,21 +36,25 @@ public class JwtUtils {
   }
 
   public static Jws<Claims> getClaimsJws(String jwt, Client client) {
-    JwtParser jwtParser =
-        Jwts.parserBuilder().setSigningKeyResolver(new SigningKeyResolverAdapter() {
+    JwtParserBuilder jwtParserBuilder = Jwts.parser()
+        .keyLocator(new Locator<Key>() {
           @Override
-          @SuppressWarnings("rawtypes")
-          public Key resolveSigningKey(JwsHeader header, Claims claims) {
-            String keyId = header.getKeyId();
-            Key k = client.getKey(keyId);
-            if (k == null) {
-              throw ServerCommonException.invalidSigningKey(String.format("Signing key id %s not found", keyId));
+          public Key locate(Header header) {
+            if (header instanceof JwsHeader) {
+              String keyId = ((JwsHeader) header).getKeyId();
+              Key k = client.getKey(keyId);
+              if (k == null) {
+                throw ServerCommonException.invalidSigningKey(String.format("Signing key id %s not found", keyId));
+              }
+              return k;
             }
-            return k;
-          }      
-        }).setAllowedClockSkewSeconds(SKEW_SECONDS).build();
+            throw ServerCommonException.invalidSigningKey("Header is not a JwsHeader");
+          }
+        })
+        .clockSkewSeconds(SKEW_SECONDS);
+
     try {
-      Jws<Claims> claimsJws = jwtParser.parseClaimsJws(jwt);
+      Jws<Claims> claimsJws = jwtParserBuilder.build().parseSignedClaims(jwt);
       return claimsJws;
     } catch (Exception e) {
       throw ClientFunctionalException.invalidToken(e);
