@@ -1,5 +1,6 @@
 package com.descope.proxy.impl;
 
+import com.descope.model.client.Client;
 import com.descope.model.client.SdkInfo;
 import com.descope.proxy.ApiProxy;
 import java.util.function.Supplier;
@@ -12,7 +13,7 @@ public class ApiProxyBuilder {
     return new ApiProxyImpl(sdkInfo);
   }
 
-  public static ApiProxy buildProxy(Supplier<String> authHeaderSupplier, SdkInfo sdkInfo) {
-    return new ApiProxyImpl(authHeaderSupplier, sdkInfo);
+  public static ApiProxy buildProxy(Supplier<String> authHeaderSupplier, Client client) {
+    return new ApiProxyImpl(authHeaderSupplier, client);
   }
 }

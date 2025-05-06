@@ -18,7 +18,7 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
     String managementKey = client.getManagementKey();
     if (StringUtils.isNotBlank(projectId)) {
       return ApiProxyBuilder.buildProxy(
-          () -> String.format("Bearer %s:%s", projectId, managementKey), client.getSdkInfo());
+          () -> String.format("Bearer %s:%s", projectId, managementKey), client);
     }
     return ApiProxyBuilder.buildProxy(client.getSdkInfo());
   }
@@ -30,6 +30,6 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
     }
 
     String token = String.format("Bearer %s:%s", projectId, refreshToken);
-    return ApiProxyBuilder.buildProxy(() -> token, client.getSdkInfo());
+    return ApiProxyBuilder.buildProxy(() -> token, client);
   }
 }
