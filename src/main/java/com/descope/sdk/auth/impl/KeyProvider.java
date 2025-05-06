@@ -4,7 +4,7 @@ import static com.descope.literals.Routes.AuthEndPoints.GET_KEYS_LINK;
 import static com.descope.utils.UriUtils.addPath;
 
 import com.descope.exception.ServerCommonException;
-import com.descope.model.client.SdkInfo;
+import com.descope.model.client.Client;
 import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.proxy.ApiProxy;
@@ -25,8 +25,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class KeyProvider {
 
-  public static Map<String, Key> getKeys(String projectId, String url, SdkInfo sdkInfo) {
-    ApiProxy apiProxy = ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId, sdkInfo);
+  public static Map<String, Key> getKeys(String projectId, String url, Client client) {
+    ApiProxy apiProxy = ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId, client);
     URI uri = addPath(UriUtils.getUri(url, GET_KEYS_LINK), projectId);
     SigningKeysResponse signingKeys = apiProxy.get(uri, SigningKeysResponse.class);
 

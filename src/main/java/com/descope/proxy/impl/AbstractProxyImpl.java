@@ -3,6 +3,7 @@ package com.descope.proxy.impl;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
 import com.descope.model.client.SdkInfo;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -34,6 +35,7 @@ abstract class AbstractProxyImpl {
   private String authHeaderKey;
   private Supplier<String> authHeaderSupplier; // supplies value of AUTHORIZATION header
   private SdkInfo sdkInfo;
+  protected Client client;
 
   protected void setAuthHeader(String authHeaderKey, Supplier<String> authHeaderSupplier) {
     if (StringUtils.isNotBlank(authHeaderKey) && authHeaderSupplier != null) {
@@ -142,6 +144,9 @@ abstract class AbstractProxyImpl {
       if (StringUtils.isNotBlank(sdkInfo.getSha())) {
         req.addHeader("x-descope-sdk-sha", sdkInfo.getSha());
       }
+    }
+    if (client != null && StringUtils.isNotBlank(client.getProjectId())) {
+      req.addHeader("x-descope-project-id", client.getProjectId());
     }
   }
 

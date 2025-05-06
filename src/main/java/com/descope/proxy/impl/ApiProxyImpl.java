@@ -1,5 +1,6 @@
 package com.descope.proxy.impl;
 
+import com.descope.model.client.Client;
 import com.descope.model.client.SdkInfo;
 import com.descope.proxy.ApiProxy;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -12,9 +13,10 @@ class ApiProxyImpl extends AbstractProxyImpl implements ApiProxy {
     setSdkInfo(sdkInfo);
   }
 
-  public ApiProxyImpl(Supplier<String> authHeaderSupplier, SdkInfo sdkInfo) {
+  public ApiProxyImpl(Supplier<String> authHeaderSupplier, Client client) {
     setAuthHeader("Authorization", authHeaderSupplier);
-    setSdkInfo(sdkInfo);
+    setSdkInfo(client.getSdkInfo());
+    this.client = client;
   }
 
   @Override

@@ -31,7 +31,7 @@ public class Client {
     Key k = keys.get().get(keyId);
     // If key is not found, try to refresh key cache
     if (k == null) {
-      keys.set(KeyProvider.getKeys(projectId, uri, sdkInfo));
+      keys.set(KeyProvider.getKeys(projectId, uri, this));
       k = keys.get().get(keyId);
     }
     return k;
