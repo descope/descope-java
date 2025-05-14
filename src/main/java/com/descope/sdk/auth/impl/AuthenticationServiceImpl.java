@@ -49,7 +49,20 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
       throw ServerCommonException.missingArguments("refresh token");
     }
 
-    return refreshSession(refreshToken);
+    return refreshSession(refreshToken).getToken();
+  }
+
+  @Override
+  public AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+
+    AuthenticationInfo authInfo = refreshSession(refreshToken);
+    if (authInfo.getRefreshToken() == null) { // refresh token is not returned because jwt rotation is not enabled
+      authInfo.setRefreshToken(validateAndCreateToken(refreshToken));
+    }
+    return authInfo;
   }
 
   @Override
@@ -68,6 +81,26 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
       }
     } else {
       return refreshSessionWithToken(refreshToken);
+    }
+  }
+
+  @Override
+  public AuthenticationInfo validateAndRefreshSessionWithTokensAuthenticationInfo(
+      String sessionToken, String refreshToken) throws DescopeException {
+    if (StringUtils.isAllBlank(sessionToken, refreshToken)) {
+      throw ServerCommonException.missingArguments("Both sessionToken and refreshToken are empty");
+    } else if (StringUtils.isNotBlank(sessionToken)) {
+      try {
+        Token refresh = validateAndCreateToken(refreshToken);
+        return new AuthenticationInfo(validateSessionWithToken(sessionToken), refresh, null, null);
+      } catch (Exception e) {
+        if (StringUtils.isNotBlank(refreshToken)) {
+          return refreshSessionWithTokenAuthenticationInfo(refreshToken);
+        }
+        throw e;
+      }
+    } else {
+      return refreshSessionWithTokenAuthenticationInfo(refreshToken);
     }
   }
 
