@@ -2,6 +2,7 @@ package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AccessKeyLoginOptions;
+import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.Token;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
@@ -20,9 +21,8 @@ public interface AuthenticationService {
   Token validateSessionWithToken(String sessionToken) throws DescopeException;
 
   /**
-   * Use to validate a session of a given request. Should be called before any private API call that
-   * requires authorization. Use the addCookies to apply the cookies to the httpRequest
-   * automatically. Alternatively use ValidateAndRefreshSessionWithTokens with the tokens directly.
+   * Use to refresh the given session using a refresh token. Returns the new session token.
+   * Alternatively use ValidateAndRefreshSessionWithTokens to only refresh the session token if not valid.
    *
    * @param refreshToken - Refresh Token
    * @return {@link Token Token}
@@ -31,8 +31,21 @@ public interface AuthenticationService {
   Token refreshSessionWithToken(String refreshToken) throws DescopeException;
 
   /**
-   * Use to validate a session with the session and refresh tokens. Should be called before any
-   * private API call that requires authorization.
+   * Use to refresh the given session using a refresh token. Returns the new authentication info with tokens.
+   * Should be used when jwt rotation is enabled in the project configuration to retrieve the new refresh token.
+   * Alternatively use ValidateAndRefreshSessionWithTokensAuthenticationInfo
+   * to only refresh the session token if not valid.
+   *
+   * @param refreshToken - Refresh Token
+   * @return {@link AuthenticationInfo the full authentication info including refresh token and user}
+   * @throws DescopeException - error upon failure
+   */
+  AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException;
+
+  /**
+   * Use to validate a session with the session and refresh tokens.
+   * If the session token is valid, it is returned in the form of a Token object.
+   * If not, use the refresh token to refresh and return the new session token.
    *
    * @param sessionToken - Session Token
    * @param refreshToken - Refresh Token
@@ -40,6 +53,20 @@ public interface AuthenticationService {
    * @throws DescopeException - error upon failure
    */
   Token validateAndRefreshSessionWithTokens(String sessionToken, String refreshToken)
+      throws DescopeException;
+
+  /**
+   * Use to validate a session with the session and refresh tokens.
+   * Should be used when jwt rotation is enabled in the project configuration to retrieve the new refresh token.
+   * If the session token is valid, it is returned in the form of an AuthenticationInfo object.
+   * If not, use the refresh token to refresh and return the new session token.
+   *
+   * @param sessionToken - Session Token
+   * @param refreshToken - Refresh Token
+   * @return {@link AuthenticationInfo the full authentication info including refresh token and user}
+   * @throws DescopeException - error upon failure
+   */
+  AuthenticationInfo validateAndRefreshSessionWithTokensAuthenticationInfo(String sessionToken, String refreshToken)
       throws DescopeException;
 
   /**
