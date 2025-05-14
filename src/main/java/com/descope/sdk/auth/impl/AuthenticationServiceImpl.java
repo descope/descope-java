@@ -58,7 +58,11 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
       throw ServerCommonException.missingArguments("refresh token");
     }
 
-    return refreshSession(refreshToken);
+    AuthenticationInfo authInfo = refreshSession(refreshToken);
+    if (authInfo.getRefreshToken() == null) { // refresh token is not returned because jwt rotation is not enabled
+      authInfo.setRefreshToken(validateAndCreateToken(refreshToken));
+    }
+    return authInfo;
   }
 
   @Override
