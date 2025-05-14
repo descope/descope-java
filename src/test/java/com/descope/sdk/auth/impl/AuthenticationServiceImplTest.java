@@ -125,7 +125,6 @@ public class AuthenticationServiceImplTest {
     token = authenticationService.refreshSessionWithToken(authInfo.getRefreshToken().getJwt());
     assertThat(token.getJwt()).isNotBlank();
     authInfo = authenticationService.refreshSessionWithTokenAuthenticationInfo(authInfo.getRefreshToken().getJwt());
-    assertThat(token.getJwt()).isNotBlank();
     assertThat(authInfo.getRefreshToken()).isNotNull();
     assertThat(authInfo.getRefreshToken().getJwt()).isNotBlank();
     UserResponse u = authenticationService.me(authInfo.getRefreshToken().getJwt());
