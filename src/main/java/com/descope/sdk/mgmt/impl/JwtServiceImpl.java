@@ -65,6 +65,7 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
             loginOptions.isStepup(),
             loginOptions.isMfa(),
             loginOptions.isRevokeOtherSessions(),
+            loginOptions.getRevokeOtherSessionsTypes(),
             loginOptions.getCustomClaims(),
             loginOptions.getJwt());
 

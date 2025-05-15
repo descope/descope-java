@@ -13,6 +13,7 @@ public class ManagementSignInRequest {
   private boolean stepup;
   private boolean mfa;
   private boolean revokeOtherSessions;
+  private String[] revokeOtherSessionsTypes;
   private Map<String, Object> customClaims;
   private String jwt;
 }

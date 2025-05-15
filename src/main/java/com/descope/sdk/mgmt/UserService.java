@@ -122,7 +122,7 @@ public interface UserService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    *                          
    */
-  void logoutUser(String loginId) throws DescopeException;
+  void logoutUser(String loginId, String... sessionTypes) throws DescopeException;
 
   /**
    * Logout user from all devices by user ID.
@@ -132,7 +132,7 @@ public interface UserService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    *                          
    */
-  void logoutUserByUserId(String userId) throws DescopeException;
+  void logoutUserByUserId(String userId, String... sessionTypes) throws DescopeException;
 
 
   /**

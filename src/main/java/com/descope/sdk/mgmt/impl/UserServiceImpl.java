@@ -197,23 +197,23 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public void logoutUser(String loginId) throws DescopeException {
+  public void logoutUser(String loginId, String... sessionTypes) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI logoutUserUri = composeLogoutUserUri();
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(logoutUserUri, mapOf("loginId", loginId), Void.class);
+    apiProxy.post(logoutUserUri, mapOf("loginId", loginId, "sessionTypes", sessionTypes), Void.class);
   }
 
   @Override
-  public void logoutUserByUserId(String userId) throws DescopeException {
+  public void logoutUserByUserId(String userId, String... sessionTypes) throws DescopeException {
     if (StringUtils.isBlank(userId)) {
       throw ServerCommonException.invalidArgument("User ID");
     }
     URI logoutUserUri = composeLogoutUserUri();
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(logoutUserUri, mapOf("userId", userId), Void.class);
+    apiProxy.post(logoutUserUri, mapOf("userId", userId,"sessionTypes", sessionTypes), Void.class);
   }
 
   @Override
