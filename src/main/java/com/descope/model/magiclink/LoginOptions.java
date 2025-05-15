@@ -16,6 +16,7 @@ public class LoginOptions {
   private Map<String, Object> customClaims;
   private Map<String, String> templateOptions;
   private boolean revokeOtherSessions;
+  private String[] revokeOtherSessionsTypes;
   private String jwt;
 
   public LoginOptions(boolean stepup, boolean mfa, Map<String, Object> customClaims,

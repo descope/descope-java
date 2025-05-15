@@ -119,20 +119,22 @@ public interface UserService {
    *
    *
    * @param loginId The loginID is required.
+   * @param sessionTypes Optional list of session types that should be expired, leaving empty, will expire all sessions
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    *                          
    */
-  void logoutUser(String loginId) throws DescopeException;
+  void logoutUser(String loginId, String... sessionTypes) throws DescopeException;
 
   /**
    * Logout user from all devices by user ID.
    *
    *
    * @param userId The userID is required.
+   * @param sessionTypes Optional list of session types that should be expired, leaving empty, will expire all sessions
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    *                          
    */
-  void logoutUserByUserId(String userId) throws DescopeException;
+  void logoutUserByUserId(String userId, String... sessionTypes) throws DescopeException;
 
 
   /**

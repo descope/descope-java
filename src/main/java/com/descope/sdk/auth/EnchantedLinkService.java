@@ -103,6 +103,7 @@ public interface EnchantedLinkService {
    * @param uri     - Base URI
    * @param refreshToken - refresh token to perform the update
    * @param updateOptions - update options for the update
+   * @param templateOptions - optional parameters for template
    * @return {@link EnchantedLinkResponse} including masked address where the link was sent (email),
    *         link to chose and link to retrieve new session from
    * @throws DescopeException - error upon failure
