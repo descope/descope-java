@@ -119,6 +119,7 @@ public interface UserService {
    *
    *
    * @param loginId The loginID is required.
+   * @param sessionTypes Optional list of session types that should be expired, leaving empty, will expire all sessions
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    *                          
    */
@@ -129,6 +130,7 @@ public interface UserService {
    *
    *
    * @param userId The userID is required.
+   * @param sessionTypes Optional list of session types that should be expired, leaving empty, will expire all sessions
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    *                          
    */

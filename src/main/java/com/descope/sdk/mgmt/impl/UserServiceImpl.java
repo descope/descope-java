@@ -213,7 +213,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     URI logoutUserUri = composeLogoutUserUri();
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(logoutUserUri, mapOf("userId", userId,"sessionTypes", sessionTypes), Void.class);
+    apiProxy.post(logoutUserUri, mapOf("userId", userId, "sessionTypes", sessionTypes), Void.class);
   }
 
   @Override

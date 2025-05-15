@@ -102,6 +102,7 @@ public interface TenantService {
    * Load the tenant with the given ID.
    *
    * @param id - Tenant ID
+   * @return {@link Tenant}
    * @throws DescopeException in case of errors
    */
   Tenant load(String id) throws DescopeException;
