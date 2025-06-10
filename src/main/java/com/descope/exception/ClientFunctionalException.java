@@ -21,6 +21,6 @@ public class ClientFunctionalException extends DescopeException {
 
   public static ClientFunctionalException invalidToken(Throwable cause) {
     String message = "Invalid Token";
-    return new ClientFunctionalException(message, INVALID_TOKEN);
+    return new ClientFunctionalException(message, INVALID_TOKEN, cause);
   }
 }
