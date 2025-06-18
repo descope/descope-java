@@ -21,6 +21,8 @@ public interface InboundAppsService {
 
   InboundApp loadApplication(String id) throws DescopeException;
 
+  InboundApp loadApplicationByClientId(String id) throws DescopeException;
+
   String getApplicationSecret(String id) throws DescopeException;
 
   String rotateApplicationSecret(String id) throws DescopeException;

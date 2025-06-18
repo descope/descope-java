@@ -100,6 +100,16 @@ public class InboundAppsServiceImpl extends ManagementsBase implements InboundAp
   }
 
   @Override
+  public InboundApp loadApplicationByClientId(String id) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(getQueryParamUri(MANAGEMENT_INBOUND_LOAD_APP, mapOf("clientId", id)), InboundApp.class);
+  }
+
+  @Override
   public String getApplicationSecret(String id) throws DescopeException {
     if (StringUtils.isBlank(id)) {
       throw ServerCommonException.invalidArgument("id");

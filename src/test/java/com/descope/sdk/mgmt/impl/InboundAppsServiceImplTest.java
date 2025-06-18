@@ -81,6 +81,9 @@ class InboundAppsServiceImplTest {
     thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.loadApplication(""));
     assertNotNull(thrown);
     assertEquals("The id argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.loadApplicationByClientId(""));
+    assertNotNull(thrown);
+    assertEquals("The id argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.getApplicationSecret(""));
     assertNotNull(thrown);
     assertEquals("The id argument is invalid", thrown.getMessage());
@@ -149,6 +152,18 @@ class InboundAppsServiceImplTest {
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       InboundApp app = inboundAppsService.loadApplication("a");
+      assertNotNull(app);
+      assertEquals("someId", app.getId());
+    }
+  }
+
+  @Test
+  void testLoadApplicationByClientSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockInboundApp).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      InboundApp app = inboundAppsService.loadApplicationByClientId("a");
       assertNotNull(app);
       assertEquals("someId", app.getId());
     }
