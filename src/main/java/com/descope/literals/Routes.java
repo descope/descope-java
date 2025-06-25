@@ -219,6 +219,7 @@ public class Routes {
     public static final String MANAGEMENT_PASSWORD_SETTINGS = "/v1/mgmt/password/settings";
 
     // custom attributes
+    public static final String MANAGEMENT_GET_USER_CUSTOM_ATTRIBUTES = "/v1/mgmt/user/customattributes";
     public static final String MANAGEMENT_CREATE_USER_CUSTOM_ATTRIBUTES = "/v1/mgmt/user/customattribute/create";
     public static final String MANAGEMENT_DELETE_USER_CUSTOM_ATTRIBUTES = "/v1/mgmt/user/customattribute/delete";
 

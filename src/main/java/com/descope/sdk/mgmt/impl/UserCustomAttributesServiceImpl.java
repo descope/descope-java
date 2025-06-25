@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_CREATE_USER_CUSTOM_ATTRIBUTES;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_DELETE_USER_CUSTOM_ATTRIBUTES;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_GET_USER_CUSTOM_ATTRIBUTES;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -17,6 +18,13 @@ class UserCustomAttributesServiceImpl extends ManagementsBase implements UserCus
 
   UserCustomAttributesServiceImpl(Client client) {
     super(client);
+  }
+
+  @Override
+  public CustomAttributesResponse getCustomAttributes() throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(getUri(MANAGEMENT_GET_USER_CUSTOM_ATTRIBUTES),
+            CustomAttributesResponse.class);
   }
 
   @Override

@@ -1,8 +1,10 @@
 package com.descope.sdk.mgmt.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
@@ -80,11 +82,28 @@ public class UserCustomAttributesServiceImplTest {
     CreateCustomAttributesRequest cas = CreateCustomAttributesRequest.builder()
                     .attributes(Arrays.asList(ca)).build();
     CustomAttributesResponse casRes = userCustomAttributesService.createCustomAttributes(cas);
-    assertEquals(1, casRes.getTotal());
-    assertEquals(1, casRes.getData().size());
+    assertTrue(casRes.getTotal() > 0);
+    boolean found = false;
+    for (CustomAttribute tmp : casRes.getData()) {
+      if (tmp.getName().equals(name)) {
+        found = true;
+        break;
+      }
+    }
+    assertTrue(found);
+
+    casRes = userCustomAttributesService.createCustomAttributes(cas);
+    assertTrue(casRes.getTotal() > 0);
 
     casRes = userCustomAttributesService.deleteCustomAttributes(
                     DeleteCustomAttributesRequest.builder().names(Arrays.asList(name)).build());
-    assertEquals(0, casRes.getTotal());
+    found = false;
+    for (CustomAttribute tmp : casRes.getData()) {
+      if (tmp.getName().equals(name)) {
+        found = true;
+        break;
+      }
+    }
+    assertFalse(found);
   }
 }

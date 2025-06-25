@@ -7,6 +7,15 @@ import com.descope.model.customattributes.DeleteCustomAttributesRequest;
 
 /** Provides audit records search capabilities. */
 public interface UserCustomAttributesService {
+
+  /**
+   * Get all user custom attributes
+   *
+   * @return {@link CustomAttributesResponse}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  CustomAttributesResponse getCustomAttributes() throws DescopeException;
+
   /**
    * Create custom attributes.
    *
