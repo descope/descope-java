@@ -14,5 +14,5 @@ public class CustomAttribute {
   private String name;
   private int type;
   private List<CustomAttributeOption> options;
-  private String DisplayName;
+  private String displayName;
 }
