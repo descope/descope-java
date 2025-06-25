@@ -15,6 +15,7 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.SsoApplicationService;
 import com.descope.sdk.mgmt.SsoService;
 import com.descope.sdk.mgmt.TenantService;
+import com.descope.sdk.mgmt.UserCustomAttributesService;
 import com.descope.sdk.mgmt.UserService;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,4 +39,5 @@ public class ManagementServices {
   PasswordSettingsService passwordSettingsService;
   OutboundAppsService outboundAppsService;
   InboundAppsService inboundAppsService;
+  UserCustomAttributesService userCustomAttributesService;
 }
