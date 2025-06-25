@@ -9,7 +9,7 @@ import com.descope.model.customattributes.DeleteCustomAttributesRequest;
 public interface UserCustomAttributesService {
 
   /**
-   * Get all user custom attributes
+   * Get all user custom attributes.
    *
    * @return {@link CustomAttributesResponse}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
