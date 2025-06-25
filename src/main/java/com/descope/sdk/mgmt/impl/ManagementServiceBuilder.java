@@ -24,6 +24,7 @@ public class ManagementServiceBuilder {
         .ssoApplicationService(new SsoApplicationServiceImpl(client))
         .outboundAppsService(new OutboundAppsServiceImpl(client))
         .inboundAppsService(new InboundAppsServiceImpl(client))
+        .userCustomAttributesService(new UserCustomAttributesServiceImpl(client))
         .build();
   }
 }
