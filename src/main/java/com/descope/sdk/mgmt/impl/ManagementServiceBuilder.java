@@ -19,6 +19,7 @@ public class ManagementServiceBuilder {
         .permissionService(new PermissionServiceImpl(client))
         .auditService(new AuditServiceImpl(client))
         .authzService(new AuthzServiceImpl(client))
+        .fgaService(new FGAServiceImpl(client))
         .projectService(new ProjectServiceImpl(client))
         .passwordSettingsService(new PasswordSettingsServiceImpl(client))
         .ssoApplicationService(new SsoApplicationServiceImpl(client))
