@@ -1,33 +1,16 @@
 package com.descope.model.fga;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * Represents detailed information about a resource including metadata.
- */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class FGAResourceDetails {
-  
-  /**
-   * The resource ID.
-   */
   private String resourceId;
-  
-  /**
-   * The resource type.
-   */
   private String resourceType;
-  
-  /**
-   * The display name for the resource.
-   */
   private String displayName;
-  
-  public FGAResourceDetails() {}
-  
-  public FGAResourceDetails(String resourceId, String resourceType, String displayName) {
-    this.resourceId = resourceId;
-    this.resourceType = resourceType;
-    this.displayName = displayName;
-  }
 }

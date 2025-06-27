@@ -1,21 +1,14 @@
 package com.descope.model.fga;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * Represents a Fine-Grained Authorization (FGA) schema in DSL format.
- */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class FGASchema {
-  
-  /**
-   * The FGA schema in DSL format (e.g., AuthZ 1.0 DSL).
-   */
   private String dsl;
-  
-  public FGASchema() {}
-  
-  public FGASchema(String dsl) {
-    this.dsl = dsl;
-  }
 }

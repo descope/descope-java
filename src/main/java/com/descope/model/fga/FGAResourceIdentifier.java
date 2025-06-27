@@ -1,27 +1,15 @@
 package com.descope.model.fga;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * Identifies a resource by its ID and type.
- */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class FGAResourceIdentifier {
-  
-  /**
-   * The resource ID.
-   */
   private String resourceId;
-  
-  /**
-   * The resource type.
-   */
   private String resourceType;
-  
-  public FGAResourceIdentifier() {}
-  
-  public FGAResourceIdentifier(String resourceId, String resourceType) {
-    this.resourceId = resourceId;
-    this.resourceType = resourceType;
-  }
 }
