@@ -70,7 +70,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 8. [Manage Flows](#manage-flows)
 9. [Manage JWTs](#manage-jwts)
 10. [Audit](#audit)
-11. [Manage Project](#manage-project)
+11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
+12. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1265,6 +1266,94 @@ try {
     // Handle the error
 }
 ```
+
+### FGA (Fine-Grained Authorization)
+
+You can manage fine-grained authorization schemas, relations, and resource metadata:
+
+```java
+// Create and manage authorization schemas
+FGAService fs = descopeClient.getManagementServices().getFgaService();
+
+String dsl = "model AuthZ 1.0\n" +
+             "type user\n" +
+             "type document\n" +
+             "  relation owner: user\n" +
+             "  relation editor: user\n" +
+             "  relation viewer: user";
+
+try {
+    FGASchema schema = new FGASchema(dsl);
+    fs.saveSchema(schema);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load the current authorization schema
+try {
+    FGASchema schema = fs.loadSchema();
+    // Do something with schema.getDsl()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create relations between resources and users
+List<FGARelation> relations = Arrays.asList(
+    new FGARelation("doc1", "document", "owner", "user123", "user"),
+    new FGARelation("doc1", "document", "viewer", "user456", "user")
+);
+
+try {
+    fs.createRelations(relations);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Check if relations are allowed
+try {
+    List<FGACheckResult> results = fs.check(relations);
+    for (FGACheckResult result : results) {
+        // Do something with result.isAllowed()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete relations
+try {
+    fs.deleteRelations(relations);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Save resource metadata
+List<FGAResourceDetails> resourceDetails = Arrays.asList(
+    new FGAResourceDetails("doc1", "document", "Important Document"),
+    new FGAResourceDetails("doc2", "document", "Public Document")
+);
+
+try {
+    fs.saveResourcesDetails(resourceDetails);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load resource metadata
+List<FGAResourceIdentifier> identifiers = Arrays.asList(
+    new FGAResourceIdentifier("doc1", "document")
+);
+
+try {
+    List<FGAResourceDetails> details = fs.loadResourcesDetails(identifiers);
+    for (FGAResourceDetails detail : details) {
+        // Do something with detail.getDisplayName()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 ### Manage Project
 
 You can change the project name, as well as to clone the current project to a new one.
