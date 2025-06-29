@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.fga.FGACheckResult;
@@ -24,8 +25,12 @@ import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
 import com.descope.model.fga.FGASchema;
+import com.descope.model.mgmt.ManagementServices;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.TestUtils;
+import com.descope.sdk.mgmt.FGAService;
+import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,12 +47,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.descope.exception.RateLimitExceededException;
-import com.descope.model.mgmt.ManagementServices;
-import com.descope.sdk.TestUtils;
-import com.descope.sdk.mgmt.FGAService;
-import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class FGAServiceImplTest {
@@ -225,13 +224,13 @@ class FGAServiceImplTest {
     // Create test relations
     List<FGARelation> relations = Arrays.asList(
         // Organization membership
-        new FGARelation("user1", "user", "member", "org1", "organization"),
-        new FGARelation("user2", "user", "admin", "org1", "organization"),
+        new FGARelation("org1", "organization", "member", "user1", "user"),
+        new FGARelation("org1", "organization", "admin", "user2", "user"),
         
         // Document ownership and hierarchy
-        new FGARelation("org1", "organization", "parent", "doc1", "document"),
-        new FGARelation("user1", "user", "owner", "doc1", "document"),
-        new FGARelation("user3", "user", "editor", "doc1", "document")
+        new FGARelation("doc1", "document", "parent", "org1", "organization"),
+        new FGARelation("doc1", "document", "owner", "user1", "user"),
+        new FGARelation("doc1", "document", "editor", "user3", "user")
     );
     
     integrationFgaService.createRelations(relations);
@@ -239,19 +238,19 @@ class FGAServiceImplTest {
     // Perform authorization checks
     List<FGARelation> checkRelations = Arrays.asList(
         // Test owner access
-        new FGARelation("user1", "user", "owner", "doc1", "document"),
-        new FGARelation("user1", "user", "editor", "doc1", "document"),
-        new FGARelation("user1", "user", "viewer", "doc1", "document"),
+        new FGARelation("doc1", "document", "owner", "user1", "user"),
+        new FGARelation("doc1", "document", "editor", "user1", "user"),
+        new FGARelation("doc1", "document", "viewer", "user1", "user"),
         
         // Test explicit editor access
-        new FGARelation("user3", "user", "editor", "doc1", "document"),
-        new FGARelation("user3", "user", "viewer", "doc1", "document"),
+        new FGARelation("doc1", "document", "editor", "user3", "user"),
+        new FGARelation("doc1", "document", "viewer", "user3", "user"),
         
         // Test org member viewer access (should inherit from parent org)
-        new FGARelation("user1", "user", "viewer", "doc1", "document"),
+        new FGARelation("doc1", "document", "viewer", "user1", "user"),
         
         // Test non-member access (should fail)
-        new FGARelation("user4", "user", "viewer", "doc1", "document")
+        new FGARelation("doc1", "document", "viewer", "user4", "user")
     );
     
     List<FGACheckResult> results = integrationFgaService.check(checkRelations);
