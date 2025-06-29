@@ -17,4 +17,5 @@ public class BatchUserPasswordHashed {
   BatchUserPasswordPhpass phpass;
   BatchUserPasswordMd5 md5;
   BatchUserPasswordArgon2 argon2;
+  BatchUserPasswordBuddyauth buddyauth;
 }
