@@ -237,45 +237,40 @@ class FGAServiceImplTest {
     
     // Perform authorization checks
     List<FGARelation> checkRelations = Arrays.asList(
-        // Test owner access
+        // Test direct relations
         new FGARelation("doc1", "document", "owner", "user1", "user"),
-        new FGARelation("doc1", "document", "editor", "user1", "user"),
-        new FGARelation("doc1", "document", "viewer", "user1", "user"),
-        
-        // Test explicit editor access
         new FGARelation("doc1", "document", "editor", "user3", "user"),
-        new FGARelation("doc1", "document", "viewer", "user3", "user"),
+        new FGARelation("org1", "organization", "admin", "user2", "user"),
         
-        // Test org member viewer access (should inherit from parent org)
-        new FGARelation("doc1", "document", "viewer", "user1", "user"),
+        // Test can_edit permission (combines editor, owner, and parent.admin)
+        new FGARelation("doc1", "document", "can_edit", "user1", "user"), // owner
+        new FGARelation("doc1", "document", "can_edit", "user3", "user"), // editor  
+        new FGARelation("doc1", "document", "can_edit", "user2", "user"), // parent.admin
         
-        // Test non-member access (should fail)
-        new FGARelation("doc1", "document", "viewer", "user4", "user")
+        // Test access that should fail
+        new FGARelation("doc1", "document", "can_edit", "user4", "user"), // no access
+        new FGARelation("doc1", "document", "owner", "user4", "user") // no ownership
     );
     
     List<FGACheckResult> results = integrationFgaService.check(checkRelations);
     
     // Validate authorization results
     assertNotNull(results);
-    assertEquals(7, results.size());
+    assertEquals(8, results.size());
     
-    // user1 should have owner access
-    assertEquals(true, results.get(0).isAllowed());
-    // user1 should have editor access (because owner)
-    assertEquals(true, results.get(1).isAllowed());
-    // user1 should have viewer access (because editor)
-    assertEquals(true, results.get(2).isAllowed());
+    // Test direct relations should succeed
+    assertEquals(true, results.get(0).isAllowed()); // user1 is owner of doc1
+    assertEquals(true, results.get(1).isAllowed()); // user3 is editor of doc1
+    assertEquals(true, results.get(2).isAllowed()); // user2 is admin of org1
     
-    // user3 should have explicit editor access
-    assertEquals(true, results.get(3).isAllowed());
-    // user3 should have viewer access (because editor)
-    assertEquals(true, results.get(4).isAllowed());
+    // Test can_edit permission should succeed
+    assertEquals(true, results.get(3).isAllowed()); // user1 can_edit (owner)
+    assertEquals(true, results.get(4).isAllowed()); // user3 can_edit (editor)
+    assertEquals(true, results.get(5).isAllowed()); // user2 can_edit (parent.admin)
     
-    // user1 should have viewer access through org membership
-    assertEquals(true, results.get(5).isAllowed());
-    
-    // user4 should NOT have access
-    assertEquals(false, results.get(6).isAllowed());
+    // Test access that should fail
+    assertEquals(false, results.get(6).isAllowed()); // user4 cannot edit (no access)
+    assertEquals(false, results.get(7).isAllowed()); // user4 is not owner
     
     // Test resource details
     List<FGAResourceIdentifier> identifiers = Arrays.asList(

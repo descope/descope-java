@@ -8,3 +8,4 @@ type document
   relation editor: user
   relation viewer: user
   relation parent: organization
+  permission can_edit: editor | owner | parent.admin
