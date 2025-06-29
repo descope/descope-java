@@ -214,14 +214,7 @@ class FGAServiceImplTest {
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() throws Exception {
-    // Load test schema from file
-    String schemaContent = loadTestSchema();
-    FGASchema testSchema = new FGASchema(schemaContent);
-    
-    // Save the test schema
-    integrationFgaService.saveSchema(testSchema);
-    
-    // Create test relations
+    // Define test relations that will be used throughout the test
     List<FGARelation> relations = Arrays.asList(
         // Organization membership
         new FGARelation("org1", "organization", "member", "user1", "user"),
@@ -232,6 +225,20 @@ class FGAServiceImplTest {
         new FGARelation("doc1", "document", "owner", "user1", "user"),
         new FGARelation("doc1", "document", "editor", "user3", "user")
     );
+    
+    // Clean up any existing test relations from previous failed runs
+    try {
+      integrationFgaService.deleteRelations(relations);
+    } catch (Exception e) {
+      // Ignore errors - relations might not exist
+    }
+    
+    // Load test schema from file
+    String schemaContent = loadTestSchema();
+    FGASchema testSchema = new FGASchema(schemaContent);
+    
+    // Save the test schema
+    integrationFgaService.saveSchema(testSchema);
     
     integrationFgaService.createRelations(relations);
     
