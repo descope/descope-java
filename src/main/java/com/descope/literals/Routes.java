@@ -215,6 +215,15 @@ public class Routes {
     public static final String MANAGEMENT_AUTHZ_RE_TARGET_ALL = "/v1/mgmt/authz/re/targetall";
     public static final String MANAGEMENT_AUTHZ_GET_MODIFIED = "/v1/mgmt/authz/getmodified";
 
+    // FGA (Fine-grained Authorization)
+    public static final String MANAGEMENT_FGA_SAVE_SCHEMA = "/v1/mgmt/fga/schema";
+    public static final String MANAGEMENT_FGA_LOAD_SCHEMA = "/v1/mgmt/fga/schema";
+    public static final String MANAGEMENT_FGA_CREATE_RELATIONS = "/v1/mgmt/fga/relations";
+    public static final String MANAGEMENT_FGA_DELETE_RELATIONS = "/v1/mgmt/fga/relations/delete";
+    public static final String MANAGEMENT_FGA_CHECK = "/v1/mgmt/fga/check";
+    public static final String MANAGEMENT_FGA_RESOURCES_LOAD = "/v1/mgmt/fga/resources/load";
+    public static final String MANAGEMENT_FGA_RESOURCES_SAVE = "/v1/mgmt/fga/resources/save";
+
     // Password settings
     public static final String MANAGEMENT_PASSWORD_SETTINGS = "/v1/mgmt/password/settings";
 

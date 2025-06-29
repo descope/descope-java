@@ -1,0 +1,11 @@
+model AuthZ 1.0
+type user
+type organization
+  relation member: user
+  relation admin: user
+type document
+  relation owner: user
+  relation editor: user
+  relation viewer: user
+  relation parent: organization
+  permission can_edit: editor | owner | parent.admin
