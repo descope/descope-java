@@ -1,4 +1,28 @@
-package com.descope.sdk.mgmt.impl;import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CHECK;import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CREATE_RELATIONS;import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_DELETE_RELATIONS;import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_LOAD_SCHEMA;import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_LOAD;import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_SAVE;import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_SAVE_SCHEMA;import com.descope.exception.DescopeException;import com.descope.exception.ServerCommonException;import com.descope.model.client.Client;import com.descope.model.fga.FGACheckResult;import com.descope.model.fga.FGARelation;import com.descope.model.fga.FGAResourceDetails;import com.descope.model.fga.FGAResourceIdentifier;import com.descope.model.fga.FGASchema;import com.descope.proxy.ApiProxy;import com.descope.sdk.mgmt.FGAService;import com.fasterxml.jackson.core.type.TypeReference;import java.util.ArrayList;import java.util.HashMap;import java.util.List;import java.util.Map;
+package com.descope.sdk.mgmt.impl;
+
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CHECK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CREATE_RELATIONS;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_DELETE_RELATIONS;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_LOAD_SCHEMA;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_LOAD;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_SAVE;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_SAVE_SCHEMA;
+
+import com.descope.exception.DescopeException;
+import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
+import com.descope.model.fga.FGACheckResult;
+import com.descope.model.fga.FGARelation;
+import com.descope.model.fga.FGAResourceDetails;
+import com.descope.model.fga.FGAResourceIdentifier;
+import com.descope.model.fga.FGASchema;
+import com.descope.proxy.ApiProxy;
+import com.descope.sdk.mgmt.FGAService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class FGAServiceImpl extends ManagementsBase implements FGAService {

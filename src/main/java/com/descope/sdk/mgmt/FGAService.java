@@ -64,7 +64,8 @@ public interface FGAService {
    * @return list of resource details
    * @throws DescopeException if the operation fails
    */
-  List<FGAResourceDetails> loadResourcesDetails(List<FGAResourceIdentifier> resourceIdentifiers) throws DescopeException;
+  List<FGAResourceDetails> loadResourcesDetails(List<FGAResourceIdentifier> resourceIdentifiers)
+      throws DescopeException;
 
   /**
    * Saves detailed information for the given resources.
