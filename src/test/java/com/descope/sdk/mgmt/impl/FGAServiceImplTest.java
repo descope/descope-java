@@ -27,16 +27,27 @@ import com.descope.model.fga.FGASchema;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.descope.exception.RateLimitExceededException;
+import com.descope.model.mgmt.ManagementServices;
+import com.descope.sdk.TestUtils;
+import com.descope.sdk.mgmt.FGAService;
+import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 
 @ExtendWith(MockitoExtension.class)
 class FGAServiceImplTest {
@@ -46,12 +57,18 @@ class FGAServiceImplTest {
   @Mock
   private Client client;
   private FGAServiceImpl fgaService;
+  private FGAService integrationFgaService;
 
   @BeforeEach
   void setUp() {
     lenient().when(client.getProjectId()).thenReturn("test-project");
     lenient().when(client.getManagementKey()).thenReturn("test-key");
     fgaService = new FGAServiceImpl(client);
+    
+    // Setup integration test service with real client
+    Client realClient = TestUtils.getClient();
+    ManagementServices mgmtServices = ManagementServiceBuilder.buildServices(realClient);
+    integrationFgaService = mgmtServices.getFgaService();
   }
 
   @Test
@@ -96,7 +113,7 @@ class FGAServiceImplTest {
 
   @Test
   void testCreateRelations_Success() throws Exception {
-    List<FGARelation> relations = List.of(
+    List<FGARelation> relations = Arrays.asList(
         new FGARelation("doc1", "document", "owner", "user1", "user")
     );
 
@@ -111,12 +128,12 @@ class FGAServiceImplTest {
 
   @Test
   void testCreateRelations_EmptyList() {
-    assertThrows(ServerCommonException.class, () -> fgaService.createRelations(List.of()));
+    assertThrows(ServerCommonException.class, () -> fgaService.createRelations(Arrays.asList()));
   }
 
   @Test
   void testDeleteRelations_Success() throws Exception {
-    List<FGARelation> relations = List.of(
+    List<FGARelation> relations = Arrays.asList(
         new FGARelation("doc1", "document", "owner", "user1", "user")
     );
 
@@ -131,7 +148,7 @@ class FGAServiceImplTest {
 
   @Test
   void testCheck_Success() throws Exception {
-    List<FGARelation> relations = List.of(
+    List<FGARelation> relations = Arrays.asList(
         new FGARelation("doc1", "document", "owner", "user1", "user")
     );
 
@@ -139,7 +156,7 @@ class FGAServiceImplTest {
     checkResultMap.put("allowed", true);
 
     Map<String, Object> response = new HashMap<>();
-    response.put("tuples", List.of(checkResultMap));
+    response.put("tuples", Arrays.asList(checkResultMap));
 
     try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
       mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -155,7 +172,7 @@ class FGAServiceImplTest {
 
   @Test
   void testLoadResourcesDetails_Success() throws Exception {
-    List<FGAResourceIdentifier> identifiers = List.of(
+    List<FGAResourceIdentifier> identifiers = Arrays.asList(
         new FGAResourceIdentifier("doc1", "document")
     );
 
@@ -165,7 +182,7 @@ class FGAServiceImplTest {
     detailsMap.put("displayName", "Document 1");
     
     Map<String, Object> response = new HashMap<>();
-    response.put("resourcesDetails", List.of(detailsMap));
+    response.put("resourcesDetails", Arrays.asList(detailsMap));
 
     try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
       mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -183,7 +200,7 @@ class FGAServiceImplTest {
 
   @Test
   void testSaveResourcesDetails_Success() throws Exception {
-    List<FGAResourceDetails> details = List.of(
+    List<FGAResourceDetails> details = Arrays.asList(
         new FGAResourceDetails("doc1", "document", "Document 1")
     );
 
@@ -194,5 +211,97 @@ class FGAServiceImplTest {
 
       verify(apiProxy).post(any(), any(), eq(Void.class));
     }
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalFullCycle() throws Exception {
+    // Load test schema from file
+    String schemaContent = loadTestSchema();
+    FGASchema testSchema = new FGASchema(schemaContent);
+    
+    // Save the test schema
+    integrationFgaService.saveSchema(testSchema);
+    
+    // Create test relations
+    List<FGARelation> relations = Arrays.asList(
+        // Organization membership
+        new FGARelation("user1", "user", "member", "org1", "organization"),
+        new FGARelation("user2", "user", "admin", "org1", "organization"),
+        
+        // Document ownership and hierarchy
+        new FGARelation("org1", "organization", "parent", "doc1", "document"),
+        new FGARelation("user1", "user", "owner", "doc1", "document"),
+        new FGARelation("user3", "user", "editor", "doc1", "document")
+    );
+    
+    integrationFgaService.createRelations(relations);
+    
+    // Perform authorization checks
+    List<FGARelation> checkRelations = Arrays.asList(
+        // Test owner access
+        new FGARelation("user1", "user", "owner", "doc1", "document"),
+        new FGARelation("user1", "user", "editor", "doc1", "document"),
+        new FGARelation("user1", "user", "viewer", "doc1", "document"),
+        
+        // Test explicit editor access
+        new FGARelation("user3", "user", "editor", "doc1", "document"),
+        new FGARelation("user3", "user", "viewer", "doc1", "document"),
+        
+        // Test org member viewer access (should inherit from parent org)
+        new FGARelation("user1", "user", "viewer", "doc1", "document"),
+        
+        // Test non-member access (should fail)
+        new FGARelation("user4", "user", "viewer", "doc1", "document")
+    );
+    
+    List<FGACheckResult> results = integrationFgaService.check(checkRelations);
+    
+    // Validate authorization results
+    assertNotNull(results);
+    assertEquals(7, results.size());
+    
+    // user1 should have owner access
+    assertEquals(true, results.get(0).isAllowed());
+    // user1 should have editor access (because owner)
+    assertEquals(true, results.get(1).isAllowed());
+    // user1 should have viewer access (because editor)
+    assertEquals(true, results.get(2).isAllowed());
+    
+    // user3 should have explicit editor access
+    assertEquals(true, results.get(3).isAllowed());
+    // user3 should have viewer access (because editor)
+    assertEquals(true, results.get(4).isAllowed());
+    
+    // user1 should have viewer access through org membership
+    assertEquals(true, results.get(5).isAllowed());
+    
+    // user4 should NOT have access
+    assertEquals(false, results.get(6).isAllowed());
+    
+    // Test resource details
+    List<FGAResourceIdentifier> identifiers = Arrays.asList(
+        new FGAResourceIdentifier("doc1", "document"),
+        new FGAResourceIdentifier("org1", "organization")
+    );
+    
+    List<FGAResourceDetails> resourceDetails = Arrays.asList(
+        new FGAResourceDetails("doc1", "document", "Test Document 1"),
+        new FGAResourceDetails("org1", "organization", "Test Organization 1")
+    );
+    
+    // Save resource details
+    integrationFgaService.saveResourcesDetails(resourceDetails);
+    
+    // Load and verify resource details
+    List<FGAResourceDetails> loadedDetails = integrationFgaService.loadResourcesDetails(identifiers);
+    assertNotNull(loadedDetails);
+    assertEquals(2, loadedDetails.size());
+    
+    // Clean up - delete the test relations
+    integrationFgaService.deleteRelations(relations);
+  }
+  
+  private String loadTestSchema() throws IOException {
+    return new String(Files.readAllBytes(Paths.get("src/test/data/fga-schema.txt")));
   }
 }
