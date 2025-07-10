@@ -831,11 +831,11 @@ public class UserServiceImplTest {
     Map<String, List<String>> tenantRoleNames = mapOf("tenant1", Arrays.asList("roleA", "roleB"));
     AllUsersResponseDetails allUsersResponse = mock(AllUsersResponseDetails.class);
     UserSearchRequest userSearchRequest = UserSearchRequest.builder()
-      .limit(5)
-      .page(0)
-      .tenantRoleIds(tenantRoleIds)
-      .tenantRoleNames(tenantRoleNames)
-      .build();
+        .limit(5)
+        .page(0)
+        .tenantRoleIds(tenantRoleIds)
+        .tenantRoleNames(tenantRoleNames)
+        .build();
 
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
@@ -859,7 +859,7 @@ public class UserServiceImplTest {
       @SuppressWarnings("unchecked")
       Map<String, Object> tenantIdsMap = (Map<String, Object>) wrappedIds.get("tenant1");
       assertEquals(Arrays.asList("roleA", "roleB"), (tenantIdsMap.get("values")));
-      
+
       @SuppressWarnings("unchecked")
       // assertTrue(payload.get("tenantRoleNames") instanceof Map);
       Map<String, Object> wrappedNames = (Map<String, Object>) payload.get("tenantRoleNames");
@@ -867,7 +867,7 @@ public class UserServiceImplTest {
 
       @SuppressWarnings("unchecked")
       Map<String, Object> tenantNamesMap = (Map<String, Object>) wrappedNames.get("tenant1");
-      assertEquals(Arrays.asList("roleA", "roleB"), (tenantNamesMap.get("values")));    
+      assertEquals(Arrays.asList("roleA", "roleB"), (tenantNamesMap.get("values")));
     }
   }
 
