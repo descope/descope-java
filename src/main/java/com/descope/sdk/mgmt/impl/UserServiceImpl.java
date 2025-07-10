@@ -66,6 +66,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -756,10 +757,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (inputMap == null) {
       return null;
     }
-    Map<String, Map<String, List<String>>> result = new java.util.HashMap<>();
+    Map<String, Map<String, List<String>>> result = new HashMap<>();
     for (Map.Entry<String, List<String>> entry : inputMap.entrySet()) {
       if (entry.getValue() != null) {
-        result.put(entry.getKey(), java.util.Collections.singletonMap("values", entry.getValue()));
+        result.put(entry.getKey(), mapOf("values", entry.getValue()));
       }
     }
     return result.isEmpty() ? null : result;
