@@ -52,9 +52,6 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
-
-import net.bytebuddy.asm.Advice.Argument;
-
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.time.Duration;
@@ -830,8 +827,8 @@ public class UserServiceImplTest {
 
   @Test
   void testSearchAllWithTenantRoleParams() {
-    Map<String, List<String>> tenantRoleIds = Map.of("tenant1", List.of("roleA", "roleB"));
-    Map<String, List<String>> tenantRoleNames = Map.of("tenant1", List.of("roleA", "roleB"));
+    Map<String, List<String>> tenantRoleIds = mapOf("tenant1", Arrays.asList("roleA", "roleB"));
+    Map<String, List<String>> tenantRoleNames = mapOf("tenant1", Arrays.asList("roleA", "roleB"));
     AllUsersResponseDetails allUsersResponse = mock(AllUsersResponseDetails.class);
     UserSearchRequest userSearchRequest = UserSearchRequest.builder()
       .limit(5)
@@ -861,7 +858,7 @@ public class UserServiceImplTest {
 
       @SuppressWarnings("unchecked")
       Map<String, Object> tenantIdsMap = (Map<String, Object>) wrappedIds.get("tenant1");
-      assertEquals(List.of("roleA", "roleB"), (tenantIdsMap.get("values")));
+      assertEquals(Arrays.asList("roleA", "roleB"), (tenantIdsMap.get("values")));
       
       @SuppressWarnings("unchecked")
       // assertTrue(payload.get("tenantRoleNames") instanceof Map);
@@ -870,7 +867,7 @@ public class UserServiceImplTest {
 
       @SuppressWarnings("unchecked")
       Map<String, Object> tenantNamesMap = (Map<String, Object>) wrappedNames.get("tenant1");
-      assertEquals(List.of("roleA", "roleB"), (tenantNamesMap.get("values")));    
+      assertEquals(Arrays.asList("roleA", "roleB"), (tenantNamesMap.get("values")));    
     }
   }
 
