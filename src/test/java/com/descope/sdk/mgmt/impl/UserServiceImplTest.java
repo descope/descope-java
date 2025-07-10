@@ -52,6 +52,9 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
+
+import net.bytebuddy.asm.Advice.Argument;
+
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.time.Duration;
@@ -66,6 +69,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class UserServiceImplTest {
@@ -821,6 +825,52 @@ public class UserServiceImplTest {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       AllUsersResponseDetails response = userService.searchAll(userSearchRequest);
       Assertions.assertThat(response.getUsers().size()).isEqualTo(1);
+    }
+  }
+
+  @Test
+  void testSearchAllWithTenantRoleParams() {
+    Map<String, List<String>> tenantRoleIds = Map.of("tenant1", List.of("roleA", "roleB"));
+    Map<String, List<String>> tenantRoleNames = Map.of("tenant1", List.of("roleA", "roleB"));
+    AllUsersResponseDetails allUsersResponse = mock(AllUsersResponseDetails.class);
+    UserSearchRequest userSearchRequest = UserSearchRequest.builder()
+      .limit(5)
+      .page(0)
+      .tenantRoleIds(tenantRoleIds)
+      .tenantRoleNames(tenantRoleNames)
+      .build();
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
+
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      userService.searchAll(userSearchRequest);
+
+      @SuppressWarnings("unchecked")
+      ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), captor.capture(), any());
+
+      Map<String, Object> payload = captor.getValue();
+
+      @SuppressWarnings("unchecked")
+      // assertTrue(payload.get("tenantRoleIds") instanceof Map);
+      Map<String, Object> wrappedIds = (Map<String, Object>) payload.get("tenantRoleIds");
+      assertTrue(wrappedIds.get("tenant1") instanceof Map);
+
+      @SuppressWarnings("unchecked")
+      Map<String, Object> tenantIdsMap = (Map<String, Object>) wrappedIds.get("tenant1");
+      assertEquals(List.of("roleA", "roleB"), (tenantIdsMap.get("values")));
+      
+      @SuppressWarnings("unchecked")
+      // assertTrue(payload.get("tenantRoleNames") instanceof Map);
+      Map<String, Object> wrappedNames = (Map<String, Object>) payload.get("tenantRoleNames");
+      assertTrue(wrappedNames.get("tenant1") instanceof Map);
+
+      @SuppressWarnings("unchecked")
+      Map<String, Object> tenantNamesMap = (Map<String, Object>) wrappedNames.get("tenant1");
+      assertEquals(List.of("roleA", "roleB"), (tenantNamesMap.get("values")));    
     }
   }
 
