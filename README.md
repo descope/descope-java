@@ -71,7 +71,9 @@ These sections show how to use the SDK to perform API management functions. Befo
 9. [Manage JWTs](#manage-jwts)
 10. [Audit](#audit)
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
-12. [Manage Project](#manage-project)
+12. [Manage Outbound Applications](#manage-outbound-applications)
+13. [Manage Inbound Applications](#manage-inbound-applications)
+14. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1348,6 +1350,232 @@ try {
     for (FGAResourceDetails detail : details) {
         // Do something with detail.getDisplayName()
     }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+### Manage Outbound Applications
+
+You can fetch, delete, and manage outbound application tokens:
+
+```java
+// Set up the outbound apps service
+OutboundAppsService outboundAppsService = descopeClient.getManagementServices().getOutboundAppsService();
+
+// Fetch a user token for an outbound app
+try {
+    FetchOutboundAppUserTokenResponse res = outboundAppsService.fetchOutboundAppUserToken(
+        FetchOutboundAppUserTokenRequest.builder()
+            .appId("app-id") // required
+            .userId("user-id") // required
+            .scopes(Arrays.asList("read", "write")) // required, at least one scope
+            // .options(
+            //     FetchOutboundAppTokenOptions.builder() // optional
+            //         .withRefreshToken(false)
+            //         .forceRefresh(false)
+            //         .build()
+            // )
+            .build()
+    );
+    OutboundAppToken token = res.getToken();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a user token by token ID
+try {
+    outboundAppsService.deleteOutboundAppTokenById("token-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete all outbound app tokens for a user
+try {
+    outboundAppsService.deleteOutboundAppUserTokens(
+        DeleteOutboundAppUserTokensRequest.builder()
+            .appId("app-id") // required
+            .userId("user-id") // required
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+### Manage Inbound Applications
+
+You can create, update, patch, delete, and load inbound applications, as well as manage secrets and consents:
+
+```java
+// Set up the inbound apps service
+InboundAppsService inboundAppsService = descopeClient.getManagementServices().getInboundAppsService();
+
+// Create a new inbound application
+try {
+    InboundAppCreateResponse response = inboundAppsService.createApplication(
+        InboundAppRequest.builder()
+            .name("My Inbound App") // required
+            // .id("optional-custom-id")
+            // .description("optional-description")
+            // .logo("optional-logo")
+            // .loginPageUrl("optional-loginPageUrl")
+            // .approvedCallbackUrls(new String[] { "https://example.com/callback1", "https://example.com/callback2" })
+            // .permissionsScopes(new InboundAppScope[] {
+            //     InboundAppScope.builder()
+            //         .name("scope-name") // required for each scope
+            //         .description("optional description")
+            //         // .values(new String[] { "value1", "value2" }) // if supported
+            //         .build()
+            // })
+            // .attributesScopes(new InboundAppScope[] {
+            //     InboundAppScope.builder()
+            //         .name("attribute-scope-name") // required for each attribute scope
+            //         .description("optional description")
+            //         // .values(new String[] { "value1", "value2" }) // if supported
+            //         .build()
+            // })
+            .build()
+    );
+    String appId = response.getId();
+    String secret = response.getSecret();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update an existing inbound application (overwrites all fields)
+try {
+    inboundAppsService.updateApplication(
+        InboundAppRequest.builder()
+            .id("app-id") // required
+            .name("Updated Name") // required
+            // .description("optional-description")
+            // .logo("optional-logo")
+            // .loginPageUrl("optional-loginPageUrl")
+            // .approvedCallbackUrls(new String[] { "https://example.com/callback1" })
+            // .permissionsScopes(new InboundAppScope[] {
+            //     InboundAppScope.builder().name("scope-name").build()
+            // })
+            // .attributesScopes(new InboundAppScope[] {
+            //     InboundAppScope.builder().name("attribute-scope-name").build()
+            // })
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Patch an inbound application (updates only provided fields)
+try {
+    inboundAppsService.patchApplication(
+        InboundAppRequest.builder()
+            .id("app-id") // required
+            // .name("Patched Name")
+            // .description("optional-description")
+            // .logo("optional-logo")
+            // .loginPageUrl("optional-loginPageUrl")
+            // .approvedCallbackUrls(new String[] { "https://example.com/callback1" })
+            // .permissionsScopes(new InboundAppScope[] {
+            //     InboundAppScope.builder().name("scope-name").build()
+            // })
+            // .attributesScopes(new InboundAppScope[] {
+            //     InboundAppScope.builder().name("attribute-scope-name").build()
+            // })
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete an inbound application by ID
+try {
+    inboundAppsService.deleteApplication("app-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a specific inbound application by ID
+try {
+    InboundApp app = inboundAppsService.loadApplication("app-id"); 
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a specific inbound application by client ID
+try {
+    InboundApp app = inboundAppsService.loadApplicationByClientId("client-id"); 
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Get the application's secret
+try {
+    String secret = inboundAppsService.getApplicationSecret("app-id"); 
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Rotate the application's secret (returns new secret)
+try {
+    String newSecret = inboundAppsService.rotateApplicationSecret("app-id"); 
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load all inbound applications
+try {
+    InboundApp[] apps = inboundAppsService.loadAllApplications();
+    for (InboundApp app : apps) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete user consents for an inbound app
+// At least one identifying field must be set: consentIds, appId, userIds, or tenantId
+try {
+    inboundAppsService.deleteConsents(
+        InboundAppConsentDeleteOptions.builder()
+            // .consentIds(new String[] { "consent-id-1", "consent-id-2" }) 
+            // .appId("app-id") 
+            // .userIds(new String[] { "user-id-1", "user-id-2" }) 
+            // .tenantId("tenant-id") 
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete tenant consents for an inbound app
+// At least one identifying field must be set: consentIds, appId, or tenantId
+try {
+    inboundAppsService.deleteTenantConsents(
+        InboundAppTenantConsentDeleteOptions.builder()
+            // .consentIds(new String[] { "consent-id-1", "consent-id-2" }) 
+            // .appId("app-id") 
+            // .tenantId("tenant-id") 
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search consents for inbound apps
+// All fields are optional, use to filter results
+try {
+    InboundAppConsentSearchResponse res = inboundAppsService.searchConsents(
+        InboundAppConsentSearchOptions.builder()
+            // .appId("app-id") 
+            // .userId("user-id") 
+            // .consentId("consent-id") 
+            // .tenantId("tenant-id") 
+            // .page("page-token") 
+            .build()
+    );
+    // res.getConsents(), res.getTotal()
 } catch (DescopeException de) {
     // Handle the error
 }
