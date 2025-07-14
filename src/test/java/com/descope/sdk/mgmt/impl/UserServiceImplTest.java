@@ -1052,7 +1052,8 @@ public class UserServiceImplTest {
     UserResponseDetails patchResponse = userService.patch(loginId,
         PatchUserRequest.builder()
             .userTenants(
-                Arrays.asList(AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName)).build())).build());
+                Arrays.asList(AssociatedTenant.builder()
+                    .tenantId(tenantId).roleNames(Arrays.asList(roleName)).build())).build());
     user = patchResponse.getUser();
     assertNotNull(user);
     assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
