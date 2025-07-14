@@ -852,7 +852,6 @@ public class UserServiceImplTest {
       Map<String, Object> payload = captor.getValue();
 
       @SuppressWarnings("unchecked")
-      // assertTrue(payload.get("tenantRoleIds") instanceof Map);
       Map<String, Object> wrappedIds = (Map<String, Object>) payload.get("tenantRoleIds");
       assertTrue(wrappedIds.get("tenant1") instanceof Map);
 
@@ -861,7 +860,6 @@ public class UserServiceImplTest {
       assertEquals(Arrays.asList("roleA", "roleB"), (tenantIdsMap.get("values")));
 
       @SuppressWarnings("unchecked")
-      // assertTrue(payload.get("tenantRoleNames") instanceof Map);
       Map<String, Object> wrappedNames = (Map<String, Object>) payload.get("tenantRoleNames");
       assertTrue(wrappedNames.get("tenant1") instanceof Map);
 
@@ -1050,6 +1048,22 @@ public class UserServiceImplTest {
     user = updateResponse.getUser();
     assertNotNull(user);
     assertThat(user.getRoleNames()).containsExactly(roleName);
+    // Patch
+    UserResponseDetails patchResponse = userService.patch(loginId,
+        PatchUserRequest.builder()
+            .userTenants(
+                Arrays.asList(AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName)).build())).build());
+    user = patchResponse.getUser();
+    assertNotNull(user);
+    assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
+        .tenantName(tenantName).roleNames(Arrays.asList(roleName)).build());
+    // Search
+    AllUsersResponseDetails searchByTenantRoleNames = userService.searchAll(
+        UserSearchRequest.builder()
+            .tenantRoleNames(mapOf(tenantId, Arrays.asList(roleName))).build());
+    boolean foundByRoleName = searchByTenantRoleNames.getUsers().stream()
+        .anyMatch(u -> u.getUserId().equals(createResponse.getUser().getUserId()));
+    assertTrue(foundByRoleName); 
     // Delete
     userService.delete(loginId);
     tenantService.delete(tenantId);
