@@ -66,6 +66,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class UserServiceImplTest {
@@ -825,6 +826,50 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testSearchAllWithTenantRoleParams() {
+    Map<String, List<String>> tenantRoleIds = mapOf("tenant1", Arrays.asList("roleA", "roleB"));
+    Map<String, List<String>> tenantRoleNames = mapOf("tenant1", Arrays.asList("roleA", "roleB"));
+    AllUsersResponseDetails allUsersResponse = mock(AllUsersResponseDetails.class);
+    UserSearchRequest userSearchRequest = UserSearchRequest.builder()
+        .limit(5)
+        .page(0)
+        .tenantRoleIds(tenantRoleIds)
+        .tenantRoleNames(tenantRoleNames)
+        .build();
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
+
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      userService.searchAll(userSearchRequest);
+
+      @SuppressWarnings("unchecked")
+      ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), captor.capture(), any());
+
+      Map<String, Object> payload = captor.getValue();
+
+      @SuppressWarnings("unchecked")
+      Map<String, Object> wrappedIds = (Map<String, Object>) payload.get("tenantRoleIds");
+      assertTrue(wrappedIds.get("tenant1") instanceof Map);
+
+      @SuppressWarnings("unchecked")
+      Map<String, Object> tenantIdsMap = (Map<String, Object>) wrappedIds.get("tenant1");
+      assertEquals(Arrays.asList("roleA", "roleB"), (tenantIdsMap.get("values")));
+
+      @SuppressWarnings("unchecked")
+      Map<String, Object> wrappedNames = (Map<String, Object>) payload.get("tenantRoleNames");
+      assertTrue(wrappedNames.get("tenant1") instanceof Map);
+
+      @SuppressWarnings("unchecked")
+      Map<String, Object> tenantNamesMap = (Map<String, Object>) wrappedNames.get("tenant1");
+      assertEquals(Arrays.asList("roleA", "roleB"), (tenantNamesMap.get("values")));
+    }
+  }
+
+  @Test
   void testSearchAllForInvalidLimit() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.searchAll(UserSearchRequest.builder().limit(-1).build()));
@@ -1003,6 +1048,23 @@ public class UserServiceImplTest {
     user = updateResponse.getUser();
     assertNotNull(user);
     assertThat(user.getRoleNames()).containsExactly(roleName);
+    // Patch
+    UserResponseDetails patchResponse = userService.patch(loginId,
+        PatchUserRequest.builder()
+            .userTenants(
+                Arrays.asList(AssociatedTenant.builder()
+                    .tenantId(tenantId).roleNames(Arrays.asList(roleName)).build())).build());
+    user = patchResponse.getUser();
+    assertNotNull(user);
+    assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
+        .tenantName(tenantName).roleNames(Arrays.asList(roleName)).build());
+    // Search
+    AllUsersResponseDetails searchByTenantRoleNames = userService.searchAll(
+        UserSearchRequest.builder()
+            .tenantRoleNames(mapOf(tenantId, Arrays.asList(roleName))).build());
+    boolean foundByRoleName = searchByTenantRoleNames.getUsers().stream()
+        .anyMatch(u -> u.getUserId().equals(createResponse.getUser().getUserId()));
+    assertTrue(foundByRoleName); 
     // Delete
     userService.delete(loginId);
     tenantService.delete(tenantId);
