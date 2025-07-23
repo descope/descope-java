@@ -312,6 +312,32 @@ public class TenantServiceImplTest {
   }
 
   @Test
+  void testGenerateSSOConfigurationLinkWithSSOIdForSuccess() {
+    GenerateTenantLinkResponse mockResponse = GenerateTenantLinkResponse.builder()
+        .adminSSOConfigurationLink("some link")
+        .build();
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      String response = tenantService.generateSSOConfigurationLink(
+          GenerateTenantLinkRequest.builder()
+            .tenantId("tenant")
+            .expireDuration(60 * 60 * 24)
+            .ssoId("bla")
+            .email("a@a.com")
+            .templateId("template-id")
+            .build());
+
+      assertThat(response).isEqualTo("some link");
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
   void testRevokeSSOConfigurationLinkForEmptyParams() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class, () ->
         tenantService.revokeSSOConfigurationLink("", ""));
@@ -327,6 +353,18 @@ public class TenantServiceImplTest {
       mockedApiProxyBuilder.when(
           () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       tenantService.revokeSSOConfigurationLink("tenant", ""); 
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testRevokeSSOConfigurationLinkWithSSOIdForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.revokeSSOConfigurationLink("tenant", "bla"); 
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
