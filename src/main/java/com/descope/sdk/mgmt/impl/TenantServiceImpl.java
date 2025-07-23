@@ -2,11 +2,11 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.GENERATE_SSO_CONFIGURATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.GET_TENANT_SETTINGS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.REVOKE_SSO_CONFIGURATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_TENANT_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.GENERATE_SSO_CONFIGURATION_LINK;
-import static com.descope.literals.Routes.ManagementEndPoints.REVOKE_SSO_CONFIGURATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.TENANT_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
 import static com.descope.utils.CollectionUtils.addIfNotNull;
@@ -206,7 +206,7 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     URI generateSSOConfigurationLinkUri = generateSSOConfigurationLinkUri();
     ApiProxy apiProxy = getApiProxy();
     GenerateTenantLinkResponse response = apiProxy.post(
-      generateSSOConfigurationLinkUri, req, GenerateTenantLinkResponse.class);
+        generateSSOConfigurationLinkUri, req, GenerateTenantLinkResponse.class);
     return response.getAdminSSOConfigurationLink();
   }
 
