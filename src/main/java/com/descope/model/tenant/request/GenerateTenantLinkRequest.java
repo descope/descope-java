@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GenerateTenantLinkRequest {
   String tenantId;
-  /** Expiration duration in seconds */
+  /** Expiration duration in seconds. */
   @JsonProperty("expireTime")
   long expireDuration;
   String ssoId;
