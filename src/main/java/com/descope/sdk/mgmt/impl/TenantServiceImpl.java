@@ -7,6 +7,8 @@ import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_L
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.TENANT_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.GENERATE_SSO_CONFIGURATION_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.REVOKE_SSO_CONFIGURATION_LINK;
 import static com.descope.utils.CollectionUtils.addIfNotNull;
 import static com.descope.utils.CollectionUtils.mapOf;
 
@@ -181,6 +183,38 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     apiProxy.post(configureSettingsUri(), req, Void.class);
   }
 
+  @Override
+  public String generateSSOConfigurationLink(String id, long expireDuration, String ssoID, String email, String templateID) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+
+    Map<String, Object> req = mapOf(
+        "id", id,
+        "expireDuration", expireDuration,
+        "ssoID", ssoID,
+        "email", email,
+        "templateID", templateID
+    );
+    
+    URI generateSSOConfigurationLinkUri = generateSSOConfigurationLinkUri();
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(generateSSOConfigurationLinkUri, req, String.class);
+  }
+
+  @Override
+  public void revokeSSOConfigurationLink(String id, String ssoID) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+
+    Map<String, Object> req = mapOf("id", id, "ssoID", ssoID);
+
+    URI revokeSSOConfigurationLinkUri = revokeSSOConfigurationLinkUri();
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(revokeSSOConfigurationLinkUri, req, Void.class);
+  }
+
   private URI composeCreateTenantUri() {
     return getUri(CREATE_TENANT_LINK);
   }
@@ -211,5 +245,13 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
 
   private URI configureSettingsUri() {
     return getUri(GET_TENANT_SETTINGS_LINK);
+  }
+
+  private URI generateSSOConfigurationLinkUri() {
+    return getUri(GENERATE_SSO_CONFIGURATION_LINK);
+  }
+
+  private URI revokeSSOConfigurationLinkUri() {
+    return getUri(REVOKE_SSO_CONFIGURATION_LINK);
   }
 }

@@ -268,4 +268,44 @@ public class TenantServiceImplTest {
     assertThat(tenantSettings.getAuthType()).isEqualTo(TenantAuthType.OIDC);
     tenantService.delete(tenantId);
   }
+
+  @Test
+  void testGenerateSSOConfigurationLinkForEmptyParams() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.generateSSOConfigurationLink("", 0, "", "", ""));
+    assertNotNull(thrown);
+    assertEquals("The id argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateSSOConfigurationLinkForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockTenant).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.generateSSOConfigurationLink(
+          "tenant", 60*60*24, "", "", ""
+      );
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testRevokeSSOConfigurationLinkForEmptyParams() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.revokeSSOConfigurationLink("", ""));
+    assertNotNull(thrown);
+    assertEquals("The id argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testRevokeSSOConfigurationLinkForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockTenant).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.revokeSSOConfigurationLink("tenant", ""); 
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
 }
