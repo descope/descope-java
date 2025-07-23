@@ -149,7 +149,7 @@ public interface TenantService {
 
   /**
    * Generate a link that can be used to configure SSO for the tenant.
-   * 
+   *
    * @param id Tenant ID
    * @param expireDuration The duration in seconds after which the link will expire
    * @param ssoID The SSO ID to use for the link
@@ -158,11 +158,16 @@ public interface TenantService {
    * @return A link that can be used to configure SSO for the tenant
    * @throws DescopeException in case of errors
    */
-  String generateSSOConfigurationLink(String id, long expireDuration, String ssoID, String email, String templateID) throws DescopeException;
+  String generateSSOConfigurationLink(
+    String id, 
+    long expireDuration, 
+    String ssoID, 
+    String email, 
+    String templateID) throws DescopeException;
 
   /**
    * Revoke an existing SSO configuration link for the tenant.
-   * 
+   *
    * @param id Tenant ID
    * @param ssoID The SSO ID for which the link should be revoked
    * @throws DescopeException in case of errors

@@ -184,17 +184,22 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
   }
 
   @Override
-  public String generateSSOConfigurationLink(String id, long expireDuration, String ssoID, String email, String templateID) throws DescopeException {
-    if (StringUtils.isBlank(id)) {
-      throw ServerCommonException.invalidArgument("id");
+  public String generateSSOConfigurationLink(
+    String tenantId, 
+    long expireDuration, 
+    String ssoID, 
+    String email, 
+    String templateID) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("tenantId");
     }
 
     Map<String, Object> req = mapOf(
-        "id", id,
-        "expireDuration", expireDuration,
-        "ssoID", ssoID,
+        "tenantId", tenantId,
+        "expireTime", expireDuration,
+        "ssoId", ssoID,
         "email", email,
-        "templateID", templateID
+        "templateId", templateID
     );
     
     URI generateSSOConfigurationLinkUri = generateSSOConfigurationLinkUri();
@@ -203,12 +208,12 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
   }
 
   @Override
-  public void revokeSSOConfigurationLink(String id, String ssoID) throws DescopeException {
-    if (StringUtils.isBlank(id)) {
-      throw ServerCommonException.invalidArgument("id");
+  public void revokeSSOConfigurationLink(String tenantId, String ssoID) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("tenantId");
     }
 
-    Map<String, Object> req = mapOf("id", id, "ssoID", ssoID);
+    Map<String, Object> req = mapOf("tenantId", tenantId, "ssoId", ssoID);
 
     URI revokeSSOConfigurationLinkUri = revokeSSOConfigurationLinkUri();
     ApiProxy apiProxy = getApiProxy();

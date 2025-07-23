@@ -271,7 +271,8 @@ public class TenantServiceImplTest {
 
   @Test
   void testGenerateSSOConfigurationLinkForEmptyParams() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.generateSSOConfigurationLink("", 0, "", "", ""));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () 
+    -> tenantService.generateSSOConfigurationLink("", 0, "", "", ""));
     assertNotNull(thrown);
     assertEquals("The id argument is invalid", thrown.getMessage());
   }
@@ -284,7 +285,7 @@ public class TenantServiceImplTest {
       mockedApiProxyBuilder.when(
           () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       tenantService.generateSSOConfigurationLink(
-          "tenant", 60*60*24, "", "", ""
+          "tenant", 60 * 60 * 24, "", "", ""
       );
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
@@ -292,7 +293,8 @@ public class TenantServiceImplTest {
 
   @Test
   void testRevokeSSOConfigurationLinkForEmptyParams() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.revokeSSOConfigurationLink("", ""));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () 
+    -> tenantService.revokeSSOConfigurationLink("", ""));
     assertNotNull(thrown);
     assertEquals("The id argument is invalid", thrown.getMessage());
   }
