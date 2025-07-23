@@ -18,7 +18,9 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.TenantSettings;
+import com.descope.model.tenant.request.GenerateTenantLinkRequest;
 import com.descope.model.tenant.request.TenantSearchRequest;
+import com.descope.model.tenant.response.GenerateTenantLinkResponse;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -259,6 +261,16 @@ public class TenantServiceImplTest {
     tenants = tenantService.searchAll(tenantSearchRequest);
     assertThat(tenants).isEmpty();
 
+    GenerateTenantLinkRequest generateTenantLinkRequest = GenerateTenantLinkRequest.builder()
+        .tenantId(tenantId)
+        .expireDuration(60 * 60 * 24)
+        .build();
+      
+    String link = tenantService.generateSSOConfigurationLink(generateTenantLinkRequest);
+    assertThat(link).isNotBlank();
+
+    tenantService.revokeSSOConfigurationLink(tenantId, "");
+
     tenantSettings.setJitDisabled(true);
     tenantSettings.setAuthType(TenantAuthType.OIDC);
     tenantService.configureSettings(tenantId, tenantSettings);
@@ -267,5 +279,103 @@ public class TenantServiceImplTest {
     assertThat(tenantSettings.getJitDisabled()).isTrue();
     assertThat(tenantSettings.getAuthType()).isEqualTo(TenantAuthType.OIDC);
     tenantService.delete(tenantId);
+  }
+
+  @Test
+  void testGenerateSSOConfigurationLinkForEmptyParams() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () 
+        -> tenantService.generateSSOConfigurationLink(GenerateTenantLinkRequest.builder()
+          .tenantId("")
+          .expireDuration(0)
+          .ssoId("")
+          .email("")
+          .templateId("")
+          .build()));
+    assertNotNull(thrown);
+    assertEquals("The tenantId argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateSSOConfigurationLinkForSuccess() {
+    GenerateTenantLinkResponse mockResponse = GenerateTenantLinkResponse.builder()
+        .adminSSOConfigurationLink("some link")
+        .build();
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      String response = tenantService.generateSSOConfigurationLink(
+          GenerateTenantLinkRequest.builder()
+            .tenantId("tenant")
+            .expireDuration(60 * 60 * 24)
+            .ssoId("")
+            .email("")
+            .templateId("")
+            .build());
+
+      assertThat(response).isEqualTo("some link");
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testGenerateSSOConfigurationLinkWithSSOIdForSuccess() {
+    GenerateTenantLinkResponse mockResponse = GenerateTenantLinkResponse.builder()
+        .adminSSOConfigurationLink("some link")
+        .build();
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      String response = tenantService.generateSSOConfigurationLink(
+          GenerateTenantLinkRequest.builder()
+            .tenantId("tenant")
+            .expireDuration(60 * 60 * 24)
+            .ssoId("bla")
+            .email("a@a.com")
+            .templateId("template-id")
+            .build());
+
+      assertThat(response).isEqualTo("some link");
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testRevokeSSOConfigurationLinkForEmptyParams() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () ->
+        tenantService.revokeSSOConfigurationLink("", ""));
+    assertNotNull(thrown);
+    assertEquals("The tenantId argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testRevokeSSOConfigurationLinkForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.revokeSSOConfigurationLink("tenant", ""); 
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testRevokeSSOConfigurationLinkWithSSOIdForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.revokeSSOConfigurationLink("tenant", "bla"); 
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
   }
 }

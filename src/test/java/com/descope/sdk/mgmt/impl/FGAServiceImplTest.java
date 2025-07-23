@@ -1,19 +1,11 @@
 package com.descope.sdk.mgmt.impl;
 
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CHECK;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CREATE_RELATIONS;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_DELETE_RELATIONS;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_LOAD_SCHEMA;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_LOAD;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_SAVE;
-import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_SAVE_SCHEMA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,7 +22,6 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.FGAService;
-import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -94,6 +85,7 @@ class FGAServiceImplTest {
     assertThrows(ServerCommonException.class, () -> fgaService.saveSchema(schema));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testLoadSchema_Success() throws Exception {
     Map<String, Object> response = new HashMap<>();
@@ -145,6 +137,7 @@ class FGAServiceImplTest {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testCheck_Success() throws Exception {
     List<FGARelation> relations = Arrays.asList(
@@ -169,6 +162,7 @@ class FGAServiceImplTest {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testLoadResourcesDetails_Success() throws Exception {
     List<FGAResourceIdentifier> identifiers = Arrays.asList(

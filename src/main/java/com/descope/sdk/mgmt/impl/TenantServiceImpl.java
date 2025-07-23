@@ -2,9 +2,11 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.GENERATE_SSO_CONFIGURATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.GET_TENANT_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.REVOKE_SSO_CONFIGURATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.TENANT_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
 import static com.descope.utils.CollectionUtils.addIfNotNull;
@@ -15,7 +17,9 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.TenantSettings;
+import com.descope.model.tenant.request.GenerateTenantLinkRequest;
 import com.descope.model.tenant.request.TenantSearchRequest;
+import com.descope.model.tenant.response.GenerateTenantLinkResponse;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.TenantService;
@@ -181,6 +185,42 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     apiProxy.post(configureSettingsUri(), req, Void.class);
   }
 
+  @Override
+  public String generateSSOConfigurationLink(GenerateTenantLinkRequest request) throws DescopeException {
+    if (request == null) {
+      request = GenerateTenantLinkRequest.builder().build();
+    }
+
+    if (StringUtils.isBlank(request.getTenantId())) {
+      throw ServerCommonException.invalidArgument("tenantId");
+    }
+
+    Map<String, Object> req = mapOf("tenantId", request.getTenantId());
+    addIfNotNull(req, "expireTime", request.getExpireDuration());
+    addIfNotNull(req, "ssoId", request.getSsoId());
+    addIfNotNull(req, "email", request.getEmail());
+    addIfNotNull(req, "templateId", request.getTemplateId());
+    
+    URI generateSSOConfigurationLinkUri = generateSSOConfigurationLinkUri();
+    ApiProxy apiProxy = getApiProxy();
+    GenerateTenantLinkResponse response = apiProxy.post(
+        generateSSOConfigurationLinkUri, req, GenerateTenantLinkResponse.class);
+    return response.getAdminSSOConfigurationLink();
+  }
+
+  @Override
+  public void revokeSSOConfigurationLink(String tenantId, String ssoID) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("tenantId");
+    }
+
+    Map<String, Object> req = mapOf("tenantId", tenantId, "ssoId", ssoID);
+
+    URI revokeSSOConfigurationLinkUri = revokeSSOConfigurationLinkUri();
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(revokeSSOConfigurationLinkUri, req, Void.class);
+  }
+
   private URI composeCreateTenantUri() {
     return getUri(CREATE_TENANT_LINK);
   }
@@ -211,5 +251,13 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
 
   private URI configureSettingsUri() {
     return getUri(GET_TENANT_SETTINGS_LINK);
+  }
+
+  private URI generateSSOConfigurationLinkUri() {
+    return getUri(GENERATE_SSO_CONFIGURATION_LINK);
+  }
+
+  private URI revokeSSOConfigurationLinkUri() {
+    return getUri(REVOKE_SSO_CONFIGURATION_LINK);
   }
 }
