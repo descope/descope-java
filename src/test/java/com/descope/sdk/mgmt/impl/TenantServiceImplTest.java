@@ -274,7 +274,7 @@ public class TenantServiceImplTest {
   @Test
   void testGenerateSSOConfigurationLinkForEmptyParams() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class, () 
-      -> tenantService.generateSSOConfigurationLink(GenerateTenantLinkRequest.builder()
+        -> tenantService.generateSSOConfigurationLink(GenerateTenantLinkRequest.builder()
           .tenantId("")
           .expireDuration(0)
           .ssoId("")
@@ -298,7 +298,7 @@ public class TenantServiceImplTest {
       mockedApiProxyBuilder.when(
           () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String response = tenantService.generateSSOConfigurationLink(
-        GenerateTenantLinkRequest.builder()
+          GenerateTenantLinkRequest.builder()
             .tenantId("tenant")
             .expireDuration(60 * 60 * 24)
             .ssoId("")
@@ -313,8 +313,8 @@ public class TenantServiceImplTest {
 
   @Test
   void testRevokeSSOConfigurationLinkForEmptyParams() {
-    ServerCommonException thrown = assertThrows(ServerCommonException.class, () 
-      -> tenantService.revokeSSOConfigurationLink("", ""));
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () ->
+        tenantService.revokeSSOConfigurationLink("", ""));
     assertNotNull(thrown);
     assertEquals("The tenantId argument is invalid", thrown.getMessage());
   }

@@ -151,11 +151,7 @@ public interface TenantService {
   /**
    * Generate a link that can be used to configure SSO for the tenant.
    *
-   * @param id Tenant ID
-   * @param expireDuration The duration in seconds after which the link will expire
-   * @param ssoID The SSO ID to use for the link
-   * @param email The email address to associate with the SSO link
-   * @param templateID The template ID to use for the SSO link
+   * @param request The request object containing all necessary parameters
    * @return A link that can be used to configure SSO for the tenant
    * @throws DescopeException in case of errors
    */

@@ -11,14 +11,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GenerateTenantLinkRequest {
-    @JsonProperty("tenantId")
-    String tenantId;
-    @JsonProperty("expireTime")
-    long expireDuration;
-    @JsonProperty("ssoId")
-    String ssoId;
-    @JsonProperty("email")
-    String email;
-    @JsonProperty("templateId")
-    String templateId;
+  @JsonProperty("tenantId")
+  String tenantId;
+  @JsonProperty("expireTime")
+  long expireDuration;
+  @JsonProperty("ssoId")
+  String ssoId;
+  @JsonProperty("email")
+  String email;
+  @JsonProperty("templateId")
+  String templateId;
 }

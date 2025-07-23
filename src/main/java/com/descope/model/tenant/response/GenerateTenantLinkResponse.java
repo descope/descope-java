@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GenerateTenantLinkResponse {
-    String adminSSOConfigurationLink;
+  String adminSSOConfigurationLink;
 }
