@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt;
 import com.descope.exception.DescopeException;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.TenantSettings;
+import com.descope.model.tenant.request.GenerateTenantLinkRequest;
 import com.descope.model.tenant.request.TenantSearchRequest;
 import java.util.List;
 import java.util.Map;
@@ -158,12 +159,7 @@ public interface TenantService {
    * @return A link that can be used to configure SSO for the tenant
    * @throws DescopeException in case of errors
    */
-  String generateSSOConfigurationLink(
-    String id, 
-    long expireDuration, 
-    String ssoID, 
-    String email, 
-    String templateID) throws DescopeException;
+  String generateSSOConfigurationLink(GenerateTenantLinkRequest request) throws DescopeException;
 
   /**
    * Revoke an existing SSO configuration link for the tenant.
