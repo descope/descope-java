@@ -195,13 +195,11 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
       throw ServerCommonException.invalidArgument("tenantId");
     }
 
-    Map<String, Object> req = mapOf(
-        "tenantId", request.getTenantId(),
-        "expireTime", request.getExpireDuration(),
-        "ssoId", request.getSsoId(),
-        "email", request.getEmail(),
-        "templateId", request.getTemplateId()
-    );
+    Map<String, Object> req = mapOf("tenantId", request.getTenantId());
+    addIfNotNull(req, "expireTime", request.getExpireDuration());
+    addIfNotNull(req, "ssoId", request.getSsoId());
+    addIfNotNull(req, "email", request.getEmail());
+    addIfNotNull(req, "templateId", request.getTemplateId());
     
     URI generateSSOConfigurationLinkUri = generateSSOConfigurationLinkUri();
     ApiProxy apiProxy = getApiProxy();
