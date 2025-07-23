@@ -274,7 +274,7 @@ public class TenantServiceImplTest {
     ServerCommonException thrown = assertThrows(ServerCommonException.class, () 
     -> tenantService.generateSSOConfigurationLink("", 0, "", "", ""));
     assertNotNull(thrown);
-    assertEquals("The id argument is invalid", thrown.getMessage());
+    assertEquals("The tenantId argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -296,7 +296,7 @@ public class TenantServiceImplTest {
     ServerCommonException thrown = assertThrows(ServerCommonException.class, () 
     -> tenantService.revokeSSOConfigurationLink("", ""));
     assertNotNull(thrown);
-    assertEquals("The id argument is invalid", thrown.getMessage());
+    assertEquals("The tenantId argument is invalid", thrown.getMessage());
   }
 
   @Test
