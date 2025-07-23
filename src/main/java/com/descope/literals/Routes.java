@@ -120,7 +120,6 @@ public class Routes {
 
     // Tenant
     public static final String CREATE_TENANT_LINK = "/v1/mgmt/tenant/create";
-    public static final String REVOKE_SSO_CONFIGURATION_LINK = "/v1/mgmt/tenant/adminlinks/sso/revoke";
     public static final String UPDATE_TENANT_LINK = "/v1/mgmt/tenant/update";
     public static final String DELETE_TENANT_LINK = "/v1/mgmt/tenant/delete";
     public static final String LOAD_TENANT_LINK = "/v1/mgmt/tenant";
@@ -128,6 +127,7 @@ public class Routes {
     public static final String TENANT_SEARCH_ALL_LINK = "/v1/mgmt/tenant/search";
     public static final String GET_TENANT_SETTINGS_LINK = "/v1/mgmt/tenant/settings";
     public static final String GENERATE_SSO_CONFIGURATION_LINK = "/v2/mgmt/tenant/adminlinks/sso/generate";
+    public static final String REVOKE_SSO_CONFIGURATION_LINK = "/v1/mgmt/tenant/adminlinks/sso/revoke";
 
     // SSO
     public static final String SSO_GET_SETTINGS_LINK = "/v1/mgmt/sso/settings";

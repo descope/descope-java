@@ -261,6 +261,16 @@ public class TenantServiceImplTest {
     tenants = tenantService.searchAll(tenantSearchRequest);
     assertThat(tenants).isEmpty();
 
+    GenerateTenantLinkRequest generateTenantLinkRequest = GenerateTenantLinkRequest.builder()
+        .tenantId(tenantId)
+        .expireDuration(60 * 60 * 24)
+        .build();
+      
+    String link = tenantService.generateSSOConfigurationLink(generateTenantLinkRequest);
+    assertThat(link).isNotBlank();
+
+    tenantService.revokeSSOConfigurationLink(tenantId, "");
+
     tenantSettings.setJitDisabled(true);
     tenantSettings.setAuthType(TenantAuthType.OIDC);
     tenantService.configureSettings(tenantId, tenantSettings);
