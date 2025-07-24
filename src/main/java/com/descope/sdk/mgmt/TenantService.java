@@ -160,9 +160,9 @@ public interface TenantService {
   /**
    * Revoke an existing SSO configuration link for the tenant.
    *
-   * @param id Tenant ID
+   * @param tenantId Tenant ID
    * @param ssoID The SSO ID for which the link should be revoked
    * @throws DescopeException in case of errors
    */
-  void revokeSSOConfigurationLink(String id, String ssoID) throws DescopeException;
+  void revokeSSOConfigurationLink(String tenantId, String ssoID) throws DescopeException;
 }
