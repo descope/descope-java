@@ -13,4 +13,5 @@ public class InboundAppScope {
   private String name;
   private String description;
   private String[] values;
+  private boolean optional;
 }
