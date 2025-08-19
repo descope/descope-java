@@ -36,6 +36,7 @@ public class PatchUserRequest {
     addIfNotNull(m, "verifiedEmail", verifiedEmail);
     addIfNotNull(m, "phone", phone);
     addIfNotNull(m, "verifiedPhone", verifiedPhone);
+    addIfNotNull(m, "name", name);
     addIfNotNull(m, "givenName", givenName);
     addIfNotNull(m, "middleName", middleName);
     addIfNotNull(m, "familyName", familyName);
