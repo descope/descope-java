@@ -68,7 +68,7 @@
             <version>2.0.17</version>
         </dependency>
 
-        <!--  DOTENV-->
+        <!--  DOTENV   -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-java</artifactId>
@@ -149,6 +149,7 @@
             <artifactId>jackson-databind</artifactId>
             <groupId>com.fasterxml.jackson.core</groupId>
             <version>2.19.2</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <artifactId>jackson-dataformat-yaml</artifactId>
