@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt.impl;
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,6 +31,7 @@ import com.descope.model.user.request.BatchUserPasswordHashed;
 import com.descope.model.user.request.BatchUserPasswordPbkdf2;
 import com.descope.model.user.request.BatchUserRequest;
 import com.descope.model.user.request.PatchUserRequest;
+import com.descope.model.user.request.RolesList;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
@@ -66,7 +68,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
-import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class UserServiceImplTest {
@@ -826,50 +827,6 @@ public class UserServiceImplTest {
   }
 
   @Test
-  void testSearchAllWithTenantRoleParams() {
-    Map<String, List<String>> tenantRoleIds = mapOf("tenant1", Arrays.asList("roleA", "roleB"));
-    Map<String, List<String>> tenantRoleNames = mapOf("tenant1", Arrays.asList("roleA", "roleB"));
-    AllUsersResponseDetails allUsersResponse = mock(AllUsersResponseDetails.class);
-    UserSearchRequest userSearchRequest = UserSearchRequest.builder()
-        .limit(5)
-        .page(0)
-        .tenantRoleIds(tenantRoleIds)
-        .tenantRoleNames(tenantRoleNames)
-        .build();
-
-    ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
-
-    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-
-      userService.searchAll(userSearchRequest);
-
-      @SuppressWarnings("unchecked")
-      ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
-      verify(apiProxy).post(any(), captor.capture(), any());
-
-      Map<String, Object> payload = captor.getValue();
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> wrappedIds = (Map<String, Object>) payload.get("tenantRoleIds");
-      assertTrue(wrappedIds.get("tenant1") instanceof Map);
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> tenantIdsMap = (Map<String, Object>) wrappedIds.get("tenant1");
-      assertEquals(Arrays.asList("roleA", "roleB"), (tenantIdsMap.get("values")));
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> wrappedNames = (Map<String, Object>) payload.get("tenantRoleNames");
-      assertTrue(wrappedNames.get("tenant1") instanceof Map);
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> tenantNamesMap = (Map<String, Object>) wrappedNames.get("tenant1");
-      assertEquals(Arrays.asList("roleA", "roleB"), (tenantNamesMap.get("values")));
-    }
-  }
-
-  @Test
   void testSearchAllForInvalidLimit() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.searchAll(UserSearchRequest.builder().limit(-1).build()));
@@ -1019,8 +976,10 @@ public class UserServiceImplTest {
     String tenantName = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(tenantName, Arrays.asList(tenantName + ".com"));
     assertThat(tenantId).isNotBlank();
-    String roleName = TestUtils.getRandomName("r-").substring(0, 20);
-    roleService.create(roleName, "", null);
+    String roleName1 = TestUtils.getRandomName("r-").substring(0, 20);
+    roleService.create(roleName1, "", null);
+    String roleName2 = TestUtils.getRandomName("r-").substring(0, 20);
+    roleService.create(roleName2, "", null);
     String loginId = TestUtils.getRandomName("u-");
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
@@ -1029,7 +988,8 @@ public class UserServiceImplTest {
         UserRequest.builder().email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
             .displayName("Testing Test")
             .userTenants(
-                Arrays.asList(AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName)).build()))
+                Arrays.asList(
+                  AssociatedTenant.builder().tenantId(tenantId).roleNames(Arrays.asList(roleName1, roleName2)).build()))
             .build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
@@ -1041,34 +1001,53 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
     assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
-        .tenantName(tenantName).roleNames(Arrays.asList(roleName)).build());
+        .tenantName(tenantName).roleNames(Arrays.asList(roleName1, roleName2)).build());
     UserResponseDetails updateResponse = userService.update(loginId,
-        UserRequest.builder().roleNames(Arrays.asList(roleName)).email(email).verifiedEmail(true).phone(phone)
+        UserRequest.builder().roleNames(
+          Arrays.asList(roleName1, roleName2)).email(email).verifiedEmail(true).phone(phone)
             .verifiedPhone(true).displayName("Testing Test").build());
     user = updateResponse.getUser();
     assertNotNull(user);
-    assertThat(user.getRoleNames()).containsExactly(roleName);
+    assertThat(user.getRoleNames()).containsExactly(roleName1, roleName2);
     // Patch
     UserResponseDetails patchResponse = userService.patch(loginId,
         PatchUserRequest.builder()
             .userTenants(
                 Arrays.asList(AssociatedTenant.builder()
-                    .tenantId(tenantId).roleNames(Arrays.asList(roleName)).build())).build());
+                    .tenantId(tenantId).roleNames(Arrays.asList(roleName1, roleName2)).build())).build());
     user = patchResponse.getUser();
     assertNotNull(user);
     assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
-        .tenantName(tenantName).roleNames(Arrays.asList(roleName)).build());
+        .tenantName(tenantName).roleNames(Arrays.asList(roleName1, roleName2)).build());
     // Search
     AllUsersResponseDetails searchByTenantRoleNames = userService.searchAll(
         UserSearchRequest.builder()
-            .tenantRoleNames(mapOf(tenantId, Arrays.asList(roleName))).build());
+            .tenantRoleNames(
+              mapOf(tenantId, RolesList.builder().values(
+                Arrays.asList(roleName1, roleName2)).and(true).build())).build());
     boolean foundByRoleName = searchByTenantRoleNames.getUsers().stream()
         .anyMatch(u -> u.getUserId().equals(createResponse.getUser().getUserId()));
     assertTrue(foundByRoleName); 
+    patchResponse = userService.patch(loginId,
+        PatchUserRequest.builder()
+            .userTenants(
+                Arrays.asList(AssociatedTenant.builder()
+                    .tenantId(tenantId).roleNames(Arrays.asList(roleName1)).build())).build());
+    user = patchResponse.getUser();
+    assertNotNull(user);
+    searchByTenantRoleNames = userService.searchAll(
+        UserSearchRequest.builder()
+            .tenantRoleNames(
+              mapOf(tenantId, RolesList.builder().values(
+                Arrays.asList(roleName1, roleName2)).and(true).build())).build());
+    foundByRoleName = searchByTenantRoleNames.getUsers().stream()
+        .anyMatch(u -> u.getUserId().equals(createResponse.getUser().getUserId()));
+    assertFalse(foundByRoleName); 
     // Delete
     userService.delete(loginId);
     tenantService.delete(tenantId);
-    roleService.delete(roleName);
+    roleService.delete(roleName1);
+    roleService.delete(roleName2);
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

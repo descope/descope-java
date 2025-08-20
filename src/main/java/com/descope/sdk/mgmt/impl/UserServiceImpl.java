@@ -62,9 +62,7 @@ import com.descope.model.user.response.UsersBatchResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
@@ -256,19 +254,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (request.getPage() == null || request.getPage() < 0) {
       throw ServerCommonException.invalidArgument("page");
     }
-
-    Map<String, Object> payload = new ObjectMapper().convertValue(request, new TypeReference<Map<String, Object>>() {});
     
-    if (request.getTenantRoleIds() != null) {
-      payload.put("tenantRoleIds", mapToValuesObject(request.getTenantRoleIds()));
-    }
-    if (request.getTenantRoleNames() != null) {
-      payload.put("tenantRoleNames", mapToValuesObject(request.getTenantRoleNames()));
-    }
-
     URI composeSearchAllUri = composeSearchAllUri();
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(composeSearchAllUri, payload, AllUsersResponseDetails.class);
+    return apiProxy.post(composeSearchAllUri, request, AllUsersResponseDetails.class);
   }
 
   @Override
@@ -753,16 +742,4 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     return getUri(USER_CREATE_EMBEDDED_LINK);
   }
 
-  private static Map<String, Map<String, List<String>>> mapToValuesObject(Map<String, List<String>> inputMap) {
-    if (inputMap == null) {
-      return null;
-    }
-    Map<String, Map<String, List<String>>> result = new HashMap<>();
-    for (Map.Entry<String, List<String>> entry : inputMap.entrySet()) {
-      if (entry.getValue() != null) {
-        result.put(entry.getKey(), mapOf("values", entry.getValue()));
-      }
-    }
-    return result.isEmpty() ? null : result;
-  }
 }
