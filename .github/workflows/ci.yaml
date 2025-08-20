@@ -24,6 +24,7 @@ jobs:
     strategy:
       matrix:
         java: [8, 11, 15, 17, 20]
+      max-parallel: 1
     name: Build ${{ matrix.java }}
     runs-on: ubuntu-latest
     steps:
