@@ -43,6 +43,6 @@ public class UserSearchRequest {
   /** Retrieve only users updated before the given time. */
   @JsonSerialize(using = InstantToMillisSerializer.class)
   Instant toModifiedTime;
-  Map<String, List<String>> tenantRoleIds;
-  Map<String, List<String>> tenantRoleNames;
+  Map<String, RolesList> tenantRoleIds;
+  Map<String, RolesList> tenantRoleNames;
 }

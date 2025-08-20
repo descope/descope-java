@@ -44,8 +44,10 @@ public class UserSearchRequestTest {
     UserSearchRequest request = UserSearchRequest.builder()
         .tenantIds(Collections.singletonList("tenant1"))
         .roles(Collections.singletonList("role1"))
-        .tenantRoleIds(Collections.singletonMap("tenant1", Collections.singletonList("roleA")))
-        .tenantRoleNames(Collections.singletonMap("tenant2", Collections.singletonList("roleX")))
+        .tenantRoleIds(Collections.singletonMap("tenant1",
+            RolesList.builder().values(Collections.singletonList("roleA")).build()))
+        .tenantRoleNames(Collections.singletonMap("tenant2",
+            RolesList.builder().values(Collections.singletonList("roleX")).build()))
         .build();
 
     String json = mapper.writeValueAsString(request);
@@ -53,8 +55,8 @@ public class UserSearchRequestTest {
         + "\"withTestUser\":null,\"testUsersOnly\":null,\"customAttributes\":null,\"statuses\":null,\"emails\":null,"
         + "\"phones\":null,\"loginIds\":null,\"userIds\":null,\"ssoAppIds\":null,\"fromCreatedTime\":null,"
         + "\"toCreatedTime\":null,\"fromModifiedTime\":null,\"toModifiedTime\":null,"
-        + "\"tenantRoleIds\":{\"tenant1\":[\"roleA\"]},"
-        + "\"tenantRoleNames\":{\"tenant2\":[\"roleX\"]}}";
+        + "\"tenantRoleIds\":{\"tenant1\":{\"values\":[\"roleA\"],\"and\":null}},"
+        + "\"tenantRoleNames\":{\"tenant2\":{\"values\":[\"roleX\"],\"and\":null}}}";
 
     assertEquals(expectedJson, json);
   }
