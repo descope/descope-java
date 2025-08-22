@@ -1,11 +1,11 @@
 package com.descope.model.jwt.request;
 
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.experimental.SuperBuilder;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.util.Map;
 
 @Data
 @AllArgsConstructor

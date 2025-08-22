@@ -1,7 +1,10 @@
 package com.descope.sdk.mgmt.impl;
 
 import static com.descope.utils.CollectionUtils.mapOf;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
@@ -60,10 +63,11 @@ public class JwtServiceImplTest {
     Assertions.assertThat(authInfo.getToken().getJwt()).isNotBlank();
     Token newJwt = jwtService.updateJWTWithCustomClaims(authInfo.getToken().getJwt(), mockCustomClaims);
     assertNotNull(newJwt.getClaims());
-    assertEquals( "claim", newJwt.getClaims().get("test"));
+    assertEquals("claim", newJwt.getClaims().get("test"));
     userService.delete(loginId);
 
-    AuthenticationInfo anonyUser = jwtService.anonymous(AnonymousUserRequest.builder().customClaims(mockCustomClaims).build());
+    AuthenticationInfo anonyUser = jwtService.anonymous(
+            AnonymousUserRequest.builder().customClaims(mockCustomClaims).build());
     assertNotNull(anonyUser.getToken());
     assertNull(anonyUser.getUser());
   }
