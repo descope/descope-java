@@ -1,9 +1,9 @@
 package com.descope.sdk.mgmt.impl;
 
 import static com.descope.utils.CollectionUtils.mapOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.descope.enums.DeliveryMethod;
