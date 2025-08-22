@@ -4,6 +4,7 @@ import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.request.AnonymousUserRequest;
 import com.descope.model.magiclink.LoginOptions;
 import java.util.Map;
 
@@ -28,4 +29,6 @@ public interface JwtService {
           throws DescopeException;
 
   AuthenticationInfo signIn(String loginId, LoginOptions loginOptions) throws DescopeException;
+
+  AuthenticationInfo anonymous(AnonymousUserRequest request) throws DescopeException;
 }
