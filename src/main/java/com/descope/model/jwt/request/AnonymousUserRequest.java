@@ -1,6 +1,5 @@
 package com.descope.model.jwt.request;
 
-import com.descope.model.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
