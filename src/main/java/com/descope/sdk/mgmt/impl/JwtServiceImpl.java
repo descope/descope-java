@@ -33,6 +33,17 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   }
 
   @Override
+  public AuthenticationInfo anonymous(AnonymousUserRequest request)
+          throws DescopeException {
+    // Make the API call
+    URI uri = getUri(MANAGEMENT_ANONYMOUS_USER);
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse = apiProxy.post(uri, request, JWTResponse.class);
+    // Validate the JWT and return AuthenticationInfo
+    return validateAndCreateAuthInfo(jwtResponse);
+  }
+
+  @Override
   public Token updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims)
       throws DescopeException {
     if (StringUtils.isBlank(jwt)) {
@@ -89,17 +100,6 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   public AuthenticationInfo signUp(String loginId, MgmtSignUpUser signUpUserDetails)
           throws DescopeException {
     return signUp(loginId,  signUpUserDetails, MANAGEMENT_SIGN_UP);
-  }
-
-  @Override
-  public AuthenticationInfo anonymous(AnonymousUserRequest request)
-        throws DescopeException {
-    // Make the API call
-    URI uri = getUri(MANAGEMENT_ANONYMOUS_USER);
-    ApiProxy apiProxy = getApiProxy();
-    JWTResponse jwtResponse = apiProxy.post(uri, request, JWTResponse.class);
-    // Validate the JWT and return AuthenticationInfo
-    return validateAndCreateAuthInfo(jwtResponse);
   }
 
   private AuthenticationInfo signUp(String loginId, MgmtSignUpUser signUpUserDetails,
