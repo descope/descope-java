@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ANONYMOUS_USER;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_IN;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP_OR_IN;
@@ -12,6 +13,7 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.request.AnonymousUserRequest;
 import com.descope.model.jwt.request.ManagementSignInRequest;
 import com.descope.model.jwt.request.ManagementSignUpRequest;
 import com.descope.model.jwt.request.UpdateJwtRequest;
@@ -87,6 +89,17 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   public AuthenticationInfo signUp(String loginId, MgmtSignUpUser signUpUserDetails)
           throws DescopeException {
     return signUp(loginId,  signUpUserDetails, MANAGEMENT_SIGN_UP);
+  }
+
+  @Override
+  public AuthenticationInfo anonymous(AnonymousUserRequest request)
+        throws DescopeException {
+    // Make the API call
+    URI uri = getUri(MANAGEMENT_ANONYMOUS_USER);
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse = apiProxy.post(uri, request, JWTResponse.class);
+    // Validate the JWT and return AuthenticationInfo
+    return validateAndCreateAuthInfo(jwtResponse);
   }
 
   private AuthenticationInfo signUp(String loginId, MgmtSignUpUser signUpUserDetails,

@@ -166,6 +166,7 @@ public class Routes {
     public static final String MANAGEMENT_SIGN_IN = "/v1/mgmt/auth/signin";
     public static final String MANAGEMENT_SIGN_UP = "/v1/mgmt/auth/signup";
     public static final String MANAGEMENT_SIGN_UP_OR_IN = "/v1/mgmt/auth/signup-in";
+    public static final String MANAGEMENT_ANONYMOUS_USER = "/v1/mgmt/auth/anonymous";
 
     // Access key
     public static final String MANAGEMENT_ACCESS_KEY_CREATE_LINK = "/v1/mgmt/accesskey/create";
