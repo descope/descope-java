@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -30,6 +31,14 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
     }
 
     String token = String.format("Bearer %s:%s", projectId, refreshToken);
+    return ApiProxyBuilder.buildProxy(() -> token, client);
+  }
+
+  ApiProxy getApiProxyWithBearer(String bearerJwt) {
+    if (StringUtils.isBlank(bearerJwt)) {
+      throw ServerCommonException.invalidArgument("bearerJwt");
+    }
+    String token = String.format("Bearer %s", bearerJwt);
     return ApiProxyBuilder.buildProxy(() -> token, client);
   }
 }
