@@ -40,3 +40,5 @@ build/
 
 # Env variables for dotenv for local testing
 .env
+
+.m2/

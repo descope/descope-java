@@ -240,6 +240,21 @@ public class Routes {
     public static final String MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKEN_BY_ID = "/v1/mgmt/outbound/token";
     public static final String MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKENS = "/v1/mgmt/outbound/tokens";
 
+    // Outbound App CRUD
+    public static final String MANAGEMENT_OUTBOUND_APP_CREATE_LINK = "/v1/mgmt/outbound/app/create";
+    public static final String MANAGEMENT_OUTBOUND_APP_UPDATE_LINK = "/v1/mgmt/outbound/app/update";
+    public static final String MANAGEMENT_OUTBOUND_APP_DELETE_LINK = "/v1/mgmt/outbound/app/delete";
+    public static final String MANAGEMENT_OUTBOUND_APP_LOAD_LINK = "/v1/mgmt/outbound/app";
+    public static final String MANAGEMENT_OUTBOUND_APP_LOAD_ALL_LINK = "/v1/mgmt/outbound/apps";
+  
+    // Outbound App token fetch (latest + tenant)
+    public static final String MANAGEMENT_FETCH_OUTBOUND_APP_USER_TOKEN_LATEST =
+        "/v1/mgmt/outbound/app/user/token/latest";
+    public static final String MANAGEMENT_FETCH_OUTBOUND_APP_TENANT_TOKEN =
+        "/v1/mgmt/outbound/app/tenant/token";
+    public static final String MANAGEMENT_FETCH_OUTBOUND_APP_TENANT_TOKEN_LATEST =
+        "/v1/mgmt/outbound/app/tenant/token/latest";
+
     // Inbound
     public static final String MANAGEMENT_INBOUND_CREATE_APP = "/v1/mgmt/thirdparty/app/create";
     public static final String MANAGEMENT_INBOUND_UPDATE_APP = "/v1/mgmt/thirdparty/app/update";
