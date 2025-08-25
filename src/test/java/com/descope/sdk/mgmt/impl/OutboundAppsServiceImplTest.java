@@ -9,19 +9,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
 import com.descope.exception.ServerCommonException;
-import com.descope.model.client.SdkInfo;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
 import com.descope.model.outbound.DeleteOutboundAppUserTokensRequest;
 import com.descope.model.outbound.FetchLatestOutboundAppUserTokenRequest;
 import com.descope.model.outbound.FetchOutboundAppTenantTokenRequest;
 import com.descope.model.outbound.FetchOutboundAppTenantTokenResponse;
 import com.descope.model.outbound.FetchOutboundAppUserTokenRequest;
 import com.descope.model.outbound.FetchOutboundAppUserTokenResponse;
-import com.descope.model.outbound.OutboundAppToken;
+import com.descope.model.outbound.LoadAllOutboundApplicationsResponse;
 import com.descope.model.outbound.OutboundApp;
 import com.descope.model.outbound.OutboundAppCreateResponse;
 import com.descope.model.outbound.OutboundAppRequest;
-import com.descope.model.outbound.LoadAllOutboundApplicationsResponse;
+import com.descope.model.outbound.OutboundAppToken;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -86,9 +86,9 @@ class OutboundAppsServiceImplTest {
   void testCrudSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(OutboundAppCreateResponse.builder().id("aid").build()).when(apiProxy).post(any(), any(), any());
-  LoadAllOutboundApplicationsResponse listResp =
-    LoadAllOutboundApplicationsResponse.builder().apps(new OutboundApp[] { mockApp }).build();
-  doReturn(mockApp, listResp).when(apiProxy).get(any(), any());
+    LoadAllOutboundApplicationsResponse listResp =
+      LoadAllOutboundApplicationsResponse.builder().apps(new OutboundApp[] { mockApp }).build();
+    doReturn(mockApp, listResp).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(SdkInfo.class))).thenReturn(apiProxy);
