@@ -69,7 +69,7 @@ class OutboundAppsByTokenServiceImplTest {
       builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(proxy);
 
       FetchOutboundAppUserTokenResponse resp = new FetchOutboundAppUserTokenResponse();
-    when(proxy.post(any(), any(), eq(FetchOutboundAppUserTokenResponse.class)))
+      when(proxy.post(any(), any(), eq(FetchOutboundAppUserTokenResponse.class)))
           .thenReturn(resp);
 
       OutboundAppsByTokenServiceImpl svc = new OutboundAppsByTokenServiceImpl(client);
@@ -91,7 +91,7 @@ class OutboundAppsByTokenServiceImplTest {
       builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(proxy);
 
       FetchOutboundAppUserTokenResponse resp = new FetchOutboundAppUserTokenResponse();
-    when(proxy.post(any(), any(), eq(FetchOutboundAppUserTokenResponse.class)))
+      when(proxy.post(any(), any(), eq(FetchOutboundAppUserTokenResponse.class)))
           .thenReturn(resp);
 
       OutboundAppsByTokenServiceImpl svc = new OutboundAppsByTokenServiceImpl(client);
@@ -112,7 +112,7 @@ class OutboundAppsByTokenServiceImplTest {
       builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(proxy);
 
       FetchOutboundAppTenantTokenResponse resp = new FetchOutboundAppTenantTokenResponse();
-    when(proxy.post(any(), any(), eq(FetchOutboundAppTenantTokenResponse.class)))
+      when(proxy.post(any(), any(), eq(FetchOutboundAppTenantTokenResponse.class)))
           .thenReturn(resp);
 
       OutboundAppsByTokenServiceImpl svc = new OutboundAppsByTokenServiceImpl(client);
@@ -134,7 +134,7 @@ class OutboundAppsByTokenServiceImplTest {
       builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(proxy);
 
       FetchOutboundAppTenantTokenResponse resp = new FetchOutboundAppTenantTokenResponse();
-    when(proxy.post(any(), any(), eq(FetchOutboundAppTenantTokenResponse.class)))
+      when(proxy.post(any(), any(), eq(FetchOutboundAppTenantTokenResponse.class)))
           .thenReturn(resp);
 
       OutboundAppsByTokenServiceImpl svc = new OutboundAppsByTokenServiceImpl(client);
