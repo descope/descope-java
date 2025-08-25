@@ -87,7 +87,7 @@ class OutboundAppsServiceImplTest {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(OutboundAppCreateResponse.builder().id("aid").build()).when(apiProxy).post(any(), any(), any());
     LoadAllOutboundApplicationsResponse listResp =
-      LoadAllOutboundApplicationsResponse.builder().apps(new OutboundApp[] { mockApp }).build();
+        LoadAllOutboundApplicationsResponse.builder().apps(new OutboundApp[] { mockApp }).build();
     doReturn(mockApp, listResp).when(apiProxy).get(any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
