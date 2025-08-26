@@ -24,6 +24,7 @@ public class ManagementServiceBuilder {
         .passwordSettingsService(new PasswordSettingsServiceImpl(client))
         .ssoApplicationService(new SsoApplicationServiceImpl(client))
         .outboundAppsService(new OutboundAppsServiceImpl(client))
+        .outboundAppsByTokenService(new OutboundAppsByTokenServiceImpl(client))
         .inboundAppsService(new InboundAppsServiceImpl(client))
         .userCustomAttributesService(new UserCustomAttributesServiceImpl(client))
         .build();
