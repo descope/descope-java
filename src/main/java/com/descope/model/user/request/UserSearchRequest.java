@@ -2,7 +2,6 @@ package com.descope.model.user.request;
 
 import com.descope.enums.UserStatus;
 import com.descope.utils.InstantToMillisSerializer;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.Instant;
 import java.util.List;
