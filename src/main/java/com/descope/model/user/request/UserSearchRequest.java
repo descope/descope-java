@@ -2,6 +2,7 @@ package com.descope.model.user.request;
 
 import com.descope.enums.UserStatus;
 import com.descope.utils.InstantToMillisSerializer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.Instant;
 import java.util.List;
@@ -17,7 +18,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserSearchRequest {
   List<String> tenantIds;
-  List<String> roles;
+  List<String> roles; // Roles should not be used unless you have the role IDs
+  List<String> roleNames; // Search by role names
   @Builder.Default
   Integer limit = 0;
   @Builder.Default
