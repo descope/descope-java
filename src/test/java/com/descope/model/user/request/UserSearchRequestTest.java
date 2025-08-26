@@ -22,13 +22,15 @@ public class UserSearchRequestTest {
         .toModifiedTime(now)
         .tenantIds(Collections.singletonList("tenant1"))
         .roles(Collections.singletonList("role1"))
+        .roleNames(Collections.singletonList("rolename1"))
         .build();
 
     String json = mapper.writeValueAsString(request);
 
     long expectedMillis = now.toEpochMilli();
     String expectedJson = String.format(
-        "{\"tenantIds\":[\"tenant1\"],\"roles\":[\"role1\"],\"limit\":0,\"page\":0,\"withTestUser\":null,"
+        "{\"tenantIds\":[\"tenant1\"],\"roles\":[\"role1\"],\"roleNames\":[\"rolename1\"],\"limit\":0,\"page\":0,"
+        + "\"withTestUser\":null,"
         + "\"testUsersOnly\":null,\"customAttributes\":null,\"statuses\":null,\"emails\":null,\"phones\":null,"
         + "\"loginIds\":null,\"userIds\":null,\"ssoAppIds\":null,\"fromCreatedTime\":%d,\"toCreatedTime\":%d,"
         + "\"fromModifiedTime\":%d,\"toModifiedTime\":%d,"
@@ -44,6 +46,7 @@ public class UserSearchRequestTest {
     UserSearchRequest request = UserSearchRequest.builder()
         .tenantIds(Collections.singletonList("tenant1"))
         .roles(Collections.singletonList("role1"))
+        .roleNames(Collections.singletonList("rolename1"))
         .tenantRoleIds(Collections.singletonMap("tenant1",
             RolesList.builder().values(Collections.singletonList("roleA")).build()))
         .tenantRoleNames(Collections.singletonMap("tenant2",
@@ -51,7 +54,8 @@ public class UserSearchRequestTest {
         .build();
 
     String json = mapper.writeValueAsString(request);
-    String expectedJson = "{\"tenantIds\":[\"tenant1\"],\"roles\":[\"role1\"],\"limit\":0,\"page\":0,"
+    String expectedJson = "{\"tenantIds\":[\"tenant1\"],\"roles\":[\"role1\"],\"roleNames\":[\"rolename1\"],"
+        + "\"limit\":0,\"page\":0,"
         + "\"withTestUser\":null,\"testUsersOnly\":null,\"customAttributes\":null,\"statuses\":null,\"emails\":null,"
         + "\"phones\":null,\"loginIds\":null,\"userIds\":null,\"ssoAppIds\":null,\"fromCreatedTime\":null,"
         + "\"toCreatedTime\":null,\"fromModifiedTime\":null,\"toModifiedTime\":null,"

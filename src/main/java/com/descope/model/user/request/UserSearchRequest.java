@@ -17,7 +17,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserSearchRequest {
   List<String> tenantIds;
-  List<String> roles;
+  List<String> roles; // Roles should not be used unless you have the role IDs
+  List<String> roleNames; // Search by role names
   @Builder.Default
   Integer limit = 0;
   @Builder.Default
