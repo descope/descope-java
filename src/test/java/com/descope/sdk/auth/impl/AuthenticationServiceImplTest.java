@@ -149,4 +149,60 @@ public class AuthenticationServiceImplTest {
     assertEquals("V1", token.getClaims().get("K1"));
     accessKeyService.delete(resp.getKey().getId());
   }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalSelectTenant() {
+    // setup
+    String roleAName = TestUtils.getRandomName("r-").substring(0, 20);
+    String roleBName = TestUtils.getRandomName("r-").substring(0, 20);
+    roleService.create(roleAName, "ttt", null);
+    roleService.create(roleBName, "ttt", null);
+    String tenantAName = TestUtils.getRandomName("t-");
+    String tenantAId = tenantService.create(tenantAName, Arrays.asList(tenantAName + ".com"));
+    String tenantBName = TestUtils.getRandomName("t-");
+    String tenantBId = tenantService.create(tenantBName, Arrays.asList(tenantBName + ".com"));
+    String loginId = TestUtils.getRandomName("u-") + "@descope.com";
+    userService.createTestUser(loginId,
+            UserRequest.builder()
+                    .email(loginId)
+                    .verifiedEmail(true)
+                    .build());
+    userService.addTenant(loginId, tenantAId);
+    userService.setTenantRoles(loginId, tenantAId, Arrays.asList(roleAName));
+    userService.addTenant(loginId, tenantBId);
+    userService.setTenantRoles(loginId, tenantBId, Arrays.asList(roleBName));
+    // login
+    OTPTestUserResponse code = userService.generateOtpForTestUser(loginId, DeliveryMethod.EMAIL);
+    AuthenticationInfo authInfo = otpService.verifyCode(DeliveryMethod.EMAIL, loginId, code.getCode());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    // go time
+    assertFalse(authInfo.getToken().getClaims().containsKey("dct"));
+    assertTrue(authenticationService.validateRoles(authInfo.getToken(), tenantAId, Arrays.asList(roleAName)));
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), tenantAId, Arrays.asList(roleBName)));
+    // root shouldn't have any of the tenants' roles
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), Arrays.asList(roleAName)));
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), Arrays.asList(roleBName)));
+
+    authInfo = authenticationService.selectTenant(tenantAId, authInfo.getRefreshToken().getJwt());
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    assertThat(authInfo.getRefreshToken().getJwt()).isNotBlank();
+    assertEquals(tenantAId, authInfo.getToken().getClaims().get("dct"));
+
+    // no tenant roles without a tenant
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), Arrays.asList(roleAName)));
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), Arrays.asList(roleBName)));
+    // tenant a gives role a
+    assertTrue(authenticationService.validateRoles(authInfo.getToken(), tenantAId, Arrays.asList(roleAName)));
+    // tenant a doesn't give tenant b's roles
+    assertFalse(authenticationService.validateRoles(authInfo.getToken(), tenantAId, Arrays.asList(roleBName)));
+
+    userService.delete(loginId);
+    tenantService.delete(tenantAId);
+    roleService.delete(roleAName);
+    tenantService.delete(tenantBId);
+    roleService.delete(roleBName);
+  }
+
 }
