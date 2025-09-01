@@ -5,15 +5,15 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 
+
 @Data
 @Builder
-public class AccessKeyRequest {
+public class AccessKeyUpdateRequest {
+  private String id;
   private String name;
   private String description;
-  private long expireTime;
   private List<String> roleNames;
   private List<Map<String, Object>> keyTenants;
-  private String userId;
   private Map<String, Object> customClaims;
   private List<String> permittedIps;
 }

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class AccessKeyResponseDetails {
   private String id;
   private String name;
+  private String description;
   private List<String> roleNames;
   private List<AssociatedTenant> keyTenants;
   private String status;
@@ -22,4 +23,5 @@ public class AccessKeyResponseDetails {
   private String createdBy;
   private String clientId;
   private String userId;
+  private List<String> permittedIps;
 }

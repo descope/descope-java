@@ -16,6 +16,7 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.AccessKeyRequest;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseList;
+import com.descope.model.mgmt.AccessKeyUpdateRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.utils.MgmtUtils;
@@ -57,12 +58,21 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
   public AccessKeyResponse create(
       String name, int expireTime, List<String> roleNames, List<AssociatedTenant> keyTenants, String userId,
       Map<String, Object> customClaims) throws DescopeException {
-    if (StringUtils.isBlank(name)) {
-      throw ServerCommonException.invalidArgument("Name");
+    AccessKeyRequest req = createAccessKeyBody(name, expireTime, roleNames, keyTenants, userId, customClaims);
+    return create(req);
+  }
+
+  @Override
+  public AccessKeyResponse create(
+          AccessKeyRequest req) throws DescopeException {
+    if (req == null) {
+      throw ServerCommonException.invalidArgument("req");
     }
-    AccessKeyRequest body = createAccessKeyBody(name, expireTime, roleNames, keyTenants, userId, customClaims);
+    if (StringUtils.isBlank(req.getName())) {
+      throw ServerCommonException.invalidArgument("req.Name");
+    }
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), body, AccessKeyResponse.class);
+    return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), req, AccessKeyResponse.class);
   }
 
   @Override
@@ -87,17 +97,28 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
 
   @Override
   public AccessKeyResponse update(String id, String name) throws DescopeException {
-    if (StringUtils.isBlank(id)) {
-      throw ServerCommonException.invalidArgument("Id");
+    AccessKeyUpdateRequest req = AccessKeyUpdateRequest.builder()
+            .name(name)
+            .id(id)
+            .build();
+    return update(req);
+  }
+
+  @Override
+  public AccessKeyResponse update(AccessKeyUpdateRequest req) throws DescopeException {
+    if (req == null) {
+      throw ServerCommonException.invalidArgument("req");
     }
-    if (StringUtils.isBlank(name)) {
-      throw ServerCommonException.invalidArgument("Name");
+    if (StringUtils.isBlank(req.getId())) {
+      throw ServerCommonException.invalidArgument("req.Id");
+    }
+    if (StringUtils.isBlank(req.getName())) {
+      throw ServerCommonException.invalidArgument("req.Name");
     }
 
-    Map<String, String> request = mapOf("id", id, "name", name);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(
-        getUri(MANAGEMENT_ACCESS_KEY_UPDATE_LINK), request, AccessKeyResponse.class);
+        getUri(MANAGEMENT_ACCESS_KEY_UPDATE_LINK), req, AccessKeyResponse.class);
   }
 
   @Override
