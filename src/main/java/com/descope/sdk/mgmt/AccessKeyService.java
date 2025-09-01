@@ -6,7 +6,6 @@ import com.descope.model.mgmt.AccessKeyRequest;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseList;
 import com.descope.model.mgmt.AccessKeyUpdateRequest;
-
 import java.util.List;
 import java.util.Map;
 
