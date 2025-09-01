@@ -60,7 +60,7 @@ class AccessKeyServiceImplTest {
             ServerCommonException.class,
             () -> accessKeyService.create("", 10, mockRoles, mockKeyTenants));
     assertNotNull(thrown);
-    assertEquals("The Name argument is invalid", thrown.getMessage());
+    assertEquals("The req.Name argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -100,7 +100,7 @@ class AccessKeyServiceImplTest {
     ServerCommonException thrown =
         assertThrows(ServerCommonException.class, () -> accessKeyService.update("Id", ""));
     assertNotNull(thrown);
-    assertEquals("The Name argument is invalid", thrown.getMessage());
+    assertEquals("The req.Name argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -120,7 +120,7 @@ class AccessKeyServiceImplTest {
     ServerCommonException thrown =
         assertThrows(ServerCommonException.class, () -> accessKeyService.update("", "Krishna"));
     assertNotNull(thrown);
-    assertEquals("The Id argument is invalid", thrown.getMessage());
+    assertEquals("The req.Id argument is invalid", thrown.getMessage());
   }
 
   @Test

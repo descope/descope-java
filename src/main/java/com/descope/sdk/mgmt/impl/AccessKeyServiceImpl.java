@@ -69,7 +69,7 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
       throw ServerCommonException.invalidArgument("req");
     }
     if (StringUtils.isBlank(req.getName())) {
-      throw ServerCommonException.invalidArgument("req.name");
+      throw ServerCommonException.invalidArgument("req.Name");
     }
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_CREATE_LINK), req, AccessKeyResponse.class);
