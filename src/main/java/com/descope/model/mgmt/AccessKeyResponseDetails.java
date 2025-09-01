@@ -23,4 +23,5 @@ public class AccessKeyResponseDetails {
   private String createdBy;
   private String clientId;
   private String userId;
+  private List<String> permittedIps;
 }
