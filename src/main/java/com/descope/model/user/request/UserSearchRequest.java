@@ -46,4 +46,6 @@ public class UserSearchRequest {
   Instant toModifiedTime;
   Map<String, RolesList> tenantRoleIds;
   Map<String, RolesList> tenantRoleNames;
+  /** Free text search on many of the user properties like custom properties, name, email, etc. */
+  String text;
 }

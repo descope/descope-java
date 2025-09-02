@@ -34,7 +34,7 @@ public class UserSearchRequestTest {
         + "\"testUsersOnly\":null,\"customAttributes\":null,\"statuses\":null,\"emails\":null,\"phones\":null,"
         + "\"loginIds\":null,\"userIds\":null,\"ssoAppIds\":null,\"fromCreatedTime\":%d,\"toCreatedTime\":%d,"
         + "\"fromModifiedTime\":%d,\"toModifiedTime\":%d,"
-        + "\"tenantRoleIds\":null,\"tenantRoleNames\":null}",
+        + "\"tenantRoleIds\":null,\"tenantRoleNames\":null,\"text\":null}",
         expectedMillis, expectedMillis, expectedMillis, expectedMillis);
 
     assertEquals(expectedJson, json);
@@ -60,7 +60,7 @@ public class UserSearchRequestTest {
         + "\"phones\":null,\"loginIds\":null,\"userIds\":null,\"ssoAppIds\":null,\"fromCreatedTime\":null,"
         + "\"toCreatedTime\":null,\"fromModifiedTime\":null,\"toModifiedTime\":null,"
         + "\"tenantRoleIds\":{\"tenant1\":{\"values\":[\"roleA\"],\"and\":null}},"
-        + "\"tenantRoleNames\":{\"tenant2\":{\"values\":[\"roleX\"],\"and\":null}}}";
+        + "\"tenantRoleNames\":{\"tenant2\":{\"values\":[\"roleX\"],\"and\":null}},\"text\":null}";
 
     assertEquals(expectedJson, json);
   }

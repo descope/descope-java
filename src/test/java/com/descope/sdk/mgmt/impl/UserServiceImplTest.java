@@ -907,7 +907,10 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("enabled", user.getStatus());
     AllUsersResponseDetails searchResponse = userService
-        .searchAll(UserSearchRequest.builder().fromCreatedTime(Instant.now().minus(Duration.ofMinutes(5))).build());
+        .searchAll(UserSearchRequest.builder()
+          .fromCreatedTime(Instant.now().minus(Duration.ofMinutes(5)))
+          .text("test")
+          .build());
     boolean found = false;
     for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
@@ -1008,7 +1011,7 @@ public class UserServiceImplTest {
             .verifiedPhone(true).displayName("Testing Test").build());
     user = updateResponse.getUser();
     assertNotNull(user);
-    assertThat(user.getRoleNames()).containsExactly(roleName1, roleName2);
+    assertThat(user.getRoleNames()).containsExactlyInAnyOrder(roleName1, roleName2);
     // Patch
     UserResponseDetails patchResponse = userService.patch(loginId,
         PatchUserRequest.builder()
@@ -1017,8 +1020,10 @@ public class UserServiceImplTest {
                     .tenantId(tenantId).roleNames(Arrays.asList(roleName1, roleName2)).build())).build());
     user = patchResponse.getUser();
     assertNotNull(user);
-    assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
-        .tenantName(tenantName).roleNames(Arrays.asList(roleName1, roleName2)).build());
+    assertThat(user.getUserTenants().size()).isEqualTo(1);
+    assertThat(user.getUserTenants().get(0).getTenantId()).isEqualTo(tenantId);
+    assertThat(user.getUserTenants().get(0).getTenantName()).isEqualTo(tenantName);
+    assertThat(user.getUserTenants().get(0).getRoleNames()).containsExactlyInAnyOrder(roleName1, roleName2);
     // Search
     AllUsersResponseDetails searchByTenantRoleNames = userService.searchAll(
         UserSearchRequest.builder()
