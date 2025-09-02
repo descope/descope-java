@@ -907,7 +907,10 @@ public class UserServiceImplTest {
     assertEquals("Testing Test", user.getName());
     assertEquals("enabled", user.getStatus());
     AllUsersResponseDetails searchResponse = userService
-        .searchAll(UserSearchRequest.builder().fromCreatedTime(Instant.now().minus(Duration.ofMinutes(5))).build());
+        .searchAll(UserSearchRequest.builder()
+          .fromCreatedTime(Instant.now().minus(Duration.ofMinutes(5)))
+          .text("test")
+          .build());
     boolean found = false;
     for (UserResponse u : searchResponse.getUsers()) {
       if (u.getUserId().equals(createResponse.getUser().getUserId())) {
