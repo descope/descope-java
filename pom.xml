@@ -32,7 +32,7 @@
         <dependency>
             <artifactId>jjwt-api</artifactId>
             <groupId>io.jsonwebtoken</groupId>
-            <version>0.12.6</version>
+            <version>0.12.7</version>
         </dependency>
         <dependency>
             <artifactId>jjwt-impl</artifactId>
