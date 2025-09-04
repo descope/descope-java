@@ -490,6 +490,23 @@ for more information.
 
 Alternatively, you can validate the session using Spring Framework middleware. See example using [java-spring](https://github.com/descope/java-spring).
 
+
+### Tenant selection
+
+For a user that has permissions to multiple tenants, you can set a specific tenant as the current selected one
+This will add an extra attribute to the refresh JWT and the session JWT with the selected tenant ID
+
+```java
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthService();
+try {
+    String tenantId = "t1";
+    AuthenticationInfo jwtResponse = as.selectTenant(tenantId, refreshToken);
+    // Use jwtResponse.getToken().getJwt() and jwtResponse.getRefreshToken().getJwt()
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### Roles & Permission Validation
 
 When using Roles & Permission, it's important to validate the user has the required

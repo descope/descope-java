@@ -43,6 +43,19 @@ public interface AuthenticationService {
   AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException;
 
   /**
+    * For a user with access to multiple tenants, set a specific tenant as the
+    * current selected one.
+    * This returns updated JWTs.
+    *
+    * @param tenantId     - Tenant ID to select
+    * @param refreshToken - Refresh token
+    * @return {@link AuthenticationInfo} the full authentication info including new
+    *         tokens
+    * @throws DescopeException - error upon failure
+    */
+  AuthenticationInfo selectTenant(String tenantId, String refreshToken) throws DescopeException;
+
+  /**
    * Use to validate a session with the session and refresh tokens.
    * If the session token is valid, it is returned in the form of a Token object.
    * If not, use the refresh token to refresh and return the new session token.
