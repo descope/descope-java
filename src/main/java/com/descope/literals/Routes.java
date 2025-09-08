@@ -78,6 +78,9 @@ public class Routes {
     public static final String GET_KEYS_LINK = "/v2/keys";
     public static final String REFRESH_TOKEN_LINK = "/v1/auth/refresh";
     public static final String EXCHANGE_ACCESS_KEY_LINK = "/v1/auth/accesskey/exchange";
+
+    // Tenant
+    public static final String TENANT_SELECT_LINK = "/v1/auth/tenant/select";
   }
 
   @UtilityClass

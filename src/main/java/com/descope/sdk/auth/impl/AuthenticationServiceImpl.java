@@ -7,6 +7,7 @@ import static com.descope.literals.Routes.AuthEndPoints.HISTORY_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_ALL_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.ME_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.TENANT_SELECT_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -242,7 +244,24 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     }
     validateJWT(refreshToken); // Will make sure token is still valid
     ApiProxy apiProxy = getApiProxy(refreshToken);
-    return apiProxy.getArray(getUri(HISTORY_LINK), new TypeReference<List<UserHistoryResponse>>(){});
+    return apiProxy.getArray(getUri(HISTORY_LINK), new TypeReference<List<UserHistoryResponse>>() {
+    });
+  }
+
+  @Override
+  public AuthenticationInfo selectTenant(String tenantId, String refreshToken) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.missingArguments("tenant ID");
+    }
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    Map<String, String> body = Collections.singletonMap("tenant", tenantId);
+    JWTResponse jwtResponse = apiProxy.post(composeSelectTenantURL(), body, JWTResponse.class);
+
+    return getAuthenticationInfo(jwtResponse);
   }
 
   AuthenticationInfo exchangeToken(String code, URI url) {
@@ -257,6 +276,10 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   private URI composeExchangeAccessKeyLinkURL() {
     return getUri(EXCHANGE_ACCESS_KEY_LINK);
+  }
+
+  private URI composeSelectTenantURL() {
+    return getUri(TENANT_SELECT_LINK);
   }
 
   private URI composeLogOutLinkURL() {
