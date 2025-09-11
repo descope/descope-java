@@ -44,7 +44,7 @@
             <artifactId>jjwt-jackson</artifactId>
             <groupId>io.jsonwebtoken</groupId>
             <scope>runtime</scope>
-            <version>0.12.7</version>
+            <version>0.13.0</version>
         </dependency>
         <dependency>
             <artifactId>bcprov-jdk18on</artifactId>
