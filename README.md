@@ -705,9 +705,9 @@ try {
             .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
                     .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1").build(),
+                    .roleNames(Arrays.asList("role-name1")).build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2").build())))
+                    .tenantId("tenant-ID2").build()))
             .build());
 } catch (DescopeException de) {
     // Handle the error
@@ -724,9 +724,9 @@ try {
             .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
                     .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1").build(),
+                    .roleNames(Arrays.asList("role-name1")).build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2").build())))
+                    .tenantId("tenant-ID2").build()))
             .build(),
 			InviteOptions.builder()
 				.inviteUrl("https://my-app.com/invite")
@@ -743,9 +743,9 @@ try {
             .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
                     .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1").build(),
+                    .roleNames(Arrays.asList("role-name1")).build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2").build())))
+                    .tenantId("tenant-ID2").build()))
             .build());
 } catch (DescopeException de) {
     // Handle the error
@@ -1752,9 +1752,9 @@ try {
             .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
                     .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1").build(),
+                    .roleNames(Arrays.asList("role-name1")).build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2").build()))).build());
+                    .tenantId("tenant-ID2").build())).build());
 } catch (DescopeException de) {
     // Handle the error
 }
