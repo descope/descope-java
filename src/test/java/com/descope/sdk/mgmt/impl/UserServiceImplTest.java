@@ -153,7 +153,7 @@ public class UserServiceImplTest {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.update("", new UserRequest()));
     assertNotNull(thrown);
-    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+    assertEquals("The Login ID or User ID argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -174,7 +174,7 @@ public class UserServiceImplTest {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.patch("", new PatchUserRequest()));
     assertNotNull(thrown);
-    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+    assertEquals("The Login ID or User ID argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -847,15 +847,15 @@ public class UserServiceImplTest {
     String loginId = TestUtils.getRandomName("u-");
     String email = TestUtils.getRandomName("test-") + "@descope.com";
     String phone = "+1-555-555-5555";
-    List<String> additionalLoginIds = Arrays.asList(TestUtils.getRandomName("u-"), TestUtils.getRandomName("u-"));
+    List<String> additionalIdentifiers = Arrays.asList(TestUtils.getRandomName("u-"), TestUtils.getRandomName("u-"));
     // Create
     UserResponseDetails createResponse = userService.create(loginId,
         UserRequest.builder().email(email).verifiedEmail(true).phone(phone).verifiedPhone(true)
-            .displayName("Testing Test").additionalLoginIds(additionalLoginIds).build());
+            .displayName("Testing Test").additionalIdentifiers(additionalIdentifiers).build());
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
-    Assertions.assertThat(user.getLoginIds()).containsAll(additionalLoginIds);
+    Assertions.assertThat(user.getLoginIds()).containsAll(additionalIdentifiers);
     assertEquals(email, user.getEmail());
     assertEquals("+15555555555", user.getPhone());
     assertEquals(true, user.getVerifiedEmail());

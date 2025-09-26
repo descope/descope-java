@@ -262,7 +262,7 @@ class InboundAppsServiceImplTest {
       assertEquals(initialApp.getId(), apps[0].getId());
       // update app
       inboundAppsService.updateApplication(
-          InboundAppRequest.builder().id(initialApp.getId()).name(name + "2").permissionsScopes(scopes).build());
+          InboundAppRequest.builder().id(initialApp.getId()).name(name + "2").permissionsScopes(scopes).loginPageUrl("https://example.com").build());
       // load app validate
       InboundApp lapp = inboundAppsService.loadApplication(initialApp.getId());
       assertEquals(initialApp.getId(), lapp.getId());

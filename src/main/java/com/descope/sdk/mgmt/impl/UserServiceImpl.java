@@ -157,14 +157,14 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails patch(String loginId, PatchUserRequest request) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
+  public UserResponseDetails patch(String loginIdOrUserId, PatchUserRequest request) throws DescopeException {
+    if (StringUtils.isBlank(loginIdOrUserId)) {
+      throw ServerCommonException.invalidArgument("Login ID or User ID");
     }
     if (request == null) {
       request = new PatchUserRequest();
     }
-    Map<String, Object> req = mapOf("loginId", loginId);
+    Map<String, Object> req = mapOf("loginId", loginIdOrUserId);
     req.putAll(request.toMap());
     URI patchUserUri = composePatchUserUri();
     ApiProxy apiProxy = getApiProxy();
@@ -172,14 +172,14 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
-  public UserResponseDetails update(String loginId, UserRequest request) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
+  public UserResponseDetails update(String loginIdOrUserId, UserRequest request) throws DescopeException {
+    if (StringUtils.isBlank(loginIdOrUserId)) {
+      throw ServerCommonException.invalidArgument("Login ID or User ID");
     }
     if (request == null) {
       request = new UserRequest();
     }
-    Map<String, Object> req = mapOf("loginId", loginId);
+    Map<String, Object> req = mapOf("loginId", loginIdOrUserId);
     req.putAll(request.toMap());
     URI updateUserUri = composeUpdateUserUri();
     ApiProxy apiProxy = getApiProxy();
@@ -194,6 +194,16 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI deleteUserUri = composeDeleteUserUri();
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(deleteUserUri, mapOf("loginId", loginId), Void.class);
+  }
+
+  @Override
+  public void deleteByUserId(String userId) throws DescopeException {
+    if (StringUtils.isBlank(userId)) {
+      throw ServerCommonException.invalidArgument("User ID");
+    }
+    URI deleteUserUri = composeDeleteUserUri();
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(deleteUserUri, mapOf("userId", userId), Void.class);
   }
 
   @Override

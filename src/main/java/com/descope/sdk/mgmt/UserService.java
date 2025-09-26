@@ -93,26 +93,26 @@ public interface UserService {
    * user. Use carefully.
    * Instead, use Patch if you don't want to pass all parameters.
    *
-   * @param loginId The loginID is required and will determine what the user will use to sign in,
+   * @param loginIdOrUserId The loginID or userID is required and will determine what the user will use to sign in,
    *     make sure the login id is unique for test.
    * @param request request is optional, and if provided, all attributes within it are optional.
    * @return {@link UserResponseDetails UserResponseDetails}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  UserResponseDetails update(String loginId, UserRequest request) throws DescopeException;
+  UserResponseDetails update(String loginIdOrUserId, UserRequest request) throws DescopeException;
 
   /**
    * Patches an existing user.
    * 
    * <p>Only the fields that are set in the request will be updated.
    *
-   * @param loginId The loginID is required and will determine which user to update.
+   * @param loginIdOrUserId The loginID or userID is required and will determine which user to update.
    * @param request The request containing the fields to be updated. Fields not set will remain unchanged.
    * @return {@link UserResponseDetails UserResponseDetails} containing the updated user details.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
-  UserResponseDetails patch(String loginId, PatchUserRequest request) throws DescopeException;
+  UserResponseDetails patch(String loginIdOrUserId, PatchUserRequest request) throws DescopeException;
 
   /**
    * Logout user from all devices.
@@ -147,6 +147,16 @@ public interface UserService {
    *     thrown.
    */
   void delete(String loginId) throws DescopeException;
+
+  /**
+   * Delete an existing user by user ID.
+   *
+   * <p>IMPORTANT: This action is irreversible. Use carefully.
+   *
+   * @param userId The userID is required.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  void deleteByUserId(String userId) throws DescopeException;
 
   /**
    * Delete all test users in the project.
