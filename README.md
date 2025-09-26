@@ -681,7 +681,7 @@ try {
             .ids(Arrays.asList("my-custom-id"))
             .names(Arrays.asList("My Tenant"))
             .customAttributes(Map.of("custom-attribute-1", "custom-value1"))
-            .selfProvisioningDomains(Arrays.asList("domain.com", "another-domain.com")));
+            .selfProvisioningDomains(Arrays.asList("domain.com", "another-domain.com")).build());
     for (Tenant t : tenants) {
         // Do something
     }
@@ -702,12 +702,12 @@ try {
     us.create("desmond@descope.com", UserRequest.builder()
             .email("desmond@descope.com")
             .displayName("Desmond Copeland")
-            .tenants(Arrays.asList(
+            .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
                     .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1"),
+                    .roleNames(Arrays.asList("role-name1").build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2"))))
+                    .tenantId("tenant-ID2").build())))
             .build());
 } catch (DescopeException de) {
     // Handle the error
@@ -721,12 +721,12 @@ try {
 						UserRequest.builder()
             .email("desmond@descope.com")
             .displayName("Desmond Copeland")
-            .tenants(Arrays.asList(
+            .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
                     .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1"),
+                    .roleNames(Arrays.asList("role-name1").build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2"))))
+                    .tenantId("tenant-ID2").build())))
             .build(),
 			InviteOptions.builder()
 				.inviteUrl("https://my-app.com/invite")
@@ -740,12 +740,12 @@ try {
     us.update("desmond@descope.com", UserRequest.builder()
             .email("desmond@descope.com")
             .displayName("Desmond Copeland")
-            .tenants(Arrays.asList(
+            .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
                     .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1"),
+                    .roleNames(Arrays.asList("role-name1").build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2"))))
+                    .tenantId("tenant-ID2").build())))
             .build());
 } catch (DescopeException de) {
     // Handle the error
@@ -785,11 +785,11 @@ try {
 // Results can be paginated using the limit and page parameters
 try {
     List<AllUsersResponsibleDetails> users = us.searchAll(UserRequest.builder()
-            .tenants(Arrays.asList(
+            .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID1"),
+                    .tenantId("tenant-ID1").build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2"))));
+                    .tenantId("tenant-ID2").build())).build());
     for (AllUsersResponsibleDetails u : users) {
         // Do something
     }
@@ -1749,12 +1749,12 @@ try {
     UserResponseDetails resp = us.createTestUser("desmond@descope.com", UserRequest.builder()
             .email("desmond@descope.com")
             .displayName("Desmond Copeland")
-            .tenants(Arrays.asList(
+            .userTenants(Arrays.asList(
                 AssociatedTenant.builder()
                     .tenantId("tenant-ID1")
-                    .roleNames(Arrays.asList("role-name1"),
+                    .roleNames(Arrays.asList("role-name1").build(),
                 AssociatedTenant.builder()
-                    .tenantId("tenant-ID2")))));
+                    .tenantId("tenant-ID2").build()))).build());
 } catch (DescopeException de) {
     // Handle the error
 }

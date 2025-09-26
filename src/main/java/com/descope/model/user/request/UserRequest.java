@@ -29,7 +29,7 @@ public class UserRequest {
   Map<String, Object> customAttributes;
   String picture;
   Boolean test;
-  List<String> additionalLoginIds;
+  List<String> additionalIdentifiers;
   List<String> ssoAppIds;
 
   public Map<String, Object> toMap() {
@@ -47,7 +47,7 @@ public class UserRequest {
     addIfNotNull(m, "customAttributes", customAttributes);
     addIfNotNull(m, "picture", picture);
     addIfNotNull(m, "test", test);
-    addIfNotNull(m, "additionalLoginIds", additionalLoginIds);
+    addIfNotNull(m, "additionalIdentifiers", additionalIdentifiers);
     addIfNotNull(m, "ssoAppIDs", ssoAppIds);
     return m;
   }
