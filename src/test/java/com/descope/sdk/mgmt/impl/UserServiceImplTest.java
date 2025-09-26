@@ -153,7 +153,7 @@ public class UserServiceImplTest {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.update("", new UserRequest()));
     assertNotNull(thrown);
-    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+    assertEquals("The Login ID or User ID argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -174,7 +174,7 @@ public class UserServiceImplTest {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.patch("", new PatchUserRequest()));
     assertNotNull(thrown);
-    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+    assertEquals("The Login ID or User ID argument is invalid", thrown.getMessage());
   }
 
   @Test
