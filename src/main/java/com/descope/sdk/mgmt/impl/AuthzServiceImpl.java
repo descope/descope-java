@@ -37,6 +37,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AuthzService;
 import java.time.Instant;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -230,7 +231,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
   @Override
   public List<Relation> whatCanTargetAccess(String target) throws DescopeException {
     if (StringUtils.isBlank(target)) {
-      throw ServerCommonException.invalidArgument("user");
+      throw ServerCommonException.invalidArgument("target");
     }
     ApiProxy apiProxy = getApiProxy();
     Map<String, Object> request = mapOf("target", target);
@@ -239,10 +240,10 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
   }
 
   @Override
-  public List<String> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
+  public List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
       throws DescopeException {
     if (StringUtils.isBlank(target)) {
-      throw ServerCommonException.invalidArgument("user");
+      throw ServerCommonException.invalidArgument("target");
     }
     if (StringUtils.isBlank(relationDefinition)) {
       throw ServerCommonException.invalidArgument("relationDefinition");
@@ -255,7 +256,13 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
         "namespace", namespace);
     ResourcesResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_WITH_RELATION), request,
         ResourcesResponse.class);
-    return resp.getResources();
+    List<Relation> relations =
+        new ArrayList<>(resp != null && resp.getResources() != null ? resp.getResources().size() : 0);
+    for (String resource : resp.getResources()) {
+      relations.add(Relation.builder().resource(resource).target(target)
+          .relationDefinition(relationDefinition).namespace(namespace).build());
+    }
+    return relations;
   }
 
   @Override

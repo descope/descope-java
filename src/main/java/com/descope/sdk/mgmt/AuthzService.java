@@ -163,7 +163,7 @@ public interface AuthzService {
    * @return {@link List} of {@link Relation} that exist for the given target
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
-  List<String> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
+  List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
       throws DescopeException;
 
   /**
