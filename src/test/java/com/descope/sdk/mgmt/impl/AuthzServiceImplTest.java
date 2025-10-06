@@ -21,6 +21,7 @@ import com.descope.model.authz.Relation;
 import com.descope.model.authz.RelationDefinition;
 import com.descope.model.authz.RelationQuery;
 import com.descope.model.authz.RelationsResponse;
+import com.descope.model.authz.ResourcesResponse;
 import com.descope.model.authz.Schema;
 import com.descope.model.authz.WhoCanAccessResponse;
 import com.descope.model.client.Client;
@@ -382,23 +383,56 @@ public class AuthzServiceImplTest {
   }
 
   @Test
-  void testWhatCanUserAccessForNoUser() {
+  void testWhatCanTargetAccessForNoTarget() {
     ServerCommonException thrown =
         assertThrows(
             ServerCommonException.class,
             () -> authzService.whatCanTargetAccess(null));
     assertNotNull(thrown);
-    assertEquals("The user argument is invalid", thrown.getMessage());
+    assertEquals("The target argument is invalid", thrown.getMessage());
   }
 
   @Test
-  void testWhatCanUserAccessForSuccess() {
+  void testWhatCanTargetAccessForSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(new RelationsResponse(Arrays.asList(new Relation()))).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       authzService.whatCanTargetAccess("kiki");
+    }
+  }
+
+  @Test
+  void testWhatCanTargetAccessWithRelationForNoTarget() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whatCanTargetAccessWithRelation(null, null, null));
+    assertNotNull(thrown);
+    assertEquals("The target argument is invalid", thrown.getMessage());
+    thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whatCanTargetAccessWithRelation("t", null, null));
+    assertNotNull(thrown);
+    assertEquals("The relationDefinition argument is invalid", thrown.getMessage());
+    thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whatCanTargetAccessWithRelation("t", "rd", null));
+    assertNotNull(thrown);
+    assertEquals("The namespace argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testWhatCanTargetAccessWithRelationForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new ResourcesResponse(Arrays.asList(""))).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      authzService.whatCanTargetAccessWithRelation("kiki", "rd", "ns");
     }
   }
 
