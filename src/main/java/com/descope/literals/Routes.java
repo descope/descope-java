@@ -219,6 +219,7 @@ public class Routes {
     public static final String MANAGEMENT_AUTHZ_RE_RESOURCE = "/v1/mgmt/authz/re/resource";
     public static final String MANAGEMENT_AUTHZ_RE_TARGETS = "/v1/mgmt/authz/re/targets";
     public static final String MANAGEMENT_AUTHZ_RE_TARGET_ALL = "/v1/mgmt/authz/re/targetall";
+    public static final String MANAGEMENT_AUTHZ_RE_TARGET_WITH_RELATION = "/v1/mgmt/authz/re/targetwithrelation";
     public static final String MANAGEMENT_AUTHZ_GET_MODIFIED = "/v1/mgmt/authz/getmodified";
 
     // FGA (Fine-grained Authorization)

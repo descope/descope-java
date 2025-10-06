@@ -468,5 +468,7 @@ public class AuthzServiceImplTest {
     assertThat(respUsersRelations).size().isEqualTo(2);
     List<Relation> respWhat = authzService.whatCanTargetAccess("u1");
     assertThat(respWhat).size().isEqualTo(7);
+    List<String> respWhatWithRelations = authzService.whatCanTargetAccessWithRelation("u1", "viewer", "doc");
+    assertThat(respWhatWithRelations).size().isEqualTo(1);
   }
 }

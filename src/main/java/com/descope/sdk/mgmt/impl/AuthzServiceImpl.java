@@ -12,6 +12,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_R
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_RESOURCE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_TARGETS;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_TARGET_ALL;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_TARGET_WITH_RELATION;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_WHO;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_SCHEMA_DELETE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_SCHEMA_LOAD;
@@ -28,6 +29,7 @@ import com.descope.model.authz.Relation;
 import com.descope.model.authz.RelationDefinition;
 import com.descope.model.authz.RelationQuery;
 import com.descope.model.authz.RelationsResponse;
+import com.descope.model.authz.ResourcesResponse;
 import com.descope.model.authz.Schema;
 import com.descope.model.authz.WhoCanAccessResponse;
 import com.descope.model.client.Client;
@@ -234,6 +236,26 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     Map<String, Object> request = mapOf("target", target);
     RelationsResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_ALL), request, RelationsResponse.class);
     return resp.getRelations();
+  }
+
+  @Override
+  public List<String> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
+      throws DescopeException {
+    if (StringUtils.isBlank(target)) {
+      throw ServerCommonException.invalidArgument("user");
+    }
+    if (StringUtils.isBlank(relationDefinition)) {
+      throw ServerCommonException.invalidArgument("relationDefinition");
+    }
+    if (StringUtils.isBlank(namespace)) {
+      throw ServerCommonException.invalidArgument("namespace");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    Map<String, Object> request = mapOf("target", target, "relationDefinition", relationDefinition,
+        "namespace", namespace);
+    ResourcesResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_WITH_RELATION), request,
+        ResourcesResponse.class);
+    return resp.getResources();
   }
 
   @Override

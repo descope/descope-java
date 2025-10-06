@@ -154,6 +154,19 @@ public interface AuthzService {
   List<Relation> whatCanTargetAccess(String target) throws DescopeException;
 
   /**
+   * Return the list of all resources for the given target and a given relation definition
+   * including derived resources from the schema tree.
+   *
+   * @param target The target to check relations for
+   * @param relationDefinition relation definition to filter the results
+   * @param namespace namespace of the relation definition
+   * @return {@link List} of {@link Relation} that exist for the given target
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<String> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
+      throws DescopeException;
+
+  /**
    * Return list of targets and resources changed since the given date.
    * Should be used to invalidate local caches.
    *
