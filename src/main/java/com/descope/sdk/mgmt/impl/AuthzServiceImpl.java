@@ -12,6 +12,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_R
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_RESOURCE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_TARGETS;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_TARGET_ALL;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_TARGET_WITH_RELATION;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_WHO;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_SCHEMA_DELETE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_SCHEMA_LOAD;
@@ -28,6 +29,7 @@ import com.descope.model.authz.Relation;
 import com.descope.model.authz.RelationDefinition;
 import com.descope.model.authz.RelationQuery;
 import com.descope.model.authz.RelationsResponse;
+import com.descope.model.authz.ResourcesResponse;
 import com.descope.model.authz.Schema;
 import com.descope.model.authz.WhoCanAccessResponse;
 import com.descope.model.client.Client;
@@ -35,6 +37,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AuthzService;
 import java.time.Instant;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -228,12 +231,38 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
   @Override
   public List<Relation> whatCanTargetAccess(String target) throws DescopeException {
     if (StringUtils.isBlank(target)) {
-      throw ServerCommonException.invalidArgument("user");
+      throw ServerCommonException.invalidArgument("target");
     }
     ApiProxy apiProxy = getApiProxy();
     Map<String, Object> request = mapOf("target", target);
     RelationsResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_ALL), request, RelationsResponse.class);
     return resp.getRelations();
+  }
+
+  @Override
+  public List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
+      throws DescopeException {
+    if (StringUtils.isBlank(target)) {
+      throw ServerCommonException.invalidArgument("target");
+    }
+    if (StringUtils.isBlank(relationDefinition)) {
+      throw ServerCommonException.invalidArgument("relationDefinition");
+    }
+    if (StringUtils.isBlank(namespace)) {
+      throw ServerCommonException.invalidArgument("namespace");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    Map<String, Object> request = mapOf("target", target, "relationDefinition", relationDefinition,
+        "namespace", namespace);
+    ResourcesResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_WITH_RELATION), request,
+        ResourcesResponse.class);
+    List<Relation> relations =
+        new ArrayList<>(resp != null && resp.getResources() != null ? resp.getResources().size() : 0);
+    for (String resource : resp.getResources()) {
+      relations.add(Relation.builder().resource(resource).target(target)
+          .relationDefinition(relationDefinition).namespace(namespace).build());
+    }
+    return relations;
   }
 
   @Override
