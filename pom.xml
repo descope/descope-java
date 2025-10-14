@@ -128,7 +128,7 @@
         <dependency>
             <artifactId>commons-lang3</artifactId>
             <groupId>org.apache.commons</groupId>
-            <version>3.18.0</version>
+            <version>3.19.0</version>
         </dependency>
         <dependency>
             <artifactId>commons-collections4</artifactId>
