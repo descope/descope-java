@@ -125,7 +125,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (options != null) {
       addIfNotBlank(req, "inviteUrl", options.getInviteUrl());
       addIfNotNull(req, "sendSMS", options.getSendSMS());
-      addIfNotNull(req, "sendEmail", options.getSendEmail());
+      addIfNotNull(req, "sendMail", options.getSendEmail());
       addIfNotNull(req, "templateId", options.getTemplateId());
       addIfNotNull(req, "templateOptions", options.getTemplateOptions());
     }
@@ -147,7 +147,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (options != null) {
       addIfNotBlank(req, "inviteUrl", options.getInviteUrl());
       addIfNotNull(req, "sendSMS", options.getSendSMS());
-      addIfNotNull(req, "sendEmail", options.getSendEmail());
+      addIfNotNull(req, "sendMail", options.getSendEmail());
       addIfNotNull(req, "templateId", options.getTemplateId());
       addIfNotNull(req, "templateOptions", options.getTemplateOptions());
     }
