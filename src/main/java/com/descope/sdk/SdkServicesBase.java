@@ -67,9 +67,8 @@ public abstract class SdkServicesBase {
         if (sb.length() > 0) {
           sb.append("&");
         }
-        sb.append(URLEncoder.encode(e.getKey(), "UTF-8")).append('=').append(URLEncoder.encode(e.getValue(), "UTF-8"));
+        sb.append(e.getKey()).append('=').append(e.getValue());
       }
-
       return new URI(oldUri.getScheme(), oldUri.getAuthority(), oldUri.getPath(), sb.toString(), oldUri.getFragment())
           .toString();
     }

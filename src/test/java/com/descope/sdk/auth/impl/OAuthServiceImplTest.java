@@ -62,15 +62,15 @@ public class OAuthServiceImplTest {
     doReturn(new OAuthResponse(MOCK_URL + "?q=t")).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      Map<String, String> params = mapOf("aa", "val1");
-      params.put("bb", "val2");
+      Map<String, String> params = mapOf("aa", "val1@kiki");
+      params.put("bb", "val2%xxx");
 
       String start = oauthService.start("provider", "returnurl", new LoginOptions(), params);
-      Assertions.assertThat(start).isNotBlank().contains(MOCK_URL);
-      Assertions.assertThat(start).isNotBlank().contains("val1");
-      Assertions.assertThat(start).isNotBlank().contains("val2");
-      Assertions.assertThat(start).isNotBlank().contains("aa");
-      Assertions.assertThat(start).isNotBlank().contains("bb");
+      Assertions.assertThat(start).isNotBlank().contains(MOCK_URL + "?q=t");
+      Assertions.assertThat(start).isNotBlank().contains("val1@kiki");
+      Assertions.assertThat(start).isNotBlank().contains("val2%25xxx");
+      Assertions.assertThat(start).isNotBlank().contains("aa=");
+      Assertions.assertThat(start).isNotBlank().contains("bb=");
     }
   }
 
