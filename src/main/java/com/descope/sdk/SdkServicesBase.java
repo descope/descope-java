@@ -57,21 +57,38 @@ public abstract class SdkServicesBase {
   protected String appendQueryParams(String url, Map<String, String> params) {
     if (isNotEmpty(params)) {
       URI oldUri = new URI(url);
-
-      String newQuery = oldUri.getQuery();
-      StringBuilder sb = new StringBuilder("");
-      if (newQuery != null) {
-        sb.append(newQuery);
+      
+      StringBuilder sb = new StringBuilder();
+      // Add existing query parameters (get the raw encoded query from the original URL)
+      String existingQuery = oldUri.getRawQuery(); // Use getRawQuery() to keep original encoding
+      if (existingQuery != null) {
+        sb.append(existingQuery);
       }
+
+      // Add new parameters (encode them)
       for (Entry<String, String> e : params.entrySet()) {
         if (sb.length() > 0) {
           sb.append("&");
         }
         sb.append(URLEncoder.encode(e.getKey(), "UTF-8")).append('=').append(URLEncoder.encode(e.getValue(), "UTF-8"));
       }
-
-      return new URI(oldUri.getScheme(), oldUri.getAuthority(), oldUri.getPath(), sb.toString(), oldUri.getFragment())
-          .toString();
+      
+      // Build URL manually to avoid double encoding
+      StringBuilder urlBuilder = new StringBuilder();
+      urlBuilder.append(oldUri.getScheme()).append("://");
+      if (oldUri.getAuthority() != null) {
+        urlBuilder.append(oldUri.getRawAuthority());
+      }
+      if (oldUri.getPath() != null) {
+        urlBuilder.append(oldUri.getRawPath());
+      }
+      if (sb.length() > 0) {
+        urlBuilder.append("?").append(sb.toString());
+      }
+      if (oldUri.getFragment() != null) {
+        urlBuilder.append("#").append(oldUri.getRawFragment());
+      }
+      return urlBuilder.toString();
     }
     return url;
   }
