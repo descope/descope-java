@@ -59,15 +59,15 @@ public class OAuthServiceImplTest {
   @Test
   void testStartWithAuthParams() {
     ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(new OAuthResponse(MOCK_URL + "?q=t")).when(apiProxy).post(any(), any(), any());
+    doReturn(new OAuthResponse(MOCK_URL + "?q=t%40")).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       Map<String, String> params = mapOf("aa", "val1@kiki");
       params.put("bb", "val2%xxx");
 
       String start = oauthService.start("provider", "returnurl", new LoginOptions(), params);
-      Assertions.assertThat(start).isNotBlank().contains(MOCK_URL + "?q=t");
-      Assertions.assertThat(start).isNotBlank().contains("val1@kiki");
+      Assertions.assertThat(start).isNotBlank().contains(MOCK_URL + "?q=t%40");
+      Assertions.assertThat(start).isNotBlank().contains("val1%40kiki");
       Assertions.assertThat(start).isNotBlank().contains("val2%25xxx");
       Assertions.assertThat(start).isNotBlank().contains("aa=");
       Assertions.assertThat(start).isNotBlank().contains("bb=");
