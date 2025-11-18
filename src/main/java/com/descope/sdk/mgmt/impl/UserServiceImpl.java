@@ -29,6 +29,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ACTIVE_PA
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_SSO_APPS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_TEMPORARY_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
@@ -434,7 +435,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     Map<String, Object> request = mapOf("loginId", loginId, "ssoAppIds", ssoAppIds);
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.post(getUri(USER_SET_SSO_APPS_LINK), request, UserResponseDetails.class);
+    return apiProxy.post(getUri(USER_REMOVE_SSO_APPS_LINK), request, UserResponseDetails.class);
   }
 
   @Override
