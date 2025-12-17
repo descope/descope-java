@@ -50,7 +50,7 @@
             <artifactId>bcprov-jdk18on</artifactId>
             <groupId>org.bouncycastle</groupId>
             <scope>runtime</scope>
-            <version>1.82</version>
+            <version>1.83</version>
         </dependency>
 
         <!--  LOMBOK  -->
