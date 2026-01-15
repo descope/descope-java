@@ -49,6 +49,7 @@ public class DescopeClient {
       log.debug("Provided public key is set, forcing only provided public key validation");
     }
     config.initializeManagementKey();
+    config.initializeAuthManagementKey();
     config.initializeBaseURL();
 
     Client client = getClient(config);
@@ -69,6 +70,7 @@ public class DescopeClient {
         .uri(StringUtils.isBlank(config.getDescopeBaseUrl()) ? baseUrl : config.getDescopeBaseUrl())
         .projectId(projectId)
         .managementKey(config.getManagementKey())
+        .authManagementKey(config.getAuthManagementKey())
         .headers(
             Collections.isEmpty(config.getCustomDefaultHeaders())
               ? new HashMap<>() : new HashMap<>(config.getCustomDefaultHeaders()))
