@@ -131,6 +131,7 @@ public class TestUtils {
         .uri(baseUrl)
         .projectId(EnvironmentUtils.getProjectId())
         .managementKey(EnvironmentUtils.getManagementKey())
+        .authManagementKey(EnvironmentUtils.getAuthManagementKey())
         .sdkInfo(getSdkInfo())
         .build();
   }
