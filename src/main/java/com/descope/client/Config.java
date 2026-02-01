@@ -30,6 +30,13 @@ public class Config {
   // fail.
   private String managementKey;
 
+  // AuthManagementKey (optional, "") - used to provide a management key to use
+  // with Authentication APIs whose public access has been disabled.
+  // If empty, this value is retrieved from the DESCOPE_AUTH_MANAGEMENT_KEY
+  // environment variable instead. If neither values are set then any disabled
+  // authentication methods API calls will fail.
+  private String authManagementKey;
+
   // PublicKey (optional, "") - used to override or implicitly use a dedicated public key in order
   // to decrypt and validate the JWT tokens during ValidateSessionRequest().
   // If empty, will attempt to fetch all public keys from the specified project id.
@@ -72,5 +79,12 @@ public class Config {
       this.managementKey = EnvironmentUtils.getManagementKey();
     }
     return this.managementKey;
+  }
+
+  public String initializeAuthManagementKey() {
+    if (StringUtils.isBlank(this.authManagementKey)) {
+      this.authManagementKey = EnvironmentUtils.getAuthManagementKey();
+    }
+    return this.authManagementKey;
   }
 }
