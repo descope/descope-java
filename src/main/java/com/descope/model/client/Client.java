@@ -23,6 +23,7 @@ public class Client {
   private Key providedKey;
   @Builder.Default
   private AtomicReference<Map<String, Key>> keys = new AtomicReference<>(new HashMap<>());
+  private String licenseType;
 
   public Key getKey(String keyId) {
     if (providedKey != null) {

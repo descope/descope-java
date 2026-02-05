@@ -259,6 +259,9 @@ public class Routes {
     public static final String MANAGEMENT_FETCH_OUTBOUND_APP_TENANT_TOKEN_LATEST =
         "/v1/mgmt/outbound/app/tenant/token/latest";
 
+    // License
+    public static final String MANAGEMENT_LICENSE_LINK = "/v1/mgmt/license";
+
     // Inbound
     public static final String MANAGEMENT_INBOUND_CREATE_APP = "/v1/mgmt/thirdparty/app/create";
     public static final String MANAGEMENT_INBOUND_UPDATE_APP = "/v1/mgmt/thirdparty/app/update";

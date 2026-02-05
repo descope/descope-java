@@ -148,6 +148,16 @@ abstract class AbstractProxyImpl {
     if (client != null && StringUtils.isNotBlank(client.getProjectId())) {
       req.addHeader("x-descope-project-id", client.getProjectId());
     }
+    if (client != null && StringUtils.isNotBlank(client.getLicenseType())
+        && StringUtils.isNotBlank(client.getManagementKey())
+        && isManagementRequest(req)) {
+      req.addHeader("x-descope-license", client.getLicenseType());
+    }
+  }
+
+  private boolean isManagementRequest(ClassicHttpRequest req) {
+    String path = req.getRequestUri();
+    return path != null && path.contains("/mgmt/");
   }
 
   @SneakyThrows
