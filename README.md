@@ -1211,31 +1211,7 @@ try {
     // Handle the error
 }
 ```
-Generate a JWT for a user, simulating a signin request.
-
-```java
-JwtService jwtService = descopeClient.getManagementServices().getJwtService();
-LoginOptions loginOptions = new LoginOptions();
-loginOptions.setCustomClaims(new HashMap<String, Object>() {{
-	put("custom-key1", "custom-value1");
-	put("custom-key2", "custom-value2");
-}});
-AuthenticationInfo res = jwtService.signIn("dummy", loginOptions);
-```
-
-Generate a JWT for a user, simulating a signup request.
-
-```java
-JwtService jwtService = descopeClient.getManagementServices().getJwtService();
-MgmtSignUpUser mgmtSignUpUser = new MgmtSignUpUser();
-mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
-	put("custom-key1", "custom-value1");
-	put("custom-key2", "custom-value2");
-		}});
-AuthenticationInfo res = jwtService.signUp("Dummy", mgmtSignUpUser);
-```
-
-Generate a JWT for a user, simulates a signup or in request.
+Generate a JWT for a user, simulating a signup or in request.
 
 ```java
 JwtService jwtService = descopeClient.getManagementServices().getJwtService();
@@ -1245,6 +1221,25 @@ mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
 	put("custom-key2", "custom-value2");
 		}});
 AuthenticationInfo res = jwtService.signUpOrIn("Dummy", mgmtSignUpUser);
+```
+
+Generate a client assertion JWT for OAuth 2.0 client credentials flow.
+
+```java
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+try {
+    ClientAssertionResponse response = jwtService.generateClientAssertionJwt(
+        "client-id",
+        "client-id",
+        Arrays.asList("https://auth.example.com/token"),
+        3600,
+        false,
+        "RS256"
+    );
+    String jwt = response.getJwt();
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Audit
