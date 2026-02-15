@@ -1247,6 +1247,54 @@ mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
 AuthenticationInfo res = jwtService.signUpOrIn("Dummy", mgmtSignUpUser);
 ```
 
+#### OAuth 2.0 Client Assertion JWT
+
+You can create client assertion JWTs for OAuth 2.0 client authentication per [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523). This is useful when authenticating to OAuth token endpoints that support JWT bearer client assertions.
+
+```java
+import com.descope.model.jwt.request.ClientAssertionRequest;
+import java.security.KeyStore;
+import java.security.interfaces.RSAPrivateKey;
+
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+
+// Load your private key (example using keystore)
+KeyStore keyStore = KeyStore.getInstance("PKCS12");
+try (InputStream is = new FileInputStream("/path/to/keystore.p12")) {
+    keyStore.load(is, "keystore-password".toCharArray());
+}
+RSAPrivateKey privateKey = (RSAPrivateKey) keyStore.getKey("key-alias", "key-password".toCharArray());
+
+// Create the client assertion JWT
+ClientAssertionRequest request = ClientAssertionRequest.builder()
+    .clientId("your-client-id")
+    .tokenEndpoint("https://auth.example.com/oauth/token")
+    .privateKey(privateKey)
+    .algorithm("RS256")  // Optional, defaults to RS256. Also supports ES256, etc.
+    .expirationSeconds(300)  // Optional, defaults to 300 (5 minutes)
+    .build();
+
+try {
+    String clientAssertion = jwtService.createClientAssertion(request);
+    
+    // Use the client assertion in your OAuth token request
+    // POST to token endpoint with:
+    // grant_type=client_credentials
+    // client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+    // client_assertion=<clientAssertion>
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+The generated JWT contains the following claims per RFC 7523:
+- `iss` (issuer): Your client ID
+- `sub` (subject): Your client ID
+- `aud` (audience): The token endpoint URL
+- `exp` (expiration): Current time + expiration seconds
+- `iat` (issued at): Current time
+- `jti` (JWT ID): Unique identifier to prevent replay attacks
+
 ### Audit
 
 You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.

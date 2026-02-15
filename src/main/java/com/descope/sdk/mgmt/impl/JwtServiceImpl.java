@@ -14,6 +14,7 @@ import com.descope.model.client.Client;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.AnonymousUserRequest;
+import com.descope.model.jwt.request.ClientAssertionRequest;
 import com.descope.model.jwt.request.ManagementSignInRequest;
 import com.descope.model.jwt.request.ManagementSignUpRequest;
 import com.descope.model.jwt.request.UpdateJwtRequest;
@@ -22,8 +23,13 @@ import com.descope.model.jwt.response.UpdateJwtResponse;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import java.net.URI;
+import java.security.PrivateKey;
+import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
 class JwtServiceImpl extends ManagementsBase implements JwtService {
@@ -135,6 +141,56 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
     Token refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     return new AuthenticationInfo(sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
+  }
+
+  @Override
+  public String createClientAssertion(ClientAssertionRequest request) throws DescopeException {
+    if (request == null) {
+      throw ServerCommonException.invalidArgument("ClientAssertionRequest");
+    }
+    if (StringUtils.isBlank(request.getClientId())) {
+      throw ServerCommonException.invalidArgument("clientId");
+    }
+    if (StringUtils.isBlank(request.getTokenEndpoint())) {
+      throw ServerCommonException.invalidArgument("tokenEndpoint");
+    }
+    if (request.getPrivateKey() == null) {
+      throw ServerCommonException.invalidArgument("privateKey");
+    }
+
+    try {
+      long nowMillis = System.currentTimeMillis();
+      Date now = new Date(nowMillis);
+      Date expiration = new Date(nowMillis + (request.getExpirationSeconds() * 1000));
+
+      SignatureAlgorithm algorithm = getSignatureAlgorithm(request.getAlgorithm());
+      PrivateKey privateKey = request.getPrivateKey();
+
+      return Jwts.builder()
+          .setIssuer(request.getClientId())
+          .setSubject(request.getClientId())
+          .setAudience(request.getTokenEndpoint())
+          .setIssuedAt(now)
+          .setExpiration(expiration)
+          .setId(UUID.randomUUID().toString())
+          .signWith(algorithm, privateKey)
+          .compact();
+    } catch (Exception e) {
+      String errorMessage = "Failed to create client assertion JWT: " + e.getMessage();
+      throw ServerCommonException.parseResponseError(errorMessage, null, e);
+    }
+  }
+
+  private SignatureAlgorithm getSignatureAlgorithm(String algorithm) {
+    if (StringUtils.isBlank(algorithm)) {
+      return SignatureAlgorithm.RS256;
+    }
+    
+    try {
+      return SignatureAlgorithm.forName(algorithm);
+    } catch (IllegalArgumentException e) {
+      throw ServerCommonException.invalidArgument("algorithm - unsupported: " + algorithm);
+    }
   }
 
   private URI composeUpdateJwtUri() {

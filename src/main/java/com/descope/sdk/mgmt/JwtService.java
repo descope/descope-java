@@ -5,6 +5,7 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.AnonymousUserRequest;
+import com.descope.model.jwt.request.ClientAssertionRequest;
 import com.descope.model.magiclink.LoginOptions;
 import java.util.Map;
 
@@ -31,4 +32,14 @@ public interface JwtService {
   AuthenticationInfo signIn(String loginId, LoginOptions loginOptions) throws DescopeException;
 
   AuthenticationInfo anonymous(AnonymousUserRequest request) throws DescopeException;
+
+  /**
+   * Create an OAuth 2.0 client assertion JWT for client authentication.
+   * This JWT can be used with OAuth token endpoints that support RFC 7523.
+   *
+   * @param request - ClientAssertionRequest containing clientId, tokenEndpoint, privateKey, and signing algorithm
+   * @return - The signed JWT string that can be used as client_assertion parameter
+   * @throws DescopeException if JWT creation fails
+   */
+  String createClientAssertion(ClientAssertionRequest request) throws DescopeException;
 }
