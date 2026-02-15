@@ -1247,6 +1247,25 @@ mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
 AuthenticationInfo res = jwtService.signUpOrIn("Dummy", mgmtSignUpUser);
 ```
 
+Generate a client assertion JWT for OAuth 2.0 client credentials flow.
+
+```java
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+try {
+    ClientAssertionResponse response = jwtService.generateClientAssertionJwt(
+        "client-id",
+        "client-id",
+        Arrays.asList("https://auth.example.com/token"),
+        3600,
+        false,
+        "RS256"
+    );
+    String jwt = response.getJwt();
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### Audit
 
 You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
