@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.CLIENT_ASSERTION;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ANONYMOUS_USER;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_IN;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP;
@@ -14,15 +15,18 @@ import com.descope.model.client.Client;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.AnonymousUserRequest;
+import com.descope.model.jwt.request.ClientAssertionRequest;
 import com.descope.model.jwt.request.ManagementSignInRequest;
 import com.descope.model.jwt.request.ManagementSignUpRequest;
 import com.descope.model.jwt.request.UpdateJwtRequest;
+import com.descope.model.jwt.response.ClientAssertionResponse;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.jwt.response.UpdateJwtResponse;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
@@ -139,5 +143,37 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
 
   private URI composeUpdateJwtUri() {
     return getUri(UPDATE_JWT_LINK);
+  }
+
+  @Override
+  public ClientAssertionResponse generateClientAssertionJwt(String issuer, String subject,
+      List<String> audience, Integer expiresIn, Boolean flattenAudience, String algorithm)
+      throws DescopeException {
+    if (StringUtils.isBlank(issuer)) {
+      throw ServerCommonException.invalidArgument("issuer");
+    }
+    if (StringUtils.isBlank(subject)) {
+      throw ServerCommonException.invalidArgument("subject");
+    }
+    if (audience == null || audience.isEmpty()) {
+      throw ServerCommonException.invalidArgument("audience");
+    }
+    if (expiresIn == null || expiresIn <= 0) {
+      throw ServerCommonException.invalidArgument("expiresIn");
+    }
+
+    ClientAssertionRequest request = ClientAssertionRequest.builder()
+        .issuer(issuer)
+        .subject(subject)
+        .audience(audience)
+        .expiresIn(expiresIn)
+        .flattenAudience(flattenAudience)
+        .algorithm(algorithm)
+        .build();
+
+    URI uri = getUri(CLIENT_ASSERTION);
+    ApiProxy apiProxy = getApiProxy();
+    ClientAssertionResponse response = apiProxy.post(uri, request, ClientAssertionResponse.class);
+    return response;
   }
 }
