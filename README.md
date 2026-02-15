@@ -1211,7 +1211,31 @@ try {
     // Handle the error
 }
 ```
-Generate a JWT for a user, simulating a signup or in request.
+Generate a JWT for a user, simulating a signin request.
+
+```java
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+LoginOptions loginOptions = new LoginOptions();
+loginOptions.setCustomClaims(new HashMap<String, Object>() {{
+	put("custom-key1", "custom-value1");
+	put("custom-key2", "custom-value2");
+}});
+AuthenticationInfo res = jwtService.signIn("dummy", loginOptions);
+```
+
+Generate a JWT for a user, simulating a signup request.
+
+```java
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+MgmtSignUpUser mgmtSignUpUser = new MgmtSignUpUser();
+mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
+	put("custom-key1", "custom-value1");
+	put("custom-key2", "custom-value2");
+		}});
+AuthenticationInfo res = jwtService.signUp("Dummy", mgmtSignUpUser);
+```
+
+Generate a JWT for a user, simulates a signup or in request.
 
 ```java
 JwtService jwtService = descopeClient.getManagementServices().getJwtService();
