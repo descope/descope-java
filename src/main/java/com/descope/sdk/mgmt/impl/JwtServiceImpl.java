@@ -27,7 +27,6 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
-
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
