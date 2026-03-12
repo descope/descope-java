@@ -26,11 +26,19 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 class JwtServiceImpl extends ManagementsBase implements JwtService {
+
+  // Allowed JWT signature algorithms - whitelist to prevent algorithm confusion attacks
+  private static final Set<String> ALLOWED_ALGORITHMS = new HashSet<>(Arrays.asList(
+      "RS256", "RS384", "RS512", "ES256", "ES384", "ES512"
+  ));
 
   JwtServiceImpl(Client client) {
     super(client);
@@ -160,6 +168,10 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     }
     if (expiresIn == null || expiresIn <= 0) {
       throw ServerCommonException.invalidArgument("expiresIn");
+    }
+    // Validate algorithm against whitelist to prevent algorithm confusion attacks
+    if (algorithm != null && !ALLOWED_ALGORITHMS.contains(algorithm)) {
+      throw ServerCommonException.invalidArgument("algorithm must be one of: " + ALLOWED_ALGORITHMS);
     }
 
     ClientAssertionRequest request = ClientAssertionRequest.builder()
