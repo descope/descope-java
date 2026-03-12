@@ -32,8 +32,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class JwtServiceImpl extends ManagementsBase implements JwtService {
-
-
   JwtServiceImpl(Client client) {
     super(client);
   }

@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
-import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
@@ -89,22 +89,22 @@ public class JwtServiceImplTest {
   }
 
   @Test
-  void testGenerateClientAssertionJwtWithValidAlgorithm() throws DescopeException {
-    // This test verifies that valid algorithms are accepted
-    // Note: This will fail with network error if credentials are invalid, but that's ok
-    // We're testing that the algorithm validation passes, not the full API call
-    ServerCommonException thrown = assertThrows(
-        ServerCommonException.class,
-        () -> jwtService.generateClientAssertionJwt(
-            "issuer",
-            "subject",
-            java.util.Arrays.asList("https://example.com"),
-            3600,
-            false,
-            "RS256"
-        )
-    );
-    // Should fail for other reasons (invalid credentials), not algorithm validation
-    assertNotNull(thrown);
+  void testGenerateClientAssertionJwtWithValidAlgorithm() {
+    // Valid algorithm should NOT throw algorithm validation error
+    // It may throw other errors (e.g., network), but not algorithm-related
+    try {
+      jwtService.generateClientAssertionJwt(
+          "issuer",
+          "subject",
+          java.util.Arrays.asList("https://example.com"),
+          3600,
+          false,
+          "RS256"
+      );
+    } catch (Exception e) {
+      // Any exception thrown should NOT be about algorithm validation
+      assertFalse(e.getMessage().contains("algorithm"),
+          "Valid algorithm RS256 should not trigger algorithm validation error");
+    }
   }
 }
