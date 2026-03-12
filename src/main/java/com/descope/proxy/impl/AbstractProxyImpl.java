@@ -71,6 +71,7 @@ abstract class AbstractProxyImpl {
     log.debug(String.format("Sending %s request to %s", req.getMethod(), req.getRequestUri()));
     // Configure explicit timeouts to prevent indefinite hangs
     RequestConfig requestConfig = RequestConfig.custom()
+        .setConnectTimeout(Timeout.ofSeconds(30))
         .setResponseTimeout(Timeout.ofSeconds(30))
         .setConnectionRequestTimeout(Timeout.ofSeconds(30))
         .build();

@@ -6,6 +6,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_IN
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP_OR_IN;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_JWT_LINK;
+import static com.descope.utils.JwtUtils.ALLOWED_ALGORITHMS;
 
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.DescopeException;
@@ -26,19 +27,13 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashSet;
+
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 class JwtServiceImpl extends ManagementsBase implements JwtService {
 
-  // Allowed JWT signature algorithms - whitelist to prevent algorithm confusion attacks
-  private static final Set<String> ALLOWED_ALGORITHMS = new HashSet<>(Arrays.asList(
-      "RS256", "RS384", "RS512", "ES256", "ES384", "ES512"
-  ));
 
   JwtServiceImpl(Client client) {
     super(client);
@@ -171,7 +166,7 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     }
     // Validate algorithm against whitelist to prevent algorithm confusion attacks
     if (algorithm != null && !ALLOWED_ALGORITHMS.contains(algorithm)) {
-      throw ServerCommonException.invalidArgument("algorithm must be one of: " + ALLOWED_ALGORITHMS);
+      throw ServerCommonException.invalidArgument("algorithm");
     }
 
     ClientAssertionRequest request = ClientAssertionRequest.builder()

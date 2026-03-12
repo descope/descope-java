@@ -14,8 +14,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Locator;
 import java.security.Key;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import lombok.experimental.UtilityClass;
@@ -25,9 +26,10 @@ public class JwtUtils {
   private static final long SKEW_SECONDS = TimeUnit.SECONDS.toSeconds(5);
 
   // Allowed JWT signature algorithms - whitelist to prevent algorithm confusion attacks
-  private static final Set<String> ALLOWED_ALGORITHMS = new HashSet<>(Arrays.asList(
-      "RS256", "RS384", "RS512", "ES256", "ES384", "ES512"
-  ));
+  public static final Set<String> ALLOWED_ALGORITHMS = Collections.unmodifiableSet(
+      new LinkedHashSet<>(Arrays.asList(
+          "RS256", "RS384", "RS512", "ES256", "ES384", "ES512"
+      )));
 
   public static Token getToken(String jwt, Client client) {
     Jws<Claims> claimsJws = getClaimsJws(jwt, client);
