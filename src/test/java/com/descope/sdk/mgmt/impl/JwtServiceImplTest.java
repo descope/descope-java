@@ -1,7 +1,9 @@
 package com.descope.sdk.mgmt.impl;
 
 import static com.descope.utils.CollectionUtils.mapOf;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -70,5 +72,39 @@ public class JwtServiceImplTest {
             AnonymousUserRequest.builder().customClaims(mockCustomClaims).build());
     assertNotNull(anonyUser.getToken());
     assertNull(anonyUser.getUser());
+  }
+
+  @Test
+  void testGenerateClientAssertionJwtWithUnsupportedAlgorithm() {
+    assertThatThrownBy(() -> jwtService.generateClientAssertionJwt(
+            "issuer",
+            "subject",
+            java.util.Arrays.asList("https://example.com"),
+            3600,
+            false,
+            "HS256"
+        ))
+        .isInstanceOf(ServerCommonException.class)
+        .hasMessage("The algorithm argument is invalid");
+  }
+
+  @Test
+  void testGenerateClientAssertionJwtWithValidAlgorithm() {
+    // Valid algorithm should NOT throw algorithm validation error
+    // It may throw other errors (e.g., network), but not algorithm-related
+    try {
+      jwtService.generateClientAssertionJwt(
+          "issuer",
+          "subject",
+          java.util.Arrays.asList("https://example.com"),
+          3600,
+          false,
+          "RS256"
+      );
+    } catch (Exception e) {
+      // Any exception thrown should NOT be about algorithm validation
+      assertFalse(e.getMessage().contains("algorithm"),
+          "Valid algorithm RS256 should not trigger algorithm validation error");
+    }
   }
 }

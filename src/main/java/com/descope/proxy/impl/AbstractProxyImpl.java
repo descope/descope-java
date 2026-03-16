@@ -17,6 +17,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.input.TeeInputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpRequest;
@@ -26,6 +27,7 @@ import org.apache.hc.core5.http.HttpException;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
+import org.apache.hc.core5.util.Timeout;
 
 @Slf4j
 abstract class AbstractProxyImpl {
@@ -67,7 +69,15 @@ abstract class AbstractProxyImpl {
   <B, R> R exchange(ClassicHttpRequest req, Class<R> returnClz, TypeReference<R> typeReference) {
     addHeaders(req);
     log.debug(String.format("Sending %s request to %s", req.getMethod(), req.getRequestUri()));
-    try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+    // Configure explicit timeouts to prevent indefinite hangs
+    RequestConfig requestConfig = RequestConfig.custom()
+        .setConnectTimeout(Timeout.ofSeconds(30))
+        .setResponseTimeout(Timeout.ofSeconds(30))
+        .setConnectionRequestTimeout(Timeout.ofSeconds(30))
+        .build();
+    try (final CloseableHttpClient httpClient = HttpClients.custom()
+        .setDefaultRequestConfig(requestConfig)
+        .build()) {
       return httpClient.execute(req, new HttpClientResponseHandler<R>() {
         @SuppressWarnings("resource")
         @Override
