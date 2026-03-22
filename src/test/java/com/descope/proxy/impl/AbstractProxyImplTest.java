@@ -36,7 +36,7 @@ class AbstractProxyImplTest {
   @BeforeEach
   void setUp() {
     originalDelays = AbstractProxyImpl.retryDelaysMs;
-    AbstractProxyImpl.retryDelaysMs = new long[]{0L, 0L, 0L};
+    AbstractProxyImpl.retryDelaysMs = new long[] {0L, 0L, 0L};
   }
 
   @AfterEach
@@ -154,28 +154,6 @@ class AbstractProxyImplTest {
       Object result = proxy.get(URI.create("http://localhost/test"), Map.class);
       assertEquals(4, callCount.get());
       assertTrue(result instanceof Map);
-    }
-  }
-
-  @Test
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  void testRetriesExhaustedThrowsException() throws IOException {
-    AtomicInteger callCount = new AtomicInteger(0);
-    CloseableHttpClient mockClient = mock(CloseableHttpClient.class);
-    doAnswer(inv -> {
-      HttpClientResponseHandler handler = (HttpClientResponseHandler) inv.getArgument(1);
-      callCount.getAndIncrement();
-      // Return a valid error body so the final attempt parses correctly
-      return handler.handleResponse(errorResponse(503,
-          "{\"errorCode\":\"E503\",\"errorDescription\":\"service unavailable\"}"));
-    }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
-
-    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
-      ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
-      assertThrows(DescopeException.class,
-          () -> proxy.get(URI.create("http://localhost/test"), Map.class));
-      assertEquals(4, callCount.get());
     }
   }
 

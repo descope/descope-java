@@ -89,9 +89,9 @@ abstract class AbstractProxyImpl {
   <B, R> R exchange(ClassicHttpRequest req, Class<R> returnClz, TypeReference<R> typeReference) {
     addHeaders(req);
     log.debug(String.format("Sending %s request to %s", req.getMethod(), req.getRequestUri()));
-    for (int retryIdx = 0; ; retryIdx++) {
-      final int currentRetryIdx = retryIdx;
-      try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+    try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+      for (int retryIdx = 0; ; retryIdx++) {
+        final int currentRetryIdx = retryIdx;
         try {
           return httpClient.execute(req, new HttpClientResponseHandler<R>() {
             @SuppressWarnings("resource")
@@ -105,6 +105,10 @@ abstract class AbstractProxyImpl {
                 final ObjectMapper objectMapper = new ObjectMapper()
                     .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 final ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                if (res.getEntity() == null) {
+                  throw ServerCommonException.genericServerError(
+                    "Empty response", String.valueOf(res.getCode()), "");
+                }
                 final TeeInputStream tee =
                     new TeeInputStream(res.getEntity().getContent(), bs, true);
 
@@ -156,7 +160,12 @@ abstract class AbstractProxyImpl {
         } catch (RetryableStatusException ex) {
           log.info("Retrying request to {} after receiving status {}",
               req.getRequestUri(), ex.getStatusCode());
-          Thread.sleep(retryDelaysMs[retryIdx]);
+          try {
+            Thread.sleep(retryDelaysMs[retryIdx]);
+          } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Request retry interrupted", ie);
+          }
         }
       }
     }
