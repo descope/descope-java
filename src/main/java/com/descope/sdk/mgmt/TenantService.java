@@ -74,21 +74,24 @@ public interface TenantService {
       throws DescopeException;
 
   /**
-   * Update an existing tenant's name and domains. IMPORTANT: All parameters are
-   * required and will
-   * override whatever value is currently set in the existing tenant. Use
-   * carefully.
+   * Update an existing tenant. IMPORTANT: All set parameters will override
+   * whatever value is currently set in the existing tenant. Use carefully.
    *
-   * @param id                      - Tenant ID
-   * @param name                    - The tenant name must be unique per project.
-   * @param selfProvisioningDomains - Users authenticating from these domains will
-   *                                be associated with this tenant.
-   * @param customAttributes        - Custom attributes to apply to tenant (needs
-   *                                to be pre-configured)
+   * @param id                      - Tenant ID (required)
+   * @param name                    - The tenant name must be unique per project (required)
+   * @param selfProvisioningDomains - Users authenticating from these domains will be associated with this tenant
+   * @param customAttributes        - Custom attributes to apply to tenant (needs to be pre-configured)
+   * @param authType                - The authentication type for the tenant
+   * @param disabled                - Whether the tenant is disabled
+   * @param enforceSSO              - Whether SSO is enforced for this tenant
+   * @param enforceSSOExclusions    - List of user IDs excluded from SSO enforcement
+   * @param federatedAppIds         - List of federated app IDs associated with the tenant
+   * @param roleInheritance         - The role inheritance setting for the tenant
    * @throws DescopeException in case of errors
    */
-  void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes)
-      throws DescopeException;
+  void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes,
+      String authType, Boolean disabled, Boolean enforceSSO, List<String> enforceSSOExclusions,
+      List<String> federatedAppIds, String roleInheritance) throws DescopeException;
 
   /**
    * Delete an existing tenant. IMPORTANT: This action is irreversible. Use

@@ -107,7 +107,7 @@ public class TenantServiceImplTest {
   void testUpdateForEmptyId() {
     ServerCommonException thrown = assertThrows(
         ServerCommonException.class,
-        () -> tenantService.update("", "", selfProvisioningDomains, null));
+        () -> tenantService.update("", "", selfProvisioningDomains, null, null, null, null, null, null, null));
     assertNotNull(thrown);
     assertEquals("The id or name argument is invalid", thrown.getMessage());
   }
@@ -119,7 +119,20 @@ public class TenantServiceImplTest {
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
           () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      tenantService.update("someLoginId", "someName", selfProvisioningDomains, null);
+      tenantService.update("someId", "someName", selfProvisioningDomains, null,
+          "saml", true, true, Arrays.asList("user1"), Arrays.asList("app1"), "inherit");
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testUpdateWithNullOptionalFieldsForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.update("someId", "someName", null, null, null, null, null, null, null, null);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
@@ -234,7 +247,7 @@ public class TenantServiceImplTest {
     assertThat(tenantSettings).isNotNull();
     assertThat(tenantSettings.getSelfProvisioningDomains()).containsOnly(name + ".com", name + "1.com");
     assertThat(tenantSettings.getJitDisabled()).isFalse();
-    tenantService.update(tenantId, name + "1", Arrays.asList(name + ".com"), null);
+    tenantService.update(tenantId, name + "1", Arrays.asList(name + ".com"), null, null, null, null, null, null, null);
     tenants = tenantService.loadAll();
     assertThat(tenants).isNotEmpty();
     found = false;
