@@ -88,6 +88,12 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
   }
 
   @Override
+  public void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes)
+      throws DescopeException {
+    update(id, name, selfProvisioningDomains, customAttributes, null, null, null, null, null, null);
+  }
+
+  @Override
   public void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes,
       String authType, Boolean disabled, Boolean enforceSSO, List<String> enforceSSOExclusions,
       List<String> federatedAppIds, String roleInheritance) throws DescopeException {

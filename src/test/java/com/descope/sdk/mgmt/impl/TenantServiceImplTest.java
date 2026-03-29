@@ -107,13 +107,34 @@ public class TenantServiceImplTest {
   void testUpdateForEmptyId() {
     ServerCommonException thrown = assertThrows(
         ServerCommonException.class,
-        () -> tenantService.update("", "", selfProvisioningDomains, null, null, null, null, null, null, null));
+        () -> tenantService.update("", "", selfProvisioningDomains, null));
     assertNotNull(thrown);
     assertEquals("The id or name argument is invalid", thrown.getMessage());
   }
 
   @Test
   void testUpdateForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.update("someLoginId", "someName", selfProvisioningDomains, null);
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testUpdateFullForEmptyId() {
+    ServerCommonException thrown = assertThrows(
+        ServerCommonException.class,
+        () -> tenantService.update("", "", selfProvisioningDomains, null, null, null, null, null, null, null));
+    assertNotNull(thrown);
+    assertEquals("The id or name argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateFullForSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -126,7 +147,7 @@ public class TenantServiceImplTest {
   }
 
   @Test
-  void testUpdateWithNullOptionalFieldsForSuccess() {
+  void testUpdateFullWithNullOptionalFieldsForSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
@@ -247,7 +268,7 @@ public class TenantServiceImplTest {
     assertThat(tenantSettings).isNotNull();
     assertThat(tenantSettings.getSelfProvisioningDomains()).containsOnly(name + ".com", name + "1.com");
     assertThat(tenantSettings.getJitDisabled()).isFalse();
-    tenantService.update(tenantId, name + "1", Arrays.asList(name + ".com"), null, null, null, null, null, null, null);
+    tenantService.update(tenantId, name + "1", Arrays.asList(name + ".com"), null);
     tenants = tenantService.loadAll();
     assertThat(tenants).isNotEmpty();
     found = false;

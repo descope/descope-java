@@ -74,6 +74,22 @@ public interface TenantService {
       throws DescopeException;
 
   /**
+   * Update an existing tenant's name and domains. IMPORTANT: All parameters are
+   * required and will override whatever value is currently set in the existing
+   * tenant. Use carefully.
+   *
+   * @param id                      - Tenant ID
+   * @param name                    - The tenant name must be unique per project.
+   * @param selfProvisioningDomains - Users authenticating from these domains will
+   *                                be associated with this tenant.
+   * @param customAttributes        - Custom attributes to apply to tenant (needs
+   *                                to be pre-configured)
+   * @throws DescopeException in case of errors
+   */
+  void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes)
+      throws DescopeException;
+
+  /**
    * Update an existing tenant. IMPORTANT: All set parameters will override
    * whatever value is currently set in the existing tenant. Use carefully.
    *
