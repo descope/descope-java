@@ -1,17 +1,11 @@
 {
     "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-    "release-type": "simple",
+    "release-type": "maven",
+    "include-v-in-tag": false,
     "bootstrap-sha": "05b38ac9c97d23f109b84f6dc9d5d73bc943668b",
     "packages": {
         ".": {
-            "package-name": "java-sdk",
-            "extra-files": [
-                {
-                    "type": "xml",
-                    "path": "pom.xml",
-                    "xpath": "/project/version"
-                }
-            ]
+            "package-name": "java-sdk"
         }
     },
     "changelog-sections": [
