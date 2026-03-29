@@ -18,4 +18,9 @@ public class Tenant {
   Map<String, Object> customAttributes;
   String authType;
   List<String> domains;
+  Boolean disabled;
+  Boolean enforceSSO;
+  List<String> enforceSSOExclusions;
+  List<String> federatedAppIds;
+  String roleInheritance;
 }

@@ -12,6 +12,8 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.mockito.ArgumentCaptor;
+
 import com.descope.enums.TenantAuthType;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
@@ -120,7 +122,74 @@ public class TenantServiceImplTest {
       mockedApiProxyBuilder.when(
           () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       tenantService.update("someLoginId", "someName", selfProvisioningDomains, null);
-      verify(apiProxy, times(1)).post(any(), any(), any());
+      ArgumentCaptor<Tenant> captor = ArgumentCaptor.forClass(Tenant.class);
+      verify(apiProxy, times(1)).post(any(), captor.capture(), any());
+      Tenant sent = captor.getValue();
+      assertThat(sent.getId()).isEqualTo("someLoginId");
+      assertThat(sent.getName()).isEqualTo("someName");
+      assertThat(sent.getSelfProvisioningDomains()).isEqualTo(selfProvisioningDomains);
+      assertThat(sent.getCustomAttributes()).isNull();
+      assertThat(sent.getAuthType()).isNull();
+      assertThat(sent.getDisabled()).isNull();
+      assertThat(sent.getEnforceSSO()).isNull();
+      assertThat(sent.getEnforceSSOExclusions()).isNull();
+      assertThat(sent.getFederatedAppIds()).isNull();
+      assertThat(sent.getRoleInheritance()).isNull();
+    }
+  }
+
+  @Test
+  void testUpdateFullForEmptyId() {
+    ServerCommonException thrown = assertThrows(
+        ServerCommonException.class,
+        () -> tenantService.update("", "", selfProvisioningDomains, null, null, null, null, null, null, null));
+    assertNotNull(thrown);
+    assertEquals("The id or name argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateFullForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.update("someId", "someName", selfProvisioningDomains, null,
+          "saml", true, true, Arrays.asList("user1"), Arrays.asList("app1"), "inherit");
+      ArgumentCaptor<Tenant> captor = ArgumentCaptor.forClass(Tenant.class);
+      verify(apiProxy, times(1)).post(any(), captor.capture(), any());
+      Tenant sent = captor.getValue();
+      assertThat(sent.getId()).isEqualTo("someId");
+      assertThat(sent.getName()).isEqualTo("someName");
+      assertThat(sent.getSelfProvisioningDomains()).isEqualTo(selfProvisioningDomains);
+      assertThat(sent.getAuthType()).isEqualTo("saml");
+      assertThat(sent.getDisabled()).isTrue();
+      assertThat(sent.getEnforceSSO()).isTrue();
+      assertThat(sent.getEnforceSSOExclusions()).containsExactly("user1");
+      assertThat(sent.getFederatedAppIds()).containsExactly("app1");
+      assertThat(sent.getRoleInheritance()).isEqualTo("inherit");
+    }
+  }
+
+  @Test
+  void testUpdateFullWithNullOptionalFieldsForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockTenant).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      tenantService.update("someId", "someName", null, null, null, null, null, null, null, null);
+      ArgumentCaptor<Tenant> captor = ArgumentCaptor.forClass(Tenant.class);
+      verify(apiProxy, times(1)).post(any(), captor.capture(), any());
+      Tenant sent = captor.getValue();
+      assertThat(sent.getId()).isEqualTo("someId");
+      assertThat(sent.getName()).isEqualTo("someName");
+      assertThat(sent.getAuthType()).isNull();
+      assertThat(sent.getDisabled()).isNull();
+      assertThat(sent.getEnforceSSO()).isNull();
+      assertThat(sent.getEnforceSSOExclusions()).isNull();
+      assertThat(sent.getFederatedAppIds()).isNull();
+      assertThat(sent.getRoleInheritance()).isNull();
     }
   }
 

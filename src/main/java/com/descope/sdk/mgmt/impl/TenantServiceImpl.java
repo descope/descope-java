@@ -90,21 +90,30 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
   @Override
   public void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes)
       throws DescopeException {
+    update(id, name, selfProvisioningDomains, customAttributes, null, null, null, null, null, null);
+  }
+
+  @Override
+  public void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes,
+      String authType, Boolean disabled, Boolean enforceSSO, List<String> enforceSSOExclusions,
+      List<String> federatedAppIds, String roleInheritance) throws DescopeException {
     if (StringUtils.isAnyBlank(id, name)) {
       throw ServerCommonException.invalidArgument("id or name");
     }
-    update(Tenant.builder()
+    URI updateTenantUri = composeUpdateTenantUri();
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(updateTenantUri, Tenant.builder()
         .id(id)
         .name(name)
         .selfProvisioningDomains(selfProvisioningDomains)
         .customAttributes(customAttributes)
-        .build());
-  }
-
-  private void update(Tenant tenant) {
-    URI updateTenantUri = composeUpdateTenantUri();
-    ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(updateTenantUri, tenant, Void.class);
+        .authType(authType)
+        .disabled(disabled)
+        .enforceSSO(enforceSSO)
+        .enforceSSOExclusions(enforceSSOExclusions)
+        .federatedAppIds(federatedAppIds)
+        .roleInheritance(roleInheritance)
+        .build(), Void.class);
   }
 
   @Override
