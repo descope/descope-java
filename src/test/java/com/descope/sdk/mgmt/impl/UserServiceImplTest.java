@@ -29,6 +29,7 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.BatchUserPasswordHashed;
 import com.descope.model.user.request.BatchUserPasswordPbkdf2;
+import com.descope.model.user.request.BatchUserPasswordSha;
 import com.descope.model.user.request.BatchUserRequest;
 import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.RolesList;
@@ -54,6 +55,7 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.time.Duration;
@@ -1148,6 +1150,39 @@ public class UserServiceImplTest {
         .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true).displayName(name)
         .hashedPassword(BatchUserPasswordHashed.builder()
             .pbkdf2(BatchUserPasswordPbkdf2.builder().type("sha1").hash(hash).salt(salt).iterations(65536).build())
+            .build())
+        .build()));
+    assertNotNull(res);
+    assertNotNull(res.getCreatedUsers());
+    assertEquals(1, res.getCreatedUsers().size());
+    assertTrue(res.getFailedUsers() == null || res.getFailedUsers().isEmpty());
+    AuthenticationInfo authInfo = passwordService.signIn(loginId, password);
+    assertNotNull(authInfo);
+    assertNotNull(authInfo.getUser());
+    assertEquals(email, authInfo.getUser().getEmail());
+    assertEquals(name, authInfo.getUser().getName());
+    userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalBatchWithShaPassword() throws Exception {
+    String loginId = TestUtils.getRandomName("u-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    String name = "Sha User";
+    String password = "This is a sha test";
+
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    byte[] hashBytes = digest.digest(password.getBytes("UTF-8"));
+    StringBuilder hexHash = new StringBuilder();
+    for (byte b : hashBytes) {
+      hexHash.append(String.format("%02x", b));
+    }
+
+    UsersBatchResponse res = userService.createBatch(Arrays.asList(BatchUserRequest.builder().loginId(loginId)
+        .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true).displayName(name)
+        .hashedPassword(BatchUserPasswordHashed.builder()
+            .sha(BatchUserPasswordSha.builder().type("sha256").hash(hexHash.toString()).build())
             .build())
         .build()));
     assertNotNull(res);
