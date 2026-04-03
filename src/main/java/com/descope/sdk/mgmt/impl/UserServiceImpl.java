@@ -614,6 +614,12 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public String generateEmbeddedLink(String loginId, Map<String, Object> customClaims)
+        throws DescopeException {
+    return generateEmbeddedLink(loginId, customClaims, 0);
+  }
+
+  @Override
   public String generateEmbeddedLink(String loginId, Map<String, Object> customClaims, int timeout)
         throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
