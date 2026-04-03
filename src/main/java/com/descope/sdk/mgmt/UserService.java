@@ -3,6 +3,8 @@ package com.descope.sdk.mgmt;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.InviteOptions;
+import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.user.User;
 import com.descope.model.user.request.BatchUserRequest;
 import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.UserRequest;
@@ -550,12 +552,32 @@ public interface UserService {
    *
    * @param loginId loginId The loginID is required.
    * @param customClaims additional claims to be added to the verified token JWT
+   * @param timeout The timeout in seconds for the embedded link token
    * @return It returns the token that can then be verified using the magic link 'verify' function,
    *         either directly or through a flow.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  String generateEmbeddedLink(String loginId, Map<String, Object> customClaims)
+  String generateEmbeddedLink(String loginId, Map<String, Object> customClaims, int timeout)
+        throws DescopeException;
+
+  /**
+   * Generate a sign-up embedded link token, later can be used to authenticate via magiclink
+   * verify method or via flow verify step.
+   *
+   * @param loginId loginId The loginID is required.
+   * @param user The user object containing user details.
+   * @param emailVerified Boolean indicating if the email is verified.
+   * @param phoneVerified Boolean indicating if the phone is verified.
+   * @param loginOptions Options for the login process.
+   * @param timeout The timeout in seconds for the embedded link token
+   * @return It returns the token that can then be verified using the magic link 'verify' function,
+   *         either directly or through a flow.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  String generateSignUpEmbeddedLink(String loginId, User user, Boolean emailVerified,
+        Boolean phoneVerified, LoginOptions loginOptions, int timeout)
         throws DescopeException;
 
   /**
@@ -564,6 +586,7 @@ public interface UserService {
    * @param userIds List of user IDs to retrieve the history for
    * @return {{@link List} of {@link UserHistoryResponse}} of all requested users login history
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
    */
   List<UserHistoryResponse> history(List<String> userIds) throws DescopeException;
 }

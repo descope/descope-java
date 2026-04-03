@@ -26,7 +26,9 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
+import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.mgmt.ManagementServices;
+import com.descope.model.user.User;
 import com.descope.model.user.request.BatchUserPasswordHashed;
 import com.descope.model.user.request.BatchUserPasswordPbkdf2;
 import com.descope.model.user.request.BatchUserPasswordSha;
@@ -797,7 +799,7 @@ public class UserServiceImplTest {
   @Test
   void testGenerateEmbeddedLinkForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
-        () -> userService.generateEmbeddedLink("", null));
+        () -> userService.generateEmbeddedLink("", null, 0));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -809,7 +811,7 @@ public class UserServiceImplTest {
     doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      String response = userService.generateEmbeddedLink("someLoginId", null);
+      String response = userService.generateEmbeddedLink("someLoginId", null, 0);
       Assertions.assertThat(response).isEqualTo("someToken");
     }
   }
@@ -1068,11 +1070,11 @@ public class UserServiceImplTest {
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(loginId);
-    String token = userService.generateEmbeddedLink(loginId, null);
+    String token = userService.generateEmbeddedLink(loginId, null, 0);
     AuthenticationInfo authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
-    token = userService.generateEmbeddedLink(loginId, mapOf("kuku", "kiki"));
+    token = userService.generateEmbeddedLink(loginId, mapOf("kuku", "kiki"), 0);
     final long now = System.currentTimeMillis();
     authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());
@@ -1121,7 +1123,7 @@ public class UserServiceImplTest {
     UserResponse user = createResponse.getUser();
     assertNotNull(user);
     Assertions.assertThat(user.getLoginIds()).contains(cleanPhone);
-    String token = userService.generateEmbeddedLink(phone, null);
+    String token = userService.generateEmbeddedLink(phone, null, 0);
     AuthenticationInfo authInfo = magicLinkService.verify(token);
     assertNotNull(authInfo.getToken());
     assertThat(authInfo.getToken().getJwt()).isNotBlank();
@@ -1129,6 +1131,69 @@ public class UserServiceImplTest {
     assertNotNull(userResp.getUser());
     Assertions.assertThat(userResp.getUser().getLoginIds()).contains(cleanPhone);
     userService.delete(phone);
+  }
+
+  @Test
+  void testGenerateSignUpEmbeddedLinkForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateSignUpEmbeddedLink("", null, false, false, null, 0));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateSignUpEmbeddedLinkForSuccess() {
+    GenerateEmbeddedLinkResponse mockResponse = new GenerateEmbeddedLinkResponse("someSignUpToken");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      User user = User.builder().name("Test User").email("test@example.com").build();
+      LoginOptions loginOptions = LoginOptions.builder().stepup(false).mfa(false).build();
+      String response = userService.generateSignUpEmbeddedLink("someLoginId", user, true, false, loginOptions, 300);
+      Assertions.assertThat(response).isEqualTo("someSignUpToken");
+    }
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalGenerateSignUpEmbeddedLink() {
+    String loginId = TestUtils.getRandomName("signup-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    
+    User user = User.builder()
+        .name("Test Signup User")
+        .email(email)
+        .phone(phone)
+        .build();
+    
+    LoginOptions loginOptions = LoginOptions.builder()
+        .stepup(false)
+        .mfa(false)
+        .customClaims(mapOf("signup", true))
+        .build();
+    
+    // Test generateSignUpEmbeddedLink with basic parameters
+    String token = userService.generateSignUpEmbeddedLink(loginId, user, true, true, loginOptions, 300);
+    assertNotNull(token);
+    assertThat(token).isNotBlank();
+    
+    // Verify the token by using magic link verify
+    AuthenticationInfo authInfo = magicLinkService.verify(token);
+    assertNotNull(authInfo.getToken());
+    assertThat(authInfo.getToken().getJwt()).isNotBlank();
+    
+    // Verify custom claims are present
+    Map<String, Object> claims = authInfo.getToken().getClaims();
+    assertThat(claims).containsKey("signup");
+    assertEquals(true, claims.get("signup"));
+    
+    // Clean up - delete the created user
+    try {
+      userService.delete(loginId);
+    } catch (DescopeException e) {
+      // User might not exist if sign-up didn't complete, ignore
+    }
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
