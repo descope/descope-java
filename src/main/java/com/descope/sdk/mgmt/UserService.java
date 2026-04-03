@@ -564,9 +564,10 @@ public interface UserService {
    * Generate an embedded link token, later can be used to authenticate via magiclink verify method
    * or via flow verify step.
    *
-   * @param loginId loginId The loginID is required.
+   * @param loginId The loginID is required.
    * @param customClaims additional claims to be added to the verified token JWT
-   * @param timeout The timeout in seconds for the embedded link token
+   * @param timeout The timeout in seconds for the embedded link token.
+   *         If not provided or set to 0, a default timeout (10 minutes) will be used.
    * @return It returns the token that can then be verified using the magic link 'verify' function,
    *         either directly or through a flow.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
@@ -579,12 +580,13 @@ public interface UserService {
    * Generate a sign-up embedded link token, later can be used to authenticate via magiclink
    * verify method or via flow verify step.
    *
-   * @param loginId loginId The loginID is required.
+   * @param loginId The loginID is required.
    * @param user The user object containing user details.
    * @param emailVerified Boolean indicating if the email is verified.
    * @param phoneVerified Boolean indicating if the phone is verified.
    * @param loginOptions Options for the login process.
-   * @param timeout The timeout in seconds for the embedded link token
+   * @param timeout The timeout in seconds for the embedded link token.
+   *         If not provided or set to 0, a default timeout (10 minutes) will be used.
    * @return It returns the token that can then be verified using the magic link 'verify' function,
    *         either directly or through a flow.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be

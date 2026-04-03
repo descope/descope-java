@@ -625,6 +625,9 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    if (timeout < 0) {
+      throw ServerCommonException.invalidArgument("Timeout");
+    }
     URI generateEmbeddedLinkUri = composeGenerateEmbeddedLink();
     GenerateEmbeddedLinkRequest request = new GenerateEmbeddedLinkRequest(loginId, customClaims, timeout);
     ApiProxy apiProxy = getApiProxy();
@@ -639,6 +642,9 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (timeout < 0) {
+      throw ServerCommonException.invalidArgument("Timeout");
     }
     URI generateSignUpEmbeddedLinkUri = composeGenerateSignUpEmbeddedLink();
     GenerateSignUpEmbeddedLinkRequest request = new GenerateSignUpEmbeddedLinkRequest(
