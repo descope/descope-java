@@ -18,6 +18,8 @@ public class LoginOptions {
   private boolean revokeOtherSessions;
   private String[] revokeOtherSessionsTypes;
   private String jwt;
+  private String locale;
+  private String templateId;
 
   public LoginOptions(boolean stepup, boolean mfa, Map<String, Object> customClaims,
                       Map<String, String> templateOptions) {
@@ -25,6 +27,18 @@ public class LoginOptions {
     this.mfa = mfa;
     this.customClaims = customClaims;
     this.templateOptions = templateOptions;
+  }
+
+  public LoginOptions(boolean stepup, boolean mfa, Map<String, Object> customClaims,
+                      Map<String, String> templateOptions, boolean revokeOtherSessions,
+                      String[] revokeOtherSessionsTypes, String jwt) {
+    this.stepup = stepup;
+    this.mfa = mfa;
+    this.customClaims = customClaims;
+    this.templateOptions = templateOptions;
+    this.revokeOtherSessions = revokeOtherSessions;
+    this.revokeOtherSessionsTypes = revokeOtherSessionsTypes;
+    this.jwt = jwt;
   }
 
   public boolean isJWTRequired() {

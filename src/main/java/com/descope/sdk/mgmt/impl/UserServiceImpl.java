@@ -31,6 +31,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_TEMPORARY_PASSWORD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SIGNUP_EMBEDDED_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
@@ -43,9 +44,12 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
+import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.user.User;
 import com.descope.model.user.request.BatchUserRequest;
 import com.descope.model.user.request.EnchantedLinkTestUserRequest;
 import com.descope.model.user.request.GenerateEmbeddedLinkRequest;
+import com.descope.model.user.request.GenerateSignUpEmbeddedLinkRequest;
 import com.descope.model.user.request.MagicLinkTestUserRequest;
 import com.descope.model.user.request.OTPTestUserRequest;
 import com.descope.model.user.request.PatchUserRequest;
@@ -609,14 +613,44 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     });
   }
 
-  public String generateEmbeddedLink(String loginId, Map<String, Object> customClaims) throws DescopeException {
+  @Override
+  public String generateEmbeddedLink(String loginId, Map<String, Object> customClaims)
+        throws DescopeException {
+    return generateEmbeddedLink(loginId, customClaims, 0);
+  }
+
+  @Override
+  public String generateEmbeddedLink(String loginId, Map<String, Object> customClaims, int timeout)
+        throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    if (timeout < 0) {
+      throw ServerCommonException.invalidArgument("Timeout");
+    }
     URI generateEmbeddedLinkUri = composeGenerateEmbeddedLink();
-    GenerateEmbeddedLinkRequest request = new GenerateEmbeddedLinkRequest(loginId, customClaims);
+    GenerateEmbeddedLinkRequest request = new GenerateEmbeddedLinkRequest(loginId, customClaims, timeout);
     ApiProxy apiProxy = getApiProxy();
     GenerateEmbeddedLinkResponse response = apiProxy.post(generateEmbeddedLinkUri, request,
+        GenerateEmbeddedLinkResponse.class);
+    return response.getToken();
+  }
+
+  @Override
+  public String generateSignUpEmbeddedLink(String loginId, User user, Boolean emailVerified,
+      Boolean phoneVerified, LoginOptions loginOptions, int timeout)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (timeout < 0) {
+      throw ServerCommonException.invalidArgument("Timeout");
+    }
+    URI generateSignUpEmbeddedLinkUri = composeGenerateSignUpEmbeddedLink();
+    GenerateSignUpEmbeddedLinkRequest request = new GenerateSignUpEmbeddedLinkRequest(
+        loginId, user, emailVerified, phoneVerified, loginOptions, timeout);
+    ApiProxy apiProxy = getApiProxy();
+    GenerateEmbeddedLinkResponse response = apiProxy.post(generateSignUpEmbeddedLinkUri, request,
         GenerateEmbeddedLinkResponse.class);
     return response.getToken();
   }
@@ -751,6 +785,10 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeGenerateEmbeddedLink() {
     return getUri(USER_CREATE_EMBEDDED_LINK);
+  }
+
+  private URI composeGenerateSignUpEmbeddedLink() {
+    return getUri(USER_SIGNUP_EMBEDDED_LINK);
   }
 
 }

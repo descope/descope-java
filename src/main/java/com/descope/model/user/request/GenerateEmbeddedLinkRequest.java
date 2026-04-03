@@ -13,4 +13,5 @@ import lombok.NoArgsConstructor;
 public class GenerateEmbeddedLinkRequest {
   private String loginId;
   private Map<String, Object> customClaims;
+  private int timeout;
 }

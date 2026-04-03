@@ -119,6 +119,7 @@ public class Routes {
     public static final String USER_SET_TEMPORARY_PASSWORD_LINK = "/v1/mgmt/user/password/set/temporary";
     public static final String USER_EXPIRE_PASSWORD_LINK = "/v1/mgmt/user/password/expire";
     public static final String USER_CREATE_EMBEDDED_LINK = "/v1/mgmt/user/signin/embeddedlink";
+    public static final String USER_SIGNUP_EMBEDDED_LINK = "/v1/mgmt/user/signup/embeddedlink";
     public static final String USER_HISTORY_LINK = "/v1/mgmt/user/history";
 
     // Tenant
