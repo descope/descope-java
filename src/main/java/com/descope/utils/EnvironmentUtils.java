@@ -1,5 +1,6 @@
 package com.descope.utils;
 
+import static com.descope.literals.AppConstants.AUTH_MANAGEMENT_KEY_ENV_VAR;
 import static com.descope.literals.AppConstants.BASE_URL_ENV_VAR;
 import static com.descope.literals.AppConstants.MANAGEMENT_KEY_ENV_VAR;
 import static com.descope.literals.AppConstants.PROJECT_ID_ENV_VAR;
@@ -26,5 +27,9 @@ public class EnvironmentUtils {
 
   public static String getManagementKey() {
     return dotenv.get(MANAGEMENT_KEY_ENV_VAR);
+  }
+
+  public static String getAuthManagementKey() {
+    return dotenv.get(AUTH_MANAGEMENT_KEY_ENV_VAR);
   }
 }
