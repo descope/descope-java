@@ -1,5 +1,6 @@
 package com.descope.client;
 
+import static com.descope.literals.AppConstants.AUTH_MANAGEMENT_KEY_ENV_VAR;
 import static com.descope.literals.AppConstants.MANAGEMENT_KEY_ENV_VAR;
 import static com.descope.literals.AppConstants.PROJECT_ID_ENV_VAR;
 import static com.descope.literals.AppConstants.PUBLIC_KEY_ENV_VAR;
@@ -122,5 +123,63 @@ class DescopeClientTest {
     Assertions.assertThatThrownBy(() -> new DescopeClient(null))
         .isInstanceOf(ServerCommonException.class)
         .hasMessage("The Config argument is invalid");
+  }
+
+  @Test
+  void testAuthManagementKeyFromEnvVariable() throws Exception {
+    String expectedProjectID = "P123456789012345678901234567";
+    String expectedAuthManagementKey = "someAuthManagementKey";
+    EnvironmentVariables env =
+        new EnvironmentVariables(PROJECT_ID_ENV_VAR, expectedProjectID)
+            .and(AUTH_MANAGEMENT_KEY_ENV_VAR, expectedAuthManagementKey);
+    env.execute(
+        () -> {
+          DescopeClient descopeClient = new DescopeClient();
+          Config config = descopeClient.getConfig();
+          Assertions.assertThat(config.getProjectId()).isEqualTo(expectedProjectID);
+          Assertions.assertThat(config.getAuthManagementKey()).isEqualTo(expectedAuthManagementKey);
+        });
+  }
+
+  @Test
+  void testAuthManagementKeyFromConfig() throws Exception {
+    String expectedProjectID = "P123456789012345678901234567";
+    String expectedAuthManagementKey = "someAuthManagementKey";
+    Config config = Config.builder()
+        .projectId(expectedProjectID)
+        .authManagementKey(expectedAuthManagementKey)
+        .build();
+    DescopeClient descopeClient = new DescopeClient(config);
+    Assertions.assertThat(descopeClient.getConfig().getProjectId()).isEqualTo(expectedProjectID);
+    Assertions.assertThat(descopeClient.getConfig().getAuthManagementKey()).isEqualTo(expectedAuthManagementKey);
+  }
+
+  @Test
+  void testAuthManagementKeyAndManagementKeyTogether() throws Exception {
+    String expectedProjectID = "P123456789012345678901234567";
+    String expectedManagementKey = "someManagementKey";
+    String expectedAuthManagementKey = "someAuthManagementKey";
+    EnvironmentVariables env =
+        new EnvironmentVariables(PROJECT_ID_ENV_VAR, expectedProjectID)
+            .and(MANAGEMENT_KEY_ENV_VAR, expectedManagementKey)
+            .and(AUTH_MANAGEMENT_KEY_ENV_VAR, expectedAuthManagementKey);
+    env.execute(
+        () -> {
+          DescopeClient descopeClient = new DescopeClient();
+          Config config = descopeClient.getConfig();
+          Assertions.assertThat(config.getProjectId()).isEqualTo(expectedProjectID);
+          Assertions.assertThat(config.getManagementKey()).isEqualTo(expectedManagementKey);
+          Assertions.assertThat(config.getAuthManagementKey()).isEqualTo(expectedAuthManagementKey);
+        });
+  }
+
+  @Test
+  void testAuthManagementKeyConfigMethod() throws Exception {
+    String expectedProjectID = "P123456789012345678901234567";
+    Config config = Config.builder()
+        .projectId(expectedProjectID)
+        .build();
+    DescopeClient descopeClient = new DescopeClient(config);
+    Assertions.assertThat(descopeClient.getConfig().getProjectId()).isEqualTo(expectedProjectID);
   }
 }
