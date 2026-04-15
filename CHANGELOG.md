@@ -1,0 +1,19 @@
+# Changelog
+
+## [1.0.64](https://github.com/descope/descope-java/compare/java-sdk-1.0.63...java-sdk-1.0.64) (2026-04-15)
+
+
+### Features
+
+* add release-please for automated releases ([#306](https://github.com/descope/descope-java/issues/306)) ([43a7bcb](https://github.com/descope/descope-java/commit/43a7bcbf6a6065f55f7ab56a51a732148b17bf5c))
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.projectlombok:lombok to v1.18.44 ([#309](https://github.com/descope/descope-java/issues/309)) ([22c72d8](https://github.com/descope/descope-java/commit/22c72d87d446c2b245ce7a1f84b8cb92c559f84e))
+* **deps:** update jackson monorepo to v2.21.2 ([#312](https://github.com/descope/descope-java/issues/312)) ([748dc76](https://github.com/descope/descope-java/commit/748dc760b7dfff3b3473ab4bb8eaef040c36c987))
+
+
+### Miscellaneous Chores
+
+* reset release-please state and force 1.0.64 cut ([#313](https://github.com/descope/descope-java/issues/313)) ([9ebaad8](https://github.com/descope/descope-java/commit/9ebaad849086df140097d1ba2783d056fcc7ce7b))
