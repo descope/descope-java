@@ -5,7 +5,8 @@
     "bootstrap-sha": "05b38ac9c97d23f109b84f6dc9d5d73bc943668b",
     "packages": {
         ".": {
-            "package-name": "java-sdk"
+            "package-name": "java-sdk",
+            "skip-snapshot": true
         }
     },
     "changelog-sections": [
