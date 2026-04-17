@@ -42,8 +42,8 @@ public class JwtUtils {
    * verifying additional claims (e.g., {@code aud}) via {@link VerifyOptions}.
    *
    * <p>This overload mirrors the Node SDK's
-   * {@code validateJwt(jwt, { audience })} behavior: if {@link VerifyOptions#getAudiences()} is
-   * non-empty, the token's {@code aud} claim must contain at least one of the expected values.
+   * {@code validateJwt(jwt, { audience })} behavior: if the {@link VerifyOptions} audiences list
+   * is non-empty, the token's {@code aud} claim must contain at least one of the expected values.
    *
    * @param jwt     the raw JWT string
    * @param client  the configured Descope client (for signing key lookup)
