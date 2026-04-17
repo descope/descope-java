@@ -39,16 +39,7 @@ public class JwtUtils {
    */
   public static Token getToken(String jwt, Client client) {
     Jws<Claims> claimsJws = getClaimsJws(jwt, client);
-    Claims claims = claimsJws.getPayload();
-
-    return Token.builder()
-        .jwt(jwt)
-        .projectId(client.getProjectId())
-        .id(claims.getSubject())
-        .expiration(claims.getExpiration().getTime())
-        .refreshExpiration(claims.get("rexp", Date.class))
-        .claims(claims)
-        .build();
+    return buildToken(jwt, client.getProjectId(), claimsJws.getPayload());
   }
 
   /**
@@ -78,9 +69,13 @@ public class JwtUtils {
 
     verifyAudience(claims, options);
 
+    return buildToken(jwt, client.getProjectId(), claims);
+  }
+
+  private static Token buildToken(String jwt, String projectId, Claims claims) {
     return Token.builder()
         .jwt(jwt)
-        .projectId(client.getProjectId())
+        .projectId(projectId)
         .id(claims.getSubject())
         .expiration(claims.getExpiration().getTime())
         .refreshExpiration(claims.get("rexp", Date.class))
