@@ -3,6 +3,7 @@ package com.descope.sdk.auth;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.VerifyOptions;
 import com.descope.model.jwt.Token;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
@@ -21,6 +22,19 @@ public interface AuthenticationService {
   Token validateSessionWithToken(String sessionToken) throws DescopeException;
 
   /**
+   * Use to validate a session token directly with additional verification options
+   * (e.g., an expected {@code aud} claim). Mirrors the Node SDK's
+   * {@code validateSession(sessionToken, options)} method.
+   *
+   * @param sessionToken   JWT session token
+   * @param verifyOptions  optional verification options (may be {@code null})
+   * @return validated {@link Token}
+   * @throws DescopeException if the token is invalid or the options check fails
+   */
+  Token validateSessionWithToken(String sessionToken, VerifyOptions verifyOptions)
+      throws DescopeException;
+
+  /**
    * Use to refresh the given session using a refresh token. Returns the new session token.
    * Alternatively use ValidateAndRefreshSessionWithTokens to only refresh the session token if not valid.
    *
@@ -29,6 +43,19 @@ public interface AuthenticationService {
    * @throws DescopeException - error upon failure
    */
   Token refreshSessionWithToken(String refreshToken) throws DescopeException;
+
+  /**
+   * Same as {@link #refreshSessionWithToken(String)} but allows callers to pass verification
+   * options applied to the freshly-minted session token. Mirrors the Node SDK's
+   * {@code refreshSession(refreshToken, options)}.
+   *
+   * @param refreshToken  refresh token
+   * @param verifyOptions optional verification options applied to the new session token
+   * @return the newly-minted session {@link Token}
+   * @throws DescopeException if the refresh fails or verification options do not match
+   */
+  Token refreshSessionWithToken(String refreshToken, VerifyOptions verifyOptions)
+      throws DescopeException;
 
   /**
    * Use to refresh the given session using a refresh token. Returns the new authentication info with tokens.
@@ -41,6 +68,18 @@ public interface AuthenticationService {
    * @throws DescopeException - error upon failure
    */
   AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException;
+
+  /**
+   * Same as {@link #refreshSessionWithTokenAuthenticationInfo(String)} but allows callers to pass
+   * verification options applied to the freshly-minted session token.
+   *
+   * @param refreshToken  refresh token
+   * @param verifyOptions optional verification options applied to the new session token
+   * @return full {@link AuthenticationInfo} including refresh token and user
+   * @throws DescopeException if the refresh fails or verification options do not match
+   */
+  AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(
+      String refreshToken, VerifyOptions verifyOptions) throws DescopeException;
 
   /**
     * For a user with access to multiple tenants, set a specific tenant as the
@@ -69,6 +108,22 @@ public interface AuthenticationService {
       throws DescopeException;
 
   /**
+   * Same as {@link #validateAndRefreshSessionWithTokens(String, String)} but applies the given
+   * verification options both when validating the existing session token and when validating the
+   * freshly-minted session token after refresh. Mirrors the Node SDK's
+   * {@code validateAndRefreshSession(sessionToken, refreshToken, options)}.
+   *
+   * @param sessionToken  session token (may be {@code null})
+   * @param refreshToken  refresh token (may be {@code null})
+   * @param verifyOptions optional verification options
+   * @return a valid session {@link Token}
+   * @throws DescopeException if neither token is provided, or if validation fails
+   */
+  Token validateAndRefreshSessionWithTokens(
+      String sessionToken, String refreshToken, VerifyOptions verifyOptions)
+      throws DescopeException;
+
+  /**
    * Use to validate a session with the session and refresh tokens.
    * Should be used when jwt rotation is enabled in the project configuration to retrieve the new refresh token.
    * If the session token is valid, it is returned in the form of an AuthenticationInfo object.
@@ -80,6 +135,22 @@ public interface AuthenticationService {
    * @throws DescopeException - error upon failure
    */
   AuthenticationInfo validateAndRefreshSessionWithTokensAuthenticationInfo(String sessionToken, String refreshToken)
+      throws DescopeException;
+
+  /**
+   * Same as
+   * {@link #validateAndRefreshSessionWithTokensAuthenticationInfo(String, String)}
+   * but applies the given verification options to the session token in both the validate-existing
+   * and post-refresh paths.
+   *
+   * @param sessionToken  session token (may be {@code null})
+   * @param refreshToken  refresh token (may be {@code null})
+   * @param verifyOptions optional verification options
+   * @return full {@link AuthenticationInfo}
+   * @throws DescopeException if neither token is provided, or if validation fails
+   */
+  AuthenticationInfo validateAndRefreshSessionWithTokensAuthenticationInfo(
+      String sessionToken, String refreshToken, VerifyOptions verifyOptions)
       throws DescopeException;
 
   /**
@@ -100,6 +171,21 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error
    */
   Token exchangeAccessKey(String accessKey, AccessKeyLoginOptions loginOptions) throws DescopeException;
+
+  /**
+   * Exchange an access key for a session token, applying the given verification options
+   * (e.g., expected audience) to the returned session JWT. Mirrors the Node SDK's
+   * {@code exchangeAccessKey(accessKey, loginOptions, options)}.
+   *
+   * @param accessKey     access key to exchange
+   * @param loginOptions  optional {@link AccessKeyLoginOptions}
+   * @param verifyOptions optional verification options applied to the new session token
+   * @return a validated session {@link Token}
+   * @throws DescopeException if the exchange or verification fails
+   */
+  Token exchangeAccessKey(
+      String accessKey, AccessKeyLoginOptions loginOptions, VerifyOptions verifyOptions)
+      throws DescopeException;
 
   /**
    * Use to ensure that a validated session token has been granted the specified permissions. This

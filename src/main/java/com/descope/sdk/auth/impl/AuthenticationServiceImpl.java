@@ -15,6 +15,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.ExchangeTokenRequest;
+import com.descope.model.auth.VerifyOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -39,28 +40,47 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public Token validateSessionWithToken(String sessionToken) throws DescopeException {
+    return validateSessionWithToken(sessionToken, null);
+  }
+
+  @Override
+  public Token validateSessionWithToken(String sessionToken, VerifyOptions verifyOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(sessionToken)) {
       throw ServerCommonException.invalidArgument("sessionToken");
     }
-    return validateJWT(sessionToken);
+    return validateJWT(sessionToken, verifyOptions);
   }
 
   @Override
   public Token refreshSessionWithToken(String refreshToken) throws DescopeException {
-    if (StringUtils.isBlank(refreshToken)) {
-      throw ServerCommonException.missingArguments("refresh token");
-    }
-
-    return refreshSession(refreshToken).getToken();
+    return refreshSessionWithToken(refreshToken, null);
   }
 
   @Override
-  public AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException {
+  public Token refreshSessionWithToken(String refreshToken, VerifyOptions verifyOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(refreshToken)) {
       throw ServerCommonException.missingArguments("refresh token");
     }
 
-    AuthenticationInfo authInfo = refreshSession(refreshToken);
+    return refreshSession(refreshToken, verifyOptions).getToken();
+  }
+
+  @Override
+  public AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken)
+      throws DescopeException {
+    return refreshSessionWithTokenAuthenticationInfo(refreshToken, null);
+  }
+
+  @Override
+  public AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(
+      String refreshToken, VerifyOptions verifyOptions) throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+
+    AuthenticationInfo authInfo = refreshSession(refreshToken, verifyOptions);
     if (authInfo.getRefreshToken() == null) { // refresh token is not returned because jwt rotation is not enabled
       authInfo.setRefreshToken(validateAndCreateToken(refreshToken));
     }
@@ -70,49 +90,73 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   @Override
   public Token validateAndRefreshSessionWithTokens(String sessionToken, String refreshToken)
       throws DescopeException {
+    return validateAndRefreshSessionWithTokens(sessionToken, refreshToken, null);
+  }
+
+  @Override
+  public Token validateAndRefreshSessionWithTokens(
+      String sessionToken, String refreshToken, VerifyOptions verifyOptions)
+      throws DescopeException {
     if (StringUtils.isAllBlank(sessionToken, refreshToken)) {
       throw ServerCommonException.missingArguments("Both sessionToken and refreshToken are empty");
     } else if (StringUtils.isNotBlank(sessionToken)) {
       try {
-        return validateSessionWithToken(sessionToken);
+        return validateSessionWithToken(sessionToken, verifyOptions);
       } catch (Exception e) {
         if (StringUtils.isNotBlank(refreshToken)) {
-          return refreshSessionWithToken(refreshToken);
+          return refreshSessionWithToken(refreshToken, verifyOptions);
         }
         throw e;
       }
     } else {
-      return refreshSessionWithToken(refreshToken);
+      return refreshSessionWithToken(refreshToken, verifyOptions);
     }
   }
 
   @Override
   public AuthenticationInfo validateAndRefreshSessionWithTokensAuthenticationInfo(
       String sessionToken, String refreshToken) throws DescopeException {
+    return validateAndRefreshSessionWithTokensAuthenticationInfo(
+        sessionToken, refreshToken, null);
+  }
+
+  @Override
+  public AuthenticationInfo validateAndRefreshSessionWithTokensAuthenticationInfo(
+      String sessionToken, String refreshToken, VerifyOptions verifyOptions)
+      throws DescopeException {
     if (StringUtils.isAllBlank(sessionToken, refreshToken)) {
       throw ServerCommonException.missingArguments("Both sessionToken and refreshToken are empty");
     } else if (StringUtils.isNotBlank(sessionToken)) {
       try {
         Token refresh = validateAndCreateToken(refreshToken);
-        return new AuthenticationInfo(validateSessionWithToken(sessionToken), refresh, null, null);
+        return new AuthenticationInfo(
+            validateSessionWithToken(sessionToken, verifyOptions), refresh, null, null);
       } catch (Exception e) {
         if (StringUtils.isNotBlank(refreshToken)) {
-          return refreshSessionWithTokenAuthenticationInfo(refreshToken);
+          return refreshSessionWithTokenAuthenticationInfo(refreshToken, verifyOptions);
         }
         throw e;
       }
     } else {
-      return refreshSessionWithTokenAuthenticationInfo(refreshToken);
+      return refreshSessionWithTokenAuthenticationInfo(refreshToken, verifyOptions);
     }
   }
 
   @Override
   public Token exchangeAccessKey(String accessKey) throws DescopeException {
-    return exchangeAccessKey(accessKey, null);
+    return exchangeAccessKey(accessKey, null, null);
   }
 
   @Override
-  public Token exchangeAccessKey(String accessKey, AccessKeyLoginOptions loginOptions) throws DescopeException {
+  public Token exchangeAccessKey(String accessKey, AccessKeyLoginOptions loginOptions)
+      throws DescopeException {
+    return exchangeAccessKey(accessKey, loginOptions, null);
+  }
+
+  @Override
+  public Token exchangeAccessKey(
+      String accessKey, AccessKeyLoginOptions loginOptions, VerifyOptions verifyOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(accessKey)) {
       throw ServerCommonException.invalidArgument("accessKey");
     }
@@ -121,7 +165,7 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
     JWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL,
         mapOf("loginOptions", loginOptions), JWTResponse.class);
-    AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
+    AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse, verifyOptions);
     return authenticationInfo.getToken();
   }
 
@@ -269,7 +313,7 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
       throw ServerCommonException.invalidArgument("Code");
     }
     ExchangeTokenRequest request = new ExchangeTokenRequest(code);
-    ApiProxy apiProxy = getApiProxy();
+    ApiProxy apiProxy = getApiProxy(); 
     JWTResponse jwtResponse = apiProxy.post(url, request, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
