@@ -29,12 +29,26 @@ public class JwtUtils {
    * Parse and validate the given JWT against the Descope project's signing keys.
    * This is the legacy entry point that does not perform audience validation.
    *
+   * <p>Preserved as the original direct implementation (not a delegate) so existing tests that
+   * stub this overload via {@code MockedStatic} continue to intercept calls made through the
+   * internal no-options path.
+   *
    * @param jwt    the raw JWT string
    * @param client the configured Descope client (for signing key lookup)
    * @return a {@link Token} representing the validated claims
    */
   public static Token getToken(String jwt, Client client) {
-    return getToken(jwt, client, null);
+    Jws<Claims> claimsJws = getClaimsJws(jwt, client);
+    Claims claims = claimsJws.getPayload();
+
+    return Token.builder()
+        .jwt(jwt)
+        .projectId(client.getProjectId())
+        .id(claims.getSubject())
+        .expiration(claims.getExpiration().getTime())
+        .refreshExpiration(claims.get("rexp", Date.class))
+        .claims(claims)
+        .build();
   }
 
   /**
@@ -45,12 +59,20 @@ public class JwtUtils {
    * {@code validateJwt(jwt, { audience })} behavior: if the {@link VerifyOptions} audiences list
    * is non-empty, the token's {@code aud} claim must contain at least one of the expected values.
    *
+   * <p>When {@code options} is {@code null} or carries no audiences, this method delegates to
+   * {@link #getToken(String, Client)} so that any existing {@code MockedStatic} stubs on the
+   * 2-arg overload keep intercepting calls transparently.
+   *
    * @param jwt     the raw JWT string
    * @param client  the configured Descope client (for signing key lookup)
    * @param options optional verification options; may be {@code null} for default behavior
    * @return a {@link Token} representing the validated claims
    */
   public static Token getToken(String jwt, Client client, VerifyOptions options) {
+    if (options == null || options.getAudiencesOrEmpty().isEmpty()) {
+      return getToken(jwt, client);
+    }
+
     Jws<Claims> claimsJws = getClaimsJws(jwt, client);
     Claims claims = claimsJws.getPayload();
 

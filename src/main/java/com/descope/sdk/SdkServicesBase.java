@@ -47,20 +47,31 @@ public abstract class SdkServicesBase {
     return UriUtils.getUri(client.getUri(), path);
   }
 
+  /**
+   * Legacy path: parse and validate a JWT without additional verification options.
+   *
+   * <p>Kept at its original body (rather than delegated to the new {@link VerifyOptions} overload)
+   * so that existing tests stubbing {@link JwtUtils#getToken(String, Client)} via
+   * {@code MockedStatic} continue to intercept calls made through this method.
+   */
   protected Token validateAndCreateToken(String jwt) {
-    return validateAndCreateToken(jwt, null);
+    if (StringUtils.isBlank(jwt)) {
+      throw ClientFunctionalException.invalidToken();
+    }
+    return JwtUtils.getToken(jwt, client);
   }
 
   /**
-   * Validate a JWT and produce a {@link Token}, optionally enforcing additional claim validation
-   * (e.g., {@code aud}) via {@link VerifyOptions}. Mirrors the Node SDK's
-   * {@code validateJwt(jwt, options)} path.
+   * Parse and validate a JWT, applying the given verification options (e.g., expected {@code aud}).
    *
-   * @param jwt     the raw JWT string
-   * @param options optional verification options; may be {@code null}
-   * @return a validated {@link Token}
+   * <p>When {@code options} is {@code null} or carries no audiences, this method delegates to
+   * {@link #validateAndCreateToken(String)} so that the legacy 2-arg code path remains on the
+   * hot line and existing static mocks on {@link JwtUtils#getToken(String, Client)} keep working.
    */
   protected Token validateAndCreateToken(String jwt, VerifyOptions options) {
+    if (options == null || options.getAudiencesOrEmpty().isEmpty()) {
+      return validateAndCreateToken(jwt);
+    }
     if (StringUtils.isBlank(jwt)) {
       throw ClientFunctionalException.invalidToken();
     }
@@ -71,7 +82,7 @@ public abstract class SdkServicesBase {
   protected String appendQueryParams(String url, Map<String, String> params) {
     if (isNotEmpty(params)) {
       URI oldUri = new URI(url);
-
+      
       StringBuilder sb = new StringBuilder();
       // Add existing query parameters (get the raw encoded query from the original URL)
       String existingQuery = oldUri.getRawQuery(); // Use getRawQuery() to keep original encoding
@@ -86,7 +97,7 @@ public abstract class SdkServicesBase {
         }
         sb.append(URLEncoder.encode(e.getKey(), "UTF-8")).append('=').append(URLEncoder.encode(e.getValue(), "UTF-8"));
       }
-
+      
       // Build URL manually to avoid double encoding
       StringBuilder urlBuilder = new StringBuilder();
       urlBuilder.append(oldUri.getScheme()).append("://");
