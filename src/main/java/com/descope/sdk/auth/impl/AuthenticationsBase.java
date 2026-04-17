@@ -9,6 +9,7 @@ import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.VerifyOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -116,17 +117,52 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     return JwtUtils.getToken(jwt, client);
   }
 
+  /**
+   * Parse and validate a JWT, applying the given verification options (e.g., {@code aud}).
+   *
+   * @param jwt     the raw JWT
+   * @param options verification options; may be {@code null}
+   * @return validated {@link Token}
+   */
+  Token validateJWT(String jwt, VerifyOptions options) {
+    return JwtUtils.getToken(jwt, client, options);
+  }
+
   AuthenticationInfo refreshSession(String refreshToken) {
+    return refreshSession(refreshToken, null);
+  }
+
+  /**
+   * Refresh a session and validate the resulting session token using the provided verification
+   * options.
+   *
+   * @param refreshToken  the refresh JWT
+   * @param options       optional verification options applied to the new session token
+   * @return {@link AuthenticationInfo}
+   */
+  AuthenticationInfo refreshSession(String refreshToken, VerifyOptions options) {
     validateJWT(refreshToken);
     ApiProxy apiProxy = getApiProxy(refreshToken);
     URI refreshTokenLinkURL = composeRefreshTokenLinkURL();
 
     JWTResponse jwtResponse = apiProxy.post(refreshTokenLinkURL, null, JWTResponse.class);
-    return getAuthenticationInfo(jwtResponse);
+    return getAuthenticationInfo(jwtResponse, options);
   }
 
   AuthenticationInfo getAuthenticationInfo(JWTResponse jwtResponse) {
-    Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
+    return getAuthenticationInfo(jwtResponse, null);
+  }
+
+  /**
+   * Build an {@link AuthenticationInfo} from a JWT response, applying the given verification
+   * options when creating the session token.
+   *
+   * @param jwtResponse server response
+   * @param options     optional verification options applied to the session token
+   * @return {@link AuthenticationInfo}
+   */
+  AuthenticationInfo getAuthenticationInfo(JWTResponse jwtResponse, VerifyOptions options) {
+    Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt(), options);
     Token refreshToken = null;
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());

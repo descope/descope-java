@@ -4,6 +4,7 @@ import static com.descope.utils.UriUtils.addPath;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 import com.descope.exception.ClientFunctionalException;
+import com.descope.model.auth.VerifyOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.utils.JwtUtils;
@@ -47,17 +48,30 @@ public abstract class SdkServicesBase {
   }
 
   protected Token validateAndCreateToken(String jwt) {
+    return validateAndCreateToken(jwt, null);
+  }
+
+  /**
+   * Validate a JWT and produce a {@link Token}, optionally enforcing additional claim validation
+   * (e.g., {@code aud}) via {@link VerifyOptions}. Mirrors the Node SDK's
+   * {@code validateJwt(jwt, options)} path.
+   *
+   * @param jwt     the raw JWT string
+   * @param options optional verification options; may be {@code null}
+   * @return a validated {@link Token}
+   */
+  protected Token validateAndCreateToken(String jwt, VerifyOptions options) {
     if (StringUtils.isBlank(jwt)) {
       throw ClientFunctionalException.invalidToken();
     }
-    return JwtUtils.getToken(jwt, client);
+    return JwtUtils.getToken(jwt, client, options);
   }
 
   @SneakyThrows
   protected String appendQueryParams(String url, Map<String, String> params) {
     if (isNotEmpty(params)) {
       URI oldUri = new URI(url);
-      
+
       StringBuilder sb = new StringBuilder();
       // Add existing query parameters (get the raw encoded query from the original URL)
       String existingQuery = oldUri.getRawQuery(); // Use getRawQuery() to keep original encoding
@@ -72,7 +86,7 @@ public abstract class SdkServicesBase {
         }
         sb.append(URLEncoder.encode(e.getKey(), "UTF-8")).append('=').append(URLEncoder.encode(e.getValue(), "UTF-8"));
       }
-      
+
       // Build URL manually to avoid double encoding
       StringBuilder urlBuilder = new StringBuilder();
       urlBuilder.append(oldUri.getScheme()).append("://");
