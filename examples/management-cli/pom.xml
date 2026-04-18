@@ -4,7 +4,7 @@
 
     <groupId>com.descope</groupId>
     <artifactId>management-cli</artifactId>
-    <version>1.0.64</version>
+    <version>1.0.65</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
