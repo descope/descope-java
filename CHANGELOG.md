@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.65](https://github.com/descope/descope-java/compare/java-sdk-1.0.64...java-sdk-1.0.65) (2026-04-18)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.bouncycastle:bcprov-jdk18on to v1.84 [security] ([#317](https://github.com/descope/descope-java/issues/317)) ([87bee0c](https://github.com/descope/descope-java/commit/87bee0c7d7bc06e833b750c4571f74400ebbe6c4))
+
 ## [1.0.64](https://github.com/descope/descope-java/compare/java-sdk-1.0.63...java-sdk-1.0.64) (2026-04-15)
 
 
