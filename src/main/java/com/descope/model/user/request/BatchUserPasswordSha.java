@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class BatchUserPasswordSha {
   String hash;
   String type;
+  String salt;
 }
