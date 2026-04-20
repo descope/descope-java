@@ -4,6 +4,7 @@ import static com.descope.utils.UriUtils.addPath;
 import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 import com.descope.exception.ClientFunctionalException;
+import com.descope.model.auth.VerifyOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.utils.JwtUtils;
@@ -46,11 +47,35 @@ public abstract class SdkServicesBase {
     return UriUtils.getUri(client.getUri(), path);
   }
 
+  /**
+   * Legacy path: parse and validate a JWT without additional verification options.
+   *
+   * <p>Kept at its original body (rather than delegated to the new {@link VerifyOptions} overload)
+   * so that existing tests stubbing {@link JwtUtils#getToken(String, Client)} via
+   * {@code MockedStatic} continue to intercept calls made through this method.
+   */
   protected Token validateAndCreateToken(String jwt) {
     if (StringUtils.isBlank(jwt)) {
       throw ClientFunctionalException.invalidToken();
     }
     return JwtUtils.getToken(jwt, client);
+  }
+
+  /**
+   * Parse and validate a JWT, applying the given verification options (e.g., expected {@code aud}).
+   *
+   * <p>When {@code options} is {@code null} or carries no audiences, this method delegates to
+   * {@link #validateAndCreateToken(String)} so that the legacy 2-arg code path remains on the
+   * hot line and existing static mocks on {@link JwtUtils#getToken(String, Client)} keep working.
+   */
+  protected Token validateAndCreateToken(String jwt, VerifyOptions options) {
+    if (options == null || options.getAudiencesOrEmpty().isEmpty()) {
+      return validateAndCreateToken(jwt);
+    }
+    if (StringUtils.isBlank(jwt)) {
+      throw ClientFunctionalException.invalidToken();
+    }
+    return JwtUtils.getToken(jwt, client, options);
   }
 
   @SneakyThrows
