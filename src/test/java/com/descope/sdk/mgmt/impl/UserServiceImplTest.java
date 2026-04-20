@@ -1263,6 +1263,56 @@ public class UserServiceImplTest {
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalBatchWithShaPasswordAndSalt() throws Exception {
+    // Generate a random salt
+    SecureRandom random = new SecureRandom();
+    byte[] saltBytes = new byte[16];
+    random.nextBytes(saltBytes);
+    
+    // Convert salt to hex string
+    StringBuilder hexSalt = new StringBuilder();
+    for (byte b : saltBytes) {
+      hexSalt.append(String.format("%02x", b));
+    }
+
+    String loginId = TestUtils.getRandomName("u-");
+    String email = TestUtils.getRandomName("test-") + "@descope.com";
+    String phone = "+1-555-555-5555";
+    String name = "Sha Salted User";
+    String password = "This is a sha test with salt";
+
+    // Create SHA-256 hash with salt (salt + password)
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    digest.update(password.getBytes("UTF-8"));
+    byte[] hashBytes = digest.digest(saltBytes);
+    StringBuilder hexHash = new StringBuilder();
+    for (byte b : hashBytes) {
+      hexHash.append(String.format("%02x", b));
+    }
+
+    UsersBatchResponse res = userService.createBatch(Arrays.asList(BatchUserRequest.builder().loginId(loginId)
+        .email(email).verifiedEmail(true).phone(phone).verifiedPhone(true).displayName(name)
+        .hashedPassword(BatchUserPasswordHashed.builder()
+            .sha(BatchUserPasswordSha.builder()
+                .type("sha256")
+                .hash(hexHash.toString())
+                .salt(hexSalt.toString())
+                .build())
+            .build())
+        .build()));
+    assertNotNull(res);
+    assertNotNull(res.getCreatedUsers());
+    assertEquals(1, res.getCreatedUsers().size());
+    assertTrue(res.getFailedUsers() == null || res.getFailedUsers().isEmpty());
+    AuthenticationInfo authInfo = passwordService.signIn(loginId, password);
+    assertNotNull(authInfo);
+    assertNotNull(authInfo.getUser());
+    assertEquals(email, authInfo.getUser().getEmail());
+    assertEquals(name, authInfo.getUser().getName());
+    userService.delete(loginId);
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalSetActivePassword() {
     String loginId = TestUtils.getRandomName("u-");
     String email = TestUtils.getRandomName("test-") + "@descope.com";
