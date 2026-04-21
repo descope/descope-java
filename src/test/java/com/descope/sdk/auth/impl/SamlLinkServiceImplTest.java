@@ -93,6 +93,32 @@ public class SamlLinkServiceImplTest {
   }
 
   @Test
+  void testExchangeTokenWithoutIDPResponse() {
+    JWTResponse jwtResponseNoIdp = new JWTResponse(
+        "someSessionJwt", "someRefreshJwt", "", "/", 1234567, 1234567890,
+        MOCK_JWT_RESPONSE.getUser(), true);
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponseNoIdp).when(apiProxy).post(any(), any(), any());
+    doReturn(new SigningKeysResponse(Arrays.asList(MOCK_SIGNING_KEY)))
+        .when(apiProxy).get(any(), eq(SigningKeysResponse.class));
+
+    AuthenticationInfo authenticationInfo;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+        mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+        authenticationInfo = samlService.exchangeToken("somecode");
+      }
+    }
+
+    Assertions.assertThat(authenticationInfo).isNotNull();
+    Assertions.assertThat(authenticationInfo.getUser()).isNotNull();
+    Assertions.assertThat(authenticationInfo.getIdpResponse()).isNull();
+  }
+
+  @Test
   void testExchangeTokenWithIDPResponse() {
     IDPResponse idpResponse = new IDPResponse(
         Arrays.asList("engineering", "devops"),
