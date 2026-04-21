@@ -12,4 +12,5 @@ public class AuthenticationInfo {
   private Token refreshToken;
   private UserResponse user;
   private Boolean firstSeen;
+  private IDPResponse idpResponse;
 }

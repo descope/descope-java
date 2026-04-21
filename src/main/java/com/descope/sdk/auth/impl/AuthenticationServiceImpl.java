@@ -94,7 +94,7 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     } else if (StringUtils.isNotBlank(sessionToken)) {
       try {
         Token refresh = validateAndCreateToken(refreshToken);
-        return new AuthenticationInfo(validateSessionWithToken(sessionToken), refresh, null, null);
+        return new AuthenticationInfo(validateSessionWithToken(sessionToken), refresh, null, null, null);
       } catch (Exception e) {
         if (StringUtils.isNotBlank(refreshToken)) {
           return refreshSessionWithTokenAuthenticationInfo(refreshToken);

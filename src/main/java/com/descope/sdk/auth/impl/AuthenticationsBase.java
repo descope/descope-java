@@ -132,7 +132,8 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
     return new AuthenticationInfo(
-        sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen());
+        sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
+        jwtResponse.getIdpResponse());
   }
 
   @SuppressWarnings("unchecked")
