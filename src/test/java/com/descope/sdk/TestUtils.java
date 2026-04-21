@@ -62,7 +62,8 @@ public class TestUtils {
       1234567,
       1234567890,
       MOCK_USER_RESPONSE,
-      true);
+      true,
+      null);
   public static final Map<String, Object> TENANTS_AUTHZ = mapOf("permissions", Arrays.asList("tp1", "tp2"), "roles",
       Arrays.asList("tr1", "tr2"));
   public static final Token MOCK_TOKEN = Token.builder()
