@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/descope/descope-java/compare/java-sdk-1.0.65...java-sdk-1.1.0) (2026-04-21)
+
+
+### Features
+
+* add IDPResponse to AuthenticationInfo for SSO exchange ([#321](https://github.com/descope/descope-java/issues/321)) ([9716b64](https://github.com/descope/descope-java/commit/9716b640151418a427272f159cb36419afb35e0a))
+
 ## [1.0.65](https://github.com/descope/descope-java/compare/java-sdk-1.0.64...java-sdk-1.0.65) (2026-04-20)
 
 
