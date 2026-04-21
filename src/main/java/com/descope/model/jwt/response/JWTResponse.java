@@ -19,4 +19,10 @@ public class JWTResponse {
   private UserResponse user;
   private Boolean firstSeen;
   private IDPResponse idpResponse;
+
+  public JWTResponse(String sessionJwt, String refreshJwt, String cookieDomain, String cookiePath,
+      Integer cookieMaxAge, Integer cookieExpiration, UserResponse user, Boolean firstSeen) {
+    this(sessionJwt, refreshJwt, cookieDomain, cookiePath, cookieMaxAge, cookieExpiration, user,
+        firstSeen, null);
+  }
 }

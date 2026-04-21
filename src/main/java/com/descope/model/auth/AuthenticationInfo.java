@@ -13,4 +13,8 @@ public class AuthenticationInfo {
   private UserResponse user;
   private Boolean firstSeen;
   private IDPResponse idpResponse;
+
+  public AuthenticationInfo(Token token, Token refreshToken, UserResponse user, Boolean firstSeen) {
+    this(token, refreshToken, user, firstSeen, null);
+  }
 }
