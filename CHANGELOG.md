@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/descope/descope-java/compare/java-sdk-1.1.0...java-sdk-1.1.1) (2026-04-30)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.1 [security] ([#323](https://github.com/descope/descope-java/issues/323)) ([3e2bd77](https://github.com/descope/descope-java/commit/3e2bd77df8a2ad727cabc36c97ab23c908b808c5))
+
 ## [1.1.0](https://github.com/descope/descope-java/compare/java-sdk-1.0.65...java-sdk-1.1.0) (2026-04-21)
 
 
