@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/descope/descope-java/compare/java-sdk-1.1.0...java-sdk-1.1.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency commons-io:commons-io to v2.22.0 ([#326](https://github.com/descope/descope-java/issues/326)) ([f890791](https://github.com/descope/descope-java/commit/f8907912532dd2f3fa2976f5f3a856d26bdbc84a))
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.1 [security] ([#323](https://github.com/descope/descope-java/issues/323)) ([3e2bd77](https://github.com/descope/descope-java/commit/3e2bd77df8a2ad727cabc36c97ab23c908b808c5))
+* **deps:** update dependency org.projectlombok:lombok to v1.18.46 ([#327](https://github.com/descope/descope-java/issues/327)) ([23821a5](https://github.com/descope/descope-java/commit/23821a5b89cec12964084db280243c532eaa306d))
+
 ## [1.1.0](https://github.com/descope/descope-java/compare/java-sdk-1.0.65...java-sdk-1.1.0) (2026-04-21)
 
 
