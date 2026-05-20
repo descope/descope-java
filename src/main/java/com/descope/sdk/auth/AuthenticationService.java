@@ -282,12 +282,18 @@ public interface AuthenticationService {
    * Must be called after validating the session token whenever the protected resource
    * requires sender-constrained tokens.
    *
+   * <p>This method has a default no-op implementation that throws
+   * {@link UnsupportedOperationException} to preserve backward compatibility with existing
+   * implementations of this interface that pre-date DPoP support.
+   *
    * @param sessionToken the raw session JWT string
    * @param dpopProof    the DPoP proof JWT from the {@code DPoP} HTTP request header
    * @param method       the HTTP method of the request (e.g. "GET", "POST")
    * @param requestUrl   the full URL of the HTTP request
    * @throws DescopeException if the DPoP proof is invalid or missing when required
    */
-  void validateDPoP(String sessionToken, String dpopProof, String method, String requestUrl)
-      throws DescopeException;
+  default void validateDPoP(String sessionToken, String dpopProof, String method,
+      String requestUrl) throws DescopeException {
+    throw new UnsupportedOperationException("validateDPoP is not implemented");
+  }
 }

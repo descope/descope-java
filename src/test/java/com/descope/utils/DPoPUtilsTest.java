@@ -6,10 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.descope.exception.ClientFunctionalException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.math.BigInteger;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.AlgorithmParameters;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -19,7 +16,6 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECParameterSpec;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;

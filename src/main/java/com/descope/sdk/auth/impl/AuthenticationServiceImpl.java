@@ -271,6 +271,12 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     if (StringUtils.isBlank(sessionToken)) {
       throw ServerCommonException.invalidArgument("sessionToken");
     }
+    if (StringUtils.isBlank(method)) {
+      throw ServerCommonException.invalidArgument("method");
+    }
+    if (StringUtils.isBlank(requestUrl)) {
+      throw ServerCommonException.invalidArgument("requestUrl");
+    }
     DPoPUtils.validateDPoPProof(dpopProof, method, requestUrl, sessionToken);
   }
 

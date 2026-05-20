@@ -67,6 +67,11 @@ public class DPoPUtils {
    * Validates a DPoP proof JWT per RFC 9449.
    * If the session token does not have a cnf.jkt claim, this method does nothing.
    *
+   * <p>Note: jti replay protection (RFC 9449 §11.1) is intentionally out of scope for this
+   * stateless SDK. Replay detection requires server-side storage (e.g. a cache of seen jti
+   * values) which a stateless library cannot provide. Callers that require replay protection
+   * should track jti values in their own infrastructure.
+   *
    * @param dpopProof    - the DPoP proof JWT string from the DPoP HTTP header
    * @param method       - the HTTP method (e.g. "GET", "POST")
    * @param requestUrl   - the full request URL
@@ -124,19 +129,25 @@ public class DPoPUtils {
     }
 
     // Step 8-9: check alg
-    String alg = (String) header.get("alg");
-    if (alg == null || !ALLOWED_ALGS.contains(alg)) {
+    Object algObj = header.get("alg");
+    if (!(algObj instanceof String)) {
+      throw ClientFunctionalException.invalidToken(
+          new IllegalArgumentException("rejected algorithm: " + algObj));
+    }
+    String alg = (String) algObj;
+    if (!ALLOWED_ALGS.contains(alg)) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("rejected algorithm: " + alg));
     }
 
     // Step 10-13: check jwk
-    @SuppressWarnings("unchecked")
-    Map<String, Object> jwk = (Map<String, Object>) header.get("jwk");
-    if (jwk == null) {
+    Object jwkObj = header.get("jwk");
+    if (!(jwkObj instanceof Map)) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("missing jwk header"));
     }
+    @SuppressWarnings("unchecked")
+    Map<String, Object> jwk = (Map<String, Object>) jwkObj;
     if ("oct".equals(jwk.get("kty"))) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("symmetric key not allowed"));
@@ -178,31 +189,33 @@ public class DPoPUtils {
     }
 
     // Step 17: check jti
-    String jti = (String) payload.get("jti");
-    if (jti == null || jti.isEmpty()) {
+    Object jtiObj = payload.get("jti");
+    if (!(jtiObj instanceof String) || ((String) jtiObj).isEmpty()) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("missing jti"));
     }
 
     // Step 18-19: check htm
-    String htm = (String) payload.get("htm");
-    if (htm == null || htm.isEmpty()) {
+    Object htmObj = payload.get("htm");
+    if (!(htmObj instanceof String) || ((String) htmObj).isEmpty()) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("missing htm"));
     }
+    String htm = (String) htmObj;
 
-    // Step 20: match htm
-    if (!method.equals(htm)) {
+    // Step 20: match htm — use htm.equals(method) to avoid NPE if method is null
+    if (!htm.equals(method)) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("htm mismatch"));
     }
 
     // Step 19/21: check htu
-    String htu = (String) payload.get("htu");
-    if (htu == null || htu.isEmpty()) {
+    Object htuObj = payload.get("htu");
+    if (!(htuObj instanceof String) || ((String) htuObj).isEmpty()) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("missing htu"));
     }
+    String htu = (String) htuObj;
     if (!htuMatches(htu, requestUrl)) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("htu mismatch"));
@@ -210,7 +223,7 @@ public class DPoPUtils {
 
     // Step 22-25: check iat
     Object iatObj = payload.get("iat");
-    if (iatObj == null) {
+    if (!(iatObj instanceof Number)) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("missing iat"));
     }
@@ -223,11 +236,12 @@ public class DPoPUtils {
     }
 
     // Step 26-29: check ath
-    String ath = (String) payload.get("ath");
-    if (ath == null || ath.isEmpty()) {
+    Object athObj = payload.get("ath");
+    if (!(athObj instanceof String) || ((String) athObj).isEmpty()) {
       throw ClientFunctionalException.invalidToken(
           new IllegalArgumentException("missing ath"));
     }
+    String ath = (String) athObj;
     try {
       byte[] digest = MessageDigest.getInstance("SHA-256")
           .digest(sessionToken.getBytes(StandardCharsets.UTF_8));
@@ -415,46 +429,69 @@ public class DPoPUtils {
   }
 
   /**
-   * Imports an OKP (EdDSA) key. Requires Java 15+ or BouncyCastle provider.
-   * Falls back to BouncyCastle's XDHPublicKeyParameters for Ed25519/Ed448.
+   * Imports an OKP (EdDSA) public key using BouncyCastle (bcprov-jdk18on), which is
+   * compatible with Java 8+. The JWK {@code x} parameter is the little-endian compressed
+   * point encoding per RFC 8032 §5.1.2. The high bit of the last byte encodes the sign of
+   * the x-coordinate and is part of the standard compressed encoding consumed by BouncyCastle
+   * directly. The key is reconstructed via DER-encoded SubjectPublicKeyInfo so that the
+   * returned PublicKey can be used with the standard JCA Signature API.
    */
   private static PublicKey importOKPKey(Map<String, Object> jwk) throws Exception {
     String crv = (String) jwk.get("crv");
-    byte[] xBytes = Base64.getUrlDecoder().decode(addPadding((String) jwk.get("x")));
-
-    // Try standard Java 15+ EdDSA
+    // x is the compressed public-key bytes in little-endian form (RFC 8032 §5.1.2).
+    // BouncyCastle accepts these bytes directly, including the sign bit in the last byte.
+    byte[] keyBytes = Base64.getUrlDecoder().decode(addPadding((String) jwk.get("x")));
     try {
-      String algorithmName;
-      if ("Ed25519".equals(crv)) {
-        algorithmName = "Ed25519";
-      } else if ("Ed448".equals(crv)) {
-        algorithmName = "Ed448";
-      } else {
-        throw new IllegalArgumentException("unsupported OKP curve: " + crv);
+      // Build a DER SubjectPublicKeyInfo and use X509EncodedKeySpec so the BC provider
+      // can reconstruct the key via the standard KeyFactory API (Java 8 compatible).
+      byte[] spki = buildEdDsaSpki(crv, keyBytes);
+      java.security.spec.X509EncodedKeySpec spec = new java.security.spec.X509EncodedKeySpec(spki);
+      // Use the BC provider explicitly to ensure EdDSA is supported on Java 8.
+      java.security.Provider bcProvider =
+          java.security.Security.getProvider("BC");
+      if (bcProvider == null) {
+        java.security.Security.addProvider(
+            new org.bouncycastle.jce.provider.BouncyCastleProvider());
       }
-      // Use NamedParameterSpec via reflection to support Java 11+ with BC provider
-      java.security.spec.NamedParameterSpec namedSpec =
-          new java.security.spec.NamedParameterSpec(algorithmName);
-      java.security.spec.EdECPublicKeySpec edSpec =
-          new java.security.spec.EdECPublicKeySpec(namedSpec,
-              new java.security.spec.EdECPoint(
-                  (xBytes[xBytes.length - 1] & 0x80) != 0,
-                  new BigInteger(1, reverseBytes(xBytes))
-              ));
-      return KeyFactory.getInstance("EdDSA").generatePublic(edSpec);
+      return KeyFactory.getInstance("Ed25519".equals(crv) ? "Ed25519" : "Ed448", "BC")
+          .generatePublic(spec);
+    } catch (IllegalArgumentException e) {
+      throw e;
     } catch (Exception e) {
-      throw new IllegalArgumentException("failed to import OKP key for curve " + crv + ": " + e.getMessage());
+      throw new IllegalArgumentException(
+          "failed to import OKP key for curve " + crv + ": " + e.getMessage());
     }
   }
 
-  private static byte[] reverseBytes(byte[] bytes) {
-    byte[] reversed = Arrays.copyOf(bytes, bytes.length);
-    for (int i = 0; i < reversed.length / 2; i++) {
-      byte tmp = reversed[i];
-      reversed[i] = reversed[reversed.length - 1 - i];
-      reversed[reversed.length - 1 - i] = tmp;
-    }
-    return reversed;
+  /**
+   * Builds a minimal DER-encoded SubjectPublicKeyInfo for an Ed25519 or Ed448 key.
+   * Structure: SEQUENCE { SEQUENCE { OID }, BIT STRING { 0x00, keyBytes } }
+   */
+  private static byte[] buildEdDsaSpki(String crv, byte[] keyBytes) {
+    // OID for Ed25519: 1.3.101.112 = 06 03 2B 65 70
+    // OID for Ed448:   1.3.101.113 = 06 03 2B 65 71
+    byte[] oidBytes = "Ed25519".equals(crv)
+        ? new byte[]{0x06, 0x03, 0x2B, 0x65, 0x70}
+        : new byte[]{0x06, 0x03, 0x2B, 0x65, 0x71};
+    // AlgorithmIdentifier SEQUENCE: 30 len OID
+    byte[] algId = new byte[2 + oidBytes.length];
+    algId[0] = 0x30;
+    algId[1] = (byte) oidBytes.length;
+    System.arraycopy(oidBytes, 0, algId, 2, oidBytes.length);
+    // BIT STRING: 03 (1 + keyBytes.length) 00 keyBytes
+    byte[] bitStr = new byte[3 + keyBytes.length];
+    bitStr[0] = 0x03;
+    bitStr[1] = (byte) (1 + keyBytes.length);
+    bitStr[2] = 0x00; // no unused bits
+    System.arraycopy(keyBytes, 0, bitStr, 3, keyBytes.length);
+    // Outer SEQUENCE
+    int totalLen = algId.length + bitStr.length;
+    byte[] spki = new byte[2 + totalLen];
+    spki[0] = 0x30;
+    spki[1] = (byte) totalLen;
+    System.arraycopy(algId, 0, spki, 2, algId.length);
+    System.arraycopy(bitStr, 0, spki, 2 + algId.length, bitStr.length);
+    return spki;
   }
 
   /**
