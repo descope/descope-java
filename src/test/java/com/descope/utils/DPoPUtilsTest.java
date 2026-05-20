@@ -101,7 +101,7 @@ public class DPoPUtilsTest {
     String jkt = computeThumbprint(jwk);
     String sessionToken = buildRawJwtWithJkt(jkt);
 
-    String longProof = "a".repeat(8193);
+    String longProof = new String(new char[8193]).replace('\0', 'a');
     assertThrows(ClientFunctionalException.class, () ->
         DPoPUtils.validateDPoPProof(longProof, "GET", "https://api.example.com/resource", sessionToken));
   }

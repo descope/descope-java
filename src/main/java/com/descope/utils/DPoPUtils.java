@@ -410,20 +410,26 @@ public class DPoPUtils {
     String crv = (String) jwk.get("crv");
     String curveName;
     switch (crv) {
-      case "P-256": curveName = "secp256r1"; break;
-      case "P-384": curveName = "secp384r1"; break;
-      case "P-521": curveName = "secp521r1"; break;
+      case "P-256":
+        curveName = "secp256r1";
+        break;
+      case "P-384":
+        curveName = "secp384r1";
+        break;
+      case "P-521":
+        curveName = "secp521r1";
+        break;
       default: throw new IllegalArgumentException("unsupported curve: " + crv);
     }
 
-    byte[] xBytes = Base64.getUrlDecoder().decode(addPadding((String) jwk.get("x")));
-    byte[] yBytes = Base64.getUrlDecoder().decode(addPadding((String) jwk.get("y")));
+    byte[] ecX = Base64.getUrlDecoder().decode(addPadding((String) jwk.get("x")));
+    byte[] ecY = Base64.getUrlDecoder().decode(addPadding((String) jwk.get("y")));
 
     AlgorithmParameters parameters = AlgorithmParameters.getInstance("EC");
     parameters.init(new ECGenParameterSpec(curveName));
     ECParameterSpec ecParameters = parameters.getParameterSpec(ECParameterSpec.class);
 
-    ECPoint ecPoint = new ECPoint(new BigInteger(1, xBytes), new BigInteger(1, yBytes));
+    ECPoint ecPoint = new ECPoint(new BigInteger(1, ecX), new BigInteger(1, ecY));
     ECPublicKeySpec spec = new ECPublicKeySpec(ecPoint, ecParameters);
     return (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(spec);
   }
@@ -540,15 +546,21 @@ public class DPoPUtils {
    * Converts a raw R||S EC signature (as used in JWTs) to DER-encoded format
    * required by Java's Signature API.
    *
-   * Per RFC 7518, each of R and S has a fixed byte length based on the curve:
+   * <p>Per RFC 7518, each of R and S has a fixed byte length based on the curve:
    *   ES256 → 32 bytes each, ES384 → 48 bytes each, ES512 → 66 bytes each.
    */
   private static byte[] rawToDerEC(byte[] rawSig, String alg) {
     int componentLen;
     switch (alg) {
-      case "ES256": componentLen = 32; break;
-      case "ES384": componentLen = 48; break;
-      case "ES512": componentLen = 66; break;
+      case "ES256":
+        componentLen = 32;
+        break;
+      case "ES384":
+        componentLen = 48;
+        break;
+      case "ES512":
+        componentLen = 66;
+        break;
       default: throw new IllegalArgumentException("not an EC algorithm: " + alg);
     }
 
