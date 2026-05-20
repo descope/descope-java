@@ -275,4 +275,19 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error or token is not valid
    */
   List<UserHistoryResponse> history(String refreshToken) throws DescopeException;
+
+  /**
+   * Validates a DPoP (Demonstrated Proof of Possession, RFC 9449) proof for a DPoP-bound session token.
+   * If the session token does not contain a {@code cnf.jkt} claim, this method does nothing.
+   * Must be called after validating the session token whenever the protected resource
+   * requires sender-constrained tokens.
+   *
+   * @param sessionToken the raw session JWT string
+   * @param dpopProof    the DPoP proof JWT from the {@code DPoP} HTTP request header
+   * @param method       the HTTP method of the request (e.g. "GET", "POST")
+   * @param requestUrl   the full URL of the HTTP request
+   * @throws DescopeException if the DPoP proof is invalid or missing when required
+   */
+  void validateDPoP(String sessionToken, String dpopProof, String method, String requestUrl)
+      throws DescopeException;
 }
