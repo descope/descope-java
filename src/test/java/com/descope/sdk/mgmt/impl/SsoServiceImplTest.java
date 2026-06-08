@@ -19,6 +19,7 @@ import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.GroupsMapping;
 import com.descope.model.sso.OIDCAttributeMapping;
 import com.descope.model.sso.RoleMapping;
+import com.descope.model.sso.SSOAllSettingsResponse;
 import com.descope.model.sso.SSOOIDCSettings;
 import com.descope.model.sso.SSOSAMLSettings;
 import com.descope.model.sso.SSOSAMLSettingsByMetadata;
@@ -73,6 +74,61 @@ class SsoServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       SSOSettingsResponse response = ssoService.getSettings("someTenantID");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testLoadSettingsWithSsoIdForEmptyTenantId() {
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> ssoService.loadSettings("", "someSsoId"));
+    assertNotNull(thrown);
+    assertEquals("The TenantId argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLoadSettingsWithSsoIdForSuccess() {
+    SSOTenantSettingsResponse ssoTenantSettingsResponse = mock(SSOTenantSettingsResponse.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(ssoTenantSettingsResponse).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      SSOTenantSettingsResponse response = ssoService.loadSettings("someTenantID", "someSsoId");
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testLoadSettingsWithNullSsoIdForSuccess() {
+    SSOTenantSettingsResponse ssoTenantSettingsResponse = mock(SSOTenantSettingsResponse.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(ssoTenantSettingsResponse).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      SSOTenantSettingsResponse response = ssoService.loadSettings("someTenantID", null);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testLoadAllSettingsForEmptyTenantId() {
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> ssoService.loadAllSettings(""));
+    assertNotNull(thrown);
+    assertEquals("The TenantId argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLoadAllSettingsForSuccess() {
+    SSOAllSettingsResponse ssoAllSettingsResponse = mock(SSOAllSettingsResponse.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(ssoAllSettingsResponse).when(apiProxy).get(any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      SSOAllSettingsResponse response = ssoService.loadAllSettings("someTenantID");
       Assertions.assertThat(response).isNotNull();
     }
   }

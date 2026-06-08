@@ -910,9 +910,24 @@ You can manage SSO settings and map SSO group roles and user attributes.
 
 ```java
 SsoService ss = descopeClient.getManagementServices().getSsoService();
-// You can get SSO settings for a specific tenant ID
+// Load the default SSO settings for a tenant
 try {
-    SSOSettingsResponse resp = ss.loadSettings("tenant-id");
+    SSOTenantSettingsResponse resp = ss.loadSettings("tenant-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a specific SSO configuration by ssoId (multi-SSO tenants)
+try {
+    SSOTenantSettingsResponse resp = ss.loadSettings("tenant-id", "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load all SSO configurations for a tenant
+try {
+    SSOAllSettingsResponse resp = ss.loadAllSettings("tenant-id");
+    List<SSOTenantSettingsResponse> allConfigs = resp.getSsoSettings();
 } catch (DescopeException de) {
     // Handle the error
 }
