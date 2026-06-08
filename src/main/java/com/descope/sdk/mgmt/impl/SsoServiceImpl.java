@@ -7,6 +7,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SAML
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SAML_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTINGS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_ALL_SETTINGS_V2_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS_V2_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
@@ -16,6 +17,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
+import com.descope.model.sso.SSOAllSettingsResponse;
 import com.descope.model.sso.SSOOIDCSettings;
 import com.descope.model.sso.SSOSAMLSettings;
 import com.descope.model.sso.SSOSAMLSettingsByMetadata;
@@ -23,6 +25,7 @@ import com.descope.model.sso.SSOSettingsResponse;
 import com.descope.model.sso.SSOTenantSettingsResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.SsoService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -33,13 +36,32 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
   }
 
   @Override
+  public SSOTenantSettingsResponse loadSettings(String tenantId, String ssoId) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    Map<String, String> params = new HashMap<>();
+    params.put("tenantId", tenantId);
+    if (StringUtils.isNotBlank(ssoId)) {
+      params.put("ssoId", ssoId);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS_V2_LINK, params), SSOTenantSettingsResponse.class);
+  }
+
+  @Override
   public SSOTenantSettingsResponse loadSettings(String tenantId) throws DescopeException {
+    return loadSettings(tenantId, null);
+  }
+
+  @Override
+  public SSOAllSettingsResponse loadAllSettings(String tenantId) throws DescopeException {
     if (StringUtils.isBlank(tenantId)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
     Map<String, String> params = mapOf("tenantId", tenantId);
     ApiProxy apiProxy = getApiProxy();
-    return apiProxy.get(getQueryParamUri(SSO_GET_SETTINGS_V2_LINK, params), SSOTenantSettingsResponse.class);
+    return apiProxy.get(getQueryParamUri(SSO_GET_ALL_SETTINGS_V2_LINK, params), SSOAllSettingsResponse.class);
   }
 
   @Override

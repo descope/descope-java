@@ -140,6 +140,7 @@ public class Routes {
     public static final String SSO_CONFIGURE_METADATA_LINK = "/v1/mgmt/sso/metadata";
     public static final String SSO_CONFIGURE_MAPPING_LINK = "/v1/mgmt/sso/mapping";
     public static final String SSO_GET_SETTINGS_V2_LINK = "/v2/mgmt/sso/settings";
+    public static final String SSO_GET_ALL_SETTINGS_V2_LINK = "/v2/mgmt/sso/settings/all";
     public static final String SSO_CONFIGURE_SAML_SETTINGS_LINK = "/v1/mgmt/sso/saml";
     public static final String SSO_CONFIGURE_SAML_SETTINGS_BY_MD_LINK = "/v1/mgmt/sso/saml/metadata";
     public static final String SSO_CONFIGURE_OIDC_SETTINGS_LINK = "/v1/mgmt/sso/oidc";

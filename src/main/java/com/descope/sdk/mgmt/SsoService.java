@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt;
 import com.descope.exception.DescopeException;
 import com.descope.model.sso.AttributeMapping;
 import com.descope.model.sso.RoleMapping;
+import com.descope.model.sso.SSOAllSettingsResponse;
 import com.descope.model.sso.SSOOIDCSettings;
 import com.descope.model.sso.SSOSAMLSettings;
 import com.descope.model.sso.SSOSAMLSettingsByMetadata;
@@ -12,13 +13,33 @@ import java.util.List;
 
 public interface SsoService {
   /**
-   * Load all tenant SSO setting.
+   * Load SSO settings for the given tenant. When {@code ssoId} is blank the default SSO
+   * configuration is returned (same behavior as {@link #loadSettings(String)}).
+   *
+   * @param tenantId the tenant ID to load settings for
+   * @param ssoId optional SSO configuration ID; pass {@code null} or empty to get the default
+   * @return {@link SSOTenantSettingsResponse} the matching SSO settings
+   * @throws DescopeException If error, a subtype of this exception will be thrown
+   */
+  SSOTenantSettingsResponse loadSettings(String tenantId, String ssoId) throws DescopeException;
+
+  /**
+   * Load SSO settings for the given tenant (returns the default SSO configuration).
    *
    * @param tenantId the tenant ID we are loading settings for
    * @return {@link SSOTenantSettingsResponse} all SSO settings for the tenant
    * @throws DescopeException If error, a subtype of this exception will be thrown
    */
   SSOTenantSettingsResponse loadSettings(String tenantId) throws DescopeException;
+
+  /**
+   * Load all SSO configurations for the given tenant.
+   *
+   * @param tenantId the tenant ID to load all SSO configurations for
+   * @return {@link SSOAllSettingsResponse} all SSO configurations for the tenant
+   * @throws DescopeException If error, a subtype of this exception will be thrown
+   */
+  SSOAllSettingsResponse loadAllSettings(String tenantId) throws DescopeException;
 
   /**
    * Configure SSO SAML settings for a tenant manually.
