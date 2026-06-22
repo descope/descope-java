@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.0](https://github.com/descope/descope-java/compare/java-sdk-1.1.0...java-sdk-1.2.0) (2026-06-22)
+
+
+### Features
+
+* add ssoId support to loadSettings and add loadAllSettings for multi-SSO tenants ([#333](https://github.com/descope/descope-java/issues/333)) ([cdd8db2](https://github.com/descope/descope-java/commit/cdd8db2e1c4ba5a8c1e52fda1a65268bf7494609))
+* **http:** also retry on transient status code 520 ([#337](https://github.com/descope/descope-java/issues/337)) ([57a26b0](https://github.com/descope/descope-java/commit/57a26b02f67a8be592bfe9c49a157d87a6098ad2))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.21.3 ([#329](https://github.com/descope/descope-java/issues/329)) ([993b971](https://github.com/descope/descope-java/commit/993b97148eab7ecd215d6db2781880b739719257))
+* **deps:** update dependency commons-io:commons-io to v2.22.0 ([#326](https://github.com/descope/descope-java/issues/326)) ([f890791](https://github.com/descope/descope-java/commit/f8907912532dd2f3fa2976f5f3a856d26bdbc84a))
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.1 [security] ([#323](https://github.com/descope/descope-java/issues/323)) ([3e2bd77](https://github.com/descope/descope-java/commit/3e2bd77df8a2ad727cabc36c97ab23c908b808c5))
+* **deps:** update dependency org.projectlombok:lombok to v1.18.46 ([#327](https://github.com/descope/descope-java/issues/327)) ([23821a5](https://github.com/descope/descope-java/commit/23821a5b89cec12964084db280243c532eaa306d))
+* **deps:** update dependency org.slf4j:slf4j-api to v2.0.18 ([#332](https://github.com/descope/descope-java/issues/332)) ([4905839](https://github.com/descope/descope-java/commit/4905839fd69e61f872b0bdf2f21cd0d5c73bf0fa))
+* **deps:** update jackson monorepo to v2.21.4 ([#335](https://github.com/descope/descope-java/issues/335)) ([21fb6a5](https://github.com/descope/descope-java/commit/21fb6a50547185ffb7c95a18193233f2461e82ec))
+* **deps:** update jackson monorepo to v2.22.0 ([#336](https://github.com/descope/descope-java/issues/336)) ([a3ab40d](https://github.com/descope/descope-java/commit/a3ab40d0161a9f90657fdec9e1caf063ca7e5f21))
+
 ## [1.1.0](https://github.com/descope/descope-java/compare/java-sdk-1.0.65...java-sdk-1.1.0) (2026-04-21)
 
 
