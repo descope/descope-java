@@ -55,17 +55,18 @@ class AbstractProxyImplTest {
   @Test
   void testRetryStatusCodesConfig() {
     assertTrue(AbstractProxyImpl.retryableStatusCodes.contains(503));
+    assertTrue(AbstractProxyImpl.retryableStatusCodes.contains(520));
     assertTrue(AbstractProxyImpl.retryableStatusCodes.contains(521));
     assertTrue(AbstractProxyImpl.retryableStatusCodes.contains(522));
     assertTrue(AbstractProxyImpl.retryableStatusCodes.contains(524));
     assertTrue(AbstractProxyImpl.retryableStatusCodes.contains(530));
-    assertEquals(5, AbstractProxyImpl.retryableStatusCodes.size());
+    assertEquals(6, AbstractProxyImpl.retryableStatusCodes.size());
   }
 
   @Test
   @SuppressWarnings({"unchecked", "rawtypes"})
   void testRetryOnRetryableStatusCodes() throws IOException {
-    List<Integer> retryableCodes = Arrays.asList(503, 521, 522, 524, 530);
+    List<Integer> retryableCodes = Arrays.asList(503, 520, 521, 522, 524, 530);
     for (int statusCode : retryableCodes) {
       AtomicInteger callCount = new AtomicInteger(0);
       CloseableHttpClient mockClient = mock(CloseableHttpClient.class);

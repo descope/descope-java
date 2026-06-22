@@ -36,12 +36,13 @@ abstract class AbstractProxyImpl {
 
   // HTTP status codes that should trigger automatic retries:
   // 503: Service Unavailable
+  // 520: Web Server Returned an Unknown Error (Cloudflare)
   // 521: Web Server Is Down (Cloudflare)
   // 522: Connection Timed Out (Cloudflare)
   // 524: A Timeout Occurred (Cloudflare)
   // 530: Cloudflare error
   static final Set<Integer> retryableStatusCodes = Collections.unmodifiableSet(
-      new HashSet<>(Arrays.asList(503, 521, 522, 524, 530)));
+      new HashSet<>(Arrays.asList(503, 520, 521, 522, 524, 530)));
 
   // Retry delays in milliseconds: first retry after 100ms, subsequent retries after 5000ms.
   // Package-private to allow overriding in tests.
