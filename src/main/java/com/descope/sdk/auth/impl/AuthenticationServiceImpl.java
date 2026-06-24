@@ -21,6 +21,7 @@ import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
+import com.descope.utils.DPoPUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.net.URI;
 import java.util.ArrayList;
@@ -262,6 +263,21 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     JWTResponse jwtResponse = apiProxy.post(composeSelectTenantURL(), body, JWTResponse.class);
 
     return getAuthenticationInfo(jwtResponse);
+  }
+
+  @Override
+  public void validateDPoP(String sessionToken, String dpopProof, String method, String requestUrl)
+      throws DescopeException {
+    if (StringUtils.isBlank(sessionToken)) {
+      throw ServerCommonException.invalidArgument("sessionToken");
+    }
+    if (StringUtils.isBlank(method)) {
+      throw ServerCommonException.invalidArgument("method");
+    }
+    if (StringUtils.isBlank(requestUrl)) {
+      throw ServerCommonException.invalidArgument("requestUrl");
+    }
+    DPoPUtils.validateDPoPProof(dpopProof, method, requestUrl, sessionToken);
   }
 
   AuthenticationInfo exchangeToken(String code, URI url) {
