@@ -10,6 +10,8 @@ import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTING
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_ALL_SETTINGS_V2_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS_V2_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_RECALCULATE_MAPPINGS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_REDIRECT_URL_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
@@ -128,6 +130,34 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
     Map<String, String> request = mapOf("tenantId", tenantId);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.delete(getQueryParamUri(SSO_DELETE_SETTINGS_LINK, request), null, Void.class);
+  }
+
+  @Override
+  public void configureSSORedirectURL(String tenantId, String samlRedirectUrl, String oauthRedirectUrl, String ssoId)
+      throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    Map<String, Object> req = mapOf("tenantId", tenantId, "samlRedirectUrl", samlRedirectUrl,
+        "oauthRedirectUrl", oauthRedirectUrl);
+    if (StringUtils.isNotBlank(ssoId)) {
+      req.put("ssoId", ssoId);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(SSO_REDIRECT_URL_LINK), req, Void.class);
+  }
+
+  @Override
+  public void recalculateSSOMappings(String tenantId, String ssoId) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    Map<String, Object> req = mapOf("tenantId", tenantId);
+    if (StringUtils.isNotBlank(ssoId)) {
+      req.put("ssoId", ssoId);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(SSO_RECALCULATE_MAPPINGS_LINK), req, Void.class);
   }
 
   // DEPRECATED METHODS

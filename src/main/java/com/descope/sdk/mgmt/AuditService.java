@@ -4,6 +4,7 @@ import com.descope.exception.DescopeException;
 import com.descope.model.audit.AuditCreateRequest;
 import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.audit.AuditSearchResponse;
+import com.descope.model.audit.AuditWebhook;
 
 /** Provides audit records search capabilities. */
 public interface AuditService {
@@ -24,4 +25,12 @@ public interface AuditService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   void createEvent(AuditCreateRequest request) throws DescopeException;
+
+  /**
+   * Create an audit webhook.
+   *
+   * @param webhook the audit webhook configuration; must be non-null and have a name.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  void createAuditWebhook(AuditWebhook webhook) throws DescopeException;
 }

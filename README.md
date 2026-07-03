@@ -688,6 +688,13 @@ try {
 } catch (DescopeException de) {
     // Handle the error
 }
+
+// Update the default roles applied to users of the tenant
+try {
+    ts.updateDefaultRoles("my-custom-id", Arrays.asList("Tenant Admin"));
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Users
@@ -793,6 +800,37 @@ try {
     for (AllUsersResponsibleDetails u : users) {
         // Do something
     }
+}
+
+// Delete multiple users at once by their user IDs
+try {
+    us.deleteBatch(Arrays.asList("<user-id-1>", "<user-id-2>"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update a user's recovery email / phone
+try {
+    us.updateRecoveryEmail("desmond@descope.com", "recovery@descope.com", true);
+    us.updateRecoveryPhone("desmond@descope.com", "+1234567890", true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Manage a user's passkeys (WebAuthn credentials)
+try {
+    List<UserPasskey> passkeys = us.listPasskeys("desmond@descope.com");
+    us.removePasskey("desmond@descope.com", "<credential-id>");
+    us.removeAllPasskeys("desmond@descope.com");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Remove a user's TOTP seed (forces re-enrollment)
+try {
+    us.removeTOTPSeed("desmond@descope.com");
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 ```
@@ -902,6 +940,22 @@ try {
     // Handle the error
 }
 
+// Rotate an access key - the previous cleartext becomes invalid and a new one is returned.
+try {
+    AccessKeyResponse resp = aks.rotate("access-key-1");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Batch operations on multiple access keys at once.
+try {
+    aks.activateBatch(Arrays.asList("access-key-1", "access-key-2"));
+    aks.deactivateBatch(Arrays.asList("access-key-1", "access-key-2"));
+    aks.deleteBatch(Arrays.asList("access-key-1", "access-key-2"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ### Manage SSO Setting
@@ -1003,6 +1057,20 @@ try {
 } catch (DescopeException de) {
     // Handle the error
 }
+
+// Configure the SAML/OAuth redirect URLs used after SSO authentication
+try {
+    ss.configureSSORedirectURL(tenantId, "https://my-app.com/handle-saml", "https://my-app.com/handle-oauth", "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Recalculate the role/attribute mappings for a tenant's SSO configuration
+try {
+    ss.recalculateSSOMappings(tenantId, "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Permissions
@@ -1045,6 +1113,30 @@ try {
     for (Permission p : resp.getPermissions()) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create several permissions in a single request
+try {
+    ps.createBatch(Arrays.asList(
+        Permission.builder().name("Permission A").description("desc A").build(),
+        Permission.builder().name("Permission B").build()));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update or delete a permission by its ID (useful when renaming)
+try {
+    ps.updateWithId("<permission-id>", "My Updated Permission", "A revised description");
+    ps.deleteWithId("<permission-id>");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete multiple permissions at once, by name and/or by ID
+try {
+    ps.deleteBatch(Arrays.asList("Permission A"), Arrays.asList("<permission-id>"));
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1105,6 +1197,13 @@ try {
     for (Role r : resp.getRoles()) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a role by its ID (pass the tenant ID for tenant-scoped roles, or "" for project roles)
+try {
+    rs.deleteWithId("<role-id>", "tenant-id");
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1208,6 +1307,13 @@ try {
     // Handle the error
 }
 
+// Delete flows by their IDs
+try {
+    fs.deleteFlows(Arrays.asList("sign-up", "sign-in"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ### Manage JWTs
@@ -1281,6 +1387,23 @@ try {
 }
 ```
 
+Impersonate another user (the impersonator must have permission to do so). `stopImpersonation` returns
+a regular JWT for the original impersonator.
+
+```java
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+try {
+    String jwt = jwtService.impersonate("impersonator-id", "target-login-id", true,
+            new HashMap<String, Object>() {{ put("custom-key1", "custom-value1"); }}, "tenant-id");
+    // Step-up impersonation (requires an existing session)
+    String stepupJwt = jwtService.impersonateStepup("impersonator-id", "target-login-id", true, null, "tenant-id");
+    // Return to the original user
+    String originalJwt = jwtService.stopImpersonation(jwt, null, "tenant-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### Audit
 
 You can perform an audit search for either specific values or full-text across the fields. Audit search is limited to the last 30 days.
@@ -1314,6 +1437,19 @@ try {
             .actorId("some-actor-id")
             .type(AuditType.INFO)
             .action("some-action-name")
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+You can also configure an audit webhook connector that streams audit events to an external endpoint:
+
+```java
+try {
+    as.createAuditWebhook(AuditWebhook.builder()
+            .name("My Audit Webhook")
+            .url("https://my-app.com/audit-hook")
             .build());
 } catch (DescopeException de) {
     // Handle the error
@@ -1650,6 +1786,20 @@ try {
 // Note that this action is supported only with a pro license or above.
 try {
     NewProjectResponse resp = ps.cloneProject("New Project Name", ProjectTag.None);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update the project's tags
+try {
+    ps.updateTags(Arrays.asList("production", "eu"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete the current project. This action is irreversible - use carefully.
+try {
+    ps.deleteProject();
 } catch (DescopeException de) {
     // Handle the error
 }

@@ -274,5 +274,57 @@ public class Routes {
     public static final String MANAGEMENT_INBOUND_DELETE_CONSENT = "/v1/mgmt/thirdparty/consents/delete";
     public static final String MANAGEMENT_INBOUND_DELETE_TENANT_CONSENT = "/v1/mgmt/thirdparty/consents/delete/tenant";
     public static final String MANAGEMENT_INBOUND_SEARCH_CONSENT = "/v1/mgmt/thirdparty/consents/search";
+
+    // Tenant (parity)
+    public static final String TENANT_UPDATE_DEFAULT_ROLES_LINK = "/v1/mgmt/tenant/updateDefaultRoles";
+
+    // SSO Application (parity)
+    public static final String SSO_APPLICATION_SECRET_LINK = "/v1/mgmt/sso/idp/app/secret";
+    public static final String SSO_APPLICATION_ROTATE_LINK = "/v1/mgmt/sso/idp/app/rotate";
+
+    // SSO settings (parity)
+    public static final String SSO_REDIRECT_URL_LINK = "/v1/mgmt/sso/redirect";
+    public static final String SSO_RECALCULATE_MAPPINGS_LINK = "/v1/mgmt/sso/recalculate-mappings";
+
+    // JWT impersonation (parity)
+    public static final String IMPERSONATE_LINK = "/v1/mgmt/impersonate";
+    public static final String IMPERSONATE_STEPUP_LINK = "/v1/mgmt/impersonate/stepup";
+    public static final String STOP_IMPERSONATION_LINK = "/v1/mgmt/stop/impersonation";
+
+    // Access key batch + rotate (parity)
+    public static final String MANAGEMENT_ACCESS_KEY_ACTIVATE_BATCH_LINK = "/v1/mgmt/accesskey/activate/batch";
+    public static final String MANAGEMENT_ACCESS_KEY_DEACTIVATE_BATCH_LINK = "/v1/mgmt/accesskey/deactivate/batch";
+    public static final String MANAGEMENT_ACCESS_KEY_DELETE_BATCH_LINK = "/v1/mgmt/accesskey/delete/batch";
+    public static final String MANAGEMENT_ACCESS_KEY_ROTATE_LINK = "/v1/mgmt/accesskey/rotate";
+
+    // Permission batch (parity)
+    public static final String MANAGEMENT_PERMISSION_CREATE_BATCH_LINK = "/v1/mgmt/permission/create/batch";
+    public static final String MANAGEMENT_PERMISSION_UPDATE_BATCH_LINK = "/v1/mgmt/permission/update/batch";
+    public static final String MANAGEMENT_PERMISSION_DELETE_BATCH_LINK = "/v1/mgmt/permission/delete/batch";
+
+    // Role batch (parity)
+    public static final String MANAGEMENT_ROLES_CREATE_BATCH_LINK = "/v1/mgmt/role/create/batch";
+    public static final String MANAGEMENT_ROLES_UPDATE_BATCH_LINK = "/v1/mgmt/role/update/batch";
+    public static final String MANAGEMENT_ROLES_DELETE_BATCH_LINK = "/v1/mgmt/role/delete/batch";
+
+    // Flow (parity)
+    public static final String FLOW_DELETE_LINK = "/v1/mgmt/flow/delete";
+
+    // Project (parity)
+    public static final String MANAGEMENT_PROJECT_LIST = "/v1/mgmt/projects/list";
+    public static final String MANAGEMENT_PROJECT_UPDATE_TAGS = "/v1/mgmt/project/update/tags";
+    public static final String MANAGEMENT_PROJECT_DELETE = "/v1/mgmt/project/delete";
+
+    // Audit (parity)
+    public static final String MANAGEMENT_AUDIT_WEBHOOK_CREATE = "/v1/mgmt/connector/audit/web/set";
+
+    // User (parity)
+    public static final String USER_DELETE_BATCH_LINK = "/v1/mgmt/user/delete/batch";
+    public static final String USER_UPDATE_RECOVERY_EMAIL_LINK = "/v1/mgmt/user/update/recovery/email";
+    public static final String USER_UPDATE_RECOVERY_PHONE_LINK = "/v1/mgmt/user/update/recovery/phone";
+    public static final String USER_REMOVE_ALL_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/delete";
+    public static final String USER_REMOVE_PASSKEY_LINK = "/v1/mgmt/user/passkey/delete";
+    public static final String USER_LIST_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/list";
+    public static final String USER_REMOVE_TOTP_SEED_LINK = "/v1/mgmt/user/totp/delete";
   }
 }

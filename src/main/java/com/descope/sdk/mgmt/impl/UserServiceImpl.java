@@ -20,11 +20,16 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LIN
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_CREATE_EMBEDDED_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_DELETE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_EXPIRE_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_HISTORY_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_LIST_PASSKEYS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ALL_PASSKEYS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_PASSKEY_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TOTP_SEED_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ACTIVE_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
@@ -34,6 +39,8 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_TEMPORARY
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SIGNUP_EMBEDDED_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_EMAIL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_PHONE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_RECOVERY_EMAIL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_RECOVERY_PHONE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_UPDATE_STATUS_LINK;
 import static com.descope.utils.CollectionUtils.addIfNotBlank;
 import static com.descope.utils.CollectionUtils.addIfNotNull;
@@ -62,6 +69,8 @@ import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
 import com.descope.model.user.response.UserHistoryResponse;
+import com.descope.model.user.response.UserPasskey;
+import com.descope.model.user.response.UserPasskeysResponse;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.model.user.response.UsersBatchResponse;
 import com.descope.proxy.ApiProxy;
@@ -209,6 +218,80 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI deleteUserUri = composeDeleteUserUri();
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(deleteUserUri, mapOf("userId", userId), Void.class);
+  }
+
+  @Override
+  public void deleteBatch(List<String> userIds) throws DescopeException {
+    if (CollectionUtils.isEmpty(userIds)) {
+      throw ServerCommonException.invalidArgument("User IDs");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(USER_DELETE_BATCH_LINK), mapOf("userIds", userIds), Void.class);
+  }
+
+  @Override
+  public void removeTOTPSeed(String loginId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(USER_REMOVE_TOTP_SEED_LINK), mapOf("loginId", loginId), Void.class);
+  }
+
+  @Override
+  public void removeAllPasskeys(String loginId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(USER_REMOVE_ALL_PASSKEYS_LINK), mapOf("loginId", loginId), Void.class);
+  }
+
+  @Override
+  public void removePasskey(String loginId, String credentialId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(credentialId)) {
+      throw ServerCommonException.invalidArgument("Credential ID");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(USER_REMOVE_PASSKEY_LINK),
+        mapOf("loginId", loginId, "credentialId", credentialId), Void.class);
+  }
+
+  @Override
+  public List<UserPasskey> listPasskeys(String loginId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    UserPasskeysResponse response =
+        apiProxy.post(getUri(USER_LIST_PASSKEYS_LINK), mapOf("loginId", loginId),
+            UserPasskeysResponse.class);
+    return response == null ? null : response.getPasskeys();
+  }
+
+  @Override
+  public UserResponseDetails updateRecoveryEmail(String loginId, String email, Boolean verified)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    Map<String, Object> request = mapOf("loginId", loginId, "recoveryEmail", email, "verified", verified);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USER_UPDATE_RECOVERY_EMAIL_LINK), request, UserResponseDetails.class);
+  }
+
+  @Override
+  public UserResponseDetails updateRecoveryPhone(String loginId, String phone, Boolean verified)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    Map<String, Object> request = mapOf("loginId", loginId, "recoveryPhone", phone, "verified", verified);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USER_UPDATE_RECOVERY_PHONE_LINK), request, UserResponseDetails.class);
   }
 
   @Override

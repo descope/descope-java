@@ -20,6 +20,14 @@ public interface RolesService {
 
   void delete(String name, String tenantId) throws DescopeException;
 
+  /**
+   * Delete an existing role identified by its ID.
+   *
+   * @param id       - The ID of the role to delete
+   * @param tenantId - The tenant the role belongs to (optional)
+   */
+  void deleteWithId(String id, String tenantId) throws DescopeException;
+
   RoleResponse loadAll() throws DescopeException;
 
   RoleResponse search(RoleSearchOptions roleSearchOptions) throws DescopeException;

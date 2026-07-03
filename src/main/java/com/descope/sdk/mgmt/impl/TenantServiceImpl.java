@@ -8,6 +8,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_L
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.REVOKE_SSO_CONFIGURATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.TENANT_SEARCH_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.TENANT_UPDATE_DEFAULT_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
 import static com.descope.utils.CollectionUtils.addIfNotNull;
 import static com.descope.utils.CollectionUtils.mapOf;
@@ -228,6 +229,19 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     URI revokeSSOConfigurationLinkUri = revokeSSOConfigurationLinkUri();
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(revokeSSOConfigurationLinkUri, req, Void.class);
+  }
+
+  @Override
+  public void updateDefaultRoles(String tenantId, List<String> defaultRoles) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("tenantId");
+    }
+
+    Map<String, Object> req = mapOf("id", tenantId);
+    req.put("defaultRoles", defaultRoles);
+
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(TENANT_UPDATE_DEFAULT_ROLES_LINK), req, Void.class);
   }
 
   private URI composeCreateTenantUri() {

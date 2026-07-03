@@ -15,6 +15,7 @@ import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
 import com.descope.model.user.response.UserHistoryResponse;
+import com.descope.model.user.response.UserPasskey;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.model.user.response.UsersBatchResponse;
 import java.util.List;
@@ -605,4 +606,78 @@ public interface UserService {
    *     thrown.
    */
   List<UserHistoryResponse> history(List<String> userIds) throws DescopeException;
+
+  /**
+   * Delete multiple users, by the given user IDs.
+   *
+   * @param userIds List of user IDs to delete. The list must not be empty.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  void deleteBatch(List<String> userIds) throws DescopeException;
+
+  /**
+   * Remove the TOTP seed for the user with the given login ID.
+   *
+   * @param loginId The loginID is required.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  void removeTOTPSeed(String loginId) throws DescopeException;
+
+  /**
+   * Remove all registered passkeys (WebAuthn devices) for the user with the given login ID.
+   *
+   * @param loginId The loginID is required.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  void removeAllPasskeys(String loginId) throws DescopeException;
+
+  /**
+   * Remove a single registered passkey, identified by its credential ID, for the user with the
+   * given login ID.
+   *
+   * @param loginId The loginID is required.
+   * @param credentialId The credential ID of the passkey to remove is required.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  void removePasskey(String loginId, String credentialId) throws DescopeException;
+
+  /**
+   * List the registered passkeys (WebAuthn devices) for the user with the given login ID.
+   *
+   * @param loginId The loginID is required.
+   * @return {{@link List} of {@link UserPasskey}} of the user's registered passkeys.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  List<UserPasskey> listPasskeys(String loginId) throws DescopeException;
+
+  /**
+   * Update the recovery email for the user with the given login ID.
+   *
+   * @param loginId The loginID is required.
+   * @param email The new recovery email.
+   * @param verified Boolean indicating if the recovery email is verified.
+   * @return The updated {@link UserResponseDetails}.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updateRecoveryEmail(String loginId, String email, Boolean verified)
+      throws DescopeException;
+
+  /**
+   * Update the recovery phone for the user with the given login ID.
+   *
+   * @param loginId The loginID is required.
+   * @param phone The new recovery phone.
+   * @param verified Boolean indicating if the recovery phone is verified.
+   * @return The updated {@link UserResponseDetails}.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updateRecoveryPhone(String loginId, String phone, Boolean verified)
+      throws DescopeException;
 }

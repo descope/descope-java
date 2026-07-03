@@ -80,6 +80,16 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
   }
 
   @Override
+  public void deleteWithId(String id, String tenantId) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    Map<String, String> request = mapOf("id", id, "tenantId", tenantId);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(MANAGEMENT_ROLES_DELETE_LINK), request, Void.class);
+  }
+
+  @Override
   public RoleResponse loadAll() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(getUri(MANAGEMENT_ROLES_LOAD_ALL_LINK), RoleResponse.class);

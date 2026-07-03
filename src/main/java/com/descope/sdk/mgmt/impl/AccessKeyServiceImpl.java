@@ -1,10 +1,14 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_ACTIVATE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_ACTIVE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_CREATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DEACTIVATE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DEACTIVATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DELETE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_LOAD_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_ROTATE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ACCESS_KEY_UPDATE_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
@@ -151,6 +155,47 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     Map<String, String> request = mapOf("id", id);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_DELETE_LINK), request, Void.class);
+  }
+
+  @Override
+  public AccessKeyResponse rotate(String id) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    Map<String, String> request = mapOf("id", id);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(
+        getUri(MANAGEMENT_ACCESS_KEY_ROTATE_LINK), request, AccessKeyResponse.class);
+  }
+
+  @Override
+  public void deactivateBatch(List<String> ids) throws DescopeException {
+    if (ids == null || ids.isEmpty()) {
+      throw ServerCommonException.invalidArgument("ids");
+    }
+    Map<String, List<String>> request = mapOf("ids", ids);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_DEACTIVATE_BATCH_LINK), request, Void.class);
+  }
+
+  @Override
+  public void activateBatch(List<String> ids) throws DescopeException {
+    if (ids == null || ids.isEmpty()) {
+      throw ServerCommonException.invalidArgument("ids");
+    }
+    Map<String, List<String>> request = mapOf("ids", ids);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_ACTIVATE_BATCH_LINK), request, Void.class);
+  }
+
+  @Override
+  public void deleteBatch(List<String> ids) throws DescopeException {
+    if (ids == null || ids.isEmpty()) {
+      throw ServerCommonException.invalidArgument("ids");
+    }
+    Map<String, List<String>> request = mapOf("ids", ids);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(MANAGEMENT_ACCESS_KEY_DELETE_BATCH_LINK), request, Void.class);
   }
 
   private AccessKeyRequest createAccessKeyBody(String name, int expireTime, List<String> roleNames,

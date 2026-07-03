@@ -4,6 +4,7 @@ import com.descope.enums.ProjectTag;
 import com.descope.exception.DescopeException;
 import com.descope.model.project.ExportProjectResponse;
 import com.descope.model.project.NewProjectResponse;
+import java.util.List;
 import java.util.Map;
 
 public interface ProjectService {
@@ -48,4 +49,19 @@ public interface ProjectService {
    * @param files The raw JSON dictionary of files, in the same format as the one returned by calls to export.
    */
   void importProject(Map<String, Object> files) throws DescopeException;
+
+  /**
+   * Update the current project tags.
+   *
+   * @param tags The new tags for the project
+   * @throws DescopeException - error upon failure
+   */
+  void updateTags(List<String> tags) throws DescopeException;
+
+  /**
+   * Delete the current project.
+   *
+   * @throws DescopeException - error upon failure
+   */
+  void deleteProject() throws DescopeException;
 }

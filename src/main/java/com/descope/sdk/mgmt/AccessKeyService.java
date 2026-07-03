@@ -38,4 +38,37 @@ public interface AccessKeyService {
   AccessKeyResponse activate(String id) throws DescopeException;
 
   void delete(String id) throws DescopeException;
+
+  /**
+   * Rotate an access key, invalidating the current cleartext and generating a new one.
+   *
+   * @param id - The access key ID to rotate
+   * @return {@link AccessKeyResponse} containing the updated details and the new cleartext
+   * @throws DescopeException in case of errors
+   */
+  AccessKeyResponse rotate(String id) throws DescopeException;
+
+  /**
+   * Deactivate multiple access keys in a single request.
+   *
+   * @param ids - The list of access key IDs to deactivate
+   * @throws DescopeException in case of errors
+   */
+  void deactivateBatch(List<String> ids) throws DescopeException;
+
+  /**
+   * Activate multiple access keys in a single request.
+   *
+   * @param ids - The list of access key IDs to activate
+   * @throws DescopeException in case of errors
+   */
+  void activateBatch(List<String> ids) throws DescopeException;
+
+  /**
+   * Delete multiple access keys in a single request.
+   *
+   * @param ids - The list of access key IDs to delete
+   * @throws DescopeException in case of errors
+   */
+  void deleteBatch(List<String> ids) throws DescopeException;
 }
