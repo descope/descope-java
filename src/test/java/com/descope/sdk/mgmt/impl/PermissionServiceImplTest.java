@@ -17,6 +17,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.permission.Permission;
 import com.descope.model.permission.PermissionResponse;
+import com.descope.model.permission.PermissionUpdateRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -125,6 +126,27 @@ class PermissionServiceImplTest {
       Assertions.assertThat(response.getPermissions().get(0).getName()).isEqualTo("someName");
       Assertions.assertThat(response.getPermissions().get(0).getDescription())
           .isEqualTo("someDesc");
+    }
+  }
+
+  @Test
+  void testUpdateBatchForEmpty() {
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> permissionService.updateBatch(null));
+    assertNotNull(thrown);
+    assertEquals("The permissions argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateBatchForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      permissionService.updateBatch(Arrays.asList(
+          PermissionUpdateRequest.builder().id("p1").newName("newName").build()));
+      verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
 

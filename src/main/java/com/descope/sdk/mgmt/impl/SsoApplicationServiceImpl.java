@@ -5,8 +5,10 @@ import static com.descope.literals.Routes.ManagementEndPoints.SSO_APPLICATION_LO
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_APPLICATION_LOAD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_APPLICATION_OIDC_CREATE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_APPLICATION_OIDC_UPDATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_APPLICATION_ROTATE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_APPLICATION_SAML_CREATE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_APPLICATION_SAML_UPDATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_APPLICATION_SECRET_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
@@ -16,6 +18,7 @@ import com.descope.model.mgmt.IDResponse;
 import com.descope.model.ssoapp.OIDCApplicationRequest;
 import com.descope.model.ssoapp.SAMLApplicationRequest;
 import com.descope.model.ssoapp.SSOApplication;
+import com.descope.model.ssoapp.SSOApplicationSecretResponse;
 import com.descope.model.ssoapp.SSOApplications;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.SsoApplicationService;
@@ -106,5 +109,27 @@ class SsoApplicationServiceImpl extends ManagementsBase implements SsoApplicatio
     ApiProxy apiProxy = getApiProxy();
     SSOApplications apps = apiProxy.get(getUri(SSO_APPLICATION_LOAD_ALL_LINK), SSOApplications.class);
     return apps.getApps();
+  }
+
+  @Override
+  public String getApplicationSecret(String id) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    SSOApplicationSecretResponse res = apiProxy.get(getQueryParamUri(SSO_APPLICATION_SECRET_LINK, mapOf("id", id)),
+        SSOApplicationSecretResponse.class);
+    return res.getCleartext();
+  }
+
+  @Override
+  public String rotateApplicationSecret(String id) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    SSOApplicationSecretResponse res = apiProxy.post(getUri(SSO_APPLICATION_ROTATE_LINK), mapOf("id", id),
+        SSOApplicationSecretResponse.class);
+    return res.getCleartext();
   }
 }

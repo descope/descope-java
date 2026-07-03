@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_LIST_LINK;
@@ -20,6 +21,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.FlowService;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 class FlowServiceImpl extends ManagementsBase implements FlowService {
@@ -32,6 +34,16 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
   public FlowsResponse listFlows() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_LIST_LINK), null, FlowsResponse.class);
+  }
+
+  @Override
+  public void deleteFlows(List<String> flowIds) throws DescopeException {
+    if (CollectionUtils.isEmpty(flowIds)) {
+      throw ServerCommonException.invalidArgument("flowIds");
+    }
+    Map<String, Object> request = mapOf("ids", flowIds);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(FLOW_DELETE_LINK), request, Void.class);
   }
 
   @Override

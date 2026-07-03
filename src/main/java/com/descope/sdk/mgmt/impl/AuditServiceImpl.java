@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUDIT_CREATE_EVENT;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUDIT_SEARCH_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUDIT_WEBHOOK_CREATE;
 
 import com.descope.enums.AuditType;
 import com.descope.exception.DescopeException;
@@ -10,6 +11,7 @@ import com.descope.model.audit.AuditCreateRequest;
 import com.descope.model.audit.AuditRecord;
 import com.descope.model.audit.AuditSearchRequest;
 import com.descope.model.audit.AuditSearchResponse;
+import com.descope.model.audit.AuditWebhook;
 import com.descope.model.client.Client;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AuditService;
@@ -152,5 +154,17 @@ class AuditServiceImpl extends ManagementsBase implements AuditService {
     }
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_AUDIT_CREATE_EVENT), request, Void.class);
+  }
+
+  @Override
+  public void createAuditWebhook(AuditWebhook webhook) throws DescopeException {
+    if (webhook == null) {
+      throw ServerCommonException.invalidArgument("AuditWebhook");
+    }
+    if (StringUtils.isBlank(webhook.getName())) {
+      throw ServerCommonException.invalidArgument("AuditWebhook.Name");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(MANAGEMENT_AUDIT_WEBHOOK_CREATE), webhook, Void.class);
   }
 }

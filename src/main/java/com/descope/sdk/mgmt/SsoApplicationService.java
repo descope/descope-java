@@ -69,4 +69,22 @@ public interface SsoApplicationService {
    * @throws DescopeException If error, a subtype of this exception will be thrown
    */
   List<SSOApplication> loadAll() throws DescopeException;
+
+  /**
+   * Get the cleartext secret of an sso application by id.
+   *
+   * @param id ID of the application to get the secret for
+   * @return the cleartext application secret
+   * @throws DescopeException If error, a subtype of this exception will be thrown
+   */
+  String getApplicationSecret(String id) throws DescopeException;
+
+  /**
+   * Rotate the secret of an sso application by id and return the new cleartext secret.
+   *
+   * @param id ID of the application to rotate the secret for
+   * @return the rotated cleartext application secret
+   * @throws DescopeException If error, a subtype of this exception will be thrown
+   */
+  String rotateApplicationSecret(String id) throws DescopeException;
 }

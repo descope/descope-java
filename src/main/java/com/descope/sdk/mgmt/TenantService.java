@@ -184,4 +184,13 @@ public interface TenantService {
    * @throws DescopeException in case of errors
    */
   void revokeSSOConfigurationLink(String tenantId, String ssoID) throws DescopeException;
+
+  /**
+   * Update the default roles for the tenant.
+   *
+   * @param tenantId     Tenant ID
+   * @param defaultRoles The list of default roles to set for the tenant
+   * @throws DescopeException in case of errors
+   */
+  void updateDefaultRoles(String tenantId, List<String> defaultRoles) throws DescopeException;
 }

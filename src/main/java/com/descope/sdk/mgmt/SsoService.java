@@ -83,6 +83,27 @@ public interface SsoService {
    */
   void deleteSettings(String tenantId) throws DescopeException;
 
+  /**
+   * Configure the URLs to redirect to after a successful SSO authentication for the given tenant.
+   *
+   * @param tenantId required tenant ID
+   * @param samlRedirectUrl optional URL to redirect to after a SAML SSO authentication
+   * @param oauthRedirectUrl optional URL to redirect to after an OIDC/OAuth SSO authentication
+   * @param ssoId optional SSO configuration ID
+   * @throws DescopeException If error, a subtype of this exception will be thrown
+   */
+  void configureSSORedirectURL(String tenantId, String samlRedirectUrl, String oauthRedirectUrl, String ssoId)
+      throws DescopeException;
+
+  /**
+   * Recalculate the SSO mappings (role and attribute mappings) for the given tenant.
+   *
+   * @param tenantId required tenant ID
+   * @param ssoId optional SSO configuration ID
+   * @throws DescopeException If error, a subtype of this exception will be thrown
+   */
+  void recalculateSSOMappings(String tenantId, String ssoId) throws DescopeException;
+
   @Deprecated
   SSOSettingsResponse getSettings(String tenantID) throws DescopeException;
 

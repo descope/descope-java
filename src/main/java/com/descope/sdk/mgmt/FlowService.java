@@ -12,6 +12,14 @@ public interface FlowService {
   
   FlowsResponse listFlows() throws DescopeException;
 
+  /**
+   * Delete flows by their IDs.
+   *
+   * @param flowIds The IDs of the flows to delete
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  void deleteFlows(List<String> flowIds) throws DescopeException;
+
   FlowResponse exportFlow(String flowID) throws DescopeException;
 
   FlowResponse importFlow(String flowID, Flow flow, List<Screen> screens) throws DescopeException;

@@ -50,4 +50,45 @@ public interface JwtService {
   ClientAssertionResponse generateClientAssertionJwt(String issuer, String subject,
       List<String> audience, Integer expiresIn, Boolean flattenAudience, String algorithm)
       throws DescopeException;
+
+  /**
+   * Impersonate another user. The impersonator user must have the requested permission
+   * otherwise the operation will fail. A new JWT for the impersonated user will be returned.
+   *
+   * @param impersonatorId  - The ID of the impersonator (a valid login ID or user ID)
+   * @param loginId         - The login ID of the user to impersonate
+   * @param validateConsent - Whether to validate that consent to impersonation was given
+   * @param customClaims    - Custom claims to add to the impersonated JWT (optional)
+   * @param tenantId        - The tenant to select for the impersonated user (optional)
+   * @return - New JWT for the impersonated user
+   */
+  String impersonate(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId) throws DescopeException;
+
+  /**
+   * Impersonate another user with a step-up JWT. The impersonator user must have the requested
+   * permission otherwise the operation will fail. A new JWT for the impersonated user will be
+   * returned.
+   *
+   * @param impersonatorId  - The ID of the impersonator (a valid login ID or user ID)
+   * @param loginId         - The login ID of the user to impersonate
+   * @param validateConsent - Whether to validate that consent to impersonation was given
+   * @param customClaims    - Custom claims to add to the impersonated JWT (optional)
+   * @param tenantId        - The tenant to select for the impersonated user (optional)
+   * @return - New step-up JWT for the impersonated user
+   */
+  String impersonateStepup(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId) throws DescopeException;
+
+  /**
+   * Stop an active impersonation given the impersonated user's JWT. A new JWT for the original
+   * (impersonator) user will be returned.
+   *
+   * @param jwt          - The impersonated user's JWT
+   * @param customClaims - Custom claims to add to the returned JWT (optional)
+   * @param tenantId     - The tenant to select for the returned JWT (optional)
+   * @return - New JWT for the original impersonator user
+   */
+  String stopImpersonation(String jwt, Map<String, Object> customClaims, String tenantId)
+      throws DescopeException;
 }

@@ -1,11 +1,15 @@
 package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.CLIENT_ASSERTION;
+import static com.descope.literals.Routes.ManagementEndPoints.IMPERSONATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.IMPERSONATE_STEPUP_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ANONYMOUS_USER;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_IN;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP_OR_IN;
+import static com.descope.literals.Routes.ManagementEndPoints.STOP_IMPERSONATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_JWT_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.DescopeException;
@@ -176,5 +180,60 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     ApiProxy apiProxy = getApiProxy();
     ClientAssertionResponse response = apiProxy.post(uri, request, ClientAssertionResponse.class);
     return response;
+  }
+
+  @Override
+  public String impersonate(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("loginId");
+    }
+    if (StringUtils.isBlank(impersonatorId)) {
+      throw ServerCommonException.invalidArgument("impersonatorId");
+    }
+    Map<String, Object> request = mapOf(
+        "loginId", loginId,
+        "impersonatorId", impersonatorId,
+        "validateConsent", validateConsent,
+        "customClaims", customClaims,
+        "selectedTenant", tenantId);
+    ApiProxy apiProxy = getApiProxy();
+    UpdateJwtResponse jwtResponse = apiProxy.post(getUri(IMPERSONATE_LINK), request, UpdateJwtResponse.class);
+    return jwtResponse.getJwt();
+  }
+
+  @Override
+  public String impersonateStepup(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("loginId");
+    }
+    if (StringUtils.isBlank(impersonatorId)) {
+      throw ServerCommonException.invalidArgument("impersonatorId");
+    }
+    Map<String, Object> request = mapOf(
+        "loginId", loginId,
+        "impersonatorId", impersonatorId,
+        "validateConsent", validateConsent,
+        "customClaims", customClaims,
+        "selectedTenant", tenantId);
+    ApiProxy apiProxy = getApiProxy();
+    UpdateJwtResponse jwtResponse = apiProxy.post(getUri(IMPERSONATE_STEPUP_LINK), request, UpdateJwtResponse.class);
+    return jwtResponse.getJwt();
+  }
+
+  @Override
+  public String stopImpersonation(String jwt, Map<String, Object> customClaims, String tenantId)
+      throws DescopeException {
+    if (StringUtils.isBlank(jwt)) {
+      throw ServerCommonException.invalidArgument("jwt");
+    }
+    Map<String, Object> request = mapOf(
+        "jwt", jwt,
+        "customClaims", customClaims,
+        "selectedTenant", tenantId);
+    ApiProxy apiProxy = getApiProxy();
+    UpdateJwtResponse jwtResponse = apiProxy.post(getUri(STOP_IMPERSONATION_LINK), request, UpdateJwtResponse.class);
+    return jwtResponse.getJwt();
   }
 }
