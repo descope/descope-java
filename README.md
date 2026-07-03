@@ -1134,6 +1134,14 @@ try {
     // Handle the error
 }
 
+// Update several permissions in a single request
+try {
+    ps.updateBatch(Arrays.asList(
+        PermissionUpdateRequest.builder().id("<permission-id>").newName("Renamed").description("desc").build()));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Delete multiple permissions at once, by name and/or by ID
 try {
     ps.deleteBatch(Arrays.asList("Permission A"), Arrays.asList("<permission-id>"));
@@ -1204,6 +1212,17 @@ try {
 // Delete a role by its ID (pass the tenant ID for tenant-scoped roles, or "" for project roles)
 try {
     rs.deleteWithId("<role-id>", "tenant-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create, update or delete several roles in a single request
+try {
+    RoleResponse created = rs.createBatch(Arrays.asList(
+        Role.builder().name("Role A").description("desc A").build()));
+    RoleResponse updated = rs.updateBatch(Arrays.asList(
+        RoleUpdateRequest.builder().name("Role A").newName("Role A Renamed").build()));
+    rs.deleteBatch(Arrays.asList("Role A Renamed"), "", null);
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1793,6 +1812,13 @@ try {
 // Update the project's tags
 try {
     ps.updateTags(Arrays.asList("production", "eu"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// List all projects in the current company
+try {
+    List<Project> projects = ps.listProjects();
 } catch (DescopeException de) {
     // Handle the error
 }

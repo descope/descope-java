@@ -299,12 +299,19 @@ public class Routes {
 
     // Permission batch (parity)
     public static final String MANAGEMENT_PERMISSION_CREATE_BATCH_LINK = "/v1/mgmt/permission/create/batch";
+    public static final String MANAGEMENT_PERMISSION_UPDATE_BATCH_LINK = "/v1/mgmt/permission/update/batch";
     public static final String MANAGEMENT_PERMISSION_DELETE_BATCH_LINK = "/v1/mgmt/permission/delete/batch";
+
+    // Role batch (parity)
+    public static final String MANAGEMENT_ROLES_CREATE_BATCH_LINK = "/v1/mgmt/role/create/batch";
+    public static final String MANAGEMENT_ROLES_UPDATE_BATCH_LINK = "/v1/mgmt/role/update/batch";
+    public static final String MANAGEMENT_ROLES_DELETE_BATCH_LINK = "/v1/mgmt/role/delete/batch";
 
     // Flow (parity)
     public static final String FLOW_DELETE_LINK = "/v1/mgmt/flow/delete";
 
     // Project (parity)
+    public static final String MANAGEMENT_PROJECT_LIST = "/v1/mgmt/projects/list";
     public static final String MANAGEMENT_PROJECT_UPDATE_TAGS = "/v1/mgmt/project/update/tags";
     public static final String MANAGEMENT_PROJECT_DELETE = "/v1/mgmt/project/delete";
 

@@ -5,6 +5,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISS
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_DELETE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_LOAD_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_UPDATE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_PERMISSION_UPDATE_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
@@ -13,6 +14,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.permission.Permission;
 import com.descope.model.permission.PermissionResponse;
+import com.descope.model.permission.PermissionUpdateRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.PermissionService;
 import java.util.List;
@@ -72,6 +74,16 @@ class PermissionServiceImpl extends ManagementsBase implements PermissionService
         mapOf("id", id, "newName", newName, "description", description);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_PERMISSION_UPDATE_LINK), request, Void.class);
+  }
+
+  @Override
+  public void updateBatch(List<PermissionUpdateRequest> permissions) throws DescopeException {
+    if (CollectionUtils.isEmpty(permissions)) {
+      throw ServerCommonException.invalidArgument("permissions");
+    }
+    Map<String, Object> request = mapOf("permissions", permissions);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(MANAGEMENT_PERMISSION_UPDATE_BATCH_LINK), request, Void.class);
   }
 
   @Override

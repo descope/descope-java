@@ -20,6 +20,7 @@ import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.roles.Role;
 import com.descope.model.roles.RoleResponse;
 import com.descope.model.roles.RoleSearchOptions;
+import com.descope.model.roles.RoleUpdateRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
@@ -130,6 +131,66 @@ class RolesServiceImplTest {
       Assertions.assertThat(response.getRoles().get(0).getPermissionNames().size()).isEqualTo(2);
       Assertions.assertThat(response.getRoles().get(0).getPermissionNames().get(0)).isEqualTo("permission1");
       Assertions.assertThat(response.getRoles().get(0).getPermissionNames().get(1)).isEqualTo("permission2");
+    }
+  }
+
+  @Test
+  void testCreateBatchForEmpty() {
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> rolesService.createBatch(null));
+    assertNotNull(thrown);
+    assertEquals("The roles argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testCreateBatchForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockRoleResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      RoleResponse response = rolesService.createBatch(mockRole);
+      assertThat(response.getRoles()).hasSize(1);
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testUpdateBatchForEmpty() {
+    ServerCommonException thrown =
+        assertThrows(ServerCommonException.class, () -> rolesService.updateBatch(null));
+    assertNotNull(thrown);
+    assertEquals("The roles argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateBatchForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockRoleResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      RoleResponse response = rolesService.updateBatch(Arrays.asList(
+          RoleUpdateRequest.builder().name("someName").newName("newName").build()));
+      assertThat(response.getRoles()).hasSize(1);
+      verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testDeleteBatchForEmpty() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> rolesService.deleteBatch(null, "", null));
+    assertNotNull(thrown);
+    assertEquals("The roleNames argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testDeleteBatchForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      rolesService.deleteBatch(Arrays.asList("someName"), "", null);
+      verify(apiProxy, times(1)).post(any(), any(), any());
     }
   }
 

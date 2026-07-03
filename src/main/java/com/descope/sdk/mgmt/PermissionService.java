@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt;
 import com.descope.exception.DescopeException;
 import com.descope.model.permission.Permission;
 import com.descope.model.permission.PermissionResponse;
+import com.descope.model.permission.PermissionUpdateRequest;
 import java.util.List;
 
 public interface PermissionService {
@@ -25,6 +26,13 @@ public interface PermissionService {
    * @param description - The new description for the permission (optional)
    */
   void updateWithId(String id, String newName, String description) throws DescopeException;
+
+  /**
+   * Update multiple permissions in a single batch.
+   *
+   * @param permissions - The permissions to update
+   */
+  void updateBatch(List<PermissionUpdateRequest> permissions) throws DescopeException;
 
   void delete(String name) throws DescopeException;
 

@@ -13,10 +13,14 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.project.ExportProjectResponse;
 import com.descope.model.project.NewProjectResponse;
+import com.descope.model.project.Project;
+import com.descope.model.project.ProjectsResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.ProjectService;
+import java.util.Arrays;
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,6 +84,22 @@ public class ProjectServiceImplTest {
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       projectService.importProject(mockExportResponse.getFiles());
       verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  @Test
+  void testListProjectsForSuccess() {
+    ProjectsResponse mockResponse = ProjectsResponse.builder()
+        .projects(Arrays.asList(Project.builder().id("p1").name("name1").environment("production").build()))
+        .build();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      List<Project> projects = projectService.listProjects();
+      Assertions.assertThat(projects).hasSize(1);
+      Assertions.assertThat(projects.get(0).getId()).isEqualTo("p1");
     }
   }
 }

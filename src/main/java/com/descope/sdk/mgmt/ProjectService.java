@@ -4,6 +4,7 @@ import com.descope.enums.ProjectTag;
 import com.descope.exception.DescopeException;
 import com.descope.model.project.ExportProjectResponse;
 import com.descope.model.project.NewProjectResponse;
+import com.descope.model.project.Project;
 import java.util.List;
 import java.util.Map;
 
@@ -64,4 +65,12 @@ public interface ProjectService {
    * @throws DescopeException - error upon failure
    */
   void deleteProject() throws DescopeException;
+
+  /**
+   * List all projects in the current company.
+   *
+   * @return the list of projects
+   * @throws DescopeException - error upon failure
+   */
+  List<Project> listProjects() throws DescopeException;
 }

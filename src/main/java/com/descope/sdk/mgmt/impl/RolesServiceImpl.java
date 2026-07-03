@@ -1,21 +1,27 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_CREATE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_CREATE_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_DELETE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_LOAD_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_SEARCH_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_UPDATE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_ROLES_UPDATE_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.roles.Role;
 import com.descope.model.roles.RoleResponse;
 import com.descope.model.roles.RoleSearchOptions;
+import com.descope.model.roles.RoleUpdateRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.RolesService;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 class RolesServiceImpl extends ManagementsBase implements RolesService {
@@ -44,6 +50,16 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
   }
 
   @Override
+  public RoleResponse createBatch(List<Role> roles) throws DescopeException {
+    if (CollectionUtils.isEmpty(roles)) {
+      throw ServerCommonException.invalidArgument("roles");
+    }
+    Map<String, Object> request = mapOf("roles", roles);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_ROLES_CREATE_BATCH_LINK), request, RoleResponse.class);
+  }
+
+  @Override
   public void update(String name, String newName, String description, List<String> permissionNames)
       throws DescopeException {
     this.update(name, "", newName, description, permissionNames);
@@ -62,6 +78,16 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
         permissionNames, "tenantId", tenantId);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_UPDATE_LINK), request, Void.class);
+  }
+
+  @Override
+  public RoleResponse updateBatch(List<RoleUpdateRequest> roles) throws DescopeException {
+    if (CollectionUtils.isEmpty(roles)) {
+      throw ServerCommonException.invalidArgument("roles");
+    }
+    Map<String, Object> request = mapOf("roles", roles);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_ROLES_UPDATE_BATCH_LINK), request, RoleResponse.class);
   }
 
   @Override
@@ -87,6 +113,16 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
     Map<String, String> request = mapOf("id", id, "tenantId", tenantId);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_DELETE_LINK), request, Void.class);
+  }
+
+  @Override
+  public void deleteBatch(List<String> roleNames, String tenantId, List<String> roleIds) throws DescopeException {
+    if (CollectionUtils.isEmpty(roleNames) && CollectionUtils.isEmpty(roleIds)) {
+      throw ServerCommonException.invalidArgument("roleNames");
+    }
+    Map<String, Object> request = mapOf("roleNames", roleNames, "tenantId", tenantId, "roleIds", roleIds);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(MANAGEMENT_ROLES_DELETE_BATCH_LINK), request, Void.class);
   }
 
   @Override
