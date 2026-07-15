@@ -18,6 +18,7 @@ public class Client {
   private String uri;
   private String projectId;
   private String managementKey;
+  private String authManagementKey;
   private Map<String, String> headers;
   private SdkInfo sdkInfo;
   private Key providedKey;

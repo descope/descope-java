@@ -37,7 +37,11 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
 
   ApiProxy getApiProxy() {
     String projectId = client.getProjectId();
+    String authManagementKey = client.getAuthManagementKey();
     if (StringUtils.isNotBlank(projectId)) {
+      if (StringUtils.isNotBlank(authManagementKey)) {
+        return ApiProxyBuilder.buildProxy(() -> String.format("Bearer %s:%s", projectId, authManagementKey), client);
+      }
       return ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId, client);
     }
     return ApiProxyBuilder.buildProxy(client.getSdkInfo());
@@ -49,7 +53,13 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       return getApiProxy();
     }
 
-    String token = String.format("Bearer %s:%s", projectId, refreshToken);
+    String authManagementKey = client.getAuthManagementKey();
+    String token;
+    if (StringUtils.isNotBlank(authManagementKey)) {
+      token = String.format("Bearer %s:%s:%s", projectId, refreshToken, authManagementKey);
+    } else {
+      token = String.format("Bearer %s:%s", projectId, refreshToken);
+    }
     return ApiProxyBuilder.buildProxy(() -> token, client);
   }
 
