@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/descope/descope-java/compare/java-sdk-1.2.0...java-sdk-1.3.0) (2026-07-23)
+
+
+### Features
+
+* **mgmt:** add java sdk parity methods and models to match go sdk ([#339](https://github.com/descope/descope-java/issues/339)) ([50bec48](https://github.com/descope/descope-java/commit/50bec48d0a2f2a634dd7cd27eb98983a3ce54c64))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.22.1 [security] ([#342](https://github.com/descope/descope-java/issues/342)) ([a6b7a12](https://github.com/descope/descope-java/commit/a6b7a124ef6ff4236575b157c1a504558e13eac3))
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.2 ([#343](https://github.com/descope/descope-java/issues/343)) ([9c21308](https://github.com/descope/descope-java/commit/9c2130871708d198a1f649edeff8aa04abf07819))
+
 ## [1.2.0](https://github.com/descope/descope-java/compare/java-sdk-1.1.0...java-sdk-1.2.0) (2026-06-22)
 
 
