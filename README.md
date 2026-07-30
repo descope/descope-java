@@ -490,6 +490,30 @@ for more information.
 
 Alternatively, you can validate the session using Spring Framework middleware. See example using [java-spring](https://github.com/descope/java-spring).
 
+#### DPoP Sender-Constrained Tokens
+
+[DPoP (Demonstrated Proof of Possession, RFC 9449)](https://datatracker.ietf.org/doc/html/rfc9449) allows access tokens to be sender-constrained. When a Descope session token contains a `cnf.jkt` claim, the client must prove possession of the corresponding private key on every request by supplying a `DPoP` HTTP header.
+
+After validating the session token, call `validateDPoP` to verify the DPoP proof:
+
+```java
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthenticationService();
+
+try {
+    // 1. Validate the session token as usual
+    Token token = as.validateSessionWithToken(sessionToken);
+
+    // 2. Validate the DPoP proof (no-op if token is not DPoP-bound)
+    //    dpopProof  - value of the DPoP HTTP request header
+    //    method     - HTTP method of the current request (e.g. "GET")
+    //    requestUrl - full URL of the current request
+    as.validateDPoP(sessionToken, dpopProof, method, requestUrl);
+} catch (DescopeException de) {
+    // Handle the unauthorized error
+}
+```
+
+If the session token does not contain a `cnf.jkt` claim, `validateDPoP` does nothing, so it is safe to call unconditionally for all requests.
 
 ### Tenant selection
 
