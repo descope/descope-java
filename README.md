@@ -1596,6 +1596,22 @@ try {
 
 ```
 
+#### Routing FGA calls to an FGA cache
+
+If you run an FGA cache (authzcache) instance, set `fgaCacheUrl` on the config, or the
+`DESCOPE_FGA_CACHE_URL` env var, and the calls it serves are sent there instead of the Descope base URL:
+`saveSchema`, `createRelations`, `deleteRelations` and `check` on the FGA service, plus `whoCanAccess` and
+`whatCanTargetAccess` on the authz service. Every other call, including `loadSchema`, `dryRunSchema` and the
+resource details calls, stays on the base URL. Leave it unset to send everything to the base URL.
+
+```java
+var descopeClient = new DescopeClient(Config.builder()
+        .projectId("Your-project")
+        .managementKey("management-key")
+        .fgaCacheUrl("https://your-authzcache-host")
+        .build());
+```
+
 ### Manage Outbound Applications
 
 You can fetch, delete, and manage outbound application tokens:

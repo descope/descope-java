@@ -211,7 +211,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     if (context != null && !context.isEmpty()) {
       request.put("context", context);
     }
-    WhoCanAccessResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_WHO), request, WhoCanAccessResponse.class);
+    WhoCanAccessResponse resp = apiProxy.post(getFgaUri(MANAGEMENT_AUTHZ_RE_WHO), request, WhoCanAccessResponse.class);
     return resp.getTargets();
   }
 
@@ -252,7 +252,7 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     if (context != null && !context.isEmpty()) {
       request.put("context", context);
     }
-    RelationsResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_ALL), request, RelationsResponse.class);
+    RelationsResponse resp = apiProxy.post(getFgaUri(MANAGEMENT_AUTHZ_RE_TARGET_ALL), request, RelationsResponse.class);
     return resp.getRelations();
   }
 

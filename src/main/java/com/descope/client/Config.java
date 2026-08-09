@@ -41,6 +41,9 @@ public class Config {
   // communicate with descope services.
   private String descopeBaseUrl;
 
+  // FGACacheURL (optional, "") - pass FGA calls through a cache service, if set.
+  private String fgaCacheUrl;
+
   // CustomDefaultHeaders (optional, nil) - add custom headers to all requests
   // used to communicate
   // with descope services.
@@ -58,6 +61,13 @@ public class Config {
       this.descopeBaseUrl = EnvironmentUtils.getBaseURL();
     }
     return this.descopeBaseUrl;
+  }
+
+  public String initializeFgaCacheUrl() {
+    if (StringUtils.isBlank(this.fgaCacheUrl)) {
+      this.fgaCacheUrl = EnvironmentUtils.getFgaCacheURL();
+    }
+    return this.fgaCacheUrl;
   }
 
   public String initializePublicKey() {

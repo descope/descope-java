@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.descope.exception.RateLimitExceededException;
@@ -34,6 +35,7 @@ import com.descope.sdk.mgmt.AuthzService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.File;
+import java.net.URI;
 import java.time.Instant;
 import java.time.Period;
 import java.util.Arrays;
@@ -438,6 +440,28 @@ public class AuthzServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       authzService.whatCanTargetAccess("kiki");
+    }
+  }
+
+  @Test
+  void testFgaCacheRouting() {
+    Client client = Client.builder().uri("https://api.descope.com").fgaCacheUri("https://cache.example.com/")
+        .projectId("someProjectId").managementKey("someManagementKey").build();
+    AuthzService cachedAuthzService = ManagementServiceBuilder.buildServices(client).getAuthzService();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new RelationsResponse(Arrays.asList(new Relation()))).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      cachedAuthzService.whatCanTargetAccess("kiki");
+      cachedAuthzService.resourceRelations("kuku");
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      verify(apiProxy, times(2)).post(uriCaptor.capture(), any(), any());
+      assertEquals("https://cache.example.com/v1/mgmt/authz/re/targetall",
+          uriCaptor.getAllValues().get(0).toString());
+      assertEquals("https://api.descope.com/v1/mgmt/authz/re/resource",
+          uriCaptor.getAllValues().get(1).toString());
     }
   }
 

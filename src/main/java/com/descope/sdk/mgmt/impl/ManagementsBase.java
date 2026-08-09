@@ -6,6 +6,8 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.SdkServicesBase;
 import com.descope.sdk.mgmt.ManagementService;
+import com.descope.utils.UriUtils;
+import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 
 abstract class ManagementsBase extends SdkServicesBase implements ManagementService {
@@ -40,5 +42,15 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
     }
     String token = String.format("Bearer %s", bearerJwt);
     return ApiProxyBuilder.buildProxy(() -> token, client);
+  }
+
+  // FGA calls that the FGA cache serves go to it when one is configured, everything else
+  // stays on the Descope base URL.
+  URI getFgaUri(String path) {
+    String fgaCacheUri = client.getFgaCacheUri();
+    if (StringUtils.isBlank(fgaCacheUri)) {
+      return getUri(path);
+    }
+    return UriUtils.getUri(StringUtils.removeEnd(fgaCacheUri, "/"), path);
   }
 }

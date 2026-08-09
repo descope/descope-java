@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Client {
   private String uri;
+  // When set, FGA calls that the FGA cache serves go here instead of uri.
+  private String fgaCacheUri;
   private String projectId;
   private String managementKey;
   private Map<String, String> headers;
