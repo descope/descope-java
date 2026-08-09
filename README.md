@@ -1497,6 +1497,18 @@ try {
     // Handle the error
 }
 
+// Preview what saving a schema would delete, without saving it
+try {
+    FGASchemaDryRunResponse dryRun = fs.dryRunSchema(new FGASchema(dsl));
+    FGASchemaDryDeletes deletes = dryRun.getDeletesPreview();
+    if (deletes != null && deletes.isHasDeletes()) {
+        System.out.println("Would delete relations: " + deletes.getRelations());
+        System.out.println("Would delete types: " + deletes.getTypes());
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Load the current authorization schema
 try {
     FGASchema schema = fs.loadSchema();

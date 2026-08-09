@@ -3,6 +3,7 @@ package com.descope.sdk.mgmt.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -17,6 +18,8 @@ import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
 import com.descope.model.fga.FGASchema;
+import com.descope.model.fga.FGASchemaDryDeletes;
+import com.descope.model.fga.FGASchemaDryRunResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -83,6 +86,35 @@ class FGAServiceImplTest {
   void testSaveSchema_EmptyDSL() {
     FGASchema schema = new FGASchema("");
     assertThrows(ServerCommonException.class, () -> fgaService.saveSchema(schema));
+  }
+
+  @Test
+  void testDryRunSchema_Success() throws Exception {
+    FGASchema schema = new FGASchema("model AuthZ 1.0\ntype user");
+    FGASchemaDryRunResponse response = new FGASchemaDryRunResponse(
+        new FGASchemaDryDeletes(true, Arrays.asList("doc#viewer"), Arrays.asList("doc")));
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.post(any(), any(), eq(FGASchemaDryRunResponse.class))).thenReturn(response);
+
+      FGASchemaDryRunResponse result = fgaService.dryRunSchema(schema);
+
+      assertNotNull(result);
+      assertTrue(result.getDeletesPreview().isHasDeletes());
+      assertEquals(Arrays.asList("doc#viewer"), result.getDeletesPreview().getRelations());
+      assertEquals(Arrays.asList("doc"), result.getDeletesPreview().getTypes());
+    }
+  }
+
+  @Test
+  void testDryRunSchema_NullSchema() {
+    assertThrows(ServerCommonException.class, () -> fgaService.dryRunSchema(null));
+  }
+
+  @Test
+  void testDryRunSchema_EmptyDSL() {
+    assertThrows(ServerCommonException.class, () -> fgaService.dryRunSchema(new FGASchema("")));
   }
 
   @SuppressWarnings("unchecked")
