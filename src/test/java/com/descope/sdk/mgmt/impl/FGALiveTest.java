@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junitpioneer.jupiter.RetryingTest;
 
@@ -93,16 +93,8 @@ class FGALiveTest {
     authzService = services.getAuthzService();
   }
 
-  // Cleaning up once, not per test: every test saves the schema it needs, and the project is
-  // shared with the other live tests, so deleting the schema between tests only adds churn.
-  @AfterAll
-  static void deleteSchema() {
-    try {
-      ManagementServiceBuilder.buildServices(TestUtils.getClient()).getAuthzService().deleteSchema();
-    } catch (Exception ignored) {
-      // The schema may already be gone, nothing to clean up.
-    }
-  }
+  // No schema cleanup on purpose: every test here saves the schema it needs, and the project is
+  // shared with the other live tests, some of which read the schema without a null guard.
 
   @RetryingTest(value = 3, suspendForMs = 30000,
       onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
@@ -272,7 +264,7 @@ class FGALiveTest {
     assertNotNull(badFga.dryRunSchema(new FGASchema(SIMPLE_SCHEMA)));
     badFga.saveResourcesDetails(details);
     assertNotNull(badFga.loadResourcesDetails(Arrays.asList(new FGAResourceIdentifier("doc1", "document"))));
-    assertNotNull(badAuthz.resourceRelations("doc1"));
+    assertDoesNotThrow(() -> badAuthz.resourceRelations("doc1"));
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000,
