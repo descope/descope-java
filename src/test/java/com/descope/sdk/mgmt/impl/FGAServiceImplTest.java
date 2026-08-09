@@ -286,6 +286,7 @@ class FGAServiceImplTest {
 
       assertNotNull(results.get(0).getInfo());
       assertFalse(results.get(0).getInfo().isConditional());
+      assertTrue(results.get(0).getInfo().getMissingContext().isEmpty());
     }
   }
 

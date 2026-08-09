@@ -134,6 +134,9 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
     }
     for (FGACheckResponseTuple tuple : response.getTuples()) {
       FGACheckInfo info = tuple.getInfo() == null ? new FGACheckInfo() : tuple.getInfo();
+      if (info.getMissingContext() == null) {
+        info.setMissingContext(new ArrayList<>());
+      }
       results.add(new FGACheckResult(tuple.isAllowed(), tuple.getTuple(), info));
     }
     return results;
