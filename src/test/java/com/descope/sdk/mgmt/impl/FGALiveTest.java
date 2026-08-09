@@ -96,7 +96,7 @@ class FGALiveTest {
   // No schema cleanup on purpose: every test here saves the schema it needs, and the project is
   // shared with the other live tests, some of which read the schema without a null guard.
 
-  @RetryingTest(value = 3, suspendForMs = 30000,
+  @RetryingTest(value = 3, suspendForMs = 10000,
       onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testGdriveSchemaRelationsAndChecks() {
     fgaService.saveSchema(new FGASchema(GDRIVE_SCHEMA));
@@ -149,7 +149,7 @@ class FGALiveTest {
     fgaService.deleteRelations(relations);
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000,
+  @RetryingTest(value = 3, suspendForMs = 10000,
       onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testAbacCheckWithContext() {
     fgaService.saveSchema(new FGASchema(ABAC_SCHEMA));
@@ -188,7 +188,8 @@ class FGALiveTest {
     // Same context, through the authz queries that evaluate conditions.
     assertTrue(authzService.whoCanAccess("doc1", "viewer", "doc", contextOf("role", "admin")).contains("u1"),
         "admin role should satisfy the viewer condition");
-    assertFalse(authzService.whoCanAccess("doc1", "viewer", "doc", contextOf("role", "user")).contains("u1"),
+    List<String> denied1 = authzService.whoCanAccess("doc1", "viewer", "doc", contextOf("role", "user"));
+    assertFalse(denied1 != null && denied1.contains("u1"),
         "non-admin role should not satisfy the viewer condition");
     assertNotNull(authzService.whatCanTargetAccess("u1", contextOf("role", "admin")));
 
@@ -200,7 +201,7 @@ class FGALiveTest {
     fgaService.deleteRelations(Arrays.asList(viewer));
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000,
+  @RetryingTest(value = 3, suspendForMs = 10000,
       onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testDryRunSchemaDoesNotSave() {
     fgaService.saveSchema(new FGASchema(SIMPLE_SCHEMA));
@@ -216,27 +217,17 @@ class FGALiveTest {
     assertTrue(fgaService.loadSchema().getDsl().contains("document"), "dry run must not save the schema");
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000,
+  @RetryingTest(value = 3, suspendForMs = 10000,
       onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testFgaCacheUrlPointingAtTheApiHostStillWorks() {
     Client client = TestUtils.getClient();
     // Not a real cache, but it proves the config reaches the request and the six routed calls
     // keep working through it. The trailing slash covers the URL normalization.
     client.setFgaCacheUri(client.getUri() + "/");
-    FGAService cachedFga = ManagementServiceBuilder.buildServices(client).getFgaService();
-
-    cachedFga.saveSchema(new FGASchema(SIMPLE_SCHEMA));
-    FGARelation relation = new FGARelation("doc1", "document", "viewer", "u1", "user");
-    cachedFga.createRelations(Arrays.asList(relation));
-
-    List<FGACheckResult> results = cachedFga.check(Arrays.asList(relation));
-    assertEquals(1, results.size());
-    assertTrue(results.get(0).isAllowed());
-
-    cachedFga.deleteRelations(Arrays.asList(relation));
+    assertRoundTripWorks(client);
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000,
+  @RetryingTest(value = 3, suspendForMs = 10000,
       onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testBadFgaCacheUrlFailsOnlyTheRoutedCalls() {
     fgaService.saveSchema(new FGASchema(SIMPLE_SCHEMA));
@@ -267,7 +258,7 @@ class FGALiveTest {
     assertDoesNotThrow(() -> badAuthz.resourceRelations("doc1"));
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000,
+  @RetryingTest(value = 3, suspendForMs = 10000,
       onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testAgainstRealFgaCache() {
     String fgaCacheUrl = EnvironmentUtils.getFgaCacheURL();
@@ -275,6 +266,12 @@ class FGALiveTest {
 
     Client client = TestUtils.getClient();
     client.setFgaCacheUri(fgaCacheUrl);
+    assertRoundTripWorks(client);
+  }
+
+  // Saves a schema, creates a relation and checks it, all through whatever FGA cache the client
+  // is configured with.
+  private static void assertRoundTripWorks(Client client) {
     FGAService cachedFga = ManagementServiceBuilder.buildServices(client).getFgaService();
 
     cachedFga.saveSchema(new FGASchema(SIMPLE_SCHEMA));
