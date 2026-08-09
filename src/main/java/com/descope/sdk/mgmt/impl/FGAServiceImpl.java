@@ -69,12 +69,13 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
     FGALoadSchemaResponse response = apiProxy.get(getUri(MANAGEMENT_FGA_LOAD_SCHEMA), FGALoadSchemaResponse.class);
 
     FGASchema schema = new FGASchema();
+    schema.setConditions(new ArrayList<>());
     if (response == null) {
       return schema;
     }
     schema.setDsl(response.getDsl());
     schema.setVersion(response.getVersion());
-    if (response.getSchema() != null) {
+    if (response.getSchema() != null && response.getSchema().getConditions() != null) {
       schema.setConditions(response.getSchema().getConditions());
     }
     return schema;

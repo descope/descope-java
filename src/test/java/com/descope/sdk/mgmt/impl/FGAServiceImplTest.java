@@ -149,6 +149,18 @@ class FGAServiceImplTest {
   }
 
   @Test
+  void testLoadSchema_ConditionsAreNeverNull() throws Exception {
+    FGALoadSchemaResponse response = new FGALoadSchemaResponse("model AuthZ 1.0\ntype user", "v1", null);
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.get(any(), eq(FGALoadSchemaResponse.class))).thenReturn(response);
+
+      assertTrue(fgaService.loadSchema().getConditions().isEmpty());
+    }
+  }
+
+  @Test
   void testCreateRelations_Success() throws Exception {
     List<FGARelation> relations = Arrays.asList(
         new FGARelation("doc1", "document", "owner", "user1", "user")
