@@ -146,7 +146,7 @@ class FGALiveTest {
     for (int i = 0; i < expected.size(); i++) {
       FGARelation relation = expected.get(i).getRelation();
       assertEquals(expected.get(i).isAllowed(), results.get(i).isAllowed(), "check " + relation);
-      assertEquals(relation, results.get(i).getRelation());
+      assertEchoes(relation, results.get(i).getRelation());
     }
 
     fgaService.deleteRelations(relations);
@@ -163,7 +163,7 @@ class FGALiveTest {
     assertEquals(1, allowed.size());
     assertTrue(allowed.get(0).isAllowed(), "admin role should be allowed");
     assertTrue(allowed.get(0).getInfo().isConditional(), "result should be marked conditional");
-    assertEquals(viewer, allowed.get(0).getRelation());
+    assertEchoes(viewer, allowed.get(0).getRelation());
 
     List<FGACheckResult> denied = fgaService.check(Arrays.asList(viewer), contextOf("role", "user"));
     assertFalse(denied.get(0).isAllowed(), "non-admin role should be denied");
@@ -260,10 +260,10 @@ class FGALiveTest {
     client.setFgaCacheUri("http://localhost:1");
     ManagementServices services = ManagementServiceBuilder.buildServices(client);
     FGAService badFga = services.getFgaService();
-    AuthzService badAuthz = services.getAuthzService();
+    final AuthzService badAuthz = services.getAuthzService();
 
     List<FGARelation> relations = Arrays.asList(new FGARelation("doc1", "document", "viewer", "u1", "user"));
-    Map<String, Object> context = contextOf("role", "admin");
+    final Map<String, Object> context = contextOf("role", "admin");
 
     // Transport failures are not mapped into DescopeException, they propagate as-is.
     assertThrows(Exception.class, () -> badFga.saveSchema(new FGASchema(SIMPLE_SCHEMA)));
@@ -300,6 +300,15 @@ class FGALiveTest {
     assertTrue(results.get(0).isAllowed());
 
     cachedFga.deleteRelations(Arrays.asList(relation));
+  }
+
+  // The server echoes the tuple it evaluated, with targetType normalized, so compare the rest.
+  private static void assertEchoes(FGARelation requested, FGARelation echoed) {
+    assertNotNull(echoed);
+    assertEquals(requested.getResource(), echoed.getResource());
+    assertEquals(requested.getResourceType(), echoed.getResourceType());
+    assertEquals(requested.getRelation(), echoed.getRelation());
+    assertEquals(requested.getTarget(), echoed.getTarget());
   }
 
   private static FGACheckResult expect(String resource, String relation, String target, boolean allowed) {
