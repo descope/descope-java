@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.authz.Relation;
 import com.descope.model.client.Client;
 import com.descope.model.fga.FGACheckResult;
 import com.descope.model.fga.FGARelation;
@@ -191,7 +192,10 @@ class FGALiveTest {
     List<String> denied1 = authzService.whoCanAccess("doc1", "viewer", "doc", contextOf("role", "user"));
     assertFalse(denied1 != null && denied1.contains("u1"),
         "non-admin role should not satisfy the viewer condition");
-    assertNotNull(authzService.whatCanTargetAccess("u1", contextOf("role", "admin")));
+    assertTrue(reachesDoc1(authzService.whatCanTargetAccess("u1", contextOf("role", "admin"))),
+        "admin role should reach doc1");
+    assertFalse(reachesDoc1(authzService.whatCanTargetAccess("u1", contextOf("role", "user"))),
+        "non-admin role should not reach doc1");
 
     FGASchema loaded = fgaService.loadSchema();
     assertTrue(StringUtils.isNotBlank(loaded.getVersion()), "schema version should be returned");
@@ -267,6 +271,10 @@ class FGALiveTest {
     Client client = TestUtils.getClient();
     client.setFgaCacheUri(fgaCacheUrl);
     assertRoundTripWorks(client);
+  }
+
+  private static boolean reachesDoc1(List<Relation> relations) {
+    return relations != null && relations.stream().anyMatch(r -> "doc1".equals(r.getResource()));
   }
 
   // Saves a schema, creates a relation and checks it, all through whatever FGA cache the client
