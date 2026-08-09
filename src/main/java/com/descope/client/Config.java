@@ -41,13 +41,19 @@ public class Config {
   // communicate with descope services.
   private String descopeBaseUrl;
 
-  // FGACacheURL (optional, "") - pass FGA calls through a cache service, if set.
-  private String fgaCacheUrl;
-
   // CustomDefaultHeaders (optional, nil) - add custom headers to all requests
   // used to communicate
   // with descope services.
   private Map<String, String> customDefaultHeaders;
+
+  // FGACacheURL (optional, "") - pass FGA calls through a cache service, if set.
+  private String fgaCacheUrl;
+
+  // Keeps the pre-fgaCacheUrl all-args constructor available to callers that use it positionally.
+  public Config(String projectId, String managementKey, String publicKey, String descopeBaseUrl,
+      Map<String, String> customDefaultHeaders) {
+    this(projectId, managementKey, publicKey, descopeBaseUrl, customDefaultHeaders, null);
+  }
 
   public String initializeProjectId() {
     if (StringUtils.isBlank(this.projectId)) {
