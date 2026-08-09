@@ -8,6 +8,7 @@ import com.descope.model.fga.FGAResourceIdentifier;
 import com.descope.model.fga.FGASchema;
 import com.descope.model.fga.FGASchemaDryRunResponse;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides functions for managing Fine-Grained Authorization (FGA) in a project.
@@ -67,6 +68,20 @@ public interface FGAService {
    * @throws DescopeException if the operation fails
    */
   List<FGACheckResult> check(List<FGARelation> relations) throws DescopeException;
+
+  /**
+   * Checks if the given FGA relations are satisfied, evaluating any schema conditions against
+   * the given context.
+   *
+   * <p>Context keys become variables available to the CEL conditions defined in the schema,
+   * on top of any attributes the backend already holds. Values must be JSON serializable.
+   *
+   * @param relations list of relations to check
+   * @param context extra context for condition evaluation, may be null or empty
+   * @return list of check results indicating whether each relation is allowed
+   * @throws DescopeException if the operation fails
+   */
+  List<FGACheckResult> check(List<FGARelation> relations, Map<String, Object> context) throws DescopeException;
 
   /**
    * Loads detailed information for the given resource identifiers.

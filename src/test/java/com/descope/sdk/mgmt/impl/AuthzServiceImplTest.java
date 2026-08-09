@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
@@ -36,10 +37,13 @@ import java.io.File;
 import java.time.Instant;
 import java.time.Period;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class AuthzServiceImplTest {
@@ -340,6 +344,40 @@ public class AuthzServiceImplTest {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhoCanAccessWithContext() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new WhoCanAccessResponse(Arrays.asList("kuku"))).when(apiProxy).post(any(), any(), any());
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      authzService.whoCanAccess("kiki", "kuku", "kaka", context);
+
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), any());
+      assertEquals(context, bodyCaptor.getValue().get("context"));
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhoCanAccessWithEmptyContext() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new WhoCanAccessResponse(Arrays.asList("kuku"))).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      authzService.whoCanAccess("kiki", "kuku", "kaka", new HashMap<>());
+
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), any());
+      assertFalse(bodyCaptor.getValue().containsKey("context"));
+    }
+  }
+
   @Test
   void testResourceRelationsForNoResource() {
     ServerCommonException thrown =
@@ -400,6 +438,24 @@ public class AuthzServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       authzService.whatCanTargetAccess("kiki");
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhatCanTargetAccessWithContext() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new RelationsResponse(Arrays.asList(new Relation()))).when(apiProxy).post(any(), any(), any());
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      authzService.whatCanTargetAccess("kiki", context);
+
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), any());
+      assertEquals(context, bodyCaptor.getValue().get("context"));
     }
   }
 

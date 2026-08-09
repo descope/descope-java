@@ -12,7 +12,11 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_SCH
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.fga.FGACheckInfo;
+import com.descope.model.fga.FGACheckResponse;
+import com.descope.model.fga.FGACheckResponse.FGACheckResponseTuple;
 import com.descope.model.fga.FGACheckResult;
+import com.descope.model.fga.FGALoadSchemaResponse;
 import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
@@ -62,12 +66,16 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
   @Override
   public FGASchema loadSchema() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> response = apiProxy.getArray(getUri(MANAGEMENT_FGA_LOAD_SCHEMA), 
-        new TypeReference<Map<String, Object>>() {});
+    FGALoadSchemaResponse response = apiProxy.get(getUri(MANAGEMENT_FGA_LOAD_SCHEMA), FGALoadSchemaResponse.class);
 
     FGASchema schema = new FGASchema();
-    if (response.containsKey("dsl")) {
-      schema.setDsl((String) response.get("dsl"));
+    if (response == null) {
+      return schema;
+    }
+    schema.setDsl(response.getDsl());
+    schema.setVersion(response.getVersion());
+    if (response.getSchema() != null) {
+      schema.setConditions(response.getSchema().getConditions());
     }
     return schema;
   }
@@ -100,32 +108,34 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
 
   @Override
   public List<FGACheckResult> check(List<FGARelation> relations) throws DescopeException {
+    return check(relations, null);
+  }
+
+  @Override
+  public List<FGACheckResult> check(List<FGARelation> relations, Map<String, Object> context)
+      throws DescopeException {
     if (relations == null || relations.isEmpty()) {
       throw ServerCommonException.invalidArgument("relations list");
     }
 
     Map<String, Object> requestBody = new HashMap<>();
     requestBody.put("tuples", relations);
+    if (context != null && !context.isEmpty()) {
+      requestBody.put("context", context);
+    }
 
     ApiProxy apiProxy = getApiProxy();
-    Map<String, Object> response = apiProxy.postAndGetArray(getUri(MANAGEMENT_FGA_CHECK), 
-        requestBody, new TypeReference<Map<String, Object>>() {});
+    FGACheckResponse response = apiProxy.post(getUri(MANAGEMENT_FGA_CHECK), requestBody, FGACheckResponse.class);
 
-    if (response.containsKey("tuples")) {
-      // Convert the response tuples to FGACheckResult objects
-      @SuppressWarnings("unchecked")
-      List<Map<String, Object>> tuples = (List<Map<String, Object>>) response.get("tuples");
-      List<FGACheckResult> results = new ArrayList<>();
-      for (Map<String, Object> tuple : tuples) {
-        FGACheckResult result = new FGACheckResult();
-        if (tuple.containsKey("allowed")) {
-          result.setAllowed((Boolean) tuple.get("allowed"));
-        }
-        results.add(result);
-      }
+    List<FGACheckResult> results = new ArrayList<>();
+    if (response == null || response.getTuples() == null) {
       return results;
     }
-    return new ArrayList<>();
+    for (FGACheckResponseTuple tuple : response.getTuples()) {
+      FGACheckInfo info = tuple.getInfo() == null ? new FGACheckInfo() : tuple.getInfo();
+      results.add(new FGACheckResult(tuple.isAllowed(), tuple.getTuple(), info));
+    }
+    return results;
   }
 
   @Override

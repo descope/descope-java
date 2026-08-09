@@ -1512,7 +1512,7 @@ try {
 // Load the current authorization schema
 try {
     FGASchema schema = fs.loadSchema();
-    // Do something with schema.getDsl()
+    // Do something with schema.getDsl(), schema.getVersion() and schema.getConditions()
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1533,11 +1533,33 @@ try {
 try {
     List<FGACheckResult> results = fs.check(relations);
     for (FGACheckResult result : results) {
-        // Do something with result.isAllowed()
+        // Do something with result.isAllowed(), result.getRelation() and result.getInfo()
     }
 } catch (DescopeException de) {
     // Handle the error
 }
+
+// Check relations against a schema that uses conditions (ABAC), passing the values
+// the conditions are evaluated with
+Map<String, Object> context = new HashMap<>();
+context.put("role", "admin");
+
+try {
+    List<FGACheckResult> results = fs.check(relations, context);
+    for (FGACheckResult result : results) {
+        FGACheckInfo info = result.getInfo();
+        // info.isConditional() - the result was decided by a condition
+        // info.getMissingContext() - context variables the conditions needed but did not get
+        // info.getConditionalErr() - the condition could not be evaluated
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// The same context can be passed to the authz queries that evaluate conditions
+AuthzService authz = descopeClient.getManagementServices().getAuthzService();
+List<String> targets = authz.whoCanAccess("doc1", "viewer", "doc", context);
+List<Relation> relationsForTarget = authz.whatCanTargetAccess("user123", context);
 
 // Delete relations
 try {

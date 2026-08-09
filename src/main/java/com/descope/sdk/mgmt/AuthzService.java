@@ -9,6 +9,7 @@ import com.descope.model.authz.RelationQuery;
 import com.descope.model.authz.Schema;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /** Provides ReBAC authorization service APIs. */
 public interface AuthzService {
@@ -127,6 +128,23 @@ public interface AuthzService {
   List<String> whoCanAccess(String resource, String relationDefinition, String namespace) throws DescopeException;
 
   /**
+   * List all the users that have the given relation definition to the given resource, evaluating
+   * any schema conditions against the given context.
+   *
+   * <p>Context keys become variables available to the CEL conditions defined in the schema.
+   * Values must be JSON serializable.
+   *
+   * @param resource The resource we are checking
+   * @param relationDefinition The relation definition we are querying
+   * @param namespace The namespace for the relation definition
+   * @param context Extra context for condition evaluation, may be null or empty
+   * @return {@link List} of users who have the given relation definition
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<String> whoCanAccess(String resource, String relationDefinition, String namespace,
+      Map<String, Object> context) throws DescopeException;
+
+  /**
    * Return the list of all defined relations (not recursive) on the given resource.
    *
    * @param resource The resource we are checking
@@ -152,6 +170,20 @@ public interface AuthzService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   List<Relation> whatCanTargetAccess(String target) throws DescopeException;
+
+  /**
+   * Return the list of all relations for the given target including derived relations from the
+   * schema tree, evaluating any schema conditions against the given context.
+   *
+   * <p>Context keys become variables available to the CEL conditions defined in the schema.
+   * Values must be JSON serializable.
+   *
+   * @param target The target to check relations for
+   * @param context Extra context for condition evaluation, may be null or empty
+   * @return {@link List} of {@link Relation} that exist for the given target
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<Relation> whatCanTargetAccess(String target, Map<String, Object> context) throws DescopeException;
 
   /**
    * Return the list of all resources for the given target and a given relation definition

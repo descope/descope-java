@@ -190,6 +190,12 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
   @Override
   public List<String> whoCanAccess(String resource, String relationDefinition, String namespace)
       throws DescopeException {
+    return whoCanAccess(resource, relationDefinition, namespace, null);
+  }
+
+  @Override
+  public List<String> whoCanAccess(String resource, String relationDefinition, String namespace,
+      Map<String, Object> context) throws DescopeException {
     if (StringUtils.isBlank(resource)) {
       throw ServerCommonException.invalidArgument("resource");
     }
@@ -202,6 +208,9 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     ApiProxy apiProxy = getApiProxy();
     Map<String, Object> request =
         mapOf("resource", resource, "relationDefinition", relationDefinition, "namespace", namespace);
+    if (context != null && !context.isEmpty()) {
+      request.put("context", context);
+    }
     WhoCanAccessResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_WHO), request, WhoCanAccessResponse.class);
     return resp.getTargets();
   }
@@ -230,11 +239,19 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
 
   @Override
   public List<Relation> whatCanTargetAccess(String target) throws DescopeException {
+    return whatCanTargetAccess(target, null);
+  }
+
+  @Override
+  public List<Relation> whatCanTargetAccess(String target, Map<String, Object> context) throws DescopeException {
     if (StringUtils.isBlank(target)) {
       throw ServerCommonException.invalidArgument("target");
     }
     ApiProxy apiProxy = getApiProxy();
     Map<String, Object> request = mapOf("target", target);
+    if (context != null && !context.isEmpty()) {
+      request.put("context", context);
+    }
     RelationsResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_ALL), request, RelationsResponse.class);
     return resp.getRelations();
   }
