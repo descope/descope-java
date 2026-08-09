@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.fga.FGACheckResult;
 import com.descope.model.fga.FGARelation;
@@ -32,7 +33,8 @@ import org.junitpioneer.jupiter.RetryingTest;
 
 /**
  * Live coverage for the FGA surface, mirroring integrationtests/tests/fga_test.go.
- * Requires DESCOPE_PROJECT_ID and DESCOPE_MANAGEMENT_KEY.
+ * Requires DESCOPE_PROJECT_ID and DESCOPE_MANAGEMENT_KEY. Server errors are retried because these
+ * tests replace the project's schema, which is shared with the other live tests.
  */
 class FGALiveTest {
 
@@ -100,7 +102,8 @@ class FGALiveTest {
     }
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  @RetryingTest(value = 3, suspendForMs = 30000,
+      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testGdriveSchemaRelationsAndChecks() {
     fgaService.saveSchema(new FGASchema(GDRIVE_SCHEMA));
 
@@ -152,7 +155,8 @@ class FGALiveTest {
     fgaService.deleteRelations(relations);
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  @RetryingTest(value = 3, suspendForMs = 30000,
+      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testAbacCheckWithContext() {
     fgaService.saveSchema(new FGASchema(ABAC_SCHEMA));
 
@@ -190,7 +194,8 @@ class FGALiveTest {
     fgaService.deleteRelations(Arrays.asList(viewer));
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  @RetryingTest(value = 3, suspendForMs = 30000,
+      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testAbacContextThroughAuthzQueries() {
     fgaService.saveSchema(new FGASchema(ABAC_SCHEMA));
 
@@ -207,7 +212,8 @@ class FGALiveTest {
     fgaService.deleteRelations(Arrays.asList(viewer));
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  @RetryingTest(value = 3, suspendForMs = 30000,
+      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testDryRunSchemaDoesNotSave() {
     fgaService.saveSchema(new FGASchema(SIMPLE_SCHEMA));
 
@@ -222,7 +228,8 @@ class FGALiveTest {
     assertTrue(fgaService.loadSchema().getDsl().contains("document"), "dry run must not save the schema");
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  @RetryingTest(value = 3, suspendForMs = 30000,
+      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testLoadSchemaReturnsVersionAndConditions() {
     fgaService.saveSchema(new FGASchema(ABAC_SCHEMA));
 
@@ -233,7 +240,8 @@ class FGALiveTest {
         "IsAdmin condition should be returned");
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  @RetryingTest(value = 3, suspendForMs = 30000,
+      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testFgaCacheUrlPointingAtTheApiHostStillWorks() {
     Client client = TestUtils.getClient();
     // Not a real cache, but it proves the config reaches the request and the six routed calls
@@ -252,7 +260,8 @@ class FGALiveTest {
     cachedFga.deleteRelations(Arrays.asList(relation));
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  @RetryingTest(value = 3, suspendForMs = 30000,
+      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testBadFgaCacheUrlFailsOnlyTheRoutedCalls() {
     fgaService.saveSchema(new FGASchema(SIMPLE_SCHEMA));
 
@@ -282,7 +291,8 @@ class FGALiveTest {
     assertNotNull(badAuthz.resourceRelations("doc1"));
   }
 
-  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  @RetryingTest(value = 3, suspendForMs = 30000,
+      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testAgainstRealFgaCache() {
     String fgaCacheUrl = EnvironmentUtils.getFgaCacheURL();
     assumeTrue(StringUtils.isNotBlank(fgaCacheUrl), "DESCOPE_FGA_CACHE_URL is not set");
