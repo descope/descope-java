@@ -1558,7 +1558,7 @@ try {
 
 // The same context can be passed to the authz queries that evaluate conditions
 AuthzService authz = descopeClient.getManagementServices().getAuthzService();
-List<String> targets = authz.whoCanAccess("doc1", "viewer", "doc", context);
+List<String> targets = authz.whoCanAccess("doc1", "viewer", "document", context);
 List<Relation> relationsForTarget = authz.whatCanTargetAccess("user123", context);
 
 // Delete relations
