@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junitpioneer.jupiter.RetryingTest;
 
@@ -93,10 +93,12 @@ class FGALiveTest {
     authzService = services.getAuthzService();
   }
 
-  @AfterEach
-  void tearDown() {
+  // Cleaning up once, not per test: every test saves the schema it needs, and the project is
+  // shared with the other live tests, so deleting the schema between tests only adds churn.
+  @AfterAll
+  static void deleteSchema() {
     try {
-      authzService.deleteSchema();
+      ManagementServiceBuilder.buildServices(TestUtils.getClient()).getAuthzService().deleteSchema();
     } catch (Exception ignored) {
       // The schema may already be gone, nothing to clean up.
     }
@@ -191,23 +193,17 @@ class FGALiveTest {
     assertFalse(editDenied.get(0).isAllowed(), "admin with read action should be denied via can_edit");
     assertTrue(editDenied.get(0).getInfo().isConditional());
 
-    fgaService.deleteRelations(Arrays.asList(viewer));
-  }
-
-  @RetryingTest(value = 3, suspendForMs = 30000,
-      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
-  void testAbacContextThroughAuthzQueries() {
-    fgaService.saveSchema(new FGASchema(ABAC_SCHEMA));
-
-    FGARelation viewer = new FGARelation("doc1", "doc", "viewer", "u1", "user");
-    fgaService.createRelations(Arrays.asList(viewer));
-
+    // Same context, through the authz queries that evaluate conditions.
     assertTrue(authzService.whoCanAccess("doc1", "viewer", "doc", contextOf("role", "admin")).contains("u1"),
         "admin role should satisfy the viewer condition");
     assertFalse(authzService.whoCanAccess("doc1", "viewer", "doc", contextOf("role", "user")).contains("u1"),
         "non-admin role should not satisfy the viewer condition");
-
     assertNotNull(authzService.whatCanTargetAccess("u1", contextOf("role", "admin")));
+
+    FGASchema loaded = fgaService.loadSchema();
+    assertTrue(StringUtils.isNotBlank(loaded.getVersion()), "schema version should be returned");
+    assertTrue(loaded.getConditions().stream().anyMatch(c -> "IsAdmin".equals(c.getName())),
+        "IsAdmin condition should be returned");
 
     fgaService.deleteRelations(Arrays.asList(viewer));
   }
@@ -226,18 +222,6 @@ class FGALiveTest {
         "an unchanged schema should report no deletes");
 
     assertTrue(fgaService.loadSchema().getDsl().contains("document"), "dry run must not save the schema");
-  }
-
-  @RetryingTest(value = 3, suspendForMs = 30000,
-      onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
-  void testLoadSchemaReturnsVersionAndConditions() {
-    fgaService.saveSchema(new FGASchema(ABAC_SCHEMA));
-
-    FGASchema loaded = fgaService.loadSchema();
-    assertTrue(StringUtils.isNotBlank(loaded.getVersion()), "schema version should be returned");
-    assertNotNull(loaded.getConditions());
-    assertTrue(loaded.getConditions().stream().anyMatch(c -> "IsAdmin".equals(c.getName())),
-        "IsAdmin condition should be returned");
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000,
