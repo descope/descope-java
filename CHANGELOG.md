@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.3.0](https://github.com/descope/descope-java/compare/java-sdk-1.2.0...java-sdk-1.3.0) (2026-08-10)
+
+
+### Features
+
+* **fga:** add dryRunSchema ([#347](https://github.com/descope/descope-java/issues/347)) ([16bd82b](https://github.com/descope/descope-java/commit/16bd82be56bad19cdceb16fa6730b3a835f5d0c3))
+* **fga:** support ABAC context in check, whoCanAccess and whatCanTargetAccess ([#348](https://github.com/descope/descope-java/issues/348)) ([045fc17](https://github.com/descope/descope-java/commit/045fc175ddf96082c733d0b240d9c661574b51f3))
+* **fga:** support routing FGA calls to an FGA cache instance ([#349](https://github.com/descope/descope-java/issues/349)) ([bf53f38](https://github.com/descope/descope-java/commit/bf53f382097755d272142aace80907d5db96cfa2))
+* **mgmt:** add java sdk parity methods and models to match go sdk ([#339](https://github.com/descope/descope-java/issues/339)) ([50bec48](https://github.com/descope/descope-java/commit/50bec48d0a2f2a634dd7cd27eb98983a3ce54c64))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.22.1 [security] ([#342](https://github.com/descope/descope-java/issues/342)) ([a6b7a12](https://github.com/descope/descope-java/commit/a6b7a124ef6ff4236575b157c1a504558e13eac3))
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.2 ([#343](https://github.com/descope/descope-java/issues/343)) ([9c21308](https://github.com/descope/descope-java/commit/9c2130871708d198a1f649edeff8aa04abf07819))
+* **deps:** update dependency org.bouncycastle:bcprov-jdk18on to v1.85 ([#355](https://github.com/descope/descope-java/issues/355)) ([80cd606](https://github.com/descope/descope-java/commit/80cd6061f9d87a909bfd392da4e33a2f21a25df7))
+
 ## [1.2.0](https://github.com/descope/descope-java/compare/java-sdk-1.1.0...java-sdk-1.2.0) (2026-06-22)
 
 
