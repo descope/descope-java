@@ -47,7 +47,7 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
     requestBody.put("dsl", schema.getDsl());
 
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_FGA_SAVE_SCHEMA), requestBody, Void.class);
+    apiProxy.post(getFgaUri(MANAGEMENT_FGA_SAVE_SCHEMA), requestBody, Void.class);
   }
 
   @Override
@@ -91,7 +91,7 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
     requestBody.put("tuples", relations);
 
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_FGA_CREATE_RELATIONS), requestBody, Void.class);
+    apiProxy.post(getFgaUri(MANAGEMENT_FGA_CREATE_RELATIONS), requestBody, Void.class);
   }
 
   @Override
@@ -104,7 +104,7 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
     requestBody.put("tuples", relations);
 
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(getUri(MANAGEMENT_FGA_DELETE_RELATIONS), requestBody, Void.class);
+    apiProxy.post(getFgaUri(MANAGEMENT_FGA_DELETE_RELATIONS), requestBody, Void.class);
   }
 
   @Override
@@ -126,7 +126,7 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
     }
 
     ApiProxy apiProxy = getApiProxy();
-    FGACheckResponse response = apiProxy.post(getUri(MANAGEMENT_FGA_CHECK), requestBody, FGACheckResponse.class);
+    FGACheckResponse response = apiProxy.post(getFgaUri(MANAGEMENT_FGA_CHECK), requestBody, FGACheckResponse.class);
 
     List<FGACheckResult> results = new ArrayList<>();
     if (response == null || response.getTuples() == null) {

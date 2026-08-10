@@ -50,6 +50,7 @@ public class DescopeClient {
     }
     config.initializeManagementKey();
     config.initializeBaseURL();
+    config.initializeFgaCacheUrl();
 
     Client client = getClient(config);
     this.authenticationServices = AuthenticationServiceBuilder.buildServices(client);
@@ -67,6 +68,7 @@ public class DescopeClient {
     final String baseUrl = DEFAULT_BASE_URL.replace(REGION_PLACEHOLDER, region.length() > 3 ? region + "." : "");
     Client c = Client.builder()
         .uri(StringUtils.isBlank(config.getDescopeBaseUrl()) ? baseUrl : config.getDescopeBaseUrl())
+        .fgaCacheUri(config.getFgaCacheUrl())
         .projectId(projectId)
         .managementKey(config.getManagementKey())
         .headers(

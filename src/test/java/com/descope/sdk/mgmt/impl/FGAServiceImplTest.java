@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +36,7 @@ import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.FGAService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -316,6 +318,40 @@ class FGAServiceImplTest {
       assertEquals("doc1", results.get(0).getResourceId());
       assertEquals("document", results.get(0).getResourceType());
       assertEquals("Document 1", results.get(0).getDisplayName());
+    }
+  }
+
+  @Test
+  void testFgaCacheRouting() throws Exception {
+    when(client.getUri()).thenReturn("https://api.descope.com");
+    when(client.getFgaCacheUri()).thenReturn("https://cache.example.com/");
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      fgaService.check(Arrays.asList(new FGARelation("doc1", "doc", "viewer", "user1", "user")));
+      fgaService.dryRunSchema(new FGASchema("model AuthZ 1.0\ntype user"));
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      verify(apiProxy, times(2)).post(uriCaptor.capture(), any(), any());
+      assertEquals("https://cache.example.com/v1/mgmt/fga/check", uriCaptor.getAllValues().get(0).toString());
+      assertEquals("https://api.descope.com/v1/mgmt/fga/schema/dryrun",
+          uriCaptor.getAllValues().get(1).toString());
+    }
+  }
+
+  @Test
+  void testFgaCacheRoutingUsesBaseUrlWhenNotConfigured() throws Exception {
+    when(client.getUri()).thenReturn("https://api.descope.com");
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      fgaService.check(Arrays.asList(new FGARelation("doc1", "doc", "viewer", "user1", "user")));
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      verify(apiProxy).post(uriCaptor.capture(), any(), any());
+      assertEquals("https://api.descope.com/v1/mgmt/fga/check", uriCaptor.getValue().toString());
     }
   }
 

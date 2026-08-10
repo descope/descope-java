@@ -23,6 +23,14 @@ public class Client {
   private Key providedKey;
   @Builder.Default
   private AtomicReference<Map<String, Key>> keys = new AtomicReference<>(new HashMap<>());
+  // When set, FGA calls that the FGA cache serves go here instead of uri.
+  private String fgaCacheUri;
+
+  // Keeps the pre-fgaCacheUri all-args constructor available to callers that use it positionally.
+  public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
+      SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys) {
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, null);
+  }
 
   public Key getKey(String keyId) {
     if (providedKey != null) {
