@@ -266,6 +266,7 @@ class FGALiveTest {
       onExceptions = {RateLimitExceededException.class, ServerCommonException.class})
   void testAgainstRealFgaCache() {
     String fgaCacheUrl = EnvironmentUtils.getFgaCacheURL();
+    // Reports as skipped, not failed, when no cache URL is configured.
     assumeTrue(StringUtils.isNotBlank(fgaCacheUrl), "DESCOPE_FGA_CACHE_URL is not set");
 
     Client client = TestUtils.getClient();
