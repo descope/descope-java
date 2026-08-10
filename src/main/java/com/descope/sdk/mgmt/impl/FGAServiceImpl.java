@@ -7,6 +7,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_LOA
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_LOAD;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_SAVE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_SAVE_SCHEMA;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_SCHEMA_DRY_RUN;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
@@ -16,6 +17,7 @@ import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
 import com.descope.model.fga.FGASchema;
+import com.descope.model.fga.FGASchemaDryRunResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.FGAService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -42,6 +44,19 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
 
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_FGA_SAVE_SCHEMA), requestBody, Void.class);
+  }
+
+  @Override
+  public FGASchemaDryRunResponse dryRunSchema(FGASchema schema) throws DescopeException {
+    if (schema == null || StringUtils.isBlank(schema.getDsl())) {
+      throw ServerCommonException.invalidArgument("FGA schema DSL");
+    }
+
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("dsl", schema.getDsl());
+
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_FGA_SCHEMA_DRY_RUN), requestBody, FGASchemaDryRunResponse.class);
   }
 
   @Override

@@ -6,6 +6,7 @@ import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
 import com.descope.model.fga.FGASchema;
+import com.descope.model.fga.FGASchemaDryRunResponse;
 import java.util.List;
 
 /**
@@ -22,6 +23,16 @@ public interface FGAService {
    * @throws DescopeException if the operation fails
    */
   void saveSchema(FGASchema schema) throws DescopeException;
+
+  /**
+   * Validates an FGA schema without saving it, and reports what saving it would delete
+   * from the current schema.
+   *
+   * @param schema the FGA schema containing the DSL definition
+   * @return a preview of the relations and types that would be deleted
+   * @throws DescopeException if the operation fails
+   */
+  FGASchemaDryRunResponse dryRunSchema(FGASchema schema) throws DescopeException;
 
   /**
    * Loads the current FGA schema for the project.
