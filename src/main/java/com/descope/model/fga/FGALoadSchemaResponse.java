@@ -10,12 +10,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FGASchema {
+public class FGALoadSchemaResponse {
   private String dsl;
-  private List<FGACondition> conditions;
   private String version;
+  private FGALoadSchemaConditions schema;
 
-  public FGASchema(String dsl) {
-    this.dsl = dsl;
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class FGALoadSchemaConditions {
+    private List<FGACondition> conditions;
   }
 }

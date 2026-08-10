@@ -10,10 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FGACheckInfo {
-  private boolean direct;
-  private boolean conditional;
-  private List<String> missingContext;
-  private String conditionalErr;
-  private boolean factUsed;
+public class FGACondition {
+  private String name;
+  private List<FGAConditionParam> params;
+  private String expression;
 }

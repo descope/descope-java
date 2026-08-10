@@ -1,6 +1,7 @@
 package com.descope.sdk.mgmt.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,7 +14,14 @@ import static org.mockito.Mockito.when;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.fga.FGACheckInfo;
+import com.descope.model.fga.FGACheckResponse;
+import com.descope.model.fga.FGACheckResponse.FGACheckResponseTuple;
 import com.descope.model.fga.FGACheckResult;
+import com.descope.model.fga.FGACondition;
+import com.descope.model.fga.FGAConditionParam;
+import com.descope.model.fga.FGALoadSchemaResponse;
+import com.descope.model.fga.FGALoadSchemaResponse.FGALoadSchemaConditions;
 import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
@@ -37,6 +45,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -117,20 +126,37 @@ class FGAServiceImplTest {
     assertThrows(ServerCommonException.class, () -> fgaService.dryRunSchema(new FGASchema("")));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void testLoadSchema_Success() throws Exception {
-    Map<String, Object> response = new HashMap<>();
-    response.put("dsl", "model AuthZ 1.0\ntype user");
+    FGACondition condition = new FGACondition("IsAdmin",
+        Arrays.asList(new FGAConditionParam("role", "string")), "role == \"admin\"");
+    FGALoadSchemaResponse response = new FGALoadSchemaResponse("model AuthZ 1.0\ntype user", "v1",
+        new FGALoadSchemaConditions(Arrays.asList(condition)));
 
     try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
       mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      when(apiProxy.getArray(any(), any(TypeReference.class))).thenReturn(response);
+      when(apiProxy.get(any(), eq(FGALoadSchemaResponse.class))).thenReturn(response);
 
       FGASchema result = fgaService.loadSchema();
 
       assertNotNull(result);
       assertEquals("model AuthZ 1.0\ntype user", result.getDsl());
+      assertEquals("v1", result.getVersion());
+      assertEquals(1, result.getConditions().size());
+      assertEquals("IsAdmin", result.getConditions().get(0).getName());
+      assertEquals("role", result.getConditions().get(0).getParams().get(0).getName());
+    }
+  }
+
+  @Test
+  void testLoadSchema_ConditionsAreNeverNull() throws Exception {
+    FGALoadSchemaResponse response = new FGALoadSchemaResponse("model AuthZ 1.0\ntype user", "v1", null);
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.get(any(), eq(FGALoadSchemaResponse.class))).thenReturn(response);
+
+      assertTrue(fgaService.loadSchema().getConditions().isEmpty());
     }
   }
 
@@ -169,28 +195,98 @@ class FGAServiceImplTest {
     }
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   void testCheck_Success() throws Exception {
     List<FGARelation> relations = Arrays.asList(
         new FGARelation("doc1", "document", "owner", "user1", "user")
     );
 
-    Map<String, Object> checkResultMap = new HashMap<>();
-    checkResultMap.put("allowed", true);
-
-    Map<String, Object> response = new HashMap<>();
-    response.put("tuples", Arrays.asList(checkResultMap));
+    FGACheckResponse response = new FGACheckResponse(Arrays.asList(
+        new FGACheckResponseTuple(true, relations.get(0), FGACheckInfo.builder().direct(true).build())));
 
     try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
       mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      when(apiProxy.postAndGetArray(any(), any(), any(TypeReference.class))).thenReturn(response);
+      when(apiProxy.post(any(), any(), eq(FGACheckResponse.class))).thenReturn(response);
 
       List<FGACheckResult> results = fgaService.check(relations);
 
       assertNotNull(results);
       assertEquals(1, results.size());
-      assertEquals(true, results.get(0).isAllowed());
+      assertTrue(results.get(0).isAllowed());
+      assertEquals(relations.get(0), results.get(0).getRelation());
+      assertTrue(results.get(0).getInfo().isDirect());
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testCheck_WithContext() throws Exception {
+    List<FGARelation> relations = Arrays.asList(
+        new FGARelation("doc1", "doc", "viewer", "user1", "user")
+    );
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+
+    FGACheckInfo info = FGACheckInfo.builder().conditional(true).conditionalErr("bad type")
+        .missingContext(Arrays.asList("action")).factUsed(true).build();
+    FGACheckResponse response = new FGACheckResponse(Arrays.asList(
+        new FGACheckResponseTuple(false, relations.get(0), info)));
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.post(any(), any(), eq(FGACheckResponse.class))).thenReturn(response);
+
+      List<FGACheckResult> results = fgaService.check(relations, context);
+
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), eq(FGACheckResponse.class));
+      assertEquals(context, bodyCaptor.getValue().get("context"));
+
+      FGACheckInfo resultInfo = results.get(0).getInfo();
+      assertTrue(resultInfo.isConditional());
+      assertTrue(resultInfo.isFactUsed());
+      assertEquals("bad type", resultInfo.getConditionalErr());
+      assertEquals(Arrays.asList("action"), resultInfo.getMissingContext());
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testCheck_EmptyContextIsNotSent() throws Exception {
+    List<FGARelation> relations = Arrays.asList(
+        new FGARelation("doc1", "doc", "viewer", "user1", "user")
+    );
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.post(any(), any(), eq(FGACheckResponse.class)))
+          .thenReturn(new FGACheckResponse(Arrays.asList()));
+
+      fgaService.check(relations, new HashMap<>());
+
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), eq(FGACheckResponse.class));
+      assertFalse(bodyCaptor.getValue().containsKey("context"));
+    }
+  }
+
+  @Test
+  void testCheck_MissingInfoIsNotNull() throws Exception {
+    List<FGARelation> relations = Arrays.asList(
+        new FGARelation("doc1", "doc", "viewer", "user1", "user")
+    );
+    FGACheckResponse response = new FGACheckResponse(Arrays.asList(
+        new FGACheckResponseTuple(true, relations.get(0), null)));
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.post(any(), any(), eq(FGACheckResponse.class))).thenReturn(response);
+
+      List<FGACheckResult> results = fgaService.check(relations);
+
+      assertNotNull(results.get(0).getInfo());
+      assertFalse(results.get(0).getInfo().isConditional());
+      assertTrue(results.get(0).getInfo().getMissingContext().isEmpty());
     }
   }
 

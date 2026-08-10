@@ -1,6 +1,5 @@
 package com.descope.model.fga;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,12 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FGASchema {
-  private String dsl;
-  private List<FGACondition> conditions;
-  private String version;
-
-  public FGASchema(String dsl) {
-    this.dsl = dsl;
-  }
+public class FGAConditionParam {
+  private String name;
+  private String type;
 }
