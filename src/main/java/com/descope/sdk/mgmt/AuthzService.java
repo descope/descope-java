@@ -129,7 +129,7 @@ public interface AuthzService {
 
   /**
    * List all the users that have the given relation definition to the given resource, evaluating
-   * any schema conditions against the given context.
+   * schema conditions against the given context.
    *
    * <p>Context keys become variables available to the CEL conditions defined in the schema.
    * Values must be JSON serializable.
@@ -173,7 +173,7 @@ public interface AuthzService {
 
   /**
    * Return the list of all relations for the given target including derived relations from the
-   * schema tree, evaluating any schema conditions against the given context.
+   * schema tree, evaluating schema conditions against the given context.
    *
    * <p>Context keys become variables available to the CEL conditions defined in the schema.
    * Values must be JSON serializable.

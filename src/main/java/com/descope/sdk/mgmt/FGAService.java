@@ -70,7 +70,7 @@ public interface FGAService {
   List<FGACheckResult> check(List<FGARelation> relations) throws DescopeException;
 
   /**
-   * Checks if the given FGA relations are satisfied, evaluating any schema conditions against
+   * Checks if the given FGA relations are satisfied, evaluating schema conditions against
    * the given context.
    *
    * <p>Context keys become variables available to the CEL conditions defined in the schema,
