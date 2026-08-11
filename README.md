@@ -41,6 +41,29 @@ var descopeClient = new DescopeClient();
 var descopeClient = new DescopeClient(Config.builder().projectId("Your-project").build());
 ```
 
+### Auth Management Key
+
+Authentication methods whose public access has been disabled can still be used by providing an
+auth management key. When set, it is sent along with every authentication request.
+
+Create one in the [Descope Console](https://app.descope.com/settings/company/managementkeys) with
+either the `Authentication` or `Full Access` scope on the project or company.
+
+```java
+// Initialized after setting the DESCOPE_AUTH_MANAGEMENT_KEY env var
+var descopeClient = new DescopeClient();
+
+// ** Or directly **
+var descopeClient = new DescopeClient(Config.builder()
+        .projectId("Your-project")
+        .authManagementKey("auth-management-key")
+        .build());
+```
+
+**Note**: the auth management key can, and probably should, be a different management key than the
+one provided for [management API usage](#setup-1). The auth management key is never sent on
+management requests, and the management key is never sent on authentication requests.
+
 ## Authentication Functions
 
 These sections show how to use the SDK to perform various authentication/authorization functions:
@@ -606,6 +629,8 @@ in nature. Please use responsibly.
 
 To use the management API you'll need a `Management Key` along with your `Project ID`.
 Create one in the [Descope Console](https://app.descope.com/settings/company/managementkeys).
+This key is used only for management functions - to reach authentication methods whose public
+access has been disabled, use the [Auth Management Key](#auth-management-key) instead.
 
 ```java
 import com.descope.client;
@@ -1922,6 +1947,8 @@ Find your management key in the [Descope console](https://app.descope.com/settin
 ```bash
 export DESCOPE_PROJECT_ID=<ProjectID>
 export DESCOPE_MANAGEMENT_KEY=<ManagementKey>
+# Optional, only needed for authentication methods with disabled public access
+export DESCOPE_AUTH_MANAGEMENT_KEY=<AuthManagementKey>
 ```
 
 Alternatively, you can create a `.env` file in the working folder with your project ID and management key.
@@ -1929,6 +1956,7 @@ Alternatively, you can create a `.env` file in the working folder with your proj
 ```
 DESCOPE_PROJECT_ID=<ProjectID>
 DESCOPE_MANAGEMENT_KEY=<ManagementKey>
+DESCOPE_AUTH_MANAGEMENT_KEY=<AuthManagementKey>
 ```
 
 ### Run an example

@@ -1,5 +1,6 @@
 package com.descope.client;
 
+import static com.descope.literals.AppConstants.AUTH_MANAGEMENT_KEY_ENV_VAR;
 import static com.descope.literals.AppConstants.MANAGEMENT_KEY_ENV_VAR;
 import static com.descope.literals.AppConstants.PROJECT_ID_ENV_VAR;
 import static com.descope.literals.AppConstants.PUBLIC_KEY_ENV_VAR;
@@ -115,6 +116,53 @@ class DescopeClientTest {
         Assertions.assertThat(u).isNotNull();
       }
     });
+  }
+
+  @Test
+  void testAuthManagementKeyFromEnvVariable() throws Exception {
+    String expectedProjectID = "P123456789012345678901234567";
+    EnvironmentVariables env =
+        new EnvironmentVariables(PROJECT_ID_ENV_VAR, expectedProjectID)
+            .and(MANAGEMENT_KEY_ENV_VAR, "someManagementKey")
+            .and(AUTH_MANAGEMENT_KEY_ENV_VAR, "someAuthManagementKey");
+    env.execute(
+        () -> {
+          Config config = new DescopeClient().getConfig();
+          Assertions.assertThat(config.getAuthManagementKey()).isEqualTo("someAuthManagementKey");
+          // The two keys serve different purposes and must stay distinct
+          Assertions.assertThat(config.getManagementKey()).isEqualTo("someManagementKey");
+        });
+  }
+
+  @Test
+  void testAuthManagementKeyFromConfigTakesPrecedence() throws Exception {
+    String expectedProjectID = "P123456789012345678901234567";
+    EnvironmentVariables env =
+        new EnvironmentVariables(PROJECT_ID_ENV_VAR, expectedProjectID)
+            .and(AUTH_MANAGEMENT_KEY_ENV_VAR, "envAuthManagementKey");
+    env.execute(
+        () -> {
+          Config config = new DescopeClient(
+              Config.builder()
+                  .projectId(expectedProjectID)
+                  .authManagementKey("configAuthManagementKey")
+                  .build()).getConfig();
+          Assertions.assertThat(config.getAuthManagementKey()).isEqualTo("configAuthManagementKey");
+        });
+  }
+
+  @Test
+  void testAuthManagementKeyDefaultsToBlank() throws Exception {
+    String expectedProjectID = "P123456789012345678901234567";
+    EnvironmentVariables env =
+        new EnvironmentVariables(PROJECT_ID_ENV_VAR, expectedProjectID)
+            .and(MANAGEMENT_KEY_ENV_VAR, "someManagementKey")
+            .and(AUTH_MANAGEMENT_KEY_ENV_VAR, "");
+    env.execute(
+        () -> {
+          Config config = new DescopeClient().getConfig();
+          Assertions.assertThat(config.getAuthManagementKey()).isNullOrEmpty();
+        });
   }
 
   @Test

@@ -49,10 +49,24 @@ public class Config {
   // FGACacheURL (optional, "") - pass FGA calls through a cache service, if set.
   private String fgaCacheUrl;
 
+  // AuthManagementKey (optional, "") - used to provide a management key to use with
+  // Authentication APIs whose public access has been disabled. It is not used for any of the
+  // Management APIs, and can, and probably should, be a different key than managementKey.
+  // If empty, this value is retrieved from the DESCOPE_AUTH_MANAGEMENT_KEY environment variable
+  // instead. If neither values are set then any disabled authentication method API call will fail.
+  private String authManagementKey;
+
   // Keeps the pre-fgaCacheUrl all-args constructor available to callers that use it positionally.
   public Config(String projectId, String managementKey, String publicKey, String descopeBaseUrl,
       Map<String, String> customDefaultHeaders) {
     this(projectId, managementKey, publicKey, descopeBaseUrl, customDefaultHeaders, null);
+  }
+
+  // Keeps the pre-authManagementKey all-args constructor available to callers that use it
+  // positionally.
+  public Config(String projectId, String managementKey, String publicKey, String descopeBaseUrl,
+      Map<String, String> customDefaultHeaders, String fgaCacheUrl) {
+    this(projectId, managementKey, publicKey, descopeBaseUrl, customDefaultHeaders, fgaCacheUrl, null);
   }
 
   public String initializeProjectId() {
@@ -88,5 +102,12 @@ public class Config {
       this.managementKey = EnvironmentUtils.getManagementKey();
     }
     return this.managementKey;
+  }
+
+  public String initializeAuthManagementKey() {
+    if (StringUtils.isBlank(this.authManagementKey)) {
+      this.authManagementKey = EnvironmentUtils.getAuthManagementKey();
+    }
+    return this.authManagementKey;
   }
 }

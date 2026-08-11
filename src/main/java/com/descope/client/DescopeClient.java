@@ -49,6 +49,7 @@ public class DescopeClient {
       log.debug("Provided public key is set, forcing only provided public key validation");
     }
     config.initializeManagementKey();
+    config.initializeAuthManagementKey();
     config.initializeBaseURL();
     config.initializeFgaCacheUrl();
 
@@ -71,6 +72,7 @@ public class DescopeClient {
         .fgaCacheUri(config.getFgaCacheUrl())
         .projectId(projectId)
         .managementKey(config.getManagementKey())
+        .authManagementKey(config.getAuthManagementKey())
         .headers(
             Collections.isEmpty(config.getCustomDefaultHeaders())
               ? new HashMap<>() : new HashMap<>(config.getCustomDefaultHeaders()))
