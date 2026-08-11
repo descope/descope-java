@@ -27,8 +27,7 @@ import lombok.experimental.UtilityClass;
 public class KeyProvider {
 
   public static Map<String, Key> getKeys(String projectId, String url, Client client) {
-    String token = AuthUtils.getBearerHeader(projectId, null, client.getAuthManagementKey());
-    ApiProxy apiProxy = ApiProxyBuilder.buildProxy(() -> token, client);
+    ApiProxy apiProxy = ApiProxyBuilder.buildProxy(() -> AuthUtils.getBearerHeader(projectId), client);
     URI uri = addPath(UriUtils.getUri(url, GET_KEYS_LINK), projectId);
     SigningKeysResponse signingKeys = apiProxy.get(uri, SigningKeysResponse.class);
 
