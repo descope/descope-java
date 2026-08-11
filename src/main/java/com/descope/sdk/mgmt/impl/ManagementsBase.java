@@ -6,6 +6,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.SdkServicesBase;
 import com.descope.sdk.mgmt.ManagementService;
+import com.descope.utils.AuthUtils;
 import com.descope.utils.UriUtils;
 import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
@@ -17,22 +18,17 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
   }
 
   ApiProxy getApiProxy() {
-    String projectId = client.getProjectId();
-    String managementKey = client.getManagementKey();
-    if (StringUtils.isNotBlank(projectId)) {
-      return ApiProxyBuilder.buildProxy(
-          () -> String.format("Bearer %s:%s", projectId, managementKey), client);
-    }
-    return ApiProxyBuilder.buildProxy(client.getSdkInfo());
+    return getApiProxy(null);
   }
 
+  // Management requests always carry the management key, never the auth management key.
   ApiProxy getApiProxy(String refreshToken) {
     String projectId = client.getProjectId();
-    if (StringUtils.isBlank(refreshToken) || StringUtils.isNotBlank(projectId)) {
-      return getApiProxy();
+    if (StringUtils.isBlank(projectId)) {
+      return ApiProxyBuilder.buildProxy(client.getSdkInfo());
     }
 
-    String token = String.format("Bearer %s:%s", projectId, refreshToken);
+    String token = AuthUtils.getBearerHeader(projectId, refreshToken, client.getManagementKey());
     return ApiProxyBuilder.buildProxy(() -> token, client);
   }
 
@@ -40,7 +36,7 @@ abstract class ManagementsBase extends SdkServicesBase implements ManagementServ
     if (StringUtils.isBlank(bearerJwt)) {
       throw ServerCommonException.invalidArgument("bearerJwt");
     }
-    String token = String.format("Bearer %s", bearerJwt);
+    String token = AuthUtils.getBearerHeader(bearerJwt);
     return ApiProxyBuilder.buildProxy(() -> token, client);
   }
 

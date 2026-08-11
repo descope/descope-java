@@ -25,11 +25,21 @@ public class Client {
   private AtomicReference<Map<String, Key>> keys = new AtomicReference<>(new HashMap<>());
   // When set, FGA calls that the FGA cache serves go here instead of uri.
   private String fgaCacheUri;
+  // When set, sent along with every authentication request so that authentication methods whose
+  // public access has been disabled can still be used. Never sent on management requests.
+  private String authManagementKey;
 
   // Keeps the pre-fgaCacheUri all-args constructor available to callers that use it positionally.
   public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
       SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys) {
-    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, null);
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, null, null);
+  }
+
+  // Keeps the pre-authManagementKey all-args constructor available to callers that use it
+  // positionally.
+  public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
+      SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys, String fgaCacheUri) {
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, fgaCacheUri, null);
   }
 
   public Key getKey(String keyId) {

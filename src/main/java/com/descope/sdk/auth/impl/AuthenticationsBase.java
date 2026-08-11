@@ -20,6 +20,7 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.SdkServicesBase;
 import com.descope.sdk.auth.AuthenticationService;
+import com.descope.utils.AuthUtils;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
 import java.util.ArrayList;
@@ -36,20 +37,18 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   ApiProxy getApiProxy() {
-    String projectId = client.getProjectId();
-    if (StringUtils.isNotBlank(projectId)) {
-      return ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId, client);
-    }
-    return ApiProxyBuilder.buildProxy(client.getSdkInfo());
+    return getApiProxy(null);
   }
 
+  // The auth management key, when configured, rides along with every authentication request so
+  // that methods whose public access has been disabled can still be used.
   ApiProxy getApiProxy(String refreshToken) {
     String projectId = client.getProjectId();
-    if (StringUtils.isBlank(refreshToken) || StringUtils.isBlank(projectId)) {
-      return getApiProxy();
+    if (StringUtils.isBlank(projectId)) {
+      return ApiProxyBuilder.buildProxy(client.getSdkInfo());
     }
 
-    String token = String.format("Bearer %s:%s", projectId, refreshToken);
+    String token = AuthUtils.getBearerHeader(projectId, refreshToken, client.getAuthManagementKey());
     return ApiProxyBuilder.buildProxy(() -> token, client);
   }
 

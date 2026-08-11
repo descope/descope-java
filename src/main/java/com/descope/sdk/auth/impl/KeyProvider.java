@@ -9,6 +9,7 @@ import com.descope.model.jwt.SigningKey;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.utils.AuthUtils;
 import com.descope.utils.UriUtils;
 import java.math.BigInteger;
 import java.net.URI;
@@ -26,7 +27,8 @@ import lombok.experimental.UtilityClass;
 public class KeyProvider {
 
   public static Map<String, Key> getKeys(String projectId, String url, Client client) {
-    ApiProxy apiProxy = ApiProxyBuilder.buildProxy(() -> "Bearer " + projectId, client);
+    String token = AuthUtils.getBearerHeader(projectId, null, client.getAuthManagementKey());
+    ApiProxy apiProxy = ApiProxyBuilder.buildProxy(() -> token, client);
     URI uri = addPath(UriUtils.getUri(url, GET_KEYS_LINK), projectId);
     SigningKeysResponse signingKeys = apiProxy.get(uri, SigningKeysResponse.class);
 
