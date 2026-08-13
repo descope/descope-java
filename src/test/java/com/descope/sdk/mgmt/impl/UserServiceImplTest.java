@@ -350,7 +350,7 @@ public class UserServiceImplTest {
   @Test
   void testUpdateEmailForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
-        () -> userService.updateEmail("", "someEmail", false));
+        () -> userService.updateEmail("", "someEmail", false, false));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -362,7 +362,7 @@ public class UserServiceImplTest {
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      UserResponseDetails response = userService.updateEmail("someLoginId", "someEmail", false);
+      UserResponseDetails response = userService.updateEmail("someLoginId", "someEmail", false, false);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -370,7 +370,7 @@ public class UserServiceImplTest {
   @Test
   void testUpdatePhoneForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
-        () -> userService.updatePhone("", "someEmail", false));
+        () -> userService.updatePhone("", "someEmail", false, false));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -382,7 +382,7 @@ public class UserServiceImplTest {
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false);
+      UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false, false);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -886,8 +886,8 @@ public class UserServiceImplTest {
     userService.updateDisplayName(loginId, "Testing Test");
     userService.updateDisplayNames(loginId, "G Test", "M Test", "F Test");
     email = TestUtils.getRandomName("test-") + "@descope.com";
-    userService.updateEmail(loginId, email, true);
-    userService.updatePhone(loginId, "+1-555-555-6666", true);
+    userService.updateEmail(loginId, email, true, false);
+    userService.updatePhone(loginId, "+1-555-555-6666", true, false);
     String newLoginId = TestUtils.getRandomName("u-");
     userService.updateLoginId(loginId, newLoginId);
     UserResponseDetails loadResponse = userService.load(newLoginId);

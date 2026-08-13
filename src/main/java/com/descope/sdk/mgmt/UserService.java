@@ -229,12 +229,14 @@ public interface UserService {
    * @param email The email parameter can be empty in which case the email will be removed.
    * @param isVerified The isVerified flag must be true for the user to be able to login with the
    *     email address.
+   * @param failOnConflict The failOnConflict flag indicates whether to fail the update if the new
+   *     email is also the login ID of another user.
    * @return {@link UserResponseDetails UserResponseDetails}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified)
-      throws DescopeException;
+  UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified,
+      Boolean failOnConflict) throws DescopeException;
 
   /**
    * Update the email address for an existing user.
@@ -243,12 +245,14 @@ public interface UserService {
    * @param phone The phone parameter can be empty in which case the phone will be removed.
    * @param isVerified The isVerified flag must be true for the user to be able to login with the
    *     email address.
+   * @param failOnConflict The failOnConflict flag indicates whether to fail the update if the new
+   *     phone number is also the login ID of another user.
    * @return {@link UserResponseDetails UserResponseDetails}
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be
    *     thrown.
    */
-  UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified)
-      throws DescopeException;
+  UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified,
+      Boolean failOnConflict) throws DescopeException;
 
   /**
    * Update an existing user's display name (i.e., their full name).
