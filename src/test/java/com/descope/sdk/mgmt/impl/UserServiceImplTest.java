@@ -72,6 +72,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class UserServiceImplTest {
@@ -368,6 +369,21 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testUpdateEmailWithFailOnConflictForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updateEmail("someLoginId", "someEmail", false, true);
+      Assertions.assertThat(response).isNotNull();
+      ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), captor.capture(), any());
+      assertEquals(true, captor.getValue().get("failOnConflict"));
+    }
+  }
+
+  @Test
   void testUpdatePhoneForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.updatePhone("", "someEmail", false));
@@ -384,6 +400,21 @@ public class UserServiceImplTest {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false);
       Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdatePhoneWithFailOnConflictForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false, true);
+      Assertions.assertThat(response).isNotNull();
+      ArgumentCaptor<Map<String, Object>> captor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), captor.capture(), any());
+      assertEquals(true, captor.getValue().get("failOnConflict"));
     }
   }
 
