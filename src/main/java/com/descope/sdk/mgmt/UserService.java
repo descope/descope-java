@@ -240,6 +240,22 @@ public interface UserService {
    * Update the email address for an existing user.
    *
    * @param loginId The loginID is required.
+   * @param email The email parameter can be empty in which case the email will be removed.
+   * @param isVerified The isVerified flag must be true for the user to be able to login with the
+   *     email address.
+   * @param failOnConflict If true, the call will fail with an error instead of silently deleting
+   *     and merging another user that already has this email address.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified, Boolean failOnConflict)
+      throws DescopeException;
+
+  /**
+   * Update the email address for an existing user.
+   *
+   * @param loginId The loginID is required.
    * @param phone The phone parameter can be empty in which case the phone will be removed.
    * @param isVerified The isVerified flag must be true for the user to be able to login with the
    *     email address.
@@ -248,6 +264,22 @@ public interface UserService {
    *     thrown.
    */
   UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified)
+      throws DescopeException;
+
+  /**
+   * Update the email address for an existing user.
+   *
+   * @param loginId The loginID is required.
+   * @param phone The phone parameter can be empty in which case the phone will be removed.
+   * @param isVerified The isVerified flag must be true for the user to be able to login with the
+   *     email address.
+   * @param failOnConflict If true, the call will fail with an error instead of silently deleting
+   *     and merging another user that already has this phone number.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified, Boolean failOnConflict)
       throws DescopeException;
 
   /**

@@ -382,22 +382,36 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   public UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified) throws DescopeException {
+    return updateEmail(loginId, email, isVerified, null);
+  }
+
+  @Override
+  public UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified, Boolean failOnConflict)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updateEmailUri = composeUpdateEmailUri();
     Map<String, Object> request = mapOf("loginId", loginId, "email", email, "verified", isVerified);
+    addIfNotNull(request, "failOnConflict", failOnConflict);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updateEmailUri, request, UserResponseDetails.class);
   }
 
   @Override
   public UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified) throws DescopeException {
+    return updatePhone(loginId, phone, isVerified, null);
+  }
+
+  @Override
+  public UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified, Boolean failOnConflict)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI updatePhoneUri = composeUpdatePhoneUri();
     Map<String, Object> request = mapOf("loginId", loginId, "phone", phone, "verified", isVerified);
+    addIfNotNull(request, "failOnConflict", failOnConflict);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updatePhoneUri, request, UserResponseDetails.class);
   }
