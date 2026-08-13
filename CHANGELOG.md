@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/descope/descope-java/compare/java-sdk-1.4.0...java-sdk-1.5.0) (2026-08-13)
+
+
+### Features
+
+* **mgmt:** add failOnConflict parameter to updateEmail/updatePhone ([#360](https://github.com/descope/descope-java/issues/360)) ([65e4209](https://github.com/descope/descope-java/commit/65e4209d5e1e3af2c0973808596eaf286c096893))
+
 ## [1.4.0](https://github.com/descope/descope-java/compare/java-sdk-1.3.0...java-sdk-1.4.0) (2026-08-11)
 
 
