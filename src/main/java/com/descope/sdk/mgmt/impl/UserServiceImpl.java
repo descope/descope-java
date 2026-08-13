@@ -381,6 +381,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified) throws DescopeException {
+    return updateEmail(loginId, email, isVerified, false);
+  }
+
+  @Override
   public UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified,
       Boolean failOnConflict) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
@@ -391,6 +396,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
         "failOnConflict", failOnConflict);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updateEmailUri, request, UserResponseDetails.class);
+  }
+
+  @Override
+  public UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified) throws DescopeException {
+    return updatePhone(loginId, phone, isVerified, false);
   }
 
   @Override

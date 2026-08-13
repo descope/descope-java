@@ -229,6 +229,20 @@ public interface UserService {
    * @param email The email parameter can be empty in which case the email will be removed.
    * @param isVerified The isVerified flag must be true for the user to be able to login with the
    *     email address.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updateEmail(String loginId, String email, Boolean isVerified)
+      throws DescopeException;
+
+  /**
+   * Update the email address for an existing user.
+   *
+   * @param loginId The loginID is required.
+   * @param email The email parameter can be empty in which case the email will be removed.
+   * @param isVerified The isVerified flag must be true for the user to be able to login with the
+   *     email address.
    * @param failOnConflict The failOnConflict flag indicates whether to fail the update if the new
    *     email is also the login ID of another user.
    * @return {@link UserResponseDetails UserResponseDetails}
@@ -239,7 +253,21 @@ public interface UserService {
       Boolean failOnConflict) throws DescopeException;
 
   /**
-   * Update the email address for an existing user.
+   * Update the phone number for an existing user.
+   *
+   * @param loginId The loginID is required.
+   * @param phone The phone parameter can be empty in which case the phone will be removed.
+   * @param isVerified The isVerified flag must be true for the user to be able to login with the
+   *     email address.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updatePhone(String loginId, String phone, Boolean isVerified)
+      throws DescopeException;
+
+  /**
+   * Update the phone number for an existing user.
    *
    * @param loginId The loginID is required.
    * @param phone The phone parameter can be empty in which case the phone will be removed.

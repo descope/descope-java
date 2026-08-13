@@ -350,7 +350,7 @@ public class UserServiceImplTest {
   @Test
   void testUpdateEmailForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
-        () -> userService.updateEmail("", "someEmail", false, false));
+        () -> userService.updateEmail("", "someEmail", false));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -362,7 +362,19 @@ public class UserServiceImplTest {
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      UserResponseDetails response = userService.updateEmail("someLoginId", "someEmail", false, false);
+      UserResponseDetails response = userService.updateEmail("someLoginId", "someEmail", false);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdateEmailWithFailOnConflictForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updateEmail("someLoginId", "someEmail", false, true);
       Assertions.assertThat(response).isNotNull();
     }
   }
@@ -370,7 +382,7 @@ public class UserServiceImplTest {
   @Test
   void testUpdatePhoneForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
-        () -> userService.updatePhone("", "someEmail", false, false));
+        () -> userService.updatePhone("", "someEmail", false));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
   }
@@ -382,7 +394,19 @@ public class UserServiceImplTest {
     doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false, false);
+      UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false);
+      Assertions.assertThat(response).isNotNull();
+    }
+  }
+
+  @Test
+  void testUpdatePhoneWithFailOnConflictForSuccess() {
+    UserResponseDetails userResponseDetails = mock(UserResponseDetails.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(userResponseDetails).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      UserResponseDetails response = userService.updatePhone("someLoginId", "1234567890", false, true);
       Assertions.assertThat(response).isNotNull();
     }
   }
