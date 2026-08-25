@@ -1,5 +1,6 @@
 package com.descope.sdk.auth;
 
+import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
@@ -21,6 +22,25 @@ public interface EnchantedLinkService {
    * @throws DescopeException - error upon failure
    */
   EnchantedLinkResponse signIn(
+      String loginId,
+      String uri,
+      String token,
+      LoginOptions loginOptions)
+      throws DescopeException;
+
+  /**
+   * Use to login a user based on an enchanted link that will be sent by email or SMS.
+   *
+   * @param deliveryMethod - {@link DeliveryMethod DeliveryMethod} - only EMAIL and SMS are supported
+   * @param loginId      - User login ID
+   * @param uri          - Base URI
+   * @param token        - when doing step-up or mfa then we need current session token
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @return pendingRef, linkId and masked email or phone
+   * @throws DescopeException - error upon failure
+   */
+  EnchantedLinkResponse signIn(
+      DeliveryMethod deliveryMethod,
       String loginId,
       String uri,
       String token,
@@ -53,6 +73,36 @@ public interface EnchantedLinkService {
       throws DescopeException;
 
   /**
+   * Use to create a new user based on the given loginID either email or a phone. Choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link DeliveryMethod DeliveryMethod} - only EMAIL and SMS are supported
+   * @param loginId - User login ID
+   * @param uri     - Base URI
+   * @param user    - {@link User User}
+   * @return pendingRef, linkId and masked email or phone
+   * @throws DescopeException - error upon failure
+   */
+  EnchantedLinkResponse signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user)
+      throws DescopeException;
+
+  /**
+   * Use to create a new user based on the given loginID either email or a phone. Choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link DeliveryMethod DeliveryMethod} - only EMAIL and SMS are supported
+   * @param loginId - User login ID
+   * @param uri     - Base URI
+   * @param user    - {@link User User}
+   * @param signupOptions - optional claims and template strings
+   * @return pendingRef, linkId and masked email or phone
+   * @throws DescopeException - error upon failure
+   */
+  EnchantedLinkResponse signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
+      SignUpOptions signupOptions)
+      throws DescopeException;
+
+  /**
    * Use to login in using loginID, if user does not exist, a new user will be created.
    *
    * @param loginId - User login ID
@@ -61,6 +111,19 @@ public interface EnchantedLinkService {
    * @throws DescopeException - error upon failure
    */
   EnchantedLinkResponse signUpOrIn(String loginId, String uri)
+      throws DescopeException;
+
+  /**
+   * Use to login in using loginID, if user does not exist, a new user will be created. Choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link DeliveryMethod DeliveryMethod} - only EMAIL and SMS are supported
+   * @param loginId - User login ID
+   * @param uri     - Base URI
+   * @return pendingRef, linkId and masked email or phone
+   * @throws DescopeException - error upon failure
+   */
+  EnchantedLinkResponse signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri)
       throws DescopeException;
 
   /**

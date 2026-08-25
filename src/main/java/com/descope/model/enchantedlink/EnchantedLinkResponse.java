@@ -11,4 +11,5 @@ public class EnchantedLinkResponse {
   private String pendingRef;
   private String linkId;
   private String maskedEmail;
+  private String maskedPhone;
 }

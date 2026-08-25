@@ -4,6 +4,8 @@ import static com.descope.sdk.TestUtils.MOCK_DOMAIN;
 import static com.descope.sdk.TestUtils.MOCK_EMAIL;
 import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
 import static com.descope.sdk.TestUtils.MOCK_MASKED_EMAIL;
+import static com.descope.sdk.TestUtils.MOCK_MASKED_PHONE;
+import static com.descope.sdk.TestUtils.MOCK_PHONE;
 import static com.descope.sdk.TestUtils.MOCK_REFRESH_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
@@ -20,6 +22,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
+import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
@@ -75,6 +78,22 @@ public class EnchantedLinkServiceImplTest {
   }
 
   @Test
+  void signUpWithPhone() {
+    User user = new User("someUserName", MOCK_EMAIL, MOCK_PHONE);
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    EnchantedLinkResponse mockRes = new EnchantedLinkResponse(MOCK_URL, MOCK_URL, null, MOCK_MASKED_PHONE);
+    doReturn(mockRes).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(),
+        any())).thenReturn(apiProxy);
+      EnchantedLinkResponse signUp =
+          enchantedLinkService.signUp(DeliveryMethod.SMS, MOCK_PHONE, MOCK_DOMAIN, user);
+      assertThat(signUp.getMaskedPhone()).isNotBlank().contains("*");
+    }
+  }
+
+  @Test
   void signIn() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(mock(EnchantedLinkResponse.class)).when(apiProxy).post(any(), any(), any());
@@ -84,6 +103,31 @@ public class EnchantedLinkServiceImplTest {
       EnchantedLinkResponse response = enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null, null);
       assertThat(response).isNotNull();
     }
+  }
+
+  @Test
+  void signInWithPhone() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    EnchantedLinkResponse mockRes = new EnchantedLinkResponse(MOCK_URL, MOCK_URL, null, MOCK_MASKED_PHONE);
+    doReturn(mockRes).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      EnchantedLinkResponse response =
+          enchantedLinkService.signIn(DeliveryMethod.SMS, MOCK_PHONE, MOCK_DOMAIN, null, null);
+      assertThat(response.getMaskedPhone()).isNotBlank().contains("*");
+    }
+  }
+
+  @Test
+  void testSignInForInvalidMethod() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> enchantedLinkService.signIn(DeliveryMethod.WHATSAPP, MOCK_PHONE, MOCK_DOMAIN, null, null));
+
+    assertNotNull(thrown);
+    assertEquals("The Method argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -99,6 +143,20 @@ public class EnchantedLinkServiceImplTest {
   }
 
   @Test
+  void testSignUpOrInWithPhoneForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    EnchantedLinkResponse mockRes = new EnchantedLinkResponse(MOCK_URL, MOCK_URL, null, MOCK_MASKED_PHONE);
+    doReturn(mockRes).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      EnchantedLinkResponse response =
+          enchantedLinkService.signUpOrIn(DeliveryMethod.SMS, MOCK_PHONE, MOCK_DOMAIN);
+      assertThat(response.getMaskedPhone()).isNotBlank().contains("*");
+    }
+  }
+
+  @Test
   void testSignUpOrInForEmptyLoginId() {
     ServerCommonException thrown =
         assertThrows(
@@ -106,6 +164,17 @@ public class EnchantedLinkServiceImplTest {
 
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testSignUpOrInForInvalidMethod() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> enchantedLinkService.signUpOrIn(DeliveryMethod.WHATSAPP, MOCK_PHONE, MOCK_DOMAIN));
+
+    assertNotNull(thrown);
+    assertEquals("The Method argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -159,7 +228,7 @@ public class EnchantedLinkServiceImplTest {
   @Test
   void testUpdateUserEmailForSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
-    EnchantedLinkResponse mockRes = new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL);
+    EnchantedLinkResponse mockRes = new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL, null);
     doReturn(mockRes).when(apiProxy).post(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
