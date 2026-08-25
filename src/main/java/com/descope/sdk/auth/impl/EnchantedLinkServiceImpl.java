@@ -47,13 +47,17 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
-  public EnchantedLinkResponse signIn(
+  public EnchantedLinkResponse signInWithPhone(String loginId, String uri, String token, LoginOptions loginOptions)
+      throws DescopeException {
+    return signIn(SMS, loginId, uri, token, loginOptions);
+  }
+
+  private EnchantedLinkResponse signIn(
       DeliveryMethod deliveryMethod, String loginId, String uri, String token, LoginOptions loginOptions)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    validateDeliveryMethod(deliveryMethod);
     URI enchantedLink = composeEnchantedLinkSignInURL(deliveryMethod);
     SignInRequest signInRequest = new SignInRequest(uri, loginId, loginOptions);
     ApiProxy apiProxy;
@@ -81,15 +85,19 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
-  public EnchantedLinkResponse signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user)
+  public EnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user)
       throws DescopeException {
-    return signUp(deliveryMethod, loginId, uri, user, null);
+    return signUp(SMS, loginId, uri, user, null);
   }
 
   @Override
-  public EnchantedLinkResponse signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
+  public EnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user, SignUpOptions signupOptions)
+      throws DescopeException {
+    return signUp(SMS, loginId, uri, user, signupOptions);
+  }
+
+  private EnchantedLinkResponse signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
       SignUpOptions signupOptions) throws DescopeException {
-    validateDeliveryMethod(deliveryMethod);
     if (user == null) {
       user = new User();
     }
@@ -121,22 +129,19 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
-  public EnchantedLinkResponse signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri)
+  public EnchantedLinkResponse signUpOrInWithPhone(String loginId, String uri) throws DescopeException {
+    return signUpOrIn(SMS, loginId, uri);
+  }
+
+  private EnchantedLinkResponse signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    validateDeliveryMethod(deliveryMethod);
     URI magicLinkSignUpOrInURL = composeEnchantedLinkSignUpOrInURL(deliveryMethod);
     SignInRequest signInRequest = new SignInRequest(uri, loginId, null);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(magicLinkSignUpOrInURL, signInRequest, EnchantedLinkResponse.class);
-  }
-
-  private void validateDeliveryMethod(DeliveryMethod deliveryMethod) {
-    if (deliveryMethod != EMAIL && deliveryMethod != SMS) {
-      throw ServerCommonException.invalidArgument("Method");
-    }
   }
 
   @Override

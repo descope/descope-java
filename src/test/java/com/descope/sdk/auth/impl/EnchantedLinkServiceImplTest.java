@@ -22,7 +22,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
-import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
@@ -88,7 +87,7 @@ public class EnchantedLinkServiceImplTest {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(),
         any())).thenReturn(apiProxy);
       EnchantedLinkResponse signUp =
-          enchantedLinkService.signUp(DeliveryMethod.SMS, MOCK_PHONE, MOCK_DOMAIN, user);
+          enchantedLinkService.signUpWithPhone(MOCK_PHONE, MOCK_DOMAIN, user);
       assertThat(signUp.getMaskedPhone()).isNotBlank().contains("*");
     }
   }
@@ -114,20 +113,9 @@ public class EnchantedLinkServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       EnchantedLinkResponse response =
-          enchantedLinkService.signIn(DeliveryMethod.SMS, MOCK_PHONE, MOCK_DOMAIN, null, null);
+          enchantedLinkService.signInWithPhone(MOCK_PHONE, MOCK_DOMAIN, null, null);
       assertThat(response.getMaskedPhone()).isNotBlank().contains("*");
     }
-  }
-
-  @Test
-  void testSignInForInvalidMethod() {
-    ServerCommonException thrown =
-        assertThrows(
-            ServerCommonException.class,
-            () -> enchantedLinkService.signIn(DeliveryMethod.WHATSAPP, MOCK_PHONE, MOCK_DOMAIN, null, null));
-
-    assertNotNull(thrown);
-    assertEquals("The Method argument is invalid", thrown.getMessage());
   }
 
   @Test
@@ -151,7 +139,7 @@ public class EnchantedLinkServiceImplTest {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       EnchantedLinkResponse response =
-          enchantedLinkService.signUpOrIn(DeliveryMethod.SMS, MOCK_PHONE, MOCK_DOMAIN);
+          enchantedLinkService.signUpOrInWithPhone(MOCK_PHONE, MOCK_DOMAIN);
       assertThat(response.getMaskedPhone()).isNotBlank().contains("*");
     }
   }
@@ -164,17 +152,6 @@ public class EnchantedLinkServiceImplTest {
 
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
-  }
-
-  @Test
-  void testSignUpOrInForInvalidMethod() {
-    ServerCommonException thrown =
-        assertThrows(
-            ServerCommonException.class,
-            () -> enchantedLinkService.signUpOrIn(DeliveryMethod.WHATSAPP, MOCK_PHONE, MOCK_DOMAIN));
-
-    assertNotNull(thrown);
-    assertEquals("The Method argument is invalid", thrown.getMessage());
   }
 
   @Test
