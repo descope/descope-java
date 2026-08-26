@@ -11,9 +11,11 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 class LicenseHandshakeTest {
 
@@ -71,6 +73,26 @@ class LicenseHandshakeTest {
     } finally {
       server.stop(0);
     }
+  }
+
+  // RFC 5737 TEST-NET-1 is guaranteed unrouted, so the SYN is dropped rather than refused. This
+  // guards the TCP connect phase, which RequestConfig alone does not bound: httpclient5 defaults
+  // ConnectionConfig.connectTimeout to 3 minutes.
+  @Test
+  @Timeout(value = 25, unit = TimeUnit.SECONDS)
+  void testUnreachableEndpointDoesNotBlockOnTcpConnect() {
+    Client client = Client.builder()
+        .uri("http://192.0.2.1:81")
+        .projectId("P123")
+        .managementKey("mgmt-key")
+        .keys(new AtomicReference<>(new HashMap<>()))
+        .build();
+    long start = System.nanoTime();
+    ManagementServiceBuilder.fetchRateLimitTier(client);
+    long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+    assertNull(client.getRateLimitTier());
+    assertTrue(elapsedMs < 9_000,
+        "TCP connect must be bounded by the handshake timeout, took " + elapsedMs + "ms");
   }
 
   @Test

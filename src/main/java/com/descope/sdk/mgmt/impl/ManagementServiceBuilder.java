@@ -5,6 +5,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_LICENSE
 import com.descope.model.client.Client;
 import com.descope.model.license.LicenseResponse;
 import com.descope.model.mgmt.ManagementServices;
+import com.descope.utils.AuthUtils;
 import com.descope.utils.UriUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,9 +13,11 @@ import java.nio.charset.StandardCharsets;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.util.Timeout;
@@ -62,14 +65,23 @@ public class ManagementServiceBuilder {
         .setConnectionRequestTimeout(LICENSE_HANDSHAKE_TIMEOUT)
         .setResponseTimeout(LICENSE_HANDSHAKE_TIMEOUT)
         .build();
+    // RequestConfig bounds the connection lease and the response wait, but not Socket.connect,
+    // whose httpclient5 default is 3 minutes. Without this a dropped SYN stalls construction.
+    ConnectionConfig connectionConfig = ConnectionConfig.custom()
+        .setConnectTimeout(LICENSE_HANDSHAKE_TIMEOUT)
+        .setSocketTimeout(LICENSE_HANDSHAKE_TIMEOUT)
+        .build();
     // disableAutomaticRetries is deliberate: httpclient5 otherwise retries 429 and 503 on its own,
     // which puts an unbounded-ish wait back on the construction path this timeout exists to bound.
     try (CloseableHttpClient httpClient = HttpClients.custom()
+        .setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
+            .setDefaultConnectionConfig(connectionConfig)
+            .build())
         .setDefaultRequestConfig(requestConfig)
         .disableAutomaticRetries()
         .build()) {
       String authHeader =
-          String.format("Bearer %s:%s", client.getProjectId(), client.getManagementKey());
+          AuthUtils.getBearerHeader(client.getProjectId(), client.getManagementKey());
       String body = httpClient.execute(
           ClassicRequestBuilder.get(UriUtils.getUri(client.getUri(), MANAGEMENT_LICENSE_LINK))
               .addHeader("Authorization", authHeader)
