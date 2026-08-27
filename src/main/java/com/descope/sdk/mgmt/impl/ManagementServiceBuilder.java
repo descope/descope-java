@@ -19,7 +19,9 @@ import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
+import org.apache.hc.core5.io.CloseMode;
 import org.apache.hc.core5.util.Timeout;
 
 @Slf4j
@@ -29,6 +31,7 @@ public class ManagementServiceBuilder {
   // Going through ApiProxy instead would inherit its retry ladder, which can add over ten seconds
   // of sleeps to every DescopeClient construction when the endpoint is degraded.
   private static final long LICENSE_HANDSHAKE_TIMEOUT_SECONDS = 5;
+  private static final int LICENSE_RESPONSE_MAX_BYTES = 16 * 1024;
   private static final Timeout LICENSE_HANDSHAKE_TIMEOUT =
       Timeout.ofSeconds(LICENSE_HANDSHAKE_TIMEOUT_SECONDS);
 
@@ -90,6 +93,9 @@ public class ManagementServiceBuilder {
       try {
         licenseResponse =
             handshake.get(LICENSE_HANDSHAKE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+      } catch (java.util.concurrent.TimeoutException | InterruptedException e) {
+        httpClient.close(CloseMode.IMMEDIATE);
+        throw e;
       } finally {
         handshake.cancel(true);
       }
@@ -126,7 +132,8 @@ public class ManagementServiceBuilder {
           }
           return new ObjectMapper()
               .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-              .readValue(response.getEntity().getContent(), LicenseResponse.class);
+              .readValue(EntityUtils.toByteArray(response.getEntity(),
+                  LICENSE_RESPONSE_MAX_BYTES), LicenseResponse.class);
         });
   }
 }

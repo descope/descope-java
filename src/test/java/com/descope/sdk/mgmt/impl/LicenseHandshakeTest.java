@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -88,6 +89,8 @@ class LicenseHandshakeTest {
       assertTrue(elapsedMs < 9_000,
           "slow response body must not extend the total handshake timeout, took " + elapsedMs
               + "ms");
+      assertTrue(waitForHandshakeThreadToStop(),
+          "timed-out handshake must abort its background thread");
     } finally {
       server.stop(0);
     }
@@ -123,6 +126,20 @@ class LicenseHandshakeTest {
       assertNull(client.getRateLimitTier());
       assertEquals(0, calls.get(),
           "no management key means no handshake request at all");
+    } finally {
+      server.stop(0);
+    }
+  }
+
+  @Test
+  void testOversizedResponseLeavesTierUnset() throws IOException {
+    String body = "{\"rateLimitTier\":\"tier4\",\"padding\":\""
+        + StringUtils.repeat('x', 16 * 1024) + "\"}";
+    HttpServer server = serverReturning(200, body, null);
+    try {
+      Client client = client(server, "mgmt-key");
+      ManagementServiceBuilder.fetchRateLimitTier(client);
+      assertNull(client.getRateLimitTier());
     } finally {
       server.stop(0);
     }
@@ -191,5 +208,23 @@ class LicenseHandshakeTest {
     });
     server.start();
     return server;
+  }
+
+  private boolean waitForHandshakeThreadToStop() {
+    for (int i = 0; i < 100; i++) {
+      boolean running = Thread.getAllStackTraces().keySet().stream()
+          .anyMatch(thread -> thread.isAlive()
+              && thread.getName().equals("descope-license-handshake"));
+      if (!running) {
+        return true;
+      }
+      try {
+        Thread.sleep(10);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return false;
+      }
+    }
+    return false;
   }
 }
