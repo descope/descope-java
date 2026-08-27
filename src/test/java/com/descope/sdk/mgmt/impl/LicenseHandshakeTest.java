@@ -75,6 +75,24 @@ class LicenseHandshakeTest {
     }
   }
 
+  @Test
+  @Timeout(value = 12, unit = TimeUnit.SECONDS)
+  void testSlowDripResponseDoesNotExtendTotalTimeout() throws IOException {
+    HttpServer server = slowDripServer();
+    try {
+      Client client = client(server, "mgmt-key");
+      long start = System.nanoTime();
+      ManagementServiceBuilder.fetchRateLimitTier(client);
+      long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+      assertNull(client.getRateLimitTier());
+      assertTrue(elapsedMs < 9_000,
+          "slow response body must not extend the total handshake timeout, took " + elapsedMs
+              + "ms");
+    } finally {
+      server.stop(0);
+    }
+  }
+
   // RFC 5737 TEST-NET-1 is guaranteed unrouted, so the SYN is dropped rather than refused. This
   // guards the TCP connect phase, which RequestConfig alone does not bound: httpclient5 defaults
   // ConnectionConfig.connectTimeout to 3 minutes.
@@ -149,6 +167,27 @@ class LicenseHandshakeTest {
       }
       exchange.sendResponseHeaders(200, 0);
       exchange.close();
+    });
+    server.start();
+    return server;
+  }
+
+  private HttpServer slowDripServer() throws IOException {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    server.createContext("/v1/mgmt/license", exchange -> {
+      exchange.sendResponseHeaders(200, 0);
+      try (OutputStream os = exchange.getResponseBody()) {
+        // A socket timeout is inactivity-based; these writes keep resetting it.
+        for (int i = 0; i < 10; i++) {
+          os.write(' ');
+          os.flush();
+          Thread.sleep(1_000);
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      } catch (IOException ignored) {
+        // The client closes the connection when its total deadline expires.
+      }
     });
     server.start();
     return server;

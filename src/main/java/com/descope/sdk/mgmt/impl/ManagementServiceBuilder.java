@@ -9,7 +9,8 @@ import com.descope.utils.AuthUtils;
 import com.descope.utils.UriUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.StandardCharsets;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +19,6 @@ import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.apache.hc.core5.util.Timeout;
 
@@ -28,7 +28,9 @@ public class ManagementServiceBuilder {
   // The handshake sits on the client construction path, so it gets a hard ceiling and no retries.
   // Going through ApiProxy instead would inherit its retry ladder, which can add over ten seconds
   // of sleeps to every DescopeClient construction when the endpoint is degraded.
-  private static final Timeout LICENSE_HANDSHAKE_TIMEOUT = Timeout.ofSeconds(5);
+  private static final long LICENSE_HANDSHAKE_TIMEOUT_SECONDS = 5;
+  private static final Timeout LICENSE_HANDSHAKE_TIMEOUT =
+      Timeout.ofSeconds(LICENSE_HANDSHAKE_TIMEOUT_SECONDS);
 
   public static ManagementServices buildServices(Client client) {
     fetchRateLimitTier(client);
@@ -71,8 +73,6 @@ public class ManagementServiceBuilder {
         .setConnectTimeout(LICENSE_HANDSHAKE_TIMEOUT)
         .setSocketTimeout(LICENSE_HANDSHAKE_TIMEOUT)
         .build();
-    // disableAutomaticRetries is deliberate: httpclient5 otherwise retries 429 and 503 on its own,
-    // which puts an unbounded-ish wait back on the construction path this timeout exists to bound.
     try (CloseableHttpClient httpClient = HttpClients.custom()
         .setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
             .setDefaultConnectionConfig(connectionConfig)
@@ -80,33 +80,53 @@ public class ManagementServiceBuilder {
         .setDefaultRequestConfig(requestConfig)
         .disableAutomaticRetries()
         .build()) {
-      String authHeader =
-          AuthUtils.getBearerHeader(client.getProjectId(), client.getManagementKey());
-      String body = httpClient.execute(
-          ClassicRequestBuilder.get(UriUtils.getUri(client.getUri(), MANAGEMENT_LICENSE_LINK))
-              .addHeader("Authorization", authHeader)
-              .addHeader("Content-Type", "application/json")
-              .build(),
-          response -> {
-            if (response.getCode() != 200 || response.getEntity() == null) {
-              log.warn("License handshake returned status {}", response.getCode());
-              return null;
-            }
-            return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-          });
-      if (StringUtils.isBlank(body)) {
-        return;
+      // Apache's timeouts are per phase or inactivity period, so enforce the total deadline here.
+      FutureTask<LicenseResponse> handshake =
+          new FutureTask<>(() -> executeLicenseHandshake(httpClient, client));
+      Thread thread = new Thread(handshake, "descope-license-handshake");
+      thread.setDaemon(true);
+      thread.start();
+      LicenseResponse licenseResponse;
+      try {
+        licenseResponse =
+            handshake.get(LICENSE_HANDSHAKE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+      } finally {
+        handshake.cancel(true);
       }
-      LicenseResponse licenseResponse = new ObjectMapper()
-          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-          .readValue(body, LicenseResponse.class);
       if (licenseResponse != null && StringUtils.isNotBlank(licenseResponse.getRateLimitTier())) {
         client.setRateLimitTier(licenseResponse.getRateLimitTier());
         log.debug("Rate limit tier fetched: {}", licenseResponse.getRateLimitTier());
       }
+    } catch (java.util.concurrent.TimeoutException e) {
+      log.warn("License handshake timed out after {} seconds, continuing without license header",
+          LICENSE_HANDSHAKE_TIMEOUT_SECONDS);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      log.warn("License handshake interrupted, continuing without license header");
     } catch (Exception e) {
       log.warn("Failed to fetch rate limit tier, continuing without license header: {}",
           e.getMessage());
     }
+  }
+
+  private static LicenseResponse executeLicenseHandshake(CloseableHttpClient httpClient,
+      Client client)
+      throws Exception {
+    String authHeader =
+        AuthUtils.getBearerHeader(client.getProjectId(), client.getManagementKey());
+    return httpClient.execute(
+        ClassicRequestBuilder.get(UriUtils.getUri(client.getUri(), MANAGEMENT_LICENSE_LINK))
+            .addHeader("Authorization", authHeader)
+            .addHeader("Content-Type", "application/json")
+            .build(),
+        response -> {
+          if (response.getCode() != 200 || response.getEntity() == null) {
+            log.warn("License handshake returned status {}", response.getCode());
+            return null;
+          }
+          return new ObjectMapper()
+              .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+              .readValue(response.getEntity().getContent(), LicenseResponse.class);
+        });
   }
 }
