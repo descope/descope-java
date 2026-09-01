@@ -28,18 +28,29 @@ public class Client {
   // When set, sent along with every authentication request so that authentication methods whose
   // public access has been disabled can still be used. Never sent on management requests.
   private String authManagementKey;
+  // Fetched once when the management services are built and sent on every management request so
+  // the edge can apply the right rate limit bucket. Blank when the handshake failed.
+  private String rateLimitTier;
 
   // Keeps the pre-fgaCacheUri all-args constructor available to callers that use it positionally.
   public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
       SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys) {
-    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, null, null);
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, null, null, null);
   }
 
   // Keeps the pre-authManagementKey all-args constructor available to callers that use it
   // positionally.
   public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
       SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys, String fgaCacheUri) {
-    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, fgaCacheUri, null);
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, fgaCacheUri, null, null);
+  }
+
+  // Keeps the pre-rateLimitTier all-args constructor available to callers that use it positionally.
+  public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
+      SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys, String fgaCacheUri,
+      String authManagementKey) {
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, fgaCacheUri,
+        authManagementKey, null);
   }
 
   public Key getKey(String keyId) {
