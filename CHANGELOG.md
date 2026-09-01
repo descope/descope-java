@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0](https://github.com/descope/descope-java/compare/java-sdk-1.4.0...java-sdk-1.5.0) (2026-09-01)
+
+
+### Features
+
+* **mgmt:** add failOnConflict parameter to updateEmail/updatePhone ([#360](https://github.com/descope/descope-java/issues/360)) ([65e4209](https://github.com/descope/descope-java/commit/65e4209d5e1e3af2c0973808596eaf286c096893))
+* **mgmt:** send rate limit tier in license header ([#366](https://github.com/descope/descope-java/issues/366)) ([98e8b95](https://github.com/descope/descope-java/commit/98e8b95ad8096c3f0c631715cabe90177889d722))
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.apache.commons:commons-collections4 to v4.6.0 ([#367](https://github.com/descope/descope-java/issues/367)) ([b50dc86](https://github.com/descope/descope-java/commit/b50dc86f22ea22b5bb38d9351130fcdf28632af3))
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.3 [security] ([#359](https://github.com/descope/descope-java/issues/359)) ([5cac5d2](https://github.com/descope/descope-java/commit/5cac5d2026047597effc983584013d12071bb538))
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.4 ([#368](https://github.com/descope/descope-java/issues/368)) ([612bf9f](https://github.com/descope/descope-java/commit/612bf9fb850e6c3502b8c076a3bc9bc05903d8d5))
+
 ## [1.4.0](https://github.com/descope/descope-java/compare/java-sdk-1.3.0...java-sdk-1.4.0) (2026-08-11)
 
 
