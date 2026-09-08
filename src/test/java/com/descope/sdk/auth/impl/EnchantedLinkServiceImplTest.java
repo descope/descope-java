@@ -4,6 +4,8 @@ import static com.descope.sdk.TestUtils.MOCK_DOMAIN;
 import static com.descope.sdk.TestUtils.MOCK_EMAIL;
 import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
 import static com.descope.sdk.TestUtils.MOCK_MASKED_EMAIL;
+import static com.descope.sdk.TestUtils.MOCK_MASKED_PHONE;
+import static com.descope.sdk.TestUtils.MOCK_PHONE;
 import static com.descope.sdk.TestUtils.MOCK_REFRESH_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
@@ -19,6 +21,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
@@ -26,8 +30,12 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
+import com.descope.model.enchantedlink.PhoneEnchantedLinkResponse;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
+import com.descope.model.magiclink.request.SignInRequest;
+import com.descope.model.magiclink.request.SignUpRequest;
+import com.descope.model.magiclink.request.UpdatePhoneRequest;
 import com.descope.model.user.User;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
@@ -40,12 +48,14 @@ import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import com.descope.utils.UriUtils;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class EnchantedLinkServiceImplTest {
@@ -168,6 +178,120 @@ public class EnchantedLinkServiceImplTest {
           enchantedLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null);
       assertThat(enchantedLinkRes.getMaskedEmail()).isNotBlank().contains("*");
     }
+  }
+
+  @Test
+  void signUpWithPhoneSendsPhoneBodyToSmsRoute() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new PhoneEnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_PHONE))
+        .when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      PhoneEnchantedLinkResponse response =
+          enchantedLinkService.signUpWithPhone(MOCK_PHONE, MOCK_DOMAIN, null);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<SignUpRequest> bodyCaptor = ArgumentCaptor.forClass(SignUpRequest.class);
+      verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(),
+          eq(PhoneEnchantedLinkResponse.class));
+      assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signup/sms");
+      SignUpRequest sent = bodyCaptor.getValue();
+      assertThat(sent.getPhone()).isEqualTo(MOCK_PHONE);
+      assertThat(sent.getLoginId()).isEqualTo(MOCK_PHONE);
+      assertThat(sent.getEmail()).isNull();
+      assertThat(sent.getUri()).isEqualTo(MOCK_DOMAIN);
+      assertThat(sent.getUser().getPhone()).isEqualTo(MOCK_PHONE);
+      assertThat(response.getMaskedPhone()).isEqualTo(MOCK_MASKED_PHONE);
+    }
+  }
+
+  @Test
+  void signInWithPhoneSendsLoginIdToSmsRoute() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new PhoneEnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_PHONE))
+        .when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      PhoneEnchantedLinkResponse response =
+          enchantedLinkService.signInWithPhone(MOCK_PHONE, MOCK_DOMAIN, null, null);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<SignInRequest> bodyCaptor = ArgumentCaptor.forClass(SignInRequest.class);
+      verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(),
+          eq(PhoneEnchantedLinkResponse.class));
+      assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signin/sms");
+      SignInRequest sent = bodyCaptor.getValue();
+      assertThat(sent.getLoginId()).isEqualTo(MOCK_PHONE);
+      assertThat(sent.getUri()).isEqualTo(MOCK_DOMAIN);
+      assertThat(response.getMaskedPhone()).isEqualTo(MOCK_MASKED_PHONE);
+    }
+  }
+
+  @Test
+  void signUpOrInWithPhoneSendsLoginIdToSmsRoute() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new PhoneEnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_PHONE))
+        .when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      PhoneEnchantedLinkResponse response =
+          enchantedLinkService.signUpOrInWithPhone(MOCK_PHONE, MOCK_DOMAIN);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<SignInRequest> bodyCaptor = ArgumentCaptor.forClass(SignInRequest.class);
+      verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(),
+          eq(PhoneEnchantedLinkResponse.class));
+      assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signup-in/sms");
+      SignInRequest sent = bodyCaptor.getValue();
+      assertThat(sent.getLoginId()).isEqualTo(MOCK_PHONE);
+      assertThat(sent.getUri()).isEqualTo(MOCK_DOMAIN);
+      assertThat(response.getMaskedPhone()).isEqualTo(MOCK_MASKED_PHONE);
+    }
+  }
+
+  @Test
+  void updateUserPhoneSendsPhoneBodyToSmsRoute() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new PhoneEnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_PHONE))
+        .when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      PhoneEnchantedLinkResponse response = enchantedLinkService.updateUserPhone(
+          MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<UpdatePhoneRequest> bodyCaptor = ArgumentCaptor.forClass(UpdatePhoneRequest.class);
+      verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(),
+          eq(PhoneEnchantedLinkResponse.class));
+      assertThat(uriCaptor.getValue().getPath())
+          .isEqualTo("/v1/auth/enchantedlink/update/phone/sms");
+      UpdatePhoneRequest sent = bodyCaptor.getValue();
+      assertThat(sent.getPhone()).isEqualTo(MOCK_PHONE);
+      assertThat(sent.getLoginId()).isEqualTo(MOCK_EMAIL);
+      assertThat(sent.getUri()).isEqualTo(MOCK_DOMAIN);
+      assertThat(response.getMaskedPhone()).isEqualTo(MOCK_MASKED_PHONE);
+    }
+  }
+
+  @Test
+  void updateUserPhoneRejectsInvalidArguments() {
+    assertEquals("The Login ID argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserPhone("", MOCK_PHONE, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null))
+        .getMessage());
+    assertEquals("The Phone argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserPhone(MOCK_EMAIL, "abc", MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null))
+        .getMessage());
+    assertEquals("The Refresh Token argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserPhone(MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, "", null))
+        .getMessage());
   }
 
   @Test
