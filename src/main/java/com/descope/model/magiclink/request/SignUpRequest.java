@@ -14,11 +14,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SignUpRequest {
   private String email;
-  private String phone;
   private String loginId;
   private User user;
 
   @JsonProperty("URI")
   private String uri;
   private SignUpOptions loginOptions;
+  private String phone;
+
+  public SignUpRequest(String email, String loginId, User user, String uri,
+      SignUpOptions loginOptions) {
+    this(email, loginId, user, uri, loginOptions, null);
+  }
 }
