@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/descope/descope-java/compare/java-sdk-1.5.0...java-sdk-1.5.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* **deps:** update jackson monorepo to v2.22.2 ([#371](https://github.com/descope/descope-java/issues/371)) ([385415c](https://github.com/descope/descope-java/commit/385415ce5ea69cb87f3cb85496482087f6d2f8fb))
+
 ## [1.5.0](https://github.com/descope/descope-java/compare/java-sdk-1.4.0...java-sdk-1.5.0) (2026-09-01)
 
 
