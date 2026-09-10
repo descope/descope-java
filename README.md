@@ -190,8 +190,7 @@ The session and refresh JWTs should be returned to the caller, and passed with e
 ### Enchanted Link
 
 Using the Enchanted Link APIs enables users to sign in by clicking a link
-delivered to their email address or, with the `WithPhone` variants, to their phone
-number by SMS. The message will include 3 different links,
+delivered to their email address. The email will include 3 different links,
 and the user will have to click the right one, based on the 2-digit number that is
 displayed when initiating the authentication process.
 
@@ -224,6 +223,7 @@ try {
 
 To deliver the enchanted link by SMS, use the `WithPhone` variants, which take a phone
 number as the login ID and return a `PhoneEnchantedLinkResponse` carrying `maskedPhone`.
+The SMS carries only the correct link, so there is nothing for the user to choose.
 
 ```java
 PhoneEnchantedLinkResponse res = null;
