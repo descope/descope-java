@@ -221,6 +221,21 @@ try {
 
 ```
 
+To deliver the enchanted link by SMS, use the `WithPhone` variants, which take a phone
+number as the login ID and return a `PhoneEnchantedLinkResponse` carrying `maskedPhone`.
+The SMS carries only the correct link, so there is nothing for the user to choose.
+
+```java
+PhoneEnchantedLinkResponse res = null;
+try {
+    String uri = "http://myapp.com/verify-enchanted-link";
+    res = els.signUpOrInWithPhone(phoneNumber, uri);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 After sending the link, you must poll to receive a valid session using the `PendingRef` from
 the previous step. A valid session will be returned only after the user clicks the right link.
 
