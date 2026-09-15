@@ -38,6 +38,7 @@ public class Routes {
     public static final String VERIFY_ENCHANTED_LINK = "/v1/auth/enchantedlink/verify";
     public static final String ENCHANTED_LINK_SESSION = "/v1/auth/enchantedlink/pending-session";
     public static final String UPDATE_EMAIL_ENCHANTED_LINK = "/v1/auth/enchantedlink/update/email";
+    public static final String UPDATE_PHONE_ENCHANTED_LINK = "/v1/auth/enchantedlink/update/phone";
 
     // TOTP
     public static final String SIGN_UP_TOTP_LINK = "/v1/auth/totp/signup";

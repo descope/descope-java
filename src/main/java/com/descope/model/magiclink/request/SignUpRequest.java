@@ -20,4 +20,10 @@ public class SignUpRequest {
   @JsonProperty("URI")
   private String uri;
   private SignUpOptions loginOptions;
+  private String phone;
+
+  public SignUpRequest(String email, String loginId, User user, String uri,
+      SignUpOptions loginOptions) {
+    this(email, loginId, user, uri, loginOptions, null);
+  }
 }

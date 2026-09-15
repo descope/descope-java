@@ -4,6 +4,7 @@ import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
+import com.descope.model.enchantedlink.PhoneEnchantedLinkResponse;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
@@ -21,6 +22,23 @@ public interface EnchantedLinkService {
    * @throws DescopeException - error upon failure
    */
   EnchantedLinkResponse signIn(
+      String loginId,
+      String uri,
+      String token,
+      LoginOptions loginOptions)
+      throws DescopeException;
+
+  /**
+   * Use to login a user based on an enchanted link that will be sent by SMS.
+   *
+   * @param loginId      - User login ID
+   * @param uri          - Base URI
+   * @param token        - when doing step-up or mfa then we need current session token
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @return pendingRef, linkId and masked phone
+   * @throws DescopeException - error upon failure
+   */
+  PhoneEnchantedLinkResponse signInWithPhone(
       String loginId,
       String uri,
       String token,
@@ -53,6 +71,33 @@ public interface EnchantedLinkService {
       throws DescopeException;
 
   /**
+   * Use to create a new user with a phone number as the loginID, verified by an enchanted link
+   * sent by SMS.
+   *
+   * @param loginId - User login ID, a phone number
+   * @param uri     - Base URI
+   * @param user    - {@link User User}
+   * @return pendingRef, linkId and masked phone
+   * @throws DescopeException - error upon failure
+   */
+  PhoneEnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user)
+      throws DescopeException;
+
+  /**
+   * Use to create a new user with a phone number as the loginID, verified by an enchanted link
+   * sent by SMS.
+   *
+   * @param loginId - User login ID, a phone number
+   * @param uri     - Base URI
+   * @param user    - {@link User User}
+   * @param signupOptions - optional claims and template strings
+   * @return pendingRef, linkId and masked phone
+   * @throws DescopeException - error upon failure
+   */
+  PhoneEnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user,
+      SignUpOptions signupOptions) throws DescopeException;
+
+  /**
    * Use to login in using loginID, if user does not exist, a new user will be created.
    *
    * @param loginId - User login ID
@@ -61,6 +106,18 @@ public interface EnchantedLinkService {
    * @throws DescopeException - error upon failure
    */
   EnchantedLinkResponse signUpOrIn(String loginId, String uri)
+      throws DescopeException;
+
+  /**
+   * Use to login in using a phone number as the loginID, if user does not exist, a new user will
+   * be created. The enchanted link is sent by SMS.
+   *
+   * @param loginId - User login ID, a phone number
+   * @param uri     - Base URI
+   * @return pendingRef, linkId and masked phone
+   * @throws DescopeException - error upon failure
+   */
+  PhoneEnchantedLinkResponse signUpOrInWithPhone(String loginId, String uri)
       throws DescopeException;
 
   /**
@@ -109,5 +166,36 @@ public interface EnchantedLinkService {
    * @throws DescopeException - error upon failure
    */
   EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException;
+
+  /**
+   * Use to update phone and validate via enchanted link sent by SMS.
+   *
+   * @param loginId - User login ID
+   * @param phone   - User phone number
+   * @param uri     - Base URI
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @return {@link PhoneEnchantedLinkResponse} including masked address where the link was sent
+   *         (phone), link to chose and link to retrieve new session from
+   * @throws DescopeException - error upon failure
+   */
+  PhoneEnchantedLinkResponse updateUserPhone(String loginId, String phone, String uri, String refreshToken,
+      UpdateOptions updateOptions) throws DescopeException;
+
+  /**
+   * Use to update phone and validate via enchanted link sent by SMS.
+   *
+   * @param loginId - User login ID
+   * @param phone   - User phone number
+   * @param uri     - Base URI
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @param templateOptions - optional parameters for template
+   * @return {@link PhoneEnchantedLinkResponse} including masked address where the link was sent
+   *         (phone), link to chose and link to retrieve new session from
+   * @throws DescopeException - error upon failure
+   */
+  PhoneEnchantedLinkResponse updateUserPhone(String loginId, String phone, String uri, String refreshToken,
       UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException;
 }
