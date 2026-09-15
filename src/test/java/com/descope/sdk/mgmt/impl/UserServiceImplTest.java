@@ -19,8 +19,10 @@ import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
+import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.exception.UserConflictException;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
@@ -963,6 +965,71 @@ public class UserServiceImplTest {
     assertEquals(loadResponse.getUser().getFamilyName(), pur.getFamilyName());
     // Delete
     userService.delete(newLoginId);
+  }
+
+  // Conflict behavior on POST /v1/mgmt/user/update/email when the new email is already another
+  // user's login ID (descope/etc#17716, #18009, #18488). Requires the login ID to be the email
+  // itself, which is what makes the update hit the external-ID unique constraint.
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalUpdateEmailWithFailOnConflictKeepsBothUsers() {
+    String emailA = TestUtils.getRandomName("test-") + "@descope.com";
+    String emailB = TestUtils.getRandomName("test-") + "@descope.com";
+    String userIdA = userService.create(emailA,
+        UserRequest.builder().email(emailA).verifiedEmail(true).build()).getUser().getUserId();
+    String userIdB = userService.create(emailB,
+        UserRequest.builder().email(emailB).verifiedEmail(true).build()).getUser().getUserId();
+    try {
+      DescopeException thrown = assertThrows(DescopeException.class,
+          () -> userService.updateEmail(emailA, emailB, true, true));
+      // The conflict answers E111127 / HTTP 409 once descope/backend#2657 is deployed, and the SDK
+      // surfaces it as UserConflictException. Before that deploy the endpoint still answers the
+      // generic E111112 / HTTP 500, so both are accepted here - drop the else branch once the
+      // backend change is live everywhere.
+      if (thrown instanceof UserConflictException) {
+        assertEquals(ErrorCode.USER_UPDATE_CONFLICT, thrown.getCode());
+      } else {
+        assertNotNull(thrown.getCode());
+      }
+      // What must hold in any case: opting out of the merge leaves both users untouched.
+      UserResponse userA = userService.loadByUserId(userIdA).getUser();
+      assertEquals(emailA, userA.getEmail());
+      Assertions.assertThat(userA.getLoginIds()).contains(emailA);
+      UserResponse userB = userService.loadByUserId(userIdB).getUser();
+      assertEquals(emailB, userB.getEmail());
+      Assertions.assertThat(userB.getLoginIds()).contains(emailB);
+    } finally {
+      deleteUserQuietly(emailA);
+      deleteUserQuietly(emailB);
+    }
+  }
+
+  @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
+  void testFunctionalUpdateEmailWithoutFailOnConflictDeletesTheOtherUser() {
+    String emailA = TestUtils.getRandomName("test-") + "@descope.com";
+    String emailB = TestUtils.getRandomName("test-") + "@descope.com";
+    String userIdA = userService.create(emailA,
+        UserRequest.builder().email(emailA).verifiedEmail(true).build()).getUser().getUserId();
+    String userIdB = userService.create(emailB,
+        UserRequest.builder().email(emailB).verifiedEmail(true).build()).getUser().getUserId();
+    try {
+      // Default behavior: the call succeeds and the colliding user is silently merged away.
+      // This is the data loss failOnConflict exists to prevent, so it is asserted explicitly.
+      UserResponse updated = userService.updateEmail(emailA, emailB, true).getUser();
+      assertEquals(userIdA, updated.getUserId());
+      assertEquals(emailB, updated.getEmail());
+      assertThrows(DescopeException.class, () -> userService.loadByUserId(userIdB));
+    } finally {
+      deleteUserQuietly(emailB);
+      deleteUserQuietly(emailA);
+    }
+  }
+
+  private void deleteUserQuietly(String loginId) {
+    try {
+      userService.delete(loginId);
+    } catch (DescopeException ignored) {
+      // The user may already be gone - a merge deletes the colliding user.
+    }
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
