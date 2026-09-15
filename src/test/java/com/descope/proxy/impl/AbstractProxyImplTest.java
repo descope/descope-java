@@ -1,6 +1,7 @@
 package com.descope.proxy.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,6 +10,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
 import com.descope.exception.DescopeException;
+import com.descope.exception.ErrorCode;
+import com.descope.exception.UserConflictException;
 import com.descope.model.client.SdkInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -155,6 +158,58 @@ class AbstractProxyImplTest {
       Object result = proxy.get(URI.create("http://localhost/test"), Map.class);
       assertEquals(4, callCount.get());
       assertTrue(result instanceof Map);
+    }
+  }
+
+  @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  void testConflictErrorCodesThrowUserConflictException() throws IOException {
+    Map<String, Integer> conflictResponses = new java.util.LinkedHashMap<>();
+    conflictResponses.put(ErrorCode.USER_UPDATE_CONFLICT, 409);
+    conflictResponses.put(ErrorCode.AUTH_USER_UPDATE_CONFLICT, 400);
+    for (Map.Entry<String, Integer> entry : conflictResponses.entrySet()) {
+      CloseableHttpClient mockClient = mock(CloseableHttpClient.class);
+      doAnswer(inv -> {
+        HttpClientResponseHandler handler = (HttpClientResponseHandler) inv.getArgument(1);
+        return handler.handleResponse(errorResponse(entry.getValue(),
+            "{\"errorCode\":\"" + entry.getKey() + "\",\"errorDescription\":\"conflict\"}"));
+      }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
+
+      try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+        mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+        ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
+        UserConflictException thrown = assertThrows(UserConflictException.class,
+            () -> proxy.get(URI.create("http://localhost/test"), Map.class));
+        assertEquals(entry.getKey(), thrown.getCode());
+        assertEquals("conflict", thrown.getMessage());
+      }
+    }
+  }
+
+  @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  void testGenericErrorCodesDoNotThrowUserConflictException() throws IOException {
+    // These are generic bad request / validation codes reused all over the API, mapping them to a
+    // conflict would misreport unrelated failures (descope/etc#18009)
+    List<String> genericCodes = Arrays.asList(
+        ErrorCode.BAD_REQUEST, ErrorCode.VALIDATION_FAILURE, ErrorCode.USER_NOT_FOUND,
+        ErrorCode.USER_ALREADY_EXISTS);
+    for (String errorCode : genericCodes) {
+      CloseableHttpClient mockClient = mock(CloseableHttpClient.class);
+      doAnswer(inv -> {
+        HttpClientResponseHandler handler = (HttpClientResponseHandler) inv.getArgument(1);
+        return handler.handleResponse(errorResponse(400,
+            "{\"errorCode\":\"" + errorCode + "\",\"errorDescription\":\"error\"}"));
+      }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
+
+      try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+        mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+        ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
+        DescopeException thrown = assertThrows(DescopeException.class,
+            () -> proxy.get(URI.create("http://localhost/test"), Map.class));
+        assertFalse(thrown instanceof UserConflictException, "Unexpected conflict for " + errorCode);
+        assertEquals(errorCode, thrown.getCode());
+      }
     }
   }
 

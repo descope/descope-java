@@ -3,6 +3,7 @@ package com.descope.proxy.impl;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.exception.UserConflictException;
 import com.descope.model.client.Client;
 import com.descope.model.client.SdkInfo;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -129,6 +130,12 @@ abstract class AbstractProxyImpl {
                         errorDetails.getActualMessage(),
                         errorDetails.getErrorCode(),
                         getRetryHeader(res));
+                    }
+                    if (ErrorCode.USER_UPDATE_CONFLICT.equals(errorDetails.getErrorCode())
+                        || ErrorCode.AUTH_USER_UPDATE_CONFLICT.equals(errorDetails.getErrorCode())) {
+                      throw new UserConflictException(
+                        errorDetails.getActualMessage(),
+                        errorDetails.getErrorCode());
                     }
                     throw ServerCommonException.genericServerError(
                       errorDetails.getActualMessage(),

@@ -22,6 +22,19 @@ public class ErrorCode {
   // rate limit
   public static final String RATE_LIMIT_EXCEEDED = "E130429";
 
+  // conflicts - the new identifier already belongs to another user and the caller asked to
+  // fail instead of letting the server merge the two users
+  public static final String USER_UPDATE_CONFLICT = "E111127";
+  public static final String AUTH_USER_UPDATE_CONFLICT = "E062125";
+
+  // other user errors
+  public static final String USER_ALREADY_EXISTS = "E062107";
+  public static final String USER_NOT_FOUND = "E112102";
+
+  // server common
+  public static final String BAD_REQUEST = "E011001";
+  public static final String VALIDATION_FAILURE = "E011003";
+
   // No keys
   public static final String INVALID_SIGNING_KEY = "J010001";
 }
