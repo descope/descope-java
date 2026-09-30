@@ -32,6 +32,37 @@ public interface SSOServiceProvider {
       throws DescopeException;
 
   /**
+   * Start an SSO login flow with an optional SSO connection and login hint.
+   *
+   * @param tenant - tenant
+   * @param redirectUrl - URL to redirect user to overriding configuration
+   * @param prompt - prompt to the user overriding configuration
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @param ssoId - optional SSO connection ID
+   * @param loginHint - optional login hint for the identity provider
+   * @return the redirect URL that needs to return to client
+   * @throws DescopeException - error upon failure
+   */
+  String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String ssoId,
+      String loginHint) throws DescopeException;
+
+  /**
+   * Start an SSO login flow with an optional SSO connection, login hint, and refresh token.
+   *
+   * @param tenant - tenant
+   * @param redirectUrl - URL to redirect user to overriding configuration
+   * @param prompt - prompt to the user overriding configuration
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @param refreshToken - existing refresh token for step-up or MFA
+   * @param ssoId - optional SSO connection ID
+   * @param loginHint - optional login hint for the identity provider
+   * @return the redirect URL that needs to return to client
+   * @throws DescopeException - error upon failure
+   */
+  String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken,
+      String ssoId, String loginHint) throws DescopeException;
+
+  /**
    * ExchangeToken - Finalize SAML/OIDC SSO authentication.
    *
    * @param code - Code to be validated
