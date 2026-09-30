@@ -24,12 +24,24 @@ class SSOServiceProviderImpl extends AuthenticationServiceImpl implements SSOSer
 
   @Override
   public String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions) {
-    return start(tenant, redirectUrl, prompt, loginOptions, null);
+    return start(tenant, redirectUrl, prompt, loginOptions, null, null, null);
   }
 
   @Override
   public String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken)
       throws DescopeException {
+    return start(tenant, redirectUrl, prompt, loginOptions, refreshToken, null, null);
+  }
+
+  @Override
+  public String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String ssoId,
+      String loginHint) throws DescopeException {
+    return start(tenant, redirectUrl, prompt, loginOptions, null, ssoId, loginHint);
+  }
+
+  @Override
+  public String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken,
+      String ssoId, String loginHint) throws DescopeException {
     if (StringUtils.isBlank(tenant)) {
       throw ServerCommonException.invalidArgument("Tenant");
     }
@@ -39,6 +51,12 @@ class SSOServiceProviderImpl extends AuthenticationServiceImpl implements SSOSer
     }
     if (StringUtils.isNotBlank(prompt)) {
       request.put("prompt", prompt);
+    }
+    if (StringUtils.isNotBlank(ssoId)) {
+      request.put("ssoId", ssoId);
+    }
+    if (StringUtils.isNotBlank(loginHint)) {
+      request.put("loginHint", loginHint);
     }
     ApiProxy apiProxy;
     if (JwtUtils.isJWTRequired(loginOptions)) {
