@@ -33,4 +33,11 @@ public class UserResponse {
   Boolean SAML;
   Map<String, Boolean> oAuth;
   List<String> ssoAppIds;
+  /** Auth method that triggered brute-force protection, empty when none. */
+  String lockReason;
+  /**
+   * When a temporary lock ends, in unix seconds (0 when none). The user is temporarily locked while
+   * this is greater than now.
+   */
+  Long tempLockExpiration;
 }
