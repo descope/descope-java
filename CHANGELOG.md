@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.6.0](https://github.com/descope/descope-java/compare/java-sdk-1.5.0...java-sdk-1.6.0) (2026-10-05)
+
+
+### Features
+
+* **auth:** support enchanted link over SMS ([#370](https://github.com/descope/descope-java/issues/370)) ([ad62eea](https://github.com/descope/descope-java/commit/ad62eea957ddd4529f1e3e4625121fe786478fd9))
+* **auth:** support SSO connection and login hint on start ([#380](https://github.com/descope/descope-java/issues/380)) ([10f6cc6](https://github.com/descope/descope-java/commit/10f6cc6c9ebef79fa9921f010a29be7050542724))
+* **exception:** add typed UserConflictException and conflict error codes ([#374](https://github.com/descope/descope-java/issues/374)) ([021df4a](https://github.com/descope/descope-java/commit/021df4a51bca7f88bdc9b9a737f4093371b6d7f4))
+* support lock reason in user search ([#383](https://github.com/descope/descope-java/issues/383)) ([83e2526](https://github.com/descope/descope-java/commit/83e25263ffaa5473d420cb03a7129c881e5120bd))
+
+
+### Bug Fixes
+
+* **deps:** update jackson monorepo to v2.22.2 ([#371](https://github.com/descope/descope-java/issues/371)) ([385415c](https://github.com/descope/descope-java/commit/385415ce5ea69cb87f3cb85496482087f6d2f8fb))
+
 ## [1.5.0](https://github.com/descope/descope-java/compare/java-sdk-1.4.0...java-sdk-1.5.0) (2026-09-01)
 
 
