@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -59,6 +60,7 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
@@ -861,6 +863,37 @@ public class UserServiceImplTest {
       AllUsersResponseDetails response = userService.searchAll(userSearchRequest);
       Assertions.assertThat(response.getUsers().size()).isEqualTo(1);
     }
+  }
+
+  @Test
+  void testSearchAllWithLockReasons() {
+    AllUsersResponseDetails allUsersResponse = new AllUsersResponseDetails(Arrays.asList(new UserResponse()), 1);
+    UserSearchRequest userSearchRequest = UserSearchRequest.builder()
+        .lockReasons(Arrays.asList("password", "totp"))
+        .tempLockReasons(Arrays.asList("recovery_codes"))
+        .build();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      userService.searchAll(userSearchRequest);
+      ArgumentCaptor<UserSearchRequest> captor = ArgumentCaptor.forClass(UserSearchRequest.class);
+      verify(apiProxy).post(any(), captor.capture(), any());
+      assertEquals(Arrays.asList("password", "totp"), captor.getValue().getLockReasons());
+      assertEquals(Arrays.asList("recovery_codes"), captor.getValue().getTempLockReasons());
+    }
+  }
+
+  @Test
+  void testUserResponseDeserializesLockFields() throws Exception {
+    UserResponse user = new ObjectMapper().readValue(
+        "{\"userId\":\"u1\",\"lockReason\":\"password\",\"tempLockExpiration\":1791105360}",
+        UserResponse.class);
+    assertEquals("password", user.getLockReason());
+    assertEquals(Long.valueOf(1791105360L), user.getTempLockExpiration());
+    UserResponse none = new ObjectMapper().readValue("{\"userId\":\"u2\"}", UserResponse.class);
+    assertNull(none.getLockReason());
+    assertNull(none.getTempLockExpiration());
   }
 
   @Test

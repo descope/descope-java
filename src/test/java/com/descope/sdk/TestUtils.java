@@ -53,7 +53,9 @@ public class TestUtils {
       false,
       false,
       Collections.emptyMap(),
-      Collections.emptyList());
+      Collections.emptyList(),
+      null,
+      null);
   public static final JWTResponse MOCK_JWT_RESPONSE = new JWTResponse(
       "someSessionJwt",
       "someRefreshJwt",

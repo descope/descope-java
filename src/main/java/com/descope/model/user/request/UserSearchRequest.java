@@ -46,6 +46,16 @@ public class UserSearchRequest {
   Instant toModifiedTime;
   Map<String, RolesList> tenantRoleIds;
   Map<String, RolesList> tenantRoleNames;
+  /**
+   * Retrieve only users disabled by brute-force protection with one of these lock reasons:
+   * password, totp, recovery_codes, security_questions.
+   */
+  List<String> lockReasons;
+  /**
+   * Retrieve only users currently temporarily locked (tempLockExpiration greater than now) with one
+   * of these lock reasons: password, recovery_codes, security_questions (TOTP has no temporary lock).
+   */
+  List<String> tempLockReasons;
   /** Free text search on many of the user properties like custom properties, name, email, etc. */
   String text;
 }
