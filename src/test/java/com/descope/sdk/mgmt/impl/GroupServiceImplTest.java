@@ -53,7 +53,7 @@ class GroupServiceImplTest {
   @Test
   void testLoadAllGroupsForSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(groups).when(apiProxy).post(any(), any(), any());
+    doReturn(groups).when(apiProxy).postAndGetArray(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -91,7 +91,7 @@ class GroupServiceImplTest {
     List<String> userIds = Arrays.asList("user1", "user2");
     List<String> loginIds = Arrays.asList("loginId1", "loginId2");
     ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(groups).when(apiProxy).post(any(), any(), any());
+    doReturn(groups).when(apiProxy).postAndGetArray(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
@@ -122,7 +122,7 @@ class GroupServiceImplTest {
   @Test
   void testLoadAllGroupMembers() {
     ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(groups).when(apiProxy).post(any(), any(), any());
+    doReturn(groups).when(apiProxy).postAndGetArray(any(), any(), any());
     try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
       mockedApiProxyBuilder.when(
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
