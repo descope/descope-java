@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -160,7 +161,7 @@ class GroupServiceImplTest {
   void testLegacyConstructorsStillCompile() {
     GroupMember member = new GroupMember("login", "user", "display");
     assertEquals("login", member.getLoginID());
-    Group group = new Group("id", "display", List.of(member));
+    Group group = new Group("id", "display", Collections.singletonList(member));
     assertEquals("id", group.getId());
   }
 }
