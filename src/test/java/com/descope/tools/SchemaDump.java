@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,7 +39,13 @@ public final class SchemaDump {
   private static Map<String, Object> shape(JavaType type, Set<Class<?>> seen) {
     Map<String, Object> s = new LinkedHashMap<>();
     Class<?> c = type.getRawClass();
-    if (type.isCollectionLikeType() || type.isArrayType()) {
+    if (c == byte[].class) {
+      s.put("type", "string");
+      s.put("format", "byte"); // Jackson writes byte[] as base64
+    } else if (Date.class.isAssignableFrom(c) || c == Instant.class) {
+      s.put("type", "integer");
+      s.put("format", "int64"); // epoch millis: Jackson's Date default, InstantToMillisSerializer for Instant
+    } else if (type.isCollectionLikeType() || type.isArrayType()) {
       s.put("type", "array");
       s.put("items", shape(type.getContentType(), seen));
     } else if (type.isMapLikeType() || JsonNode.class.isAssignableFrom(c) || c == Object.class) {
