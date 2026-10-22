@@ -4,7 +4,8 @@ Guidance for Claude Code and other contributors working in this repository. `REA
 
 ## Commands
 
-- Build, lint and run all tests: `mvn -B -ntp package`. Checkstyle (`checkstyle.xml`, Google style, 2-space indent, 120-column lines) runs inside the build and fails it on errors.
+- Build and run all tests: `mvn -B -ntp package`.
+- Lint: `mvn -B -ntp verify -DskipTests -Dgpg.skip`. Checkstyle (`checkstyle.xml`, Google style, 2-space indent, 120-column lines) runs in the `verify` phase, not in `package`, and fails the build on errors.
 - One test class: `mvn -B -ntp -Dtest='TenantServiceImplTest' test`.
 - Live tests (`testFunctionalFullCycle`, `@RetryingTest`) call a real Descope project and need `DESCOPE_PROJECT_ID` and `DESCOPE_MANAGEMENT_KEY`. Without them they fail locally; unit tests do not need them.
 - The source level is Java 8 (`maven.compiler.source` 1.8). Do not use newer language features.
