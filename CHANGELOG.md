@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.6.1](https://github.com/descope/descope-java/compare/java-sdk-1.6.0...java-sdk-1.6.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.5 ([#391](https://github.com/descope/descope-java/issues/391)) ([3668d0d](https://github.com/descope/descope-java/commit/3668d0de8a6effe7b3111eecafe1ffb368b75455))
+* **deps:** update dependency org.bouncycastle:bcprov-jdk18on to v1.86 ([#369](https://github.com/descope/descope-java/issues/369)) ([ee341bd](https://github.com/descope/descope-java/commit/ee341bd1b73fd4105b64e53fcf9db1a08960fa8d))
+* **deps:** update dependency org.projectlombok:lombok to v1.18.48 ([#376](https://github.com/descope/descope-java/issues/376)) ([6dd95a1](https://github.com/descope/descope-java/commit/6dd95a1c5db5687162e70f09a73fac9548d23a98))
+* **deps:** update jackson monorepo to v2.22.4 ([#392](https://github.com/descope/descope-java/issues/392)) ([1ab4223](https://github.com/descope/descope-java/commit/1ab4223b6e9f0624684a65e5ec636eff5eb48347))
+
 ## [1.6.0](https://github.com/descope/descope-java/compare/java-sdk-1.5.0...java-sdk-1.6.0) (2026-10-22)
 
 
