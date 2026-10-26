@@ -7,7 +7,7 @@ Guidance for Claude Code and other contributors working in this repository. `REA
 - Build and run all tests: `mvn -B -ntp package`.
 - Lint: `mvn -B -ntp verify -DskipTests -Dgpg.skip`. Checkstyle (`checkstyle.xml`, Google style, 2-space indent, 120-column lines) runs in the `verify` phase, not in `package`, and fails the build on errors.
 - One test class: `mvn -B -ntp -Dtest='TenantServiceImplTest' test`.
-- Live tests (`testFunctionalFullCycle`, `@RetryingTest`) call a real Descope project and need `DESCOPE_PROJECT_ID` and `DESCOPE_MANAGEMENT_KEY`. Without them they fail locally; unit tests do not need them.
+- Live tests (`testFunctionalFullCycle`, `@RetryingTest`) call a real Descope project and need `DESCOPE_PROJECT_ID` and `DESCOPE_MANAGEMENT_KEY`. Without them they fail locally. Unit tests also read `DESCOPE_PROJECT_ID` (through `TestUtils.getClient()`) and fail with a `NullPointerException` when it is unset, so set it to any placeholder, e.g. `DESCOPE_PROJECT_ID=P0000000000000000000000000000`.
 - The source level is Java 8 (`maven.compiler.source` 1.8). Do not use newer language features.
 
 ## Adding an endpoint
