@@ -127,6 +127,10 @@ public class Routes {
     public static final String CREATE_TENANT_LINK = "/v1/mgmt/tenant/create";
     public static final String UPDATE_TENANT_LINK = "/v1/mgmt/tenant/update";
     public static final String DELETE_TENANT_LINK = "/v1/mgmt/tenant/delete";
+    public static final String PATCH_TENANT_LINK = "/v1/mgmt/tenant/patch";
+    public static final String CREATE_TENANTS_BATCH_LINK = "/v1/mgmt/tenant/create/batch";
+    public static final String UPDATE_TENANTS_BATCH_LINK = "/v1/mgmt/tenant/update/batch";
+    public static final String DELETE_TENANTS_BATCH_LINK = "/v1/mgmt/tenant/delete/batch";
     public static final String LOAD_TENANT_LINK = "/v1/mgmt/tenant";
     public static final String LOAD_ALL_TENANTS_LINK = "/v1/mgmt/tenant/all";
     public static final String TENANT_SEARCH_ALL_LINK = "/v1/mgmt/tenant/search";
