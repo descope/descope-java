@@ -3,8 +3,14 @@ package com.descope.sdk.mgmt;
 import com.descope.exception.DescopeException;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.TenantSettings;
+import com.descope.model.tenant.request.CreateTenantRequest;
 import com.descope.model.tenant.request.GenerateTenantLinkRequest;
+import com.descope.model.tenant.request.PatchTenantRequest;
 import com.descope.model.tenant.request.TenantSearchRequest;
+import com.descope.model.tenant.request.UpdateTenantRequest;
+import com.descope.model.tenant.response.CreateTenantsBatchResponse;
+import com.descope.model.tenant.response.DeleteTenantsBatchResponse;
+import com.descope.model.tenant.response.UpdateTenantsBatchResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -108,6 +114,47 @@ public interface TenantService {
   void update(String id, String name, List<String> selfProvisioningDomains, Map<String, Object> customAttributes,
       String authType, Boolean disabled, Boolean enforceSSO, List<String> enforceSSOExclusions,
       List<String> federatedAppIds, String roleInheritance) throws DescopeException;
+
+  /**
+   * Patch an existing tenant. Only the fields that are set in the request are updated, any other
+   * field keeps its current value.
+   *
+   * @param request - The fields to patch. The tenant ID is required.
+   * @throws DescopeException in case of errors
+   */
+  void patch(PatchTenantRequest request) throws DescopeException;
+
+  /**
+   * Create multiple tenants in a single batch. Each tenant is created independently; per-tenant
+   * failures are returned in the response.
+   *
+   * @param tenants - The tenants to create. Each tenant requires a name.
+   * @return {@link CreateTenantsBatchResponse} with the created and the failed tenants
+   * @throws DescopeException in case of errors
+   */
+  CreateTenantsBatchResponse createBatch(List<CreateTenantRequest> tenants) throws DescopeException;
+
+  /**
+   * Update multiple tenants in a single batch. Each tenant is updated independently; per-tenant
+   * failures are returned in the response. IMPORTANT: All set parameters will override whatever
+   * value is currently set in each existing tenant. Use carefully.
+   *
+   * @param tenants - The tenants to update. Each tenant requires an ID and a name.
+   * @return {@link UpdateTenantsBatchResponse} with the updated tenant IDs and the failed tenants
+   * @throws DescopeException in case of errors
+   */
+  UpdateTenantsBatchResponse updateBatch(List<UpdateTenantRequest> tenants) throws DescopeException;
+
+  /**
+   * Delete multiple tenants in a single batch. Each tenant is deleted independently; per-tenant
+   * failures are returned in the response. IMPORTANT: This action is irreversible. Use carefully.
+   *
+   * @param ids     - Tenant IDs
+   * @param cascade - Whether to also delete the users and access keys associated only with these tenants
+   * @return {@link DeleteTenantsBatchResponse} with the deleted tenant IDs and the failed tenants
+   * @throws DescopeException in case of errors
+   */
+  DeleteTenantsBatchResponse deleteBatch(List<String> ids, Boolean cascade) throws DescopeException;
 
   /**
    * Delete an existing tenant. IMPORTANT: This action is irreversible. Use

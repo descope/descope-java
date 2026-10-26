@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -18,18 +19,33 @@ import com.descope.enums.TenantAuthType;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.TenantSettings;
+import com.descope.model.tenant.request.CreateTenantRequest;
 import com.descope.model.tenant.request.GenerateTenantLinkRequest;
+import com.descope.model.tenant.request.PatchTenantRequest;
 import com.descope.model.tenant.request.TenantSearchRequest;
+import com.descope.model.tenant.request.UpdateTenantRequest;
+import com.descope.model.tenant.response.CreateTenantsBatchResponse;
+import com.descope.model.tenant.response.DeleteTenantsBatchResponse;
 import com.descope.model.tenant.response.GenerateTenantLinkResponse;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
+import com.descope.model.tenant.response.UpdateTenantsBatchResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.TenantService;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -445,6 +461,244 @@ public class TenantServiceImplTest {
           () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       tenantService.revokeSSOConfigurationLink("tenant", "bla"); 
       verify(apiProxy, times(1)).post(any(), any(), any());
+    }
+  }
+
+  private static final String MOCK_PROJECT_ID = "P123456789012345678901234567";
+  private static final String MOCK_MANAGEMENT_KEY = "some-management-key";
+  private static final ObjectMapper MAPPER = new ObjectMapper()
+      .setSerializationInclusion(Include.NON_NULL)
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+  private static TenantService keyedTenantService() {
+    Client client = Client.builder()
+        .uri("https://api.descope.com")
+        .projectId(MOCK_PROJECT_ID)
+        .managementKey(MOCK_MANAGEMENT_KEY)
+        .sdkInfo(SdkInfo.builder().name("java").build())
+        .build();
+    return ManagementServiceBuilder.buildServices(client).getTenantService();
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void mockProxy(MockedStatic<ApiProxyBuilder> mocked, ApiProxy apiProxy,
+      AtomicReference<String> authHeader) {
+    mocked.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+      authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+      return apiProxy;
+    });
+  }
+
+  @Test
+  void testPatchForMissingArguments() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.patch(null));
+    assertEquals("The request argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> tenantService.patch(PatchTenantRequest.builder().name("name").build()));
+    assertEquals("The id argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.patch(
+        PatchTenantRequest.builder().id("id").selfProvisioningDomains(Arrays.asList("")).build()));
+    assertEquals("The selfProvisioningDomains argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.patch(
+        PatchTenantRequest.builder().id("id").enforceSSOExclusions(Arrays.asList(" ")).build()));
+    assertEquals("The enforceSSOExclusions argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.patch(
+        PatchTenantRequest.builder().id("id").federatedAppIds(Arrays.asList("")).build()));
+    assertEquals("The federatedAppIds argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testPatchForSuccess() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockProxy(mockedApiProxyBuilder, apiProxy, authHeader);
+      keyedTenantService().patch(PatchTenantRequest.builder()
+          .id("someId")
+          .name("someName")
+          .enforceSSO(false)
+          .federatedAppIds(Collections.emptyList())
+          .build());
+      ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+      verify(apiProxy, times(1)).patch(uri.capture(), body.capture(), eq(Void.class));
+      assertThat(uri.getValue().toString()).isEqualTo("https://api.descope.com/v1/mgmt/tenant/patch");
+      assertThat(authHeader.get()).isEqualTo("Bearer " + MOCK_PROJECT_ID + ":" + MOCK_MANAGEMENT_KEY);
+      assertThat(MAPPER.readTree(MAPPER.writeValueAsString(body.getValue()))).isEqualTo(MAPPER.readTree(
+          "{\"id\":\"someId\",\"name\":\"someName\",\"enforceSSO\":false,\"federatedAppIds\":[]}"));
+    }
+  }
+
+  @Test
+  void testCreateBatchForMissingArguments() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.createBatch(null));
+    assertEquals("The tenants argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> tenantService.createBatch(Collections.emptyList()));
+    assertEquals("The tenants argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> tenantService.createBatch(Collections.singletonList(null)));
+    assertEquals("The tenants argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.createBatch(
+        Arrays.asList(CreateTenantRequest.builder().id("id").build())));
+    assertEquals("The tenants[].name argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.createBatch(Arrays.asList(
+        CreateTenantRequest.builder().name("name").selfProvisioningDomains(Arrays.asList("")).build())));
+    assertEquals("The tenants[].selfProvisioningDomains argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.createBatch(Arrays.asList(
+        CreateTenantRequest.builder().name("name").enforceSSOExclusions(Arrays.asList("")).build())));
+    assertEquals("The tenants[].enforceSSOExclusions argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.createBatch(Arrays.asList(
+        CreateTenantRequest.builder().name("name").federatedAppIds(Arrays.asList("")).build())));
+    assertEquals("The tenants[].federatedAppIds argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testCreateBatchForSuccess() throws Exception {
+    CreateTenantsBatchResponse mockResponse = MAPPER.readValue("{\"createdTenants\":[{\"id\":\"t1\",\"name\":\"n1\"}],"
+        + "\"failedTenants\":[{\"failure\":\"duplicate\",\"tenant\":{\"name\":\"n2\",\"id\":\"t2\","
+        + "\"selfProvisioningDomains\":[\"d.com\"],\"customAttributes\":{\"a\":\"b\"},\"authType\":\"saml\","
+        + "\"disabled\":true,\"enforceSSO\":true,\"enforceSSOExclusions\":[\"u1\"],\"federatedAppIds\":[\"app1\"],"
+        + "\"parent\":\"p1\",\"roleInheritance\":\"none\",\"unknownField\":1}}],"
+        + "\"additionalErrors\":{\"k\":\"v\"}}", CreateTenantsBatchResponse.class);
+    assertThat(mockResponse.getCreatedTenants()).hasSize(1);
+    assertThat(mockResponse.getCreatedTenants().get(0).getId()).isEqualTo("t1");
+    assertThat(mockResponse.getCreatedTenants().get(0).getName()).isEqualTo("n1");
+    assertThat(mockResponse.getFailedTenants().get(0).getFailure()).isEqualTo("duplicate");
+    CreateTenantRequest failed = mockResponse.getFailedTenants().get(0).getTenant();
+    assertThat(failed.getId()).isEqualTo("t2");
+    assertThat(failed.getName()).isEqualTo("n2");
+    assertThat(failed.getSelfProvisioningDomains()).containsExactly("d.com");
+    assertThat(failed.getCustomAttributes()).containsEntry("a", "b");
+    assertThat(failed.getAuthType()).isEqualTo("saml");
+    assertThat(failed.getDisabled()).isTrue();
+    assertThat(failed.getEnforceSSO()).isTrue();
+    assertThat(failed.getEnforceSSOExclusions()).containsExactly("u1");
+    assertThat(failed.getFederatedAppIds()).containsExactly("app1");
+    assertThat(failed.getParent()).isEqualTo("p1");
+    assertThat(failed.getRoleInheritance()).isEqualTo("none");
+    assertThat(mockResponse.getAdditionalErrors()).containsEntry("k", "v");
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockProxy(mockedApiProxyBuilder, apiProxy, authHeader);
+      CreateTenantsBatchResponse response = keyedTenantService().createBatch(Arrays.asList(
+          CreateTenantRequest.builder().name("n1").build(),
+          CreateTenantRequest.builder().id("t2").name("n2").parent("p1").enforceSSO(true).build()));
+      assertThat(response).isSameAs(mockResponse);
+      ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+      verify(apiProxy, times(1)).post(uri.capture(), body.capture(), eq(CreateTenantsBatchResponse.class));
+      assertThat(uri.getValue().toString()).isEqualTo("https://api.descope.com/v1/mgmt/tenant/create/batch");
+      assertThat(authHeader.get()).isEqualTo("Bearer " + MOCK_PROJECT_ID + ":" + MOCK_MANAGEMENT_KEY);
+      assertThat(MAPPER.readTree(MAPPER.writeValueAsString(body.getValue()))).isEqualTo(MAPPER.readTree(
+          "{\"tenants\":[{\"name\":\"n1\"},{\"id\":\"t2\",\"name\":\"n2\",\"parent\":\"p1\",\"enforceSSO\":true}]}"));
+    }
+  }
+
+  @Test
+  void testUpdateBatchForMissingArguments() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> tenantService.updateBatch(null));
+    assertEquals("The tenants argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> tenantService.updateBatch(Collections.emptyList()));
+    assertEquals("The tenants argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> tenantService.updateBatch(Collections.singletonList(null)));
+    assertEquals("The tenants argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.updateBatch(
+        Arrays.asList(UpdateTenantRequest.builder().name("name").build())));
+    assertEquals("The tenants[].id argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.updateBatch(
+        Arrays.asList(UpdateTenantRequest.builder().id("id").build())));
+    assertEquals("The tenants[].name argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.updateBatch(Arrays.asList(
+        UpdateTenantRequest.builder().id("id").name("name").selfProvisioningDomains(Arrays.asList("")).build())));
+    assertEquals("The tenants[].selfProvisioningDomains argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.updateBatch(Arrays.asList(
+        UpdateTenantRequest.builder().id("id").name("name").enforceSSOExclusions(Arrays.asList("")).build())));
+    assertEquals("The tenants[].enforceSSOExclusions argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> tenantService.updateBatch(Arrays.asList(
+        UpdateTenantRequest.builder().id("id").name("name").federatedAppIds(Arrays.asList("")).build())));
+    assertEquals("The tenants[].federatedAppIds argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateBatchForSuccess() throws Exception {
+    UpdateTenantsBatchResponse mockResponse = MAPPER.readValue("{\"updatedTenantIds\":[\"t1\"],"
+        + "\"failedTenants\":[{\"failure\":\"not found\",\"tenant\":{\"id\":\"t2\",\"name\":\"n2\","
+        + "\"selfProvisioningDomains\":[],\"customAttributes\":null,\"authType\":\"\",\"disabled\":false,"
+        + "\"enforceSSO\":false,\"enforceSSOExclusions\":[],\"federatedAppIds\":[],\"roleInheritance\":\"\"}}],"
+        + "\"additionalErrors\":{}}", UpdateTenantsBatchResponse.class);
+    assertThat(mockResponse.getUpdatedTenantIds()).containsExactly("t1");
+    assertThat(mockResponse.getFailedTenants().get(0).getFailure()).isEqualTo("not found");
+    UpdateTenantRequest failed = mockResponse.getFailedTenants().get(0).getTenant();
+    assertThat(failed.getId()).isEqualTo("t2");
+    assertThat(failed.getName()).isEqualTo("n2");
+    assertThat(failed.getSelfProvisioningDomains()).isEmpty();
+    assertThat(failed.getCustomAttributes()).isNull();
+    assertThat(failed.getDisabled()).isFalse();
+    assertThat(failed.getEnforceSSO()).isFalse();
+    assertThat(mockResponse.getAdditionalErrors()).isEmpty();
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockProxy(mockedApiProxyBuilder, apiProxy, authHeader);
+      UpdateTenantsBatchResponse response = keyedTenantService().updateBatch(Arrays.asList(
+          UpdateTenantRequest.builder().id("t1").name("n1").disabled(true)
+              .selfProvisioningDomains(Arrays.asList("d.com")).build()));
+      assertThat(response).isSameAs(mockResponse);
+      ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+      verify(apiProxy, times(1)).post(uri.capture(), body.capture(), eq(UpdateTenantsBatchResponse.class));
+      assertThat(uri.getValue().toString()).isEqualTo("https://api.descope.com/v1/mgmt/tenant/update/batch");
+      assertThat(authHeader.get()).isEqualTo("Bearer " + MOCK_PROJECT_ID + ":" + MOCK_MANAGEMENT_KEY);
+      assertThat(MAPPER.readTree(MAPPER.writeValueAsString(body.getValue()))).isEqualTo(MAPPER.readTree(
+          "{\"tenants\":[{\"id\":\"t1\",\"name\":\"n1\",\"disabled\":true,\"selfProvisioningDomains\":[\"d.com\"]}]}"));
+    }
+  }
+
+  @Test
+  void testDeleteBatchForMissingArguments() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> tenantService.deleteBatch(null, null));
+    assertEquals("The ids argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> tenantService.deleteBatch(Collections.emptyList(), null));
+    assertEquals("The ids argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> tenantService.deleteBatch(Arrays.asList("t1", ""), null));
+    assertEquals("The ids argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testDeleteBatchForSuccess() throws Exception {
+    DeleteTenantsBatchResponse mockResponse = MAPPER.readValue("{\"deletedTenantIds\":[\"t1\"],"
+        + "\"failedTenants\":[{\"failure\":\"not found\",\"id\":\"t2\"}],"
+        + "\"additionalErrors\":{\"k\":\"v\"}}", DeleteTenantsBatchResponse.class);
+    assertThat(mockResponse.getDeletedTenantIds()).containsExactly("t1");
+    assertThat(mockResponse.getFailedTenants().get(0).getFailure()).isEqualTo("not found");
+    assertThat(mockResponse.getFailedTenants().get(0).getId()).isEqualTo("t2");
+    assertThat(mockResponse.getAdditionalErrors()).containsEntry("k", "v");
+
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(mockResponse).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockProxy(mockedApiProxyBuilder, apiProxy, authHeader);
+      DeleteTenantsBatchResponse response = keyedTenantService().deleteBatch(Arrays.asList("t1", "t2"), true);
+      assertThat(response).isSameAs(mockResponse);
+      ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+      verify(apiProxy, times(1)).post(uri.capture(), body.capture(), eq(DeleteTenantsBatchResponse.class));
+      assertThat(uri.getValue().toString()).isEqualTo("https://api.descope.com/v1/mgmt/tenant/delete/batch");
+      assertThat(authHeader.get()).isEqualTo("Bearer " + MOCK_PROJECT_ID + ":" + MOCK_MANAGEMENT_KEY);
+      JsonNode sent = MAPPER.readTree(MAPPER.writeValueAsString(body.getValue()));
+      assertThat(sent).isEqualTo(MAPPER.readTree("{\"ids\":[\"t1\",\"t2\"],\"cascade\":true}"));
     }
   }
 }

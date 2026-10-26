@@ -698,9 +698,41 @@ try {
     // Handle the error
 }
 
+// Patch only updates the fields that are set, any other field keeps its current value
+try {
+    ts.patch(PatchTenantRequest.builder()
+            .id("my-custom-id")
+            .name("My Renamed Tenant")
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Tenant deletion cannot be undone. Use carefully.
 try {
     ts.delete("my-custom-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create, update or delete multiple tenants in a single batch.
+// Each tenant is handled independently, per-tenant failures are returned in the response.
+try {
+    CreateTenantsBatchResponse created = ts.createBatch(Arrays.asList(
+            CreateTenantRequest.builder().name("My Tenant 1").build(),
+            CreateTenantRequest.builder().id("my-custom-id-2").name("My Tenant 2").build()));
+    for (CreatedTenantResponse t : created.getCreatedTenants()) {
+        // Do something with t.getId()
+    }
+    for (CreateTenantBatchFailureResponse f : created.getFailedTenants()) {
+        // Handle f.getFailure() for f.getTenant()
+    }
+
+    UpdateTenantsBatchResponse updated = ts.updateBatch(Arrays.asList(
+            UpdateTenantRequest.builder().id("my-custom-id-2").name("My Tenant 2").disabled(true).build()));
+
+    // Pass true on cascade to also delete the users and access keys associated only with these tenants
+    DeleteTenantsBatchResponse deleted = ts.deleteBatch(Arrays.asList("my-custom-id-2"), false);
 } catch (DescopeException de) {
     // Handle the error
 }
