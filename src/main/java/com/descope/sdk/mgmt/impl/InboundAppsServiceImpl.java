@@ -1,5 +1,7 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AGENTIC_REVOKE_IDENTITIES;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AGENTIC_SEARCH_IDENTITIES;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_INBOUND_CREATE_APP;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_INBOUND_DELETE_APP;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_INBOUND_DELETE_CONSENT;
@@ -16,6 +18,10 @@ import static com.descope.utils.CollectionUtils.mapOf;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.inbound.AgenticIdentityRevokeOptions;
+import com.descope.model.inbound.AgenticIdentityRevokeResponse;
+import com.descope.model.inbound.AgenticIdentitySearchOptions;
+import com.descope.model.inbound.AgenticIdentitySearchResponse;
 import com.descope.model.inbound.InboundApp;
 import com.descope.model.inbound.InboundAppConsentDeleteOptions;
 import com.descope.model.inbound.InboundAppConsentSearchOptions;
@@ -168,5 +174,28 @@ public class InboundAppsServiceImpl extends ManagementsBase implements InboundAp
 
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(MANAGEMENT_INBOUND_SEARCH_CONSENT), options, InboundAppConsentSearchResponse.class);
+  }
+
+  @Override
+  public AgenticIdentitySearchResponse searchAgenticIdentities(AgenticIdentitySearchOptions options)
+      throws DescopeException {
+    if (options == null) {
+      throw ServerCommonException.invalidArgument("options");
+    }
+
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_AGENTIC_SEARCH_IDENTITIES), options, AgenticIdentitySearchResponse.class);
+  }
+
+  @Override
+  public int revokeAgenticIdentities(AgenticIdentityRevokeOptions options) throws DescopeException {
+    if (options == null) {
+      throw ServerCommonException.invalidArgument("options");
+    }
+
+    ApiProxy apiProxy = getApiProxy();
+    AgenticIdentityRevokeResponse res = apiProxy.post(getUri(MANAGEMENT_AGENTIC_REVOKE_IDENTITIES), options,
+        AgenticIdentityRevokeResponse.class);
+    return res.getRevoked();
   }
 }

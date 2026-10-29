@@ -1,17 +1,27 @@
 package com.descope.sdk.mgmt.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
+import com.descope.model.inbound.AgenticIdentity;
+import com.descope.model.inbound.AgenticIdentityConsent;
+import com.descope.model.inbound.AgenticIdentityRevokeOptions;
+import com.descope.model.inbound.AgenticIdentityRevokeResponse;
+import com.descope.model.inbound.AgenticIdentitySearchOptions;
+import com.descope.model.inbound.AgenticIdentitySearchResponse;
 import com.descope.model.inbound.InboundApp;
 import com.descope.model.inbound.InboundAppConsent;
 import com.descope.model.inbound.InboundAppConsentDeleteOptions;
@@ -27,10 +37,18 @@ import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.InboundAppsService;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 class InboundAppsServiceImplTest {
@@ -97,6 +115,12 @@ class InboundAppsServiceImplTest {
     assertNotNull(thrown);
     assertEquals("The options argument is invalid", thrown.getMessage());
     thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.searchConsents(null));
+    assertNotNull(thrown);
+    assertEquals("The options argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.searchAgenticIdentities(null));
+    assertNotNull(thrown);
+    assertEquals("The options argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class, () -> inboundAppsService.revokeAgenticIdentities(null));
     assertNotNull(thrown);
     assertEquals("The options argument is invalid", thrown.getMessage());
   }
@@ -234,6 +258,114 @@ class InboundAppsServiceImplTest {
       assertEquals(1, res.getTotal());
       assertEquals(1, res.getConsents().length);
     }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testSearchAgenticIdentitiesSuccess() throws Exception {
+    InboundAppsService service = ManagementServiceBuilder.buildServices(agenticClient()).getInboundAppsService();
+    AgenticIdentitySearchResponse parsed = mapper().readValue(AGENTIC_SEARCH_RESPONSE,
+        AgenticIdentitySearchResponse.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(parsed).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      AgenticIdentitySearchOptions options = AgenticIdentitySearchOptions.builder().userId("u1").clientId("c1")
+          .resourceId("r1").consentId("cs1").page(1).limit(10).build();
+      AgenticIdentitySearchResponse res = service.searchAgenticIdentities(options);
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(AgenticIdentitySearchResponse.class));
+      assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/mgmt/agentic/identities/search");
+      assertThat(authHeader.get()).isEqualTo("Bearer " + AGENTIC_PROJECT_ID + ":" + AGENTIC_MANAGEMENT_KEY);
+      JsonNode body = mapper().valueToTree(bodyCaptor.getValue());
+      assertThat(body).isEqualTo(mapper().readTree(
+          "{\"userId\":\"u1\",\"clientId\":\"c1\",\"resourceId\":\"r1\",\"consentId\":\"cs1\","
+              + "\"page\":1,\"limit\":10}"));
+      assertThat(mapper().valueToTree(AgenticIdentitySearchOptions.builder().build()).size()).isZero();
+
+      assertThat(res.getTotal()).isEqualTo(1);
+      assertThat(res.getIdentities()).hasSize(1);
+      AgenticIdentity identity = res.getIdentities()[0];
+      assertThat(identity.getAgentName()).isEqualTo("agent");
+      assertThat(identity.getResourceId()).isEqualTo("r1");
+      assertThat(identity.getClientId()).isEqualTo("c1");
+      assertThat(identity.getCreatedBy()).isEqualTo("creator");
+      AgenticIdentityConsent consent = identity.getConsent();
+      assertThat(consent.getId()).isEqualTo("cs1");
+      assertThat(consent.getAppId()).isEqualTo("app1");
+      assertThat(consent.getUserId()).isEqualTo("u1");
+      assertThat(consent.getScopes()).containsExactly("s1", "s2");
+      assertThat(consent.getGrantedBy()).isEqualTo("granter");
+      assertThat(consent.getCreatedTime()).isEqualTo(100);
+      assertThat(consent.getTenantId()).isEqualTo("t1");
+      assertThat(consent.getExpireTime()).isEqualTo(200);
+      assertThat(consent.getModifiedTime()).isEqualTo(300);
+    }
+  }
+
+  @Test
+  void testSearchAgenticIdentitiesNullConsent() throws Exception {
+    AgenticIdentitySearchResponse res = mapper().readValue(
+        "{\"identities\":[{\"consent\":null,\"agentName\":\"\"}],\"total\":0}",
+        AgenticIdentitySearchResponse.class);
+    assertThat(res.getIdentities()).hasSize(1);
+    assertThat(res.getIdentities()[0].getConsent()).isNull();
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testRevokeAgenticIdentitiesSuccess() throws Exception {
+    InboundAppsService service = ManagementServiceBuilder.buildServices(agenticClient()).getInboundAppsService();
+    AgenticIdentityRevokeResponse parsed = mapper().readValue("{\"revoked\":3}",
+        AgenticIdentityRevokeResponse.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(parsed).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      int revoked = service.revokeAgenticIdentities(AgenticIdentityRevokeOptions.builder().userId("u1")
+          .clientId("c1").resourceId("r1").consentId("cs1").build());
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(AgenticIdentityRevokeResponse.class));
+      assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/mgmt/agentic/identities/revoke");
+      assertThat(authHeader.get()).isEqualTo("Bearer " + AGENTIC_PROJECT_ID + ":" + AGENTIC_MANAGEMENT_KEY);
+      JsonNode body = mapper().valueToTree(bodyCaptor.getValue());
+      assertThat(body).isEqualTo(mapper().readTree(
+          "{\"userId\":\"u1\",\"clientId\":\"c1\",\"resourceId\":\"r1\",\"consentId\":\"cs1\"}"));
+      assertThat(revoked).isEqualTo(3);
+    }
+  }
+
+  private static final String AGENTIC_PROJECT_ID = "P123456789012345678901234567";
+  private static final String AGENTIC_MANAGEMENT_KEY = "some-management-key";
+  private static final String AGENTIC_SEARCH_RESPONSE = "{\"identities\":[{\"consent\":{\"id\":\"cs1\","
+      + "\"appId\":\"app1\",\"userId\":\"u1\",\"scopes\":[\"s1\",\"s2\"],\"grantedBy\":\"granter\","
+      + "\"createdTime\":100,\"tenantId\":\"t1\",\"ExpireTime\":200,\"modifiedTime\":300},"
+      + "\"agentName\":\"agent\",\"resourceId\":\"r1\",\"clientId\":\"c1\",\"createdBy\":\"creator\","
+      + "\"unknownField\":\"x\"}],\"total\":1}";
+
+  private static Client agenticClient() {
+    return Client.builder()
+        .uri("https://api.descope.com")
+        .projectId(AGENTIC_PROJECT_ID)
+        .managementKey(AGENTIC_MANAGEMENT_KEY)
+        .sdkInfo(SdkInfo.builder().name("java").build())
+        .build();
+  }
+
+  // Same settings the SDK proxy uses: omit nulls when sending, ignore unknown fields when parsing
+  private static ObjectMapper mapper() {
+    return new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
