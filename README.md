@@ -1876,6 +1876,41 @@ try {
     // Handle the error
 }
 
+// Search agentic identities (consents granted to agentic apps)
+// All fields are optional, use to filter results
+try {
+    AgenticIdentitySearchResponse res = inboundAppsService.searchAgenticIdentities(
+        AgenticIdentitySearchOptions.builder()
+            // .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            // .page(0) // page number, starting with 0
+            // .limit(100)
+            .build()
+    );
+    for (AgenticIdentity identity : res.getIdentities()) {
+        // identity.getAgentName(), identity.getClientId(), identity.getConsent()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Revoke agentic identities and their consents by client ID, consent ID, resource ID and/or user ID
+// A request with only a user ID revokes all of the user's agentic identities
+try {
+    int revoked = inboundAppsService.revokeAgenticIdentities(
+        AgenticIdentityRevokeOptions.builder()
+            .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ### Manage Project
