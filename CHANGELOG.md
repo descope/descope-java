@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.6.1](https://github.com/descope/descope-java/compare/java-sdk-1.6.0...java-sdk-1.6.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency org.apache.httpcomponents.client5:httpclient5 to v5.6.5 ([#391](https://github.com/descope/descope-java/issues/391)) ([3668d0d](https://github.com/descope/descope-java/commit/3668d0de8a6effe7b3111eecafe1ffb368b75455))
+* **deps:** update dependency org.bouncycastle:bcprov-jdk18on to v1.86 ([#369](https://github.com/descope/descope-java/issues/369)) ([ee341bd](https://github.com/descope/descope-java/commit/ee341bd1b73fd4105b64e53fcf9db1a08960fa8d))
+* **deps:** update dependency org.projectlombok:lombok to v1.18.48 ([#376](https://github.com/descope/descope-java/issues/376)) ([6dd95a1](https://github.com/descope/descope-java/commit/6dd95a1c5db5687162e70f09a73fac9548d23a98))
+* **deps:** update jackson monorepo to v2.22.4 ([#392](https://github.com/descope/descope-java/issues/392)) ([1ab4223](https://github.com/descope/descope-java/commit/1ab4223b6e9f0624684a65e5ec636eff5eb48347))
+
+## [1.6.0](https://github.com/descope/descope-java/compare/java-sdk-1.5.0...java-sdk-1.6.0) (2026-10-22)
+
+
+### Features
+
+* **auth:** support enchanted link over SMS ([#370](https://github.com/descope/descope-java/issues/370)) ([ad62eea](https://github.com/descope/descope-java/commit/ad62eea957ddd4529f1e3e4625121fe786478fd9))
+* **auth:** support forceAuthn on SSO start ([#387](https://github.com/descope/descope-java/issues/387)) ([c61a25c](https://github.com/descope/descope-java/commit/c61a25c9bd507ee6ca9c512790bce72d0c99d2ca))
+* **auth:** support SSO connection and login hint on start ([#380](https://github.com/descope/descope-java/issues/380)) ([10f6cc6](https://github.com/descope/descope-java/commit/10f6cc6c9ebef79fa9921f010a29be7050542724))
+* **exception:** add typed UserConflictException and conflict error codes ([#374](https://github.com/descope/descope-java/issues/374)) ([021df4a](https://github.com/descope/descope-java/commit/021df4a51bca7f88bdc9b9a737f4093371b6d7f4))
+* support lock reason in user search ([#383](https://github.com/descope/descope-java/issues/383)) ([83e2526](https://github.com/descope/descope-java/commit/83e25263ffaa5473d420cb03a7129c881e5120bd))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.22.3 [security] ([#382](https://github.com/descope/descope-java/issues/382)) ([0b3bea9](https://github.com/descope/descope-java/commit/0b3bea91f2ff7e4ddd842800ca00099f498308bf))
+* **deps:** update dependency org.apache.commons:commons-lang3 to v3.21.0 ([#385](https://github.com/descope/descope-java/issues/385)) ([0542358](https://github.com/descope/descope-java/commit/054235895e004a945facef75124ecd95c3a4829f))
+* **deps:** update dependency org.slf4j:slf4j-api to v2.0.19 ([#379](https://github.com/descope/descope-java/issues/379)) ([3ebea8c](https://github.com/descope/descope-java/commit/3ebea8c0500cb4c4e467c6cad5b198327541200b))
+* **deps:** update jackson monorepo to v2.22.2 ([#371](https://github.com/descope/descope-java/issues/371)) ([385415c](https://github.com/descope/descope-java/commit/385415ce5ea69cb87f3cb85496482087f6d2f8fb))
+
 ## [1.5.0](https://github.com/descope/descope-java/compare/java-sdk-1.4.0...java-sdk-1.5.0) (2026-09-01)
 
 

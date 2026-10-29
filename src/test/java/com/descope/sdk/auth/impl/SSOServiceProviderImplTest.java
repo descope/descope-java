@@ -68,6 +68,25 @@ class SSOServiceProviderImplTest {
         .doesNotContain("ssoId=");
   }
 
+  @Test
+  void testStartWithForceAuthn() {
+    LoginOptions options = new LoginOptions();
+    URI uri = captureStart(() -> ssoService.start("tenant-id", null, "login", options, null, null, null, true),
+        options);
+    assertThat(uri.getRawQuery()).contains("tenant=tenant-id", "prompt=login", "forceAuthn=true");
+
+    uri = captureStart(() -> ssoService.start("tenant-id", null, null, options, null, null, null, false), options);
+    assertThat(uri.getRawQuery()).isEqualTo("tenant=tenant-id");
+  }
+
+  @Test
+  void testStartWithForceAuthnAndRefreshToken() {
+    LoginOptions options = LoginOptions.builder().stepup(true).build();
+    URI uri = captureStart(() -> ssoService.start("tenant-id", null, null, options, "refresh-token",
+        "connection-id", null, true), options);
+    assertThat(uri.getRawQuery()).contains("tenant=tenant-id", "ssoId=connection-id", "forceAuthn=true");
+  }
+
   private URI captureStart(Supplier<String> call, LoginOptions options) {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(new OAuthResponse("https://idp.example/login")).when(apiProxy).post(any(), any(), any());
