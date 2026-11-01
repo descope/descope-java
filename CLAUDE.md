@@ -31,6 +31,7 @@ A new service also needs a field in `model/mgmt/ManagementServices.java`, wiring
 - Credentials:
   - Management impls extend `ManagementsBase` and use `getApiProxy()` (project ID + management key).
   - Auth methods acting for a user call `validateJWT(refreshToken)` first, then `getApiProxy(refreshToken)`.
+  - Auth impls extend `AuthenticationServiceImpl`; `AuthenticationsBase.getApiProxy` appends the optional auth management key (`authManagementKey` or `DESCOPE_AUTH_MANAGEMENT_KEY`). It lets callers use auth methods whose public access is disabled in the project. New auth methods use `getApiProxy`; never build the `Authorization` header yourself.
 - Errors: throw the existing types in `exception/` (`ServerCommonException`, `ClientFunctionalException`, ...). Do not add new exception types for single endpoints.
 
 ## Tests
