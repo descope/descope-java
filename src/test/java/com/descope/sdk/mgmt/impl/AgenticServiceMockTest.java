@@ -53,7 +53,7 @@ class AgenticServiceMockTest {
   @Test
   void testSearchIdentities() throws Exception {
     Assumptions.assumeTrue(System.getenv("DESCOPE_MOCK_URL") != null);
-    AgenticIdentitySearchResponse res = agenticService.searchIdentities(AgenticIdentitySearchOptions.builder()
+    final AgenticIdentitySearchResponse res = agenticService.searchIdentities(AgenticIdentitySearchOptions.builder()
         .userId(USER_ID).clientId("client1").resourceId("res1").consentId("cons1").page(1).limit(10).build());
 
     JsonNode last = lastCall();
@@ -99,7 +99,7 @@ class AgenticServiceMockTest {
   @Test
   void testRevokeIdentities() throws Exception {
     Assumptions.assumeTrue(System.getenv("DESCOPE_MOCK_URL") != null);
-    int revoked = agenticService.revokeIdentities(AgenticIdentityRevokeOptions.builder()
+    final int revoked = agenticService.revokeIdentities(AgenticIdentityRevokeOptions.builder()
         .userId(USER_ID).clientId("client1").resourceId("res1").consentId("cons1").build());
 
     JsonNode last = lastCall();
