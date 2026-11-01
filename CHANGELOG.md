@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2](https://github.com/descope/descope-java/compare/java-sdk-1.6.1...java-sdk-1.6.2) (2026-11-01)
+
+
+### Documentation
+
+* add CLAUDE.md and make unit tests independent of test order ([#386](https://github.com/descope/descope-java/issues/386)) ([d6c6d2c](https://github.com/descope/descope-java/commit/d6c6d2c10ecc867fd675601fefc38631ffaee242))
+
 ## [1.6.1](https://github.com/descope/descope-java/compare/java-sdk-1.6.0...java-sdk-1.6.1) (2026-10-23)
 
 
