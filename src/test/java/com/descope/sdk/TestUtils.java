@@ -20,7 +20,11 @@ import org.junit.platform.commons.util.StringUtils;
 @UtilityClass
 public class TestUtils {
 
-  public static final String PROJECT_ID = EnvironmentUtils.getProjectId();
+  // Placeholder when unset, so unit tests don't depend on the environment or test order
+  public static final String PROJECT_ID =
+      StringUtils.isBlank(EnvironmentUtils.getProjectId())
+          ? "P0000000000000000000000000000"
+          : EnvironmentUtils.getProjectId();
   public static final String MOCK_EMAIL = "username@domain.com";
   public static final String MOCK_MASKED_EMAIL = "u*******@domain.com";
   public static final String MOCK_DOMAIN = "https://www.domain.com";
@@ -132,7 +136,7 @@ public class TestUtils {
     }
     return Client.builder()
         .uri(baseUrl)
-        .projectId(EnvironmentUtils.getProjectId())
+        .projectId(PROJECT_ID)
         .managementKey(EnvironmentUtils.getManagementKey())
         .sdkInfo(getSdkInfo())
         .build();
