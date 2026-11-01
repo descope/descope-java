@@ -6,7 +6,7 @@ Guidance for Claude Code and other contributors. `README.md` is the user documen
 
 - Build and run all tests: `mvn -B -ntp package`. One test class: `mvn -B -ntp -Dtest='TenantServiceImplTest' test`.
 - Lint: `mvn -B -ntp verify -DskipTests -Dgpg.skip`. Checkstyle (`checkstyle.xml`, Google style, 2-space indent, 120-column lines) runs in `verify`, not in `package`, so `package` passing doesn't mean lint passes.
-- Unit tests read `DESCOPE_PROJECT_ID` (through `TestUtils.getClient()`) and fail with a `NullPointerException` when it is unset; set any placeholder, e.g. `DESCOPE_PROJECT_ID=P0000000000000000000000000000`. Live tests (`testFunctionalFullCycle`, `@RetryingTest`) also need `DESCOPE_MANAGEMENT_KEY` and a real project.
+- Live tests (`testFunctional*`, `FGALiveTest`) call a real project and need `DESCOPE_PROJECT_ID` and `DESCOPE_MANAGEMENT_KEY`. CI skips them: `mvn -B -ntp package '-Dtest=*,!%regex[#testFunctional.*],!FGALiveTest'`.
 
 ## Checks that only fail in CI or review
 
