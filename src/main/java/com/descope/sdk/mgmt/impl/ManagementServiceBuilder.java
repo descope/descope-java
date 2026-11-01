@@ -56,6 +56,7 @@ public class ManagementServiceBuilder {
         .outboundAppsService(new OutboundAppsServiceImpl(client))
         .outboundAppsByTokenService(new OutboundAppsByTokenServiceImpl(client))
         .inboundAppsService(new InboundAppsServiceImpl(client))
+        .agenticService(new AgenticServiceImpl(client))
         .userCustomAttributesService(new UserCustomAttributesServiceImpl(client))
         .build();
   }

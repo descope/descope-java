@@ -96,7 +96,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+14. [Manage Agentic Identities](#manage-agentic-identities)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1876,6 +1877,52 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Agentic Identities
+
+You can search and revoke agentic identities (consents granted to agentic apps):
+
+```java
+// Set up the agentic service
+AgenticService agenticService = descopeClient.getManagementServices().getAgenticService();
+
+// Search agentic identities
+// All fields are optional, use to filter results
+try {
+    AgenticIdentitySearchResponse res = agenticService.searchIdentities(
+        AgenticIdentitySearchOptions.builder()
+            // .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            // .page(0) // page number, starting with 0
+            // .limit(100)
+            .build()
+    );
+    for (AgenticIdentity identity : res.getIdentities()) {
+        // identity.getAgentName(), identity.getClientId(), identity.getConsent()
+    }
+    // res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Revoke agentic identities and their consents
+// At least one field must be set: userId, clientId, resourceId or consentId
+// Setting only userId revokes all of the user's agentic identities across MCP servers
+try {
+    int revoked = agenticService.revokeIdentities(
+        AgenticIdentityRevokeOptions.builder()
+            .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Project
