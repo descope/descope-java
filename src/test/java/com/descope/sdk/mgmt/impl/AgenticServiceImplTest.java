@@ -88,7 +88,7 @@ class AgenticServiceImplTest {
         authHeader.set(inv.getArgument(0));
         return apiProxy;
       });
-      AgenticIdentitySearchResponse res = agenticService.searchIdentities(options);
+      final AgenticIdentitySearchResponse res = agenticService.searchIdentities(options);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
       verify(apiProxy).post(uriCaptor.capture(), same(options), eq(AgenticIdentitySearchResponse.class));
@@ -140,7 +140,7 @@ class AgenticServiceImplTest {
         authHeader.set(inv.getArgument(0));
         return apiProxy;
       });
-      int revoked = agenticService.revokeIdentities(options);
+      final int revoked = agenticService.revokeIdentities(options);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
       verify(apiProxy).post(uriCaptor.capture(), same(options), eq(AgenticIdentityRevokeResponse.class));
