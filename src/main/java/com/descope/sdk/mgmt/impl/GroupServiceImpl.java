@@ -11,6 +11,7 @@ import com.descope.model.client.Client;
 import com.descope.model.group.Group;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.GroupService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -21,18 +22,17 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public List<Group> loadAllGroups(String tenantID) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
     Map<String, String> request = mapOf("tenantId", tenantID);
     ApiProxy apiProxy = getApiProxy();
-    return (List<Group>) apiProxy.post(getUri(GROUP_LOAD_ALL_LINK), request, List.class);
+    return apiProxy.postAndGetArray(
+        getUri(GROUP_LOAD_ALL_LINK), request, new TypeReference<List<Group>>() {});
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public List<Group> loadAllGroupsForMembers(
       String tenantID, List<String> userIDs, List<String> loginIDs) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
@@ -44,12 +44,11 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
     Map<String, Object> request =
         mapOf("tenantId", tenantID, "loginIds", loginIDs, "userIds", userIDs);
     ApiProxy apiProxy = getApiProxy();
-    return (List<Group>)
-        apiProxy.post(getUri(LOAD_ALL_FOR_GROUP_MEMBERS_LINK), request, List.class);
+    return apiProxy.postAndGetArray(
+        getUri(LOAD_ALL_FOR_GROUP_MEMBERS_LINK), request, new TypeReference<List<Group>>() {});
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public List<Group> loadAllGroupMembers(String tenantID, String groupID) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
@@ -59,6 +58,7 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
     }
     Map<String, String> request = mapOf("tenantId", tenantID, "groupId", groupID);
     ApiProxy apiProxy = getApiProxy();
-    return (List<Group>) apiProxy.post(getUri(LOAD_ALL_GROUP_MEMBERS_LINK), request, List.class);
+    return apiProxy.postAndGetArray(
+        getUri(LOAD_ALL_GROUP_MEMBERS_LINK), request, new TypeReference<List<Group>>() {});
   }
 }
