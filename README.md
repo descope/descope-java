@@ -96,7 +96,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+14. [Manage Agentic Identities and Governance](#manage-agentic-identities-and-governance)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1872,6 +1873,130 @@ try {
             .build()
     );
     // res.getConsents(), res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+### Manage Agentic Identities and Governance
+
+You can search and revoke agentic identities, and manage the Agentic Governance Suite settings and access requests.
+Updating the governance settings (when anything changes) and the access request functions require the Agentic Governance Suite in the company license:
+
+```java
+// Set up the agentic service
+AgenticService agenticService = descopeClient.getManagementServices().getAgenticService();
+
+// Search agentic identities (consents granted to agentic apps)
+// All filters are optional
+try {
+    AgenticIdentitySearchResponse res = agenticService.searchAgenticIdentities(
+        AgenticIdentitySearchOptions.builder()
+            // .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            // .page(0)
+            // .limit(100)
+            .build()
+    );
+    for (AgenticIdentity identity : res.getIdentities()) {
+        // identity.getAgentName(), identity.getClientId(), identity.getConsent()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Revoke agentic identities and their consents by client ID, consent ID, resource ID and/or user ID
+// Options with only a user ID revoke all of the user's agentic identities
+try {
+    int revoked = agenticService.revokeAgenticIdentities(
+        AgenticIdentityRevokeOptions.builder()
+            .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load the governance settings
+try {
+    GovernanceSettings settings = agenticService.getGovernanceSettings();
+    // settings.getConfigured(), settings.getAutoApproval(), settings.getSuiteDisabled()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update the governance settings; fields left unset keep their current values
+try {
+    GovernanceSettings settings = agenticService.setGovernanceSettings(
+        GovernanceSettings.builder()
+            .autoApproval(true)
+            // .configured(true)
+            // .suiteDisabled(false)
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search governance access requests, with filtering, sorting and paging
+try {
+    GovernanceAccessRequestSearchResponse res = agenticService.searchGovernanceAccessRequests(
+        GovernanceAccessRequestSearchOptions.builder()
+            // .text("free text")
+            // .sort(Arrays.asList(GovernanceSortField.builder().field("createdTime").desc(true).build()))
+            // .limit(10)
+            // .page(0)
+            .build()
+    );
+    for (GovernanceAccessRequest request : res.getRequests()) {
+        // request.getId(), request.getStatus(), request.getClientName()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a governance access request by ID
+try {
+    GovernanceAccessRequest request = agenticService.getGovernanceAccessRequest("request-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Approve or deny a pending governance access request; approving provisions the agent client
+try {
+    GovernanceAccessRequest request = agenticService.resolveGovernanceAccessRequest(
+        GovernanceAccessRequestResolveRequest.builder()
+            .id("request-id") // required
+            .action("approve") // required, "approve" or "deny"
+            // .resolutionNote("note")
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create a governance access request on behalf of an existing, active console user in your company
+try {
+    GovernanceAccessRequest request = agenticService.createGovernanceAccessRequest(
+        GovernanceAccessRequestCreateRequest.builder()
+            .requestorUserId("console-user-id") // required
+            .clientName("My Agent")
+            .grantTypes(Arrays.asList("clientCredentials")) // authCode, clientCredentials, jwtBearer or ciba
+            .targets(Arrays.asList(
+                GovernanceAccessRequestTarget.builder()
+                    .name("resource-name")
+                    .kind("resource") // "resource" or "connection"
+                    .scopes(Arrays.asList("read"))
+                    .build()))
+            .justification("Needed for the reporting agent")
+            .build()
+    );
 } catch (DescopeException de) {
     // Handle the error
 }
