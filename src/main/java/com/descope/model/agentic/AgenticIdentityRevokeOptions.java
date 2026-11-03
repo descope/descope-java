@@ -1,0 +1,18 @@
+package com.descope.model.agentic;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+// Filters for revoking agentic identities. At least one field must be set.
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AgenticIdentityRevokeOptions {
+  private String userId;
+  private String clientId;
+  private String resourceId;
+  private String consentId;
+}
