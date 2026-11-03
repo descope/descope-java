@@ -280,6 +280,18 @@ public class Routes {
     public static final String MANAGEMENT_INBOUND_DELETE_TENANT_CONSENT = "/v1/mgmt/thirdparty/consents/delete/tenant";
     public static final String MANAGEMENT_INBOUND_SEARCH_CONSENT = "/v1/mgmt/thirdparty/consents/search";
 
+    // Agentic
+    public static final String MANAGEMENT_AGENTIC_IDENTITIES_SEARCH = "/v1/mgmt/agentic/identities/search";
+    public static final String MANAGEMENT_AGENTIC_IDENTITIES_REVOKE = "/v1/mgmt/agentic/identities/revoke";
+    public static final String MANAGEMENT_AGENTIC_GOVERNANCE_SETTINGS = "/v1/mgmt/agentic/governance/settings";
+    public static final String MANAGEMENT_AGENTIC_GOVERNANCE_REQUESTS_SEARCH =
+        "/v1/mgmt/agentic/governance/requests/search";
+    public static final String MANAGEMENT_AGENTIC_GOVERNANCE_REQUESTS_GET = "/v1/mgmt/agentic/governance/requests/get";
+    public static final String MANAGEMENT_AGENTIC_GOVERNANCE_REQUESTS_RESOLVE =
+        "/v1/mgmt/agentic/governance/requests/resolve";
+    public static final String MANAGEMENT_AGENTIC_GOVERNANCE_REQUESTS_CREATE =
+        "/v1/mgmt/agentic/governance/requests/create";
+
     // Tenant (parity)
     public static final String TENANT_UPDATE_DEFAULT_ROLES_LINK = "/v1/mgmt/tenant/updateDefaultRoles";
 
