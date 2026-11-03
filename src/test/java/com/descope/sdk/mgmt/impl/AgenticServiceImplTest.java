@@ -176,7 +176,7 @@ class AgenticServiceImplTest {
   @Test
   void testGetGovernanceSettings() {
     response.set("{\"configured\":true,\"autoApproval\":false,\"suiteDisabled\":true}");
-    GovernanceSettings res = agenticService.getGovernanceSettings();
+    final GovernanceSettings res = agenticService.getGovernanceSettings();
     assertEquals("GET", method.get());
     assertEquals("/v1/mgmt/agentic/governance/settings", path.get());
     assertEquals("Bearer " + PROJECT_ID + ":" + MANAGEMENT_KEY, auth.get());
