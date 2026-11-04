@@ -4,10 +4,13 @@ import static com.descope.literals.Routes.ManagementEndPoints.COMPOSE_OTP_FOR_TE
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_USERS_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_ALL_TEST_USERS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.DELETE_LOGOUT_SESSION_RANGE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.ENCHANTED_LINK_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.GET_PROVIDER_TOKEN;
+import static com.descope.literals.Routes.ManagementEndPoints.LIST_LOGOUT_SESSION_RANGES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_USER_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.LOGOUT_SESSIONS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOGOUT_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.MAGIC_LINK_FOR_TEST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.PATCH_USER_LINK;
@@ -65,6 +68,9 @@ import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
+import com.descope.model.user.response.LogoutSessionRange;
+import com.descope.model.user.response.LogoutSessionRangeResponse;
+import com.descope.model.user.response.LogoutSessionRangesResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
@@ -77,6 +83,11 @@ import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.net.URI;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
@@ -312,6 +323,47 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI logoutUserUri = composeLogoutUserUri();
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(logoutUserUri, mapOf("userId", userId, "sessionTypes", sessionTypes), Void.class);
+  }
+
+  @Override
+  public LogoutSessionRange logoutSessionsCreatedBetween(Instant before, Instant after, List<String> sessionTypes)
+      throws DescopeException {
+    if (before == null) {
+      throw ServerCommonException.invalidArgument("Before");
+    }
+    Map<String, Object> request = mapOf("sessionsCreatedBefore", DateTimeFormatter.ISO_INSTANT.format(before));
+    if (after != null) {
+      request.put("sessionsCreatedAfter", DateTimeFormatter.ISO_INSTANT.format(after));
+    }
+    addIfNotNull(request, "sessionTypes", sessionTypes);
+    ApiProxy apiProxy = getApiProxy();
+    LogoutSessionRangeResponse response =
+        apiProxy.post(getUri(LOGOUT_SESSIONS_LINK), request, LogoutSessionRangeResponse.class);
+    return toLogoutSessionRange(response);
+  }
+
+  @Override
+  public List<LogoutSessionRange> listLogoutSessionRanges() throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    LogoutSessionRangesResponse response =
+        apiProxy.post(getUri(LIST_LOGOUT_SESSION_RANGES_LINK), new HashMap<String, Object>(),
+            LogoutSessionRangesResponse.class);
+    List<LogoutSessionRange> ranges = new ArrayList<>();
+    if (response != null && response.getRanges() != null) {
+      for (LogoutSessionRangeResponse r : response.getRanges()) {
+        ranges.add(toLogoutSessionRange(r));
+      }
+    }
+    return ranges;
+  }
+
+  @Override
+  public void deleteLogoutSessionRange(String id) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("ID");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(DELETE_LOGOUT_SESSION_RANGE_LINK), mapOf("id", id), Void.class);
   }
 
   @Override
@@ -774,6 +826,18 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   private URI composeLogoutUserUri() {
     return getUri(LOGOUT_USER_LINK);
+  }
+
+  private static LogoutSessionRange toLogoutSessionRange(LogoutSessionRangeResponse r) {
+    if (r == null) {
+      return null;
+    }
+    return new LogoutSessionRange(r.getId(), parseRfc3339(r.getAfter()), parseRfc3339(r.getBefore()),
+        r.getSessionTypes());
+  }
+
+  private static Instant parseRfc3339(String value) {
+    return StringUtils.isBlank(value) ? null : OffsetDateTime.parse(value).toInstant();
   }
 
   private URI composeDeleteAllTestUsersUri() {

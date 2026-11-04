@@ -95,6 +95,9 @@ public class Routes {
     public static final String DELETE_ALL_TEST_USERS_LINK = "/v1/mgmt/user/test/delete/all";
     public static final String LOAD_USER_LINK = "/v1/mgmt/user";
     public static final String LOGOUT_USER_LINK = "/v1/mgmt/user/logout";
+    public static final String LOGOUT_SESSIONS_LINK = "/v1/mgmt/user/logout/sessions";
+    public static final String LIST_LOGOUT_SESSION_RANGES_LINK = "/v1/mgmt/user/logout/sessions/list";
+    public static final String DELETE_LOGOUT_SESSION_RANGE_LINK = "/v1/mgmt/user/logout/sessions/delete";
     public static final String USER_SEARCH_ALL_LINK = "/v2/mgmt/user/search";
     public static final String USER_UPDATE_STATUS_LINK = "/v1/mgmt/user/update/status";
     public static final String USER_UPDATE_EMAIL_LINK = "/v1/mgmt/user/update/email";

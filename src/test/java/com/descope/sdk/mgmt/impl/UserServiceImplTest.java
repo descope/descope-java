@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -43,6 +44,7 @@ import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
+import com.descope.model.user.response.LogoutSessionRange;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
@@ -61,6 +63,10 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
@@ -72,6 +78,12 @@ import java.util.Map;
 import java.util.Random;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -1465,5 +1477,132 @@ public class UserServiceImplTest {
     Assertions.assertThat(authInfo.getUser().getLoginIds()).contains(loginId);
     // Delete
     userService.delete(loginId);
+  }
+
+  @Test
+  void testLogoutSessionsCreatedBetweenForNullBefore() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.logoutSessionsCreatedBetween(null, null, null));
+    assertNotNull(thrown);
+    assertEquals("The Before argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testDeleteLogoutSessionRangeForEmptyId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.deleteLogoutSessionRange(""));
+    assertNotNull(thrown);
+    assertEquals("The ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLogoutSessionsCreatedBetweenForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"id\":\"r1\",\"after\":\"2026-01-01T00:00:00Z\",\"before\":\"2026-02-01T10:30:00Z\","
+            + "\"sessionTypes\":[\"web\"]}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
+          Instant.parse("2026-02-01T10:30:00Z"), Instant.parse("2026-01-01T00:00:00Z"), Arrays.asList("web"));
+      Map<?, ?> body = requestBody(captor.getValue());
+      assertTrue(captor.getValue().getRequestUri().endsWith("/v1/mgmt/user/logout/sessions"));
+      assertEquals("2026-02-01T10:30:00Z", body.get("sessionsCreatedBefore"));
+      assertEquals("2026-01-01T00:00:00Z", body.get("sessionsCreatedAfter"));
+      assertEquals(Arrays.asList("web"), body.get("sessionTypes"));
+      assertEquals("r1", range.getId());
+      assertEquals(Instant.parse("2026-01-01T00:00:00Z"), range.getAfter());
+      assertEquals(Instant.parse("2026-02-01T10:30:00Z"), range.getBefore());
+      assertEquals(Arrays.asList("web"), range.getSessionTypes());
+    }
+  }
+
+  @Test
+  void testLogoutSessionsCreatedBetweenOpenEnded() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"id\":\"r1\",\"after\":\"1970-01-01T00:00:00Z\",\"before\":\"2026-02-01T10:30:00Z\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
+          Instant.parse("2026-02-01T10:30:00Z"), null, null);
+      Map<?, ?> body = requestBody(captor.getValue());
+      assertEquals(1, body.size());
+      assertEquals("2026-02-01T10:30:00Z", body.get("sessionsCreatedBefore"));
+      assertFalse(body.containsKey("sessionsCreatedAfter"));
+      assertFalse(body.containsKey("sessionTypes"));
+      assertEquals(Instant.EPOCH, range.getAfter());
+      assertNull(range.getSessionTypes());
+    }
+  }
+
+  @Test
+  void testListLogoutSessionRangesForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"ranges\":[{\"id\":\"r1\",\"after\":\"1970-01-01T00:00:00Z\",\"before\":\"2026-02-01T10:30:00Z\","
+            + "\"sessionTypes\":[]},{\"id\":\"r2\",\"after\":\"2026-01-01T00:00:00Z\","
+            + "\"before\":\"2026-01-02T00:00:00Z\",\"sessionTypes\":[\"web\",\"mobile\"]}]}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      List<LogoutSessionRange> ranges = userService.listLogoutSessionRanges();
+      assertTrue(captor.getValue().getRequestUri().endsWith("/v1/mgmt/user/logout/sessions/list"));
+      assertTrue(requestBody(captor.getValue()).isEmpty());
+      assertEquals(2, ranges.size());
+      assertEquals("r1", ranges.get(0).getId());
+      assertEquals(Instant.EPOCH, ranges.get(0).getAfter());
+      assertEquals(Instant.parse("2026-02-01T10:30:00Z"), ranges.get(0).getBefore());
+      assertEquals("r2", ranges.get(1).getId());
+      assertEquals(Instant.parse("2026-01-01T00:00:00Z"), ranges.get(1).getAfter());
+      assertEquals(Arrays.asList("web", "mobile"), ranges.get(1).getSessionTypes());
+    }
+  }
+
+  @Test
+  void testDeleteLogoutSessionRangeForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      userService.deleteLogoutSessionRange("r1");
+      assertTrue(captor.getValue().getRequestUri().endsWith("/v1/mgmt/user/logout/sessions/delete"));
+      assertEquals(mapOf("id", "r1"), requestBody(captor.getValue()));
+    }
+  }
+
+  @Test
+  void testDeleteLogoutSessionRangeNotFound() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 404,
+        "{\"errorDescription\":\"Logout session range not found\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      ServerCommonException thrown = assertThrows(ServerCommonException.class,
+          () -> userService.deleteLogoutSessionRange("unknown"));
+      assertEquals("404", thrown.getCode());
+      assertEquals("Logout session range not found", thrown.getMessage());
+    }
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private CloseableHttpClient mockHttpClient(ArgumentCaptor<ClassicHttpRequest> captor, int statusCode,
+      String responseBody) throws IOException {
+    CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+    doAnswer(inv -> {
+      ClassicHttpResponse response = mock(ClassicHttpResponse.class);
+      when(response.getCode()).thenReturn(statusCode);
+      HttpEntity entity = mock(HttpEntity.class);
+      when(entity.getContent())
+          .thenReturn(new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8)));
+      when(response.getEntity()).thenReturn(entity);
+      return ((HttpClientResponseHandler) inv.getArgument(1)).handleResponse(response);
+    }).when(httpClient).execute(captor.capture(), any(HttpClientResponseHandler.class));
+    return httpClient;
+  }
+
+  private Map<?, ?> requestBody(ClassicHttpRequest request) throws IOException {
+    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+    request.getEntity().writeTo(bs);
+    return new ObjectMapper().readValue(bs.toByteArray(), Map.class);
   }
 }

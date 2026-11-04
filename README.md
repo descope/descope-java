@@ -873,6 +873,17 @@ try {
     // Handle the error
 }
 
+// Log out all sessions created in a time range (after is optional, null means open-ended).
+// Each session is logged out on its next refresh or validation. The range stays active for a year.
+try {
+    LogoutSessionRange range = us.logoutSessionsCreatedBetween(Instant.now(), null, null);
+    List<LogoutSessionRange> ranges = us.listLogoutSessionRanges();
+    // Stop applying the range to new sessions, sessions already logged out stay logged out
+    us.deleteLogoutSessionRange(range.getId());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 #### Set or Expire User Password
