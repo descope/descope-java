@@ -1503,7 +1503,7 @@ public class UserServiceImplTest {
             + "\"sessionTypes\":[\"web\"]}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
-      LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
+      final LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
           Instant.parse("2026-02-01T10:30:00Z"), Instant.parse("2026-01-01T00:00:00Z"), Arrays.asList("web"));
       Map<?, ?> body = requestBody(captor.getValue());
       assertTrue(captor.getValue().getRequestUri().endsWith("/v1/mgmt/user/logout/sessions"));
@@ -1524,7 +1524,7 @@ public class UserServiceImplTest {
         "{\"id\":\"r1\",\"after\":\"1970-01-01T00:00:00Z\",\"before\":\"2026-02-01T10:30:00Z\"}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
-      LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
+      final LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
           Instant.parse("2026-02-01T10:30:00Z"), null, null);
       Map<?, ?> body = requestBody(captor.getValue());
       assertEquals(1, body.size());
