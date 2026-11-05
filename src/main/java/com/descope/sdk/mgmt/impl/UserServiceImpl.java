@@ -87,6 +87,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -836,7 +837,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       return null;
     }
     return new LogoutSessionRange(r.getId(), parseRfc3339(r.getAfter()), parseRfc3339(r.getBefore()),
-        r.getSessionTypes());
+        r.getSessionTypes() != null ? r.getSessionTypes() : Collections.emptyList());
   }
 
   private static Instant parseRfc3339(String value) {

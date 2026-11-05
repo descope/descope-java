@@ -73,6 +73,7 @@ import java.security.spec.KeySpec;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -1550,7 +1551,7 @@ public class UserServiceImplTest {
       assertFalse(body.containsKey("sessionsCreatedAfter"));
       assertFalse(body.containsKey("sessionTypes"));
       assertEquals(Instant.EPOCH, range.getAfter());
-      assertNull(range.getSessionTypes());
+      assertEquals(Collections.emptyList(), range.getSessionTypes());
     }
   }
 
