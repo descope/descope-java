@@ -873,6 +873,21 @@ try {
     // Handle the error
 }
 
+// Log out all sessions created in a time range. before and after are optional (at least one is required).
+// A null before means the server's current time; prefer it over Instant.now(), since a before in the
+// future is rejected. A null after means open-ended. The returned range is what the server stored, which
+// may have a later after than requested. Each session is logged out on its next refresh or validation.
+// The range stays active for a year.
+try {
+    LogoutSessionRange range =
+        us.logoutSessionsCreatedBetween(null, Instant.now().minus(1, ChronoUnit.HOURS), null);
+    List<LogoutSessionRange> ranges = us.listLogoutSessionRanges();
+    // Stops logging out matching sessions not logged out yet, sessions already logged out stay logged out
+    us.deleteLogoutSessionRange(range.getId());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 #### Set or Expire User Password
