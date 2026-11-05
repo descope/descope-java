@@ -143,13 +143,18 @@ public interface UserService {
 
   /**
    * Logs out sessions created in the given time range (optionally only the given session types).
-   * Each session is logged out on its next refresh or validation. The range stays active for a
-   * year; delete it to stop applying it to new sessions, sessions already logged out stay logged out.
+   * Each session is logged out on its next refresh or validation. before defaults to the server's
+   * current time when null; prefer passing null over Instant.now(), since a before in the future is
+   * rejected. The range stays active for a year. Deleting it stops it from logging out matching
+   * sessions it hasn't logged out yet; sessions already logged out stay logged out.
    *
-   * @param before Sessions created before this time are logged out. Required.
-   * @param after Optional, sessions created after this time are logged out. Null for an open-ended range.
+   * @param before Optional (nullable), sessions created before this time are logged out. Null for the
+   *     server's current time. At least one of before and after is required.
+   * @param after Optional (nullable), sessions created after this time are logged out. Null for an
+   *     open-ended range.
    * @param sessionTypes Optional list of session types to log out, null or empty for all session types
-   * @return {@link LogoutSessionRange LogoutSessionRange} the created range
+   * @return {@link LogoutSessionRange LogoutSessionRange} the range as stored by the server, which may
+   *     store a later after than requested
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   LogoutSessionRange logoutSessionsCreatedBetween(Instant before, Instant after, List<String> sessionTypes)
@@ -164,7 +169,8 @@ public interface UserService {
   List<LogoutSessionRange> listLogoutSessionRanges() throws DescopeException;
 
   /**
-   * Delete a logout session range, so it stops applying to new sessions.
+   * Deletes a logout sessions range. It stops logging out matching sessions it hasn't logged out yet;
+   * sessions already logged out stay logged out.
    *
    * @param id The range ID is required.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.

@@ -328,10 +328,13 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   @Override
   public LogoutSessionRange logoutSessionsCreatedBetween(Instant before, Instant after, List<String> sessionTypes)
       throws DescopeException {
-    if (before == null) {
-      throw ServerCommonException.invalidArgument("Before");
+    if (before == null && after == null) {
+      throw ServerCommonException.invalidArgument("Before or After");
     }
-    Map<String, Object> request = mapOf("sessionsCreatedBefore", DateTimeFormatter.ISO_INSTANT.format(before));
+    Map<String, Object> request = new HashMap<>();
+    if (before != null) {
+      request.put("sessionsCreatedBefore", DateTimeFormatter.ISO_INSTANT.format(before));
+    }
     if (after != null) {
       request.put("sessionsCreatedAfter", DateTimeFormatter.ISO_INSTANT.format(after));
     }

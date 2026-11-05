@@ -1480,11 +1480,29 @@ public class UserServiceImplTest {
   }
 
   @Test
-  void testLogoutSessionsCreatedBetweenForNullBefore() {
+  void testLogoutSessionsCreatedBetweenForNullBeforeAndAfter() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.logoutSessionsCreatedBetween(null, null, null));
     assertNotNull(thrown);
-    assertEquals("The Before argument is invalid", thrown.getMessage());
+    assertEquals("The Before or After argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLogoutSessionsCreatedBetweenForNullBefore() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"id\":\"r1\",\"after\":\"2026-01-01T00:00:00Z\",\"before\":\"2026-02-01T10:30:00Z\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      final LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
+          null, Instant.parse("2026-01-01T00:00:00Z"), null);
+      Map<?, ?> body = requestBody(captor.getValue());
+      assertEquals(1, body.size());
+      assertEquals("2026-01-01T00:00:00Z", body.get("sessionsCreatedAfter"));
+      assertFalse(body.containsKey("sessionsCreatedBefore"));
+      assertEquals(Instant.parse("2026-01-01T00:00:00Z"), range.getAfter());
+      assertEquals(Instant.parse("2026-02-01T10:30:00Z"), range.getBefore());
+    }
   }
 
   @Test
