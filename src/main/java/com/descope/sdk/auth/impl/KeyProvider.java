@@ -31,7 +31,7 @@ public class KeyProvider {
     URI uri = addPath(UriUtils.getUri(url, GET_KEYS_LINK), projectId);
     SigningKeysResponse signingKeys = apiProxy.get(uri, SigningKeysResponse.class);
 
-    if (signingKeys == null || signingKeys.getKeys() == null || signingKeys.getKeys().size() < 1) {
+    if (signingKeys == null || signingKeys.getKeys() == null) {
       throw ServerCommonException.invalidSigningKey("No keys were found in the response");
     }
     Map<String, Key> keys = new HashMap<>();
