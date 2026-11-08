@@ -31,7 +31,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.LongSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,14 +46,11 @@ class ClientKeyCacheTest {
   private volatile String body;
   private volatile int status = 200;
   private volatile long delayMs = 0;
-  private LongSupplier originalClock;
   private HttpServer server;
   private Client client;
 
   @BeforeEach
   void setUp() throws IOException {
-    originalClock = Client.nanoClock;
-    Client.nanoClock = now::get;
     body = jwks("k1");
     server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
     server.createContext("/v2/keys/P123", exchange -> {
@@ -75,11 +71,11 @@ class ClientKeyCacheTest {
         .uri("http://127.0.0.1:" + server.getAddress().getPort())
         .projectId("P123")
         .build();
+    client.setClock(now::get);
   }
 
   @AfterEach
   void tearDown() {
-    Client.nanoClock = originalClock;
     server.stop(0);
   }
 
@@ -181,12 +177,29 @@ class ClientKeyCacheTest {
   }
 
   @Test
-  void emptyResponseReplacesKeySet() {
+  void emptyResponseKeepsLastGoodKeys() {
     assertNotNull(client.getKey("k1"));
     body = "{\"keys\":[]}";
     now.addAndGet(TTL_NANOS);
-    assertNull(client.getKey("k1"));
+    assertNotNull(client.getKey("k1"), "an empty key list must count as a failed fetch");
     assertEquals(2, fetches.get());
+  }
+
+  @Test
+  void clockIsIgnoredByEquality() {
+    Client other = Client.builder().uri(client.getUri()).projectId("P123").keys(client.getKeys()).build();
+    other.setClock(() -> 0L);
+    assertEquals(other, client);
+    assertEquals(other.hashCode(), client.hashCode());
+  }
+
+  @Test
+  void failedFetchIsLoggedAsWarning() {
+    CapturingLogProvider.WARNINGS.clear();
+    status = 400;
+    assertThrows(DescopeException.class, () -> client.getKey("k1"));
+    assertEquals(1, CapturingLogProvider.WARNINGS.stream()
+        .filter(m -> m.startsWith("Failed to fetch signing keys")).count());
   }
 
   @Test
