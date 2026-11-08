@@ -67,24 +67,25 @@ public class Client {
       return providedKey;
     }
     AtomicReference<Map<String, Key>> ref = keys;
-    Map<String, Key> current = ref.get();
-    Key k = current.get(keyId);
-    if (k != null && !isStale(current, nanoClock.getAsLong())) {
+    Map<String, Key> seen = ref.get();
+    Key k = seen.get(keyId);
+    if (k != null && (!isStale(seen, nanoClock.getAsLong()) || seen instanceof KeySet && ((KeySet) seen).refreshing)) {
       return k;
     }
-    // One fetch at a time per key cache; callers that waited reuse its result.
+    // One fetch at a time per key cache; callers that waited share its result.
     synchronized (ref) {
-      current = ref.get();
-      k = current.get(keyId);
-      long now = nanoClock.getAsLong();
-      if (k != null && !isStale(current, now)) {
-        return k;
+      Map<String, Key> current = ref.get();
+      if (current != seen) {
+        return current.get(keyId);
       }
+      long now = nanoClock.getAsLong();
       if (current instanceof KeySet) {
         KeySet set = (KeySet) current;
         if (now - (k == null ? set.fetchedAt : set.attemptedAt) < KEYS_REFETCH_COOLDOWN_NANOS) {
           return k;
         }
+        // Lets stale cached keys be served without waiting on this fetch.
+        set.refreshing = true;
       }
       try {
         ref.set(new KeySet(KeyProvider.getKeys(projectId, uri, this), now, now));
@@ -110,6 +111,7 @@ public class Client {
     private static final long serialVersionUID = 1L;
     private final long fetchedAt;
     private final long attemptedAt;
+    private volatile boolean refreshing;
 
     private KeySet(Map<String, Key> keys, long fetchedAt, long attemptedAt) {
       super(keys);

@@ -1,6 +1,7 @@
 package com.descope.model.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -171,6 +172,57 @@ class ClientKeyCacheTest {
         assertNotNull(f.get(10, TimeUnit.SECONDS));
       }
       assertEquals(1, fetches.get());
+    } finally {
+      pool.shutdownNow();
+    }
+  }
+
+  @Test
+  void concurrentLookupsShareOneFailedFetch() throws Exception {
+    status = 400;
+    delayMs = 500;
+    int threads = 8;
+    ExecutorService pool = Executors.newFixedThreadPool(threads);
+    try {
+      CountDownLatch start = new CountDownLatch(1);
+      List<Future<Key>> results = new ArrayList<>();
+      for (int i = 0; i < threads; i++) {
+        results.add(pool.submit(() -> {
+          start.await();
+          try {
+            return client.getKey("k1");
+          } catch (DescopeException e) {
+            return null;
+          }
+        }));
+      }
+      start.countDown();
+      for (Future<Key> f : results) {
+        assertNull(f.get(10, TimeUnit.SECONDS));
+      }
+      assertEquals(1, fetches.get(), "callers waiting on a failed fetch must not each fetch again");
+    } finally {
+      pool.shutdownNow();
+    }
+  }
+
+  @Test
+  void staleCachedKeyIsServedWhileAnotherCallerRefreshes() throws Exception {
+    assertNotNull(client.getKey("k1"));
+    now.addAndGet(TTL_NANOS);
+    delayMs = 2000;
+    ExecutorService pool = Executors.newSingleThreadExecutor();
+    try {
+      Future<Key> refresh = pool.submit(() -> client.getKey("k1"));
+      long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+      while (fetches.get() < 2 && System.nanoTime() < deadline) {
+        Thread.yield();
+      }
+      assertEquals(2, fetches.get());
+      assertNotNull(client.getKey("k1"));
+      assertFalse(refresh.isDone(), "the cached key must be returned without waiting for the refresh");
+      assertNotNull(refresh.get(10, TimeUnit.SECONDS));
+      assertEquals(2, fetches.get());
     } finally {
       pool.shutdownNow();
     }
