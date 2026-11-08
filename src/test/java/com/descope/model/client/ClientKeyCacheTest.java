@@ -5,8 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mockStatic;
 
 import com.descope.exception.DescopeException;
+import com.descope.sdk.auth.impl.KeyProvider;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,6 +35,7 @@ import java.util.function.LongSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 class ClientKeyCacheTest {
 
@@ -226,6 +230,19 @@ class ClientKeyCacheTest {
     } finally {
       pool.shutdownNow();
     }
+  }
+
+  @Test
+  void staleKeysStillRefreshAfterFetchThrowsError() {
+    assertNotNull(client.getKey("k1"));
+    now.addAndGet(TTL_NANOS);
+    try (MockedStatic<KeyProvider> keyProvider = mockStatic(KeyProvider.class)) {
+      keyProvider.when(() -> KeyProvider.getKeys(any(), any(), any())).thenThrow(new StackOverflowError());
+      assertThrows(StackOverflowError.class, () -> client.getKey("k1"));
+    }
+    body = jwks("k2");
+    assertNull(client.getKey("k1"), "an interrupted refresh must not leave stale keys served forever");
+    assertEquals(2, fetches.get());
   }
 
   @Test

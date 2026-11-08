@@ -97,6 +97,10 @@ public class Client {
           throw e;
         }
         return k;
+      } finally {
+        if (current instanceof KeySet) {
+          ((KeySet) current).refreshing = false;
+        }
       }
       return ref.get().get(keyId);
     }
