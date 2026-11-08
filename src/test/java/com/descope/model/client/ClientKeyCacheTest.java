@@ -217,7 +217,7 @@ class ClientKeyCacheTest {
     delayMs = 2000;
     ExecutorService pool = Executors.newSingleThreadExecutor();
     try {
-      Future<Key> refresh = pool.submit(() -> client.getKey("k1"));
+      final Future<Key> refresh = pool.submit(() -> client.getKey("k1"));
       long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
       while (fetches.get() < 2 && System.nanoTime() < deadline) {
         Thread.yield();
