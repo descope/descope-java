@@ -353,7 +353,6 @@ public class OTPServiceImplTest {
     JWTResponse jwtResponse = new ObjectMapper()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
         .readValue(json, JWTResponse.class);
-    AuthenticationInfo info;
     Captured captured;
     try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
       mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
@@ -363,7 +362,7 @@ public class OTPServiceImplTest {
     assertEquals("Bearer " + PROJECT_ID, captured.authorization);
     assertEquals(MOCK_PHONE, captured.body.get("loginId").asText());
     assertEquals("123456", captured.body.get("code").asText());
-    info = (AuthenticationInfo) captured.result;
+    AuthenticationInfo info = (AuthenticationInfo) captured.result;
     assertEquals("d", info.getCookieDomain());
     assertEquals("/", info.getCookiePath());
     assertEquals(1, info.getCookieMaxAge());
