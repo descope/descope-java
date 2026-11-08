@@ -21,6 +21,8 @@ public class Client {
   private static final long KEYS_TTL_NANOS = TimeUnit.MINUTES.toNanos(10);
   // Unknown key ids refetch at most this often after a successful fetch; stale cached keys after any attempt.
   private static final long KEYS_REFETCH_COOLDOWN_NANOS = TimeUnit.SECONDS.toNanos(30);
+  // Cached signing keys are never used once this long has passed since the last successful fetch.
+  private static final long KEYS_MAX_AGE_NANOS = TimeUnit.HOURS.toNanos(1);
   // Overridden in tests.
   static LongSupplier nanoClock = System::nanoTime;
 
@@ -68,17 +70,21 @@ public class Client {
     }
     AtomicReference<Map<String, Key>> ref = keys;
     Map<String, Key> seen = ref.get();
-    Key k = seen.get(keyId);
-    if (k != null && (!isStale(seen, nanoClock.getAsLong()) || seen instanceof KeySet && ((KeySet) seen).refreshing)) {
+    long now = nanoClock.getAsLong();
+    Key k = isExpired(seen, now) ? null : seen.get(keyId);
+    if (k != null && (!isStale(seen, now) || seen instanceof KeySet && ((KeySet) seen).refreshing)) {
       return k;
     }
     // One fetch at a time per key cache; callers that waited share its result.
     synchronized (ref) {
       Map<String, Key> current = ref.get();
+      now = nanoClock.getAsLong();
       if (current != seen) {
-        return current.get(keyId);
+        return isExpired(current, now) ? null : current.get(keyId);
       }
-      long now = nanoClock.getAsLong();
+      if (isExpired(current, now)) {
+        k = null;
+      }
       if (current instanceof KeySet) {
         KeySet set = (KeySet) current;
         if (now - (k == null ? set.fetchedAt : set.attemptedAt) < KEYS_REFETCH_COOLDOWN_NANOS) {
@@ -108,6 +114,10 @@ public class Client {
 
   private static boolean isStale(Map<String, Key> keys, long now) {
     return !(keys instanceof KeySet) || now - ((KeySet) keys).fetchedAt >= KEYS_TTL_NANOS;
+  }
+
+  private static boolean isExpired(Map<String, Key> keys, long now) {
+    return keys instanceof KeySet && now - ((KeySet) keys).fetchedAt >= KEYS_MAX_AGE_NANOS;
   }
 
   // Fetched keys with the nanoClock times of the last successful fetch and of the last fetch attempt.

@@ -138,6 +138,18 @@ class ClientKeyCacheTest {
   }
 
   @Test
+  void cachedKeysAreRejectedAnHourAfterLastSuccessfulFetch() {
+    assertNotNull(client.getKey("k1"));
+    status = 400;
+    now.addAndGet(TimeUnit.HOURS.toNanos(1) - 1);
+    assertNotNull(client.getKey("k1"), "cached key must stay usable within an hour of the last successful fetch");
+    assertEquals(2, fetches.get());
+    now.addAndGet(1);
+    assertThrows(DescopeException.class, () -> client.getKey("k1"));
+    assertEquals(3, fetches.get());
+  }
+
+  @Test
   void failedFetchDoesNotDelayUnknownKid() {
     status = 400;
     assertThrows(DescopeException.class, () -> client.getKey("k1"));
