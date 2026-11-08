@@ -682,6 +682,9 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    if (deliveryMethod == DeliveryMethod.IM) {
+      throw ServerCommonException.invalidArgument("DeliveryMethod");
+    }
     URI maginLinkForTestUserUri = composeMaginLinkForTestUserUri();
     MagicLinkTestUserRequest request = new MagicLinkTestUserRequest(loginId, deliveryMethod.getValue(), uri);
     ApiProxy apiProxy = getApiProxy();

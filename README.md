@@ -130,6 +130,36 @@ try {
 }
 ```
 
+`DeliveryMethod.IM` sends the code as an instant message to a phone number. You can also choose the messaging
+provider, sign-up options, and for sign in or sign up or in, the SSO application and whether to use the user's
+recovery email or phone:
+
+```java
+String phone = "+12025550123";
+SignUpOptions signUpOptions = SignUpOptions.builder().locale("en").tenantId("T1").build();
+String maskedPhone = otps.signUp(DeliveryMethod.IM, phone, new User(), signUpOptions, "provider-id");
+
+LoginOptions loginOptions = LoginOptions.builder().tenantId("T1").ssoAppId("sso-app-id").build();
+// refreshToken is required only for step-up or MFA
+maskedPhone = otps.signIn(DeliveryMethod.SMS, phone, loginOptions, null, "provider-id", "sso-app-id", false);
+maskedPhone = otps.signUpOrIn(DeliveryMethod.VOICE, phone, loginOptions, "provider-id", "sso-app-id", false);
+```
+
+A signed-in user can update their email or phone and verify it with a code. `providerId`, `locale`, `failOnConflict`
+and `mfa` in `UpdateOptions` apply to OTP updates only:
+
+```java
+UpdateOptions updateOptions = UpdateOptions.builder()
+    .addToLoginIds(true)
+    .providerId("provider-id")
+    .locale("en")
+    .failOnConflict(true)
+    .mfa(true) // keep the refresh token's auth methods and add this one
+    .build();
+String maskedEmail = otps.updateUserEmail(loginId, "new@descope.com", refreshToken, updateOptions);
+String maskedPhone = otps.updateUserPhone(DeliveryMethod.IM, loginId, "+12025550123", refreshToken, updateOptions);
+```
+
 The user will receive a code using the selected delivery method. Verify that code using:
 
 ```java
@@ -142,6 +172,10 @@ try {
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+`AuthenticationInfo` also carries the cookie settings the project defines (`getCookieName()`, `getCookieDomain()`,
+`getCookiePath()`, `getCookieMaxAge()` and so on) and details such as `getNextRefreshSeconds()` and
+`getTrustedDeviceJwt()`.
 
 ### Magic Link
 

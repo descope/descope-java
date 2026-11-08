@@ -27,6 +27,7 @@ import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.SigningKeysResponse;
@@ -181,6 +182,31 @@ class MagicLinkServiceImplTest {
 
     assertNotNull(thrown);
     assertEquals("The Email argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testIMDeliveryMethodNotSupported() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_DOMAIN, null, null));
+    assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signUp(DeliveryMethod.IM, MOCK_PHONE, MOCK_DOMAIN, null));
+    assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signUpOrIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_DOMAIN));
+    assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateOTPOnlyOptionsNotSupported() {
+    UpdateOptions updateOptions = UpdateOptions.builder().mfa(true).build();
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, updateOptions));
+    assertEquals("The UpdateOptions argument is invalid", thrown.getMessage());
+    UpdateOptions providerOptions = UpdateOptions.builder().providerId("provider1").build();
+    thrown = assertThrows(ServerCommonException.class, () -> magicLinkService.updateUserPhone(
+        DeliveryMethod.SMS, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, providerOptions));
+    assertEquals("The UpdateOptions argument is invalid", thrown.getMessage());
   }
 
   @Test

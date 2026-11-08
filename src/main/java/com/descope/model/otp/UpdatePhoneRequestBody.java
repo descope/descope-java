@@ -18,4 +18,17 @@ public class UpdatePhoneRequestBody {
   private boolean addToLoginIds;
   private boolean onMergeUseExisting;
   private Map<String, String> templateOptions;
+  private String providerId;
+  private String locale;
+  private Boolean failOnConflict;
+  private Boolean mfa;
+
+  public UpdatePhoneRequestBody(String phone, String loginId, boolean addToLoginIds, boolean onMergeUseExisting,
+      Map<String, String> templateOptions) {
+    this.phone = phone;
+    this.loginId = loginId;
+    this.addToLoginIds = addToLoginIds;
+    this.onMergeUseExisting = onMergeUseExisting;
+    this.templateOptions = templateOptions;
+  }
 }

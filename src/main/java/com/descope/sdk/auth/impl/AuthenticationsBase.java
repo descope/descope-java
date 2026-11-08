@@ -9,6 +9,7 @@ import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -61,6 +62,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       case SMS:
       case VOICE:
       case WHATSAPP:
+      case IM:
         String phone = user.getPhone();
         if (StringUtils.isBlank(phone)) {
           phone = loginId;
@@ -84,11 +86,20 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     }
   }
 
+  // Link updates don't send the OTP-only update options
+  void verifyLinkUpdateOptions(UpdateOptions updateOptions) {
+    if (updateOptions.getProviderId() != null || updateOptions.getLocale() != null
+        || updateOptions.getFailOnConflict() != null || updateOptions.getMfa() != null) {
+      throw ServerCommonException.invalidArgument("UpdateOptions");
+    }
+  }
+
   Class<? extends Masked> getMaskedValue(DeliveryMethod deliveryMethod) {
     switch (deliveryMethod) {
       case SMS:
       case VOICE:
       case WHATSAPP:
+      case IM:
         return MaskedPhoneRes.class;
       case EMAIL:
         return MaskedEmailRes.class;
@@ -130,9 +141,27 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    return new AuthenticationInfo(
+    AuthenticationInfo info = new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
         jwtResponse.getIdpResponse());
+    info.setCookieDomain(jwtResponse.getCookieDomain());
+    info.setCookiePath(jwtResponse.getCookiePath());
+    info.setCookieMaxAge(jwtResponse.getCookieMaxAge());
+    info.setCookieExpiration(jwtResponse.getCookieExpiration());
+    info.setSessionExpiration(jwtResponse.getSessionExpiration());
+    info.setExternalToken(jwtResponse.getExternalToken());
+    info.setClaims(jwtResponse.getClaims());
+    info.setTenantSSOID(jwtResponse.getTenantSSOID());
+    info.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    info.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    info.setCookieName(jwtResponse.getCookieName());
+    info.setSessionCookieName(jwtResponse.getSessionCookieName());
+    info.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    info.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    info.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    info.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
+    info.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    return info;
   }
 
   @SuppressWarnings("unchecked")

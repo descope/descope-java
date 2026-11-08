@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
@@ -140,6 +141,18 @@ public class EnchantedLinkServiceImplTest {
 
     assertNotNull(thrown);
     assertEquals("The Email argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateOTPOnlyOptionsNotSupported() {
+    UpdateOptions updateOptions = UpdateOptions.builder().locale("en").build();
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () ->
+        enchantedLinkService.updateUserEmail(MOCK_EMAIL, MOCK_EMAIL, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, updateOptions));
+    assertEquals("The UpdateOptions argument is invalid", thrown.getMessage());
+    UpdateOptions conflictOptions = UpdateOptions.builder().failOnConflict(true).build();
+    thrown = assertThrows(ServerCommonException.class, () ->
+        enchantedLinkService.updateUserPhone(MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, conflictOptions));
+    assertEquals("The UpdateOptions argument is invalid", thrown.getMessage());
   }
 
   @Test

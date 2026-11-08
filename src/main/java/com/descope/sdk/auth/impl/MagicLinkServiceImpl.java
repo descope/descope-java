@@ -51,6 +51,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    verifyLinkDeliveryMethod(deliveryMethod);
 
     ApiProxy apiProxy;
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
@@ -80,6 +81,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
       user = new User();
     }
 
+    verifyLinkDeliveryMethod(deliveryMethod);
     verifyDeliveryMethod(deliveryMethod, loginId, user);
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpURL = composeMagicLinkSignUpURI(deliveryMethod);
@@ -114,6 +116,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    verifyLinkDeliveryMethod(deliveryMethod);
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
@@ -147,6 +150,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
+    verifyLinkUpdateOptions(updateOptions);
     UpdateEmailRequest updateEmailRequest =
         UpdateEmailRequest.builder()
             .email(email)
@@ -192,6 +196,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
+    verifyLinkUpdateOptions(updateOptions);
     UpdatePhoneRequest updatePhoneRequest =
         UpdatePhoneRequest.builder()
             .phone(phone)
@@ -206,6 +211,12 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     ApiProxy apiProxy = getApiProxy(refreshToken);
     Masked masked = apiProxy.post(magicLinkUpdateUserPhone, updatePhoneRequest, maskedClass);
     return masked.getMasked();
+  }
+
+  private static void verifyLinkDeliveryMethod(DeliveryMethod deliveryMethod) {
+    if (deliveryMethod == DeliveryMethod.IM) {
+      throw ServerCommonException.invalidArgument("DeliveryMethod");
+    }
   }
 
   private URI composeMagicLinkSignInURI(DeliveryMethod deliveryMethod) {

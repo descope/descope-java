@@ -189,6 +189,7 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
+    verifyLinkUpdateOptions(updateOptions);
     UpdateEmailRequest updateEmailRequest =
         UpdateEmailRequest.builder()
             .email(email)
@@ -226,6 +227,7 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
+    verifyLinkUpdateOptions(updateOptions);
     UpdatePhoneRequest updatePhoneRequest =
         UpdatePhoneRequest.builder()
             .phone(phone)

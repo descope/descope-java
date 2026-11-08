@@ -38,6 +38,23 @@ public interface OTPService {
       throws DescopeException;
 
   /**
+   * Use to login a user based on the given loginID either email or a phone and choose the selected
+   * delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param refreshToken - if doing step-up or mfa refresh token is required
+   * @param providerId - optional messaging provider ID
+   * @param ssoAppId - optional SSO application ID
+   * @param useRecovery - optional, send the code to the user's recovery email or phone
+   * @return - masked address where the code was sent (email or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions, String refreshToken,
+      String providerId, String ssoAppId, Boolean useRecovery) throws DescopeException;
+
+  /**
    * Use to create a new user based on the given loginID either email or a phone. choose the
    * selected delivery method for verification.
    *
@@ -64,6 +81,21 @@ public interface OTPService {
       throws DescopeException;
 
   /**
+   * Use to create a new user based on the given loginID either email or a phone. choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param user - {@link User User}
+   * @param signupOptions - optional claims, template strings, locale (max 254 characters) and tenant
+   * @param providerId - optional messaging provider ID
+   * @return masked address where the code was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUp(DeliveryMethod deliveryMethod, String loginId, User user, SignUpOptions signupOptions,
+      String providerId) throws DescopeException;
+
+  /**
    * Use to login in using loginID, if user does not exist, a new user will be created with the
    * given loginID.
    *
@@ -73,6 +105,22 @@ public interface OTPService {
    * @throws DescopeException - error upon failure
    */
   String signUpOrIn(DeliveryMethod deliveryMethod, String loginId) throws DescopeException;
+
+  /**
+   * Use to login in using loginID, if user does not exist, a new user will be created with the
+   * given loginID.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param loginOptions - optional {@link LoginOptions LoginOptions}
+   * @param providerId - optional messaging provider ID
+   * @param ssoAppId - optional SSO application ID
+   * @param useRecovery - optional, send the code to the user's recovery email or phone
+   * @return masked address where the code was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions, String providerId,
+      String ssoAppId, Boolean useRecovery) throws DescopeException;
 
   /**
    * Use to verify a SignIn/SignUp based on the given loginID either an email or a phone followed by

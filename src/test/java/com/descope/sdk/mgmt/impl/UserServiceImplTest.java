@@ -799,6 +799,13 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testGenerateMagicLinkForTestUserForIM() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.IM));
+    assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testGenerateMagicLinkForTestUserForSuccess() {
     MagicLinkTestUserResponse mockResponse = new MagicLinkTestUserResponse("link", "someLogin");
     ApiProxy apiProxy = mock(ApiProxy.class);

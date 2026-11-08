@@ -20,6 +20,10 @@ public class LoginOptions {
   private String jwt;
   private String locale;
   private String templateId;
+  private String ssoAppId;
+  /** Relevant only for enchanted links; other methods ignore it. */
+  private String pkceChallenge;
+  private String tenantId;
 
   public LoginOptions(boolean stepup, boolean mfa, Map<String, Object> customClaims,
                       Map<String, String> templateOptions) {
@@ -39,6 +43,14 @@ public class LoginOptions {
     this.revokeOtherSessions = revokeOtherSessions;
     this.revokeOtherSessionsTypes = revokeOtherSessionsTypes;
     this.jwt = jwt;
+  }
+
+  public LoginOptions(boolean stepup, boolean mfa, Map<String, Object> customClaims,
+                      Map<String, String> templateOptions, boolean revokeOtherSessions,
+                      String[] revokeOtherSessionsTypes, String jwt, String locale, String templateId) {
+    this(stepup, mfa, customClaims, templateOptions, revokeOtherSessions, revokeOtherSessionsTypes, jwt);
+    this.locale = locale;
+    this.templateId = templateId;
   }
 
   public boolean isJWTRequired() {
