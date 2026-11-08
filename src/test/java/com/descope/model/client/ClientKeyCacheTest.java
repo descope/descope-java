@@ -145,8 +145,28 @@ class ClientKeyCacheTest {
     assertNotNull(client.getKey("k1"), "cached key must stay usable within an hour of the last successful fetch");
     assertEquals(2, fetches.get());
     now.addAndGet(1);
+    assertNull(client.getKey("k1"), "cached key must not be used an hour after the last successful fetch");
+    assertEquals(2, fetches.get());
+  }
+
+  @Test
+  void fetchesAreSpacedAfterFailureOnceKeysExpire() {
+    assertNotNull(client.getKey("k1"));
+    status = 400;
+    now.addAndGet(TimeUnit.HOURS.toNanos(1));
+    assertThrows(DescopeException.class, () -> client.getKey("k1"));
+    assertEquals(2, fetches.get());
+    now.addAndGet(COOLDOWN_NANOS - 1);
+    assertNull(client.getKey("k1"));
+    assertNull(client.getKey("other"));
+    assertEquals(2, fetches.get(), "expired keys must not refetch within 30 seconds of a failed attempt");
+    now.addAndGet(1);
     assertThrows(DescopeException.class, () -> client.getKey("k1"));
     assertEquals(3, fetches.get());
+    status = 200;
+    now.addAndGet(COOLDOWN_NANOS);
+    assertNotNull(client.getKey("k1"));
+    assertEquals(4, fetches.get());
   }
 
   @Test

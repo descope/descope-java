@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class Client {
   // Cached signing keys are refetched on lookup once this long has passed since the last successful fetch.
   private static final long KEYS_TTL_NANOS = TimeUnit.MINUTES.toNanos(10);
-  // Unknown key ids refetch at most this often after a successful fetch; stale cached keys after any attempt.
+  // Unknown key ids refetch at most this often after a successful fetch; stale or expired keys after any attempt.
   private static final long KEYS_REFETCH_COOLDOWN_NANOS = TimeUnit.SECONDS.toNanos(30);
   // Cached signing keys are never used once this long has passed since the last successful fetch.
   private static final long KEYS_MAX_AGE_NANOS = TimeUnit.HOURS.toNanos(1);
@@ -82,12 +82,13 @@ public class Client {
       if (current != seen) {
         return isExpired(current, now) ? null : current.get(keyId);
       }
-      if (isExpired(current, now)) {
+      boolean expired = isExpired(current, now);
+      if (expired) {
         k = null;
       }
       if (current instanceof KeySet) {
         KeySet set = (KeySet) current;
-        if (now - (k == null ? set.fetchedAt : set.attemptedAt) < KEYS_REFETCH_COOLDOWN_NANOS) {
+        if (now - (k == null && !expired ? set.fetchedAt : set.attemptedAt) < KEYS_REFETCH_COOLDOWN_NANOS) {
           return k;
         }
         // Lets stale cached keys be served without waiting on this fetch.
