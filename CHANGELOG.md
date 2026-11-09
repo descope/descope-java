@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.6.2](https://github.com/descope/descope-java/compare/java-sdk-1.6.1...java-sdk-1.6.2) (2026-11-09)
+
+
+### Bug Fixes
+
+* **auth:** refresh cached signing keys and rate limit unknown kid refetch ([#406](https://github.com/descope/descope-java/issues/406)) ([e4f2364](https://github.com/descope/descope-java/commit/e4f2364fd03448f37e822a7d40bc8010b3818e1e))
+
+
+### Documentation
+
+* add CLAUDE.md and make unit tests independent of test order ([#386](https://github.com/descope/descope-java/issues/386)) ([d6c6d2c](https://github.com/descope/descope-java/commit/d6c6d2c10ecc867fd675601fefc38631ffaee242))
+
 ## [1.6.1](https://github.com/descope/descope-java/compare/java-sdk-1.6.0...java-sdk-1.6.1) (2026-10-23)
 
 
