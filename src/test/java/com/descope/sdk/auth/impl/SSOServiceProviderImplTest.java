@@ -267,6 +267,14 @@ class SSOServiceProviderImplTest {
     }
   }
 
+  @Test
+  void testAuthenticationOnlyWithoutSessionThrowsOutsideExchange() {
+    JWTResponse jwtResponse = new JWTResponse();
+    jwtResponse.setSsoAuthenticationOnly(true);
+    AuthenticationsBase base = (AuthenticationsBase) ssoService;
+    assertThrows(DescopeException.class, () -> base.getAuthenticationInfo(jwtResponse));
+  }
+
   private URI captureStart(Supplier<String> call, LoginOptions options) {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(new OAuthResponse("https://idp.example/login")).when(apiProxy).post(any(), any(), any());
