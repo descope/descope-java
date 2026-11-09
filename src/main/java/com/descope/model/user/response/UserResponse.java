@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -47,12 +46,10 @@ public class UserResponse {
   Boolean password;
   Boolean editable;
   @JsonProperty("SCIM")
-  @Getter(onMethod_ = @JsonProperty("SCIM"))
   Boolean SCIM;
   Boolean push;
   List<String> permissions;
   @JsonProperty("OIDC")
-  @Getter(onMethod_ = @JsonProperty("OIDC"))
   Boolean OIDC;
   Long consentExpiration;
   String recoveryEmail;
@@ -107,5 +104,15 @@ public class UserResponse {
     this.ssoAppIds = ssoAppIds;
     this.lockReason = lockReason;
     this.tempLockExpiration = tempLockExpiration;
+  }
+
+  @JsonProperty("SCIM")
+  public Boolean getSCIM() {
+    return SCIM;
+  }
+
+  @JsonProperty("OIDC")
+  public Boolean getOIDC() {
+    return OIDC;
   }
 }
