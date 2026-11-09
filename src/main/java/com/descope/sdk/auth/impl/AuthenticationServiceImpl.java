@@ -56,11 +56,17 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException {
+    return refreshSessionWithTokenAuthenticationInfo(refreshToken, null);
+  }
+
+  @Override
+  public AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken, String externalToken)
+      throws DescopeException {
     if (StringUtils.isBlank(refreshToken)) {
       throw ServerCommonException.missingArguments("refresh token");
     }
 
-    AuthenticationInfo authInfo = refreshSession(refreshToken);
+    AuthenticationInfo authInfo = refreshSession(refreshToken, externalToken);
     if (authInfo.getRefreshToken() == null) { // refresh token is not returned because jwt rotation is not enabled
       authInfo.setRefreshToken(validateAndCreateToken(refreshToken));
     }

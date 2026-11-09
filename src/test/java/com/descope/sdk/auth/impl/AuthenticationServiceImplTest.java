@@ -1,25 +1,43 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
+import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.DescopeException;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
+import com.descope.model.user.response.UserFamily;
 import com.descope.model.user.response.UserResponse;
+import com.descope.proxy.ApiProxy;
+import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -28,11 +46,19 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.descope.utils.JwtUtils;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
 
@@ -203,6 +229,117 @@ public class AuthenticationServiceImplTest {
     roleService.delete(roleAName);
     tenantService.delete(tenantBId);
     roleService.delete(roleBName);
+  }
+
+  private static final String REFRESH_JWT = "some-refresh-jwt";
+  private static final String REFRESH_RESPONSE_JSON = "{\"sessionJwt\":\"s\",\"refreshJwt\":\"r\","
+      + "\"sessionExpiration\":11,\"externalToken\":\"ext\",\"claims\":{\"c\":\"v\"},"
+      + "\"tenantSSOID\":\"t1\",\"trustedDeviceJwt\":\"tdj\",\"nextRefreshSeconds\":12,"
+      + "\"cookieName\":\"cn\",\"sessionCookieName\":\"scn\",\"sessionCookieDomain\":\"scd\","
+      + "\"unsavedSSO\":true,\"knownDeviceJwt\":\"kdj\",\"ssoAuthenticationOnly\":true,"
+      + "\"userCreationDeferred\":true,\"user\":{\"userId\":\"u1\",\"externalIds\":[\"e1\"],"
+      + "\"webauthn\":true,\"password\":true,\"editable\":true,\"SCIM\":true,\"push\":true,"
+      + "\"permissions\":[\"p1\"],\"OIDC\":true,\"consentExpiration\":13,\"recoveryEmail\":\"re\","
+      + "\"verifiedRecoveryEmail\":true,\"recoveryPhone\":\"rp\",\"verifiedRecoveryPhone\":true,"
+      + "\"modifiedTime\":14,\"roleIds\":[\"r1\"],\"recoveryCodes\":true,\"dependent\":true,"
+      + "\"userFamilies\":[{\"familyId\":\"f1\",\"roleNames\":[\"fr\"],\"permissions\":[\"fp\"],"
+      + "\"familyScopedAttributes\":{\"a\":\"b\"}}],\"scimTenantId\":\"st\",\"samlTenantId\":\"sat\","
+      + "\"oidcTenantId\":\"ot\",\"consentTenantId\":\"ct\",\"lastLoginTime\":15}}";
+
+  @Test
+  void testRefreshSessionWithExternalToken() throws Exception {
+    JWTResponse response = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .readValue(REFRESH_RESPONSE_JSON, JWTResponse.class);
+    AtomicReference<Supplier<String>> header = new AtomicReference<>();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(response).when(apiProxy).post(any(), any(), any());
+    AuthenticationInfo info;
+    try (MockedStatic<ApiProxyBuilder> builder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> jwtUtils = mockStatic(JwtUtils.class)) {
+      builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        header.set(inv.getArgument(0));
+        return apiProxy;
+      });
+      jwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      info = refreshAuthService().refreshSessionWithTokenAuthenticationInfo(REFRESH_JWT, "ext");
+    }
+
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    verify(apiProxy).post(uri.capture(), eq(mapOf("externalToken", "ext")), eq(JWTResponse.class));
+    assertThat(uri.getValue().getPath()).isEqualTo(REFRESH_TOKEN_LINK);
+    assertThat(header.get().get()).isEqualTo("Bearer " + PROJECT_ID + ":" + REFRESH_JWT);
+
+    assertThat(info.getToken()).isEqualTo(MOCK_TOKEN);
+    assertThat(info.getRefreshToken()).isEqualTo(MOCK_TOKEN);
+    assertEquals(11, info.getSessionExpiration());
+    assertEquals("ext", info.getExternalToken());
+    assertEquals(mapOf("c", "v"), info.getClaims());
+    assertEquals("t1", info.getTenantSSOID());
+    assertEquals("tdj", info.getTrustedDeviceJwt());
+    assertEquals(12, info.getNextRefreshSeconds());
+    assertEquals("cn", info.getCookieName());
+    assertEquals("scn", info.getSessionCookieName());
+    assertEquals("scd", info.getSessionCookieDomain());
+    assertTrue(info.getUnsavedSSO());
+    assertEquals("kdj", info.getKnownDeviceJwt());
+    assertTrue(info.getSsoAuthenticationOnly());
+    assertTrue(info.getUserCreationDeferred());
+
+    UserResponse user = info.getUser();
+    assertEquals("u1", user.getUserId());
+    assertEquals(Arrays.asList("e1"), user.getExternalIds());
+    assertTrue(user.getWebauthn());
+    assertTrue(user.getPassword());
+    assertTrue(user.getEditable());
+    assertTrue(user.getScim());
+    assertTrue(user.getPush());
+    assertEquals(Arrays.asList("p1"), user.getPermissions());
+    assertTrue(user.getOidc());
+    assertEquals(13, user.getConsentExpiration());
+    assertEquals("re", user.getRecoveryEmail());
+    assertTrue(user.getVerifiedRecoveryEmail());
+    assertEquals("rp", user.getRecoveryPhone());
+    assertTrue(user.getVerifiedRecoveryPhone());
+    assertEquals(14, user.getModifiedTime());
+    assertEquals(Arrays.asList("r1"), user.getRoleIds());
+    assertTrue(user.getRecoveryCodes());
+    assertTrue(user.getDependent());
+    assertEquals(Arrays.asList(new UserFamily("f1", Arrays.asList("fr"), Arrays.asList("fp"), mapOf("a", "b"))),
+        user.getUserFamilies());
+    assertEquals("st", user.getScimTenantId());
+    assertEquals("sat", user.getSamlTenantId());
+    assertEquals("ot", user.getOidcTenantId());
+    assertEquals("ct", user.getConsentTenantId());
+    assertEquals(15, user.getLastLoginTime());
+  }
+
+  @Test
+  void testRefreshSessionWithoutExternalTokenSendsNoBody() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> builder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> jwtUtils = mockStatic(JwtUtils.class)) {
+      builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      jwtUtils.when(() -> JwtUtils.getToken(any(), any())).thenReturn(MOCK_TOKEN);
+      refreshAuthService().refreshSessionWithTokenAuthenticationInfo(REFRESH_JWT);
+    }
+    verify(apiProxy).post(any(), isNull(), eq(JWTResponse.class));
+  }
+
+  @Test
+  void testRefreshSessionWithExternalTokenMissingRefreshToken() {
+    DescopeException thrown = assertThrows(DescopeException.class,
+        () -> refreshAuthService().refreshSessionWithTokenAuthenticationInfo("", "ext"));
+    assertEquals("refresh token", thrown.getMessage());
+  }
+
+  private static AuthenticationService refreshAuthService() {
+    Client client = Client.builder()
+        .uri("https://api.descope.com")
+        .projectId(PROJECT_ID)
+        .sdkInfo(SdkInfo.builder().name("java").build())
+        .build();
+    return AuthenticationServiceBuilder.buildServices(client).getAuthService();
   }
 
 }

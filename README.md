@@ -503,6 +503,14 @@ try {
     // Handle the unauthorized error
 }
 
+// To get the full refresh response (user, session expiration, claims, etc.), optionally sending an external token
+try {
+    AuthenticationInfo info = as.refreshSessionWithTokenAuthenticationInfo(refreshToken, "external-token");
+    Integer sessionExpiration = info.getSessionExpiration();
+} catch (DescopeException de) {
+    // Handle the unauthorized error
+}
+
 // Alternatively, you could combine the two and
 // have the session validated and automatically refreshed when expired
 try {

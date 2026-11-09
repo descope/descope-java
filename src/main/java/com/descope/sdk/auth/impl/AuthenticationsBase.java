@@ -3,6 +3,7 @@ package com.descope.sdk.auth.impl;
 import static com.descope.literals.AppConstants.BEARER_AUTHORIZATION_PREFIX;
 import static com.descope.literals.AppConstants.TENANTS_CLAIM_KEY;
 import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 
@@ -116,11 +117,17 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   AuthenticationInfo refreshSession(String refreshToken) {
+    return refreshSession(refreshToken, null);
+  }
+
+  AuthenticationInfo refreshSession(String refreshToken, String externalToken) {
     validateJWT(refreshToken);
     ApiProxy apiProxy = getApiProxy(refreshToken);
     URI refreshTokenLinkURL = composeRefreshTokenLinkURL();
 
-    JWTResponse jwtResponse = apiProxy.post(refreshTokenLinkURL, null, JWTResponse.class);
+    // Keeps the body-less request when unset
+    Object body = externalToken == null ? null : mapOf("externalToken", externalToken);
+    JWTResponse jwtResponse = apiProxy.post(refreshTokenLinkURL, body, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
 
@@ -132,7 +139,11 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     }
     return new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
-        jwtResponse.getIdpResponse());
+        jwtResponse.getIdpResponse(), jwtResponse.getSessionExpiration(), jwtResponse.getExternalToken(),
+        jwtResponse.getClaims(), jwtResponse.getTenantSSOID(), jwtResponse.getTrustedDeviceJwt(),
+        jwtResponse.getNextRefreshSeconds(), jwtResponse.getCookieName(), jwtResponse.getSessionCookieName(),
+        jwtResponse.getSessionCookieDomain(), jwtResponse.getUnsavedSSO(), jwtResponse.getKnownDeviceJwt(),
+        jwtResponse.getSsoAuthenticationOnly(), jwtResponse.getUserCreationDeferred());
   }
 
   @SuppressWarnings("unchecked")

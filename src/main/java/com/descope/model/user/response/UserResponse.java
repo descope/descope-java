@@ -1,6 +1,7 @@
 package com.descope.model.user.response;
 
 import com.descope.model.auth.AssociatedTenant;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -40,4 +41,50 @@ public class UserResponse {
    * this is greater than now.
    */
   Long tempLockExpiration;
+  List<String> externalIds;
+  Boolean webauthn;
+  Boolean password;
+  Boolean editable;
+  @JsonAlias({"SCIM"})
+  Boolean scim;
+  Boolean push;
+  List<String> permissions;
+  @JsonAlias({"OIDC"})
+  Boolean oidc;
+  Integer consentExpiration;
+  String recoveryEmail;
+  Boolean verifiedRecoveryEmail;
+  String recoveryPhone;
+  Boolean verifiedRecoveryPhone;
+  Integer modifiedTime;
+  /** Role IDs; order does not match roleNames, so don't pair them by index. */
+  List<String> roleIds;
+  /** Whether the user has set up recovery codes. */
+  Boolean recoveryCodes;
+  Boolean dependent;
+  List<UserFamily> userFamilies;
+  /** Tenant whose SCIM connection provisioned the user, empty when none or ambiguous. */
+  String scimTenantId;
+  /** Tenant whose SAML SSO created the user or merged its login, empty when none or ambiguous. */
+  String samlTenantId;
+  /** Tenant whose OIDC SSO created the user or merged its login, empty when none or ambiguous. */
+  String oidcTenantId;
+  String consentTenantId;
+  /**
+   * Last sign-in, in unix seconds (0 when never). On a response that completes a sign-in, this is the sign-in
+   * before the current one.
+   */
+  Integer lastLoginTime;
+
+  // Keeps the pre-externalIds all-args constructor available to callers that use it positionally.
+  public UserResponse(String userId, List<String> loginIds, String email, Boolean verifiedEmail, String phone,
+      Boolean verifiedPhone, String name, String givenName, String middleName, String familyName,
+      List<String> roleNames, List<AssociatedTenant> userTenants, String status, String picture, Boolean test,
+      Long createdTime, Map<String, Object> customAttributes, Boolean totp, Boolean saml,
+      Map<String, Boolean> oauth, List<String> ssoAppIds, String lockReason, Long tempLockExpiration) {
+    this(userId, loginIds, email, verifiedEmail, phone, verifiedPhone, name, givenName, middleName, familyName,
+        roleNames, userTenants, status, picture, test, createdTime, customAttributes, totp, saml, oauth, ssoAppIds,
+        lockReason, tempLockExpiration, null, null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null);
+  }
 }
