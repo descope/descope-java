@@ -12,15 +12,21 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
+import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.password.AuthenticationPasswordReplaceRequestBody;
 import com.descope.model.password.AuthenticationPasswordResetRequestBody;
 import com.descope.model.password.AuthenticationPasswordSignInRequestBody;
 import com.descope.model.password.AuthenticationPasswordSignUpRequestBody;
 import com.descope.model.password.AuthenticationPasswordUpdateRequestBody;
 import com.descope.model.password.PasswordPolicy;
+import com.descope.model.password.PasswordResetOptions;
+import com.descope.model.password.PasswordResetResponse;
+import com.descope.model.password.PasswordResetSendRequestBody;
 import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.PasswordService;
+import com.descope.utils.JwtUtils;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,6 +37,12 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
 
   @Override
   public AuthenticationInfo signUp(String loginId, User user, String password)
+      throws DescopeException {
+    return signUp(loginId, user, password, null);
+  }
+
+  @Override
+  public AuthenticationInfo signUp(String loginId, User user, String password, SignUpOptions signUpOptions)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -43,6 +55,7 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
             .loginId(loginId)
             .user(user)
             .password(password)
+            .loginOptions(signUpOptions)
             .build();
     ApiProxy apiProxy = getApiProxy();
     JWTResponse jwtResponse =
@@ -52,6 +65,12 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
 
   @Override
   public AuthenticationInfo signIn(String loginId, String password) throws DescopeException {
+    return signIn(loginId, password, null, null, null);
+  }
+
+  @Override
+  public AuthenticationInfo signIn(String loginId, String password, String ssoAppId, LoginOptions loginOptions,
+      String refreshToken) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -60,8 +79,18 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
         AuthenticationPasswordSignInRequestBody.builder()
             .loginId(loginId)
             .password(password)
+            .ssoAppId(ssoAppId)
+            .loginOptions(loginOptions)
             .build();
-    ApiProxy apiProxy = getApiProxy();
+    ApiProxy apiProxy;
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      if (StringUtils.isBlank(refreshToken)) {
+        throw ServerCommonException.invalidArgument("refreshToken");
+      }
+      apiProxy = getApiProxy(refreshToken);
+    } else {
+      apiProxy = getApiProxy();
+    }
     JWTResponse jwtResponse =
         apiProxy.post(getUri(SIGN_IN_PASSWORD_LINK), pwdSignInRequest, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
@@ -90,6 +119,28 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
   }
 
   @Override
+  public PasswordResetResponse sendPasswordReset(String loginId, String redirectURL,
+      Map<String, String> templateOptions, PasswordResetOptions options) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (options == null) {
+      options = new PasswordResetOptions();
+    }
+    PasswordResetSendRequestBody pwdResetRequest =
+        PasswordResetSendRequestBody.builder()
+            .loginId(loginId)
+            .redirectUrl(redirectURL)
+            .templateOptions(templateOptions)
+            .providerId(options.getProviderId())
+            .locale(options.getLocale())
+            .useRecovery(options.getUseRecovery())
+            .build();
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(SEND_RESET_PASSWORD_LINK), pwdResetRequest, PasswordResetResponse.class);
+  }
+
+  @Override
   public void updateUserPassword(String loginId, String newPassword, String refreshToken)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
@@ -110,6 +161,12 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
   @Override
   public AuthenticationInfo replaceUserPassword(String loginId, String oldPassword, String newPassword)
       throws DescopeException {
+    return replaceUserPassword(loginId, oldPassword, newPassword, null, null);
+  }
+
+  @Override
+  public AuthenticationInfo replaceUserPassword(String loginId, String oldPassword, String newPassword,
+      Boolean revokeOtherSessions, String[] revokeOtherSessionsTypes) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -118,6 +175,8 @@ class PasswordServiceImpl extends AuthenticationServiceImpl implements PasswordS
             .loginId(loginId)
             .oldPassword(oldPassword)
             .newPassword(newPassword)
+            .revokeOtherSessions(revokeOtherSessions)
+            .revokeOtherSessionsTypes(revokeOtherSessionsTypes)
             .build();
     ApiProxy apiProxy = getApiProxy();
     JWTResponse jwtResponse = apiProxy.post(getUri(REPLACE_USER_PASSWORD_LINK), pwdUpdateRequest, JWTResponse.class);

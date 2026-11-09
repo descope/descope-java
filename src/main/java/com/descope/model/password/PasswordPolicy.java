@@ -16,4 +16,11 @@ public class PasswordPolicy {
   private boolean uppercase;
   private boolean number;
   private boolean nonAlphanumeric;
+  private Boolean strengthScoreEnabled;
+  private Integer strengthScore;
+
+  public PasswordPolicy(Integer minLength, boolean lowercase, boolean uppercase, boolean number,
+      boolean nonAlphanumeric) {
+    this(minLength, lowercase, uppercase, number, nonAlphanumeric, null, null);
+  }
 }

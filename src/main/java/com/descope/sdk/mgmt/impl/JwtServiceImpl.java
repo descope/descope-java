@@ -80,6 +80,13 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     if (loginOptions.isJWTRequired() && StringUtils.isBlank(loginOptions.getJwt())) {
       throw ServerCommonException.invalidArgument("JWT is required for step-up or MFA authentication");
     }
+    // Not sent by management sign-in
+    if (StringUtils.isNotBlank(loginOptions.getSsoAppId())) {
+      throw ServerCommonException.invalidArgument("ssoAppId");
+    }
+    if (StringUtils.isNotBlank(loginOptions.getTenantId())) {
+      throw ServerCommonException.invalidArgument("tenantId");
+    }
     // Construct request payload
     ManagementSignInRequest request = new ManagementSignInRequest(
             loginId,

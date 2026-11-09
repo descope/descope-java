@@ -11,11 +11,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.DescopeException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.MgmtSignUpUser;
@@ -110,6 +112,21 @@ class JwtServiceImplSignInSignUpTest {
     ArgumentCaptor<ManagementSignInRequest> captor = ArgumentCaptor.forClass(ManagementSignInRequest.class);
     verify(apiProxy).post(any(URI.class), captor.capture(), eq(JWTResponse.class));
     assertEquals(loginId, captor.getValue().getLoginId());
+  }
+
+  @Test
+  void signIn_shouldFail_whenSsoAppIdOrTenantIdSet() {
+    LoginOptions withSsoAppId = new LoginOptions();
+    withSsoAppId.setSsoAppId("someSsoAppId");
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> jwtService.signIn("mario@descope.com", withSsoAppId));
+    assertEquals("The ssoAppId argument is invalid", thrown.getMessage());
+    LoginOptions withTenantId = new LoginOptions();
+    withTenantId.setTenantId("someTenantId");
+    thrown = assertThrows(ServerCommonException.class,
+        () -> jwtService.signIn("mario@descope.com", withTenantId));
+    assertEquals("The tenantId argument is invalid", thrown.getMessage());
+    verify(apiProxy, never()).post(any(URI.class), any(), any());
   }
 
   static Stream<String> signUpMethods() {
