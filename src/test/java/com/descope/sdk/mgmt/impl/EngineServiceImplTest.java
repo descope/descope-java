@@ -101,7 +101,7 @@ class EngineServiceImplTest {
   @Test
   void testUpdateForSuccess() throws IOException {
     responseBody = ENGINE_JSON;
-    Engine engine = engineService.update("eng1", "name1");
+    final Engine engine = engineService.update("eng1", "name1");
     assertRequest("POST", "/v1/mgmt/engine/update");
     Map<String, Object> expected = mapOf("id", "eng1");
     expected.put("name", "name1");
