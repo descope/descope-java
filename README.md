@@ -174,6 +174,39 @@ try {
 
 ```
 
+Overloads take optional fields as trailing arguments: a messaging provider ID, an SSO application ID,
+and whether to use the user's recovery method. Pass `null` to leave any of them unset.
+
+```java
+try {
+    // Sign up by SMS with a messaging provider. The user's phone (or the login ID) is sent with the request
+    String maskedPhone = mls.signUp(DeliveryMethod.SMS, "+15555555555", uri, user, null, "provider-id");
+    // Sign in with a messaging provider, an SSO application and the user's recovery method
+    String maskedEmail = mls.signIn(DeliveryMethod.EMAIL, loginId, uri, null, null, "provider-id", "sso-app-id", true);
+    // Sign up or in with login options
+    LoginOptions loginOptions = LoginOptions.builder().locale("en").build();
+    maskedEmail = mls.signUpOrIn(DeliveryMethod.EMAIL, loginId, uri, loginOptions, "provider-id", "sso-app-id", null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+To update a user's email or phone through a magic link, pass the user's refresh token. Optionally pass
+a messaging provider ID, the message locale, and whether to fail when another user already has the address.
+
+```java
+try {
+    String maskedEmail = mls.updateUserEmail(loginId, "new@example.com", uri, refreshToken, null, null,
+        "provider-id", "en", true);
+    String maskedPhone = mls.updateUserPhone(DeliveryMethod.SMS, loginId, "+15555555555", uri, refreshToken,
+        null, null, "provider-id", "en", true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```java
