@@ -45,7 +45,7 @@ public class AnalyticsServiceImplTest {
   @Test
   void testSearchForSuccess() throws Exception {
     AnalyticsService service = serviceReturning(RESPONSE_BODY);
-    AnalyticsSearchResponse resp = service.search(AnalyticsSearchRequest.builder()
+    final AnalyticsSearchResponse resp = service.search(AnalyticsSearchRequest.builder()
         .from(Instant.ofEpochMilli(1690000000000L))
         .to(Instant.ofEpochMilli(1700000000000L))
         .actions(Arrays.asList("LoginSucceed"))
