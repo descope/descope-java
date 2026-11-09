@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Families](#manage-families)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1947,6 +1948,121 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Families
+
+You can create, update, delete or search families (family accounts), manage their dependents, and configure family settings:
+
+```java
+FamilyService fs = descopeClient.getManagementServices().getFamilyService();
+
+// Create a family. The name is required, and the ID is generated when not given.
+try {
+    Family family = fs.create(FamilyRequest.builder()
+            .name("The Smiths")
+            .customAttributes(new HashMap<String, Object>() {{
+                put("custom-attribute-1", "custom-value1");
+            }})
+            .photo("https://example.com/photo.png")
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// You can optionally set your own ID when creating a family
+try {
+    Family family = fs.createWithId("my-family-id", FamilyRequest.builder().name("The Smiths").build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update a family. Only the fields that are set are updated.
+try {
+    Family family = fs.update("my-family-id", FamilyRequest.builder().name("The Smith Family").disabled(false).build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Family deletion cannot be undone. Use carefully.
+try {
+    fs.delete("my-family-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search families. A null request returns all families.
+try {
+    List<Family> families = fs.searchAll(FamilySearchRequest.builder()
+            .ids(Arrays.asList("my-family-id"))
+            .names(Arrays.asList("The Smiths"))
+            .freeText("smith")
+            .customAttributes(Map.of("custom-attribute-1", "custom-value1"))
+            .page(0)
+            .size(20)
+            .build());
+    for (Family f : families) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create a dependent (a user with no login credentials of their own) in a family
+try {
+    UserResponse dependent = fs.createDependent("my-family-id", FamilyDependentRequest.builder()
+            .loginId("kid-smith")
+            .name("Kid Smith")
+            .givenName("Kid")
+            .familyName("Smith")
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Dependent deletion cannot be undone. Use carefully.
+try {
+    fs.deleteDependent("dependent-user-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Impersonate a dependent. The impersonator must be a member of the dependent's family
+// and hold the family impersonate-dependents permission there. The selected family is optional.
+try {
+    String jwt = fs.impersonateDependent("impersonator-login-id", "kid-smith", "my-family-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Stop impersonating and get a JWT for the acting user's own session.
+// Custom claims and refresh duration are optional.
+try {
+    String jwt = fs.stopImpersonation(impersonatedJwt, Map.of("claim", "value"), null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load and update the project's family settings. Only the fields that are set are updated.
+try {
+    FamilySettings settings = fs.getSettings();
+    settings = fs.configureSettings(FamilySettings.builder().enabled(true).maxFamilyMembers(6).build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Manage the family entity's custom attribute definitions
+try {
+    FamilyCustomAttributesResponse attributes = fs.getCustomAttributes();
+    attributes = fs.createCustomAttributes(CreateCustomAttributesRequest.builder()
+            .attributes(Arrays.asList(CustomAttribute.builder().name("plan").type(1).displayName("Plan").build()))
+            .build());
+    attributes = fs.deleteCustomAttributes(DeleteCustomAttributesRequest.builder()
+            .names(Arrays.asList("plan"))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Code Examples

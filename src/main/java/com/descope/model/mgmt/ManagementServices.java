@@ -4,6 +4,7 @@ import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.sdk.mgmt.AuditService;
 import com.descope.sdk.mgmt.AuthzService;
 import com.descope.sdk.mgmt.FGAService;
+import com.descope.sdk.mgmt.FamilyService;
 import com.descope.sdk.mgmt.FlowService;
 import com.descope.sdk.mgmt.GroupService;
 import com.descope.sdk.mgmt.InboundAppsService;
@@ -44,4 +45,5 @@ public class ManagementServices {
   OutboundAppsByTokenService outboundAppsByTokenService;
   InboundAppsService inboundAppsService;
   UserCustomAttributesService userCustomAttributesService;
+  FamilyService familyService;
 }
