@@ -74,10 +74,11 @@ These sections show how to use the SDK to perform various authentication/authori
 4. [OAuth](#oauth)
 5. [SSO/SAML](#ssosaml)
 6. [TOTP Authentication](#totp-authentication)
-7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+7. [NOTP Authentication](#notp-authentication)
+8. [Passwords](#passwords)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -387,6 +388,70 @@ try {
     // Handle the error
 }
 
+```
+
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### NOTP Authentication
+
+With NOTP the user sends a message from a messaging app, such as WhatsApp, instead of
+receiving a code. The provider is part of the request, e.g. `"whatsapp"`. The login ID should
+be a phone or empty: if empty, the phone the message is sent from is used as the login ID.
+
+The user can either `sign up`, `sign in` or `sign up or in`
+
+```java
+NOTPService ns = descopeClient.getAuthenticationServices().getNotpService();
+
+try {
+    // Optional: a provider ID, message templates and an SSO app ID
+    NOTPOptions options = NOTPOptions.builder()
+        .templates(NOTPTemplates.builder().verifyTemplateId("verify-template").build())
+        .build();
+    NOTPResponse res = ns.signUpOrIn("whatsapp", phoneNumber, signUpOptions, options);
+    // ns.signUp("whatsapp", phoneNumber, user, signUpOptions, options);
+    // ns.signIn("whatsapp", phoneNumber, refreshToken, loginOptions, options);
+    // refreshToken is required only for step-up or MFA (loginOptions.stepup / mfa)
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Take the user to the messaging app with res.getRedirectUrl(),
+// or show the QR code in res.getImage()
+```
+
+After that, poll to receive a valid session using the pending ref. A valid session will be
+returned only after the user has sent the message.
+
+```java
+// Poll for a certain number of tries / time frame
+for (int i = retriesCount; i > 0; i--) {
+    try {
+        AuthenticationInfo info = ns.getSession(res.getPendingRef());
+        break;
+    } catch (DescopeException de) {
+        if (i > 1) {
+            // Poll again after X seconds
+            TimeUnit.SECONDS.sleep(retryInterval);
+        } else {
+            // Handle the error
+        }
+    }
+}
+```
+
+Existing users can update their phone using NOTP. The refresh token of the user is required.
+
+```java
+try {
+    NOTPUpdateOptions updateOptions = NOTPUpdateOptions.builder()
+        .addToLoginIds(true)
+        .onMergeUseExisting(true)
+        .build();
+    NOTPResponse res = ns.updateUser("whatsapp", loginId, phoneNumber, refreshToken, updateOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)

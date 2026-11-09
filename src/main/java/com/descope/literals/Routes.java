@@ -45,6 +45,13 @@ public class Routes {
     public static final String UPDATE_USER_TOTP_LINK = "/v1/auth/totp/update";
     public static final String VERIFY_TOTP_LINK = "/v1/auth/totp/verify";
 
+    // NOTP (%s is the provider)
+    public static final String SIGN_UP_NOTP_LINK = "/v1/auth/notp/%s/signup";
+    public static final String SIGN_IN_NOTP_LINK = "/v1/auth/notp/%s/signin";
+    public static final String SIGN_UP_OR_IN_NOTP_LINK = "/v1/auth/notp/%s/signup-in";
+    public static final String UPDATE_USER_NOTP_LINK = "/v1/auth/notp/%s/update";
+    public static final String NOTP_SESSION_LINK = "/v1/auth/notp/pending-session";
+
     // OAuth
     public static final String COMPOSE_OAUTH_LINK = "/v1/auth/oauth/authorize";
     public static final String COMPOSE_OAUTH_LINK_SIGN_IN = "/v1/auth/oauth/authorize/signin";
