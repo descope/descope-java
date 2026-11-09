@@ -5,6 +5,7 @@ import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.mgmt.AccessKeyRequest;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseList;
+import com.descope.model.mgmt.AccessKeySearchRequest;
 import com.descope.model.mgmt.AccessKeyUpdateRequest;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,15 @@ public interface AccessKeyService {
   AccessKeyResponse load(String id) throws DescopeException;
 
   AccessKeyResponseList searchAll(List<String> tenantIDs) throws DescopeException;
+
+  /**
+   * Search access keys by tenants, free text, bound user, creating user or custom attributes.
+   *
+   * @param req - The search filters; every sort entry requires a field
+   * @return {@link AccessKeyResponseList} containing the matching access keys
+   * @throws DescopeException in case of errors
+   */
+  AccessKeyResponseList search(AccessKeySearchRequest req) throws DescopeException;
 
   AccessKeyResponse update(String id, String name) throws DescopeException;
 

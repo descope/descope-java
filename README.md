@@ -952,6 +952,38 @@ try {
     // Handle the error
 }
 
+// Search access keys by tenant, free text, bound user, creating user or custom attributes
+try {
+    AccessKeyResponseList resp = aks.search(AccessKeySearchRequest.builder()
+            .tenantIds(Arrays.asList("tenant-ID1"))
+            .text("access-key")
+            .sort(Arrays.asList(new AccessKeySearchSort("createdTime", true)))
+            .boundUserId("user-ID")
+            .creatingUser("creator")
+            .customAttributes(Collections.singletonMap("attr", (Object) "val"))
+            .build());
+    for (AccessKeyResponseDetails key : resp.getKeys()) {
+        // Do something, e.g. key.getBoundUserId(), key.getEditable(), key.getCustomAttributes()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create or update an access key with custom attributes
+try {
+    AccessKeyResponse created = aks.create(AccessKeyRequest.builder()
+            .name("access-key-2")
+            .customAttributes(Collections.singletonMap("attr", (Object) "val"))
+            .build());
+    AccessKeyResponse updated = aks.update(AccessKeyUpdateRequest.builder()
+            .id(created.getKey().getId())
+            .name("access-key-2")
+            .customAttributes(Collections.singletonMap("attr", (Object) "new-val"))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Update will override all fields as is. Use carefully.
 try {
     AccessKeyResponse resp = aks.update("access-key-1", "updated-name");

@@ -20,6 +20,8 @@ import com.descope.model.client.Client;
 import com.descope.model.mgmt.AccessKeyRequest;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.AccessKeyResponseList;
+import com.descope.model.mgmt.AccessKeySearchRequest;
+import com.descope.model.mgmt.AccessKeySearchSort;
 import com.descope.model.mgmt.AccessKeyUpdateRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.AccessKeyService;
@@ -97,6 +99,23 @@ class AccessKeyServiceImpl extends ManagementsBase implements AccessKeyService {
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(
         getUri(MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK), request, AccessKeyResponseList.class);
+  }
+
+  @Override
+  public AccessKeyResponseList search(AccessKeySearchRequest req) throws DescopeException {
+    if (req == null) {
+      throw ServerCommonException.invalidArgument("req");
+    }
+    if (req.getSort() != null) {
+      for (AccessKeySearchSort sort : req.getSort()) {
+        if (sort == null || StringUtils.isBlank(sort.getField())) {
+          throw ServerCommonException.invalidArgument("req.Sort.Field");
+        }
+      }
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(
+        getUri(MANAGEMENT_ACCESS_KEY_SEARCH_ALL_LINK), req, AccessKeyResponseList.class);
   }
 
   @Override

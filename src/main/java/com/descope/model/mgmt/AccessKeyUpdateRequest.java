@@ -16,4 +16,5 @@ public class AccessKeyUpdateRequest {
   private List<Map<String, Object>> keyTenants;
   private Map<String, Object> customClaims;
   private List<String> permittedIps;
+  private Map<String, Object> customAttributes;
 }
