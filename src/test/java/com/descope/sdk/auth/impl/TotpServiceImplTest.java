@@ -265,6 +265,8 @@ public class TotpServiceImplTest {
     assertEquals("ot", user.getOidcTenantId());
     assertEquals("ct", user.getConsentTenantId());
     assertEquals(Long.valueOf(7), user.getLastLoginTime());
+    String userJson = new ObjectMapper().setSerializationInclusion(Include.NON_NULL).writeValueAsString(user);
+    assertThat(userJson).contains("\"SCIM\":true", "\"OIDC\":true").doesNotContain("\"scim\"", "\"oidc\"");
   }
 
   @Test
