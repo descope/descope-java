@@ -143,6 +143,61 @@ try {
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+To pick the messaging provider, or to see how many verification attempts the code allows, use the overloads that take OTP options and return an `OTPResponse`. They support `EMAIL`, `SMS` and `VOICE`:
+
+```java
+try {
+  OTPResponse signUpRes = otps.signUp(DeliveryMethod.SMS, loginId, user, null,
+      OTPSignUpOptions.builder().providerId("my-provider").build());
+  OTPSignInOptions signInOptions = OTPSignInOptions.builder()
+      .providerId("my-provider")
+      .ssoAppId("my-sso-app")
+      .useRecovery(false)
+      .build();
+  OTPResponse signInRes = otps.signIn(DeliveryMethod.EMAIL, loginId, null, null, signInOptions);
+  OTPResponse signUpOrInRes = otps.signUpOrIn(DeliveryMethod.VOICE, loginId,
+      LoginOptions.builder().locale("en").build(), signInOptions);
+  String masked = signInRes.getMasked();
+  Integer attempts = signInRes.getVerificationAttempts();
+} catch (DescopeException de) {
+  // Handle the error
+}
+```
+
+The code can also be sent by instant message to the user's phone:
+
+```java
+try {
+  OTPResponse signUpRes = otps.signUpIM(loginId, user, null, null);
+  OTPResponse signInRes = otps.signInIM(loginId, null, null, null);
+  OTPResponse signUpOrInRes = otps.signUpOrInIM(loginId, null, null);
+  AuthenticationInfo info = otps.verifyCodeIM(loginId, code);
+} catch (DescopeException de) {
+  // Handle the error
+}
+```
+
+Update a user's email or phone with OTP options:
+
+```java
+OTPUpdateOptions otpUpdateOptions = OTPUpdateOptions.builder()
+    .providerId("my-provider")
+    .locale("en")
+    .failOnConflict(true)
+    .mfa(false)
+    .build();
+try {
+  OTPResponse emailRes = otps.updateUserEmail(loginId, "desmond@descope.com", refreshToken,
+      new UpdateOptions(true, false), null, otpUpdateOptions);
+  OTPResponse phoneRes = otps.updateUserPhone(DeliveryMethod.SMS, loginId, "+12125551234", refreshToken,
+      null, null, otpUpdateOptions);
+  OTPResponse imRes = otps.updateUserPhoneIM(loginId, "+12125551234", refreshToken, null, null,
+      otpUpdateOptions);
+} catch (DescopeException de) {
+  // Handle the error
+}
+```
+
 ### Magic Link
 
 Send a user a Magic Link using your preferred delivery method (_email / SMS / WhatsApp_).

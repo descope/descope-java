@@ -10,6 +10,8 @@ import static com.descope.literals.Routes.AuthEndPoints.SIGN_IN_OTP_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OR_IN_OTP_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.SIGN_UP_OTP_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.VERIFY_OTP_LINK;
+import static com.descope.utils.CollectionUtils.addIfNotNull;
+import static com.descope.utils.CollectionUtils.mapOf;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 
@@ -24,6 +26,10 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.magiclink.response.Masked;
 import com.descope.model.otp.AuthenticationVerifyRequestBody;
+import com.descope.model.otp.OTPResponse;
+import com.descope.model.otp.OTPSignInOptions;
+import com.descope.model.otp.OTPSignUpOptions;
+import com.descope.model.otp.OTPUpdateOptions;
 import com.descope.model.otp.SignInRequest;
 import com.descope.model.otp.SignUpRequest;
 import com.descope.model.otp.UpdateEmailRequestBody;
@@ -33,10 +39,13 @@ import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.OTPService;
 import com.descope.utils.JwtUtils;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
+
+  private static final String IM_METHOD = "im";
 
   OTPServiceImpl(Client client) {
     super(client);
@@ -70,6 +79,15 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   @Override
+  public OTPResponse signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions,
+      String refreshToken, OTPSignInOptions signInOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    return signInWith(otpMethod(deliveryMethod), loginId, loginOptions, refreshToken, signInOptions);
+  }
+
+  @Override
   public String signUp(DeliveryMethod deliveryMethod, String loginId, User user) {
     return signUp(deliveryMethod, loginId, user, null);
   }
@@ -95,6 +113,13 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   @Override
+  public OTPResponse signUp(DeliveryMethod deliveryMethod, String loginId, User user, SignUpOptions signUpOptions,
+      OTPSignUpOptions otpSignUpOptions) throws DescopeException {
+    String method = otpMethod(deliveryMethod);
+    return signUpWith(method, EMAIL.equals(deliveryMethod), loginId, user, signUpOptions, otpSignUpOptions);
+  }
+
+  @Override
   public String signUpOrIn(DeliveryMethod deliveryMethod, String loginId) throws DescopeException {
 
     if (StringUtils.isBlank(loginId)) {
@@ -107,6 +132,15 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     ApiProxy apiProxy = getApiProxy();
     Masked masked = apiProxy.post(otpSignUpOrInURL, signInRequest, maskedClass);
     return masked.getMasked();
+  }
+
+  @Override
+  public OTPResponse signUpOrIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions,
+      OTPSignInOptions signInOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    return signUpOrInWith(otpMethod(deliveryMethod), loginId, loginOptions, signInOptions);
   }
 
   @Override
@@ -172,6 +206,40 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   @Override
+  public OTPResponse updateUserEmail(String loginId, String email, String refreshToken, UpdateOptions updateOptions,
+      Map<String, String> templateOptions, OTPUpdateOptions otpUpdateOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(email) || !EMAIL_PATTERN.matcher(email).matches()) {
+      throw ServerCommonException.invalidArgument("Email");
+    }
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
+    if (otpUpdateOptions == null) {
+      otpUpdateOptions = new OTPUpdateOptions();
+    }
+    UpdateEmailRequestBody updateEmailRequest = UpdateEmailRequestBody
+        .builder()
+        .email(email)
+        .loginId(loginId)
+        .addToLoginIds(updateOptions.isAddToLoginIds())
+        .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+        .templateOptions(templateOptions)
+        .providerId(otpUpdateOptions.getProviderId())
+        .locale(otpUpdateOptions.getLocale())
+        .failOnConflict(otpUpdateOptions.getFailOnConflict())
+        .mfa(otpUpdateOptions.getMfa())
+        .build();
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    return apiProxy.post(composeUpdateUserEmailOTP(), updateEmailRequest, OTPResponse.class);
+  }
+
+  @Override
   public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
       UpdateOptions updateOptions) throws DescopeException {
     return updateUserPhone(deliveryMethod, loginId, phone, refreshToken, updateOptions, null);
@@ -209,6 +277,176 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     ApiProxy apiProxy = getApiProxy(refreshToken);
     Masked masked = apiProxy.post(otpUpdateUserPhone, updatePhoneRequestBody, maskedClass);
     return masked.getMasked();
+  }
+
+  @Override
+  public OTPResponse updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone,
+      String refreshToken, UpdateOptions updateOptions, Map<String, String> templateOptions,
+      OTPUpdateOptions otpUpdateOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (deliveryMethod != SMS && deliveryMethod != VOICE) {
+      throw ServerCommonException.invalidArgument("Method");
+    }
+    return updateUserPhoneWith(deliveryMethod.getValue(), loginId, phone, refreshToken, updateOptions,
+        templateOptions, otpUpdateOptions);
+  }
+
+  @Override
+  public OTPResponse signInIM(String loginId, LoginOptions loginOptions, String refreshToken,
+      OTPSignInOptions signInOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    return signInWith(IM_METHOD, loginId, loginOptions, refreshToken, signInOptions);
+  }
+
+  @Override
+  public OTPResponse signUpIM(String loginId, User user, SignUpOptions signUpOptions,
+      OTPSignUpOptions otpSignUpOptions) throws DescopeException {
+    return signUpWith(IM_METHOD, false, loginId, user, signUpOptions, otpSignUpOptions);
+  }
+
+  @Override
+  public OTPResponse signUpOrInIM(String loginId, LoginOptions loginOptions, OTPSignInOptions signInOptions)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    return signUpOrInWith(IM_METHOD, loginId, loginOptions, signInOptions);
+  }
+
+  @Override
+  public AuthenticationInfo verifyCodeIM(String loginId, String code) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    AuthenticationVerifyRequestBody authenticationVerifyRequestBody =
+        new AuthenticationVerifyRequestBody(loginId, code, null);
+    ApiProxy apiProxy = getApiProxy();
+    JWTResponse jwtResponse =
+        apiProxy.post(composeURI(VERIFY_OTP_LINK, IM_METHOD), authenticationVerifyRequestBody, JWTResponse.class);
+    return getAuthenticationInfo(jwtResponse);
+  }
+
+  @Override
+  public OTPResponse updateUserPhoneIM(String loginId, String phone, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, OTPUpdateOptions otpUpdateOptions)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    return updateUserPhoneWith(IM_METHOD, loginId, phone, refreshToken, updateOptions, templateOptions,
+        otpUpdateOptions);
+  }
+
+  // The OTP routes in the API spec, WhatsApp has none
+  private String otpMethod(DeliveryMethod deliveryMethod) {
+    if (deliveryMethod != EMAIL && deliveryMethod != SMS && deliveryMethod != VOICE) {
+      throw ServerCommonException.invalidArgument("Method");
+    }
+    return deliveryMethod.getValue();
+  }
+
+  private OTPResponse signInWith(String method, String loginId, LoginOptions loginOptions, String refreshToken,
+      OTPSignInOptions signInOptions) {
+    ApiProxy apiProxy;
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      if (StringUtils.isBlank(refreshToken)) {
+        throw ServerCommonException.invalidArgument("refreshToken");
+      }
+      apiProxy = getApiProxy(refreshToken);
+    } else {
+      apiProxy = getApiProxy();
+    }
+    Map<String, Object> request = newSignInRequest(loginId, loginOptions, signInOptions);
+    return apiProxy.post(composeURI(SIGN_IN_OTP_LINK, method), request, OTPResponse.class);
+  }
+
+  private OTPResponse signUpWith(String method, boolean byEmail, String loginId, User user,
+      SignUpOptions signUpOptions, OTPSignUpOptions otpSignUpOptions) {
+    if (user == null) {
+      user = new User();
+    }
+    verifyDeliveryMethod(byEmail ? EMAIL : SMS, loginId, user);
+    // The spec's sign-up user has only the name and the other address
+    Map<String, Object> signUpUser = new HashMap<>();
+    addIfNotNull(signUpUser, "name", user.getName());
+    addIfNotNull(signUpUser, byEmail ? "phone" : "email", byEmail ? user.getPhone() : user.getEmail());
+    Map<String, Object> request = mapOf("loginId", loginId, "user", signUpUser);
+    addIfNotNull(request, byEmail ? "email" : "phone", byEmail ? user.getEmail() : user.getPhone());
+    if (signUpOptions != null) {
+      Map<String, Object> options = new HashMap<>();
+      addIfNotNull(options, "customClaims", signUpOptions.getCustomClaims());
+      addIfNotNull(options, "templateOptions", signUpOptions.getTemplateOptions());
+      request.put("loginOptions", options);
+    }
+    if (otpSignUpOptions != null) {
+      addIfNotNull(request, "providerId", otpSignUpOptions.getProviderId());
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(composeURI(SIGN_UP_OTP_LINK, method), request, OTPResponse.class);
+  }
+
+  private OTPResponse signUpOrInWith(String method, String loginId, LoginOptions loginOptions,
+      OTPSignInOptions signInOptions) {
+    Map<String, Object> request = newSignInRequest(loginId, loginOptions, signInOptions);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(composeURI(SIGN_UP_OR_IN_OTP_LINK, method), request, OTPResponse.class);
+  }
+
+  private OTPResponse updateUserPhoneWith(String method, String loginId, String phone, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, OTPUpdateOptions otpUpdateOptions) {
+    if (StringUtils.isBlank(phone) || !PHONE_PATTERN.matcher(phone).matches()) {
+      throw ServerCommonException.invalidArgument("Phone");
+    }
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
+    if (otpUpdateOptions == null) {
+      otpUpdateOptions = new OTPUpdateOptions();
+    }
+    UpdatePhoneRequestBody updatePhoneRequestBody = UpdatePhoneRequestBody
+        .builder()
+        .phone(phone)
+        .loginId(loginId)
+        .addToLoginIds(updateOptions.isAddToLoginIds())
+        .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+        .templateOptions(templateOptions)
+        .providerId(otpUpdateOptions.getProviderId())
+        .locale(otpUpdateOptions.getLocale())
+        .failOnConflict(otpUpdateOptions.getFailOnConflict())
+        .mfa(otpUpdateOptions.getMfa())
+        .build();
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    return apiProxy.post(composeURI(OTP_UPDATE_PHONE_LINK, method), updatePhoneRequestBody, OTPResponse.class);
+  }
+
+  private Map<String, Object> newSignInRequest(String loginId, LoginOptions loginOptions,
+      OTPSignInOptions options) {
+    Map<String, Object> request = mapOf("loginId", loginId);
+    if (loginOptions != null) {
+      // Only the spec's loginOptions fields
+      Map<String, Object> spec = new HashMap<>();
+      spec.put("stepup", loginOptions.isStepup());
+      spec.put("mfa", loginOptions.isMfa());
+      addIfNotNull(spec, "customClaims", loginOptions.getCustomClaims());
+      addIfNotNull(spec, "templateOptions", loginOptions.getTemplateOptions());
+      addIfNotNull(spec, "locale", loginOptions.getLocale());
+      spec.put("revokeOtherSessions", loginOptions.isRevokeOtherSessions());
+      addIfNotNull(spec, "revokeOtherSessionsTypes", loginOptions.getRevokeOtherSessionsTypes());
+      request.put("loginOptions", spec);
+    }
+    if (options != null) {
+      addIfNotNull(request, "providerId", options.getProviderId());
+      addIfNotNull(request, "ssoAppId", options.getSsoAppId());
+      addIfNotNull(request, "useRecovery", options.getUseRecovery());
+    }
+    return request;
   }
 
   private URI composeUpdateUserPhoneOTP(DeliveryMethod deliveryMethod) {
