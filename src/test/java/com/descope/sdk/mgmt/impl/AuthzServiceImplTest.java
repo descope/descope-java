@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,6 +16,8 @@ import static org.mockito.Mockito.verify;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.authz.Condition;
+import com.descope.model.authz.ConditionParam;
 import com.descope.model.authz.HasRelationsResponse;
 import com.descope.model.authz.LoadSchemaResponse;
 import com.descope.model.authz.Modified;
@@ -42,6 +45,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -535,6 +541,251 @@ public class AuthzServiceImplTest {
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       Modified modified = authzService.getModified(null);
       assertTrue(modified.isSchemaChanged());
+    }
+  }
+
+  @Test
+  void testHasRelationsWithDirectRelationsForNoQueries() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.hasRelationsWithDirectRelations(null));
+    assertEquals("The relationQueries argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testHasRelationsWithDirectRelationsForSuccess() {
+    RelationQuery query = new RelationQuery("doc1", "owner", "doc", "u1", false);
+    HasRelationsResponse response = new HasRelationsResponse(
+        Arrays.asList(new RelationQuery("doc1", "owner", "doc", "u1", true)), Arrays.asList(true));
+    HasRelationsResponse[] result = new HasRelationsResponse[1];
+    Map<String, Object> body = runAndCapture(response, "/v1/mgmt/authz/re/has",
+        s -> result[0] = s.hasRelationsWithDirectRelations(Arrays.asList(query)));
+    assertEquals(Arrays.asList(query), body.get("relationQueries"));
+    assertTrue(result[0].getRelationQueries().get(0).isHasRelation());
+    assertEquals(Arrays.asList(true), result[0].getDirectRelations());
+  }
+
+  @Test
+  void testWhoCanAccessWithTargetTypeForInvalidInputs() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authzService.whoCanAccess(null, "rd", "ns", null, "user"));
+    assertEquals("The resource argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> authzService.whoCanAccess("r", null, "ns", null, "user"));
+    assertEquals("The relationDefinition argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> authzService.whoCanAccess("r", "rd", null, null, "user"));
+    assertEquals("The namespace argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testWhoCanAccessWithTargetType() {
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+    List<?>[] result = new List<?>[1];
+    Map<String, Object> body = runAndCapture(new WhoCanAccessResponse(Arrays.asList("u1")),
+        "/v1/mgmt/authz/re/who", s -> result[0] = s.whoCanAccess("doc1", "viewer", "doc", context, "user"));
+    assertEquals("doc1", body.get("resource"));
+    assertEquals("viewer", body.get("relationDefinition"));
+    assertEquals("doc", body.get("namespace"));
+    assertEquals(context, body.get("context"));
+    assertEquals("user", body.get("targetType"));
+    assertEquals(Arrays.asList("u1"), result[0]);
+  }
+
+  @Test
+  void testWhoCanAccessWithoutTargetType() {
+    Map<String, Object> body = runAndCapture(new WhoCanAccessResponse(Arrays.asList("u1")),
+        "/v1/mgmt/authz/re/who", s -> s.whoCanAccess("doc1", "viewer", "doc", null, ""));
+    assertFalse(body.containsKey("targetType"));
+    assertFalse(body.containsKey("context"));
+  }
+
+  @Test
+  void testResourceRelationsWithFilterForNoResource() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authzService.resourceRelations(null, true));
+    assertEquals("The resource argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testResourceRelationsWithFilter() {
+    List<?>[] result = new List<?>[1];
+    Map<String, Object> body = runAndCapture(new RelationsResponse(Arrays.asList(fullRelation())),
+        "/v1/mgmt/authz/re/resource", s -> result[0] = s.resourceRelations("doc1", true));
+    assertEquals("doc1", body.get("resource"));
+    assertEquals(true, body.get("ignoreTargetSetRelations"));
+    assertEquals(Arrays.asList(fullRelation()), result[0]);
+  }
+
+  @Test
+  void testResourceRelationsWithoutFilter() {
+    Map<String, Object> body = runAndCapture(new RelationsResponse(Arrays.asList(fullRelation())),
+        "/v1/mgmt/authz/re/resource", s -> s.resourceRelations("doc1"));
+    assertFalse(body.containsKey("ignoreTargetSetRelations"));
+  }
+
+  @Test
+  void testTargetsRelationsWithFilterForNoTargets() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authzService.targetsRelations(null, true));
+    assertEquals("The targets argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testTargetsRelationsWithFilter() {
+    List<?>[] result = new List<?>[1];
+    Map<String, Object> body = runAndCapture(new RelationsResponse(Arrays.asList(fullRelation())),
+        "/v1/mgmt/authz/re/targets", s -> result[0] = s.targetsRelations(Arrays.asList("u1"), true));
+    assertEquals(Arrays.asList("u1"), body.get("targets"));
+    assertEquals(true, body.get("includeTargetSetRelations"));
+    assertEquals(Arrays.asList(fullRelation()), result[0]);
+  }
+
+  @Test
+  void testTargetsRelationsWithoutFilter() {
+    Map<String, Object> body = runAndCapture(new RelationsResponse(Arrays.asList(fullRelation())),
+        "/v1/mgmt/authz/re/targets", s -> s.targetsRelations(Arrays.asList("u1")));
+    assertFalse(body.containsKey("includeTargetSetRelations"));
+  }
+
+  @Test
+  void testWhatCanTargetAccessWithParentForInvalidInputs() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authzService.whatCanTargetAccessWithRelation(null, "rd", "ns", "p", "prd", null));
+    assertEquals("The target argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> authzService.whatCanTargetAccessWithRelation("t", null, "ns", "p", "prd", null));
+    assertEquals("The relationDefinition argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> authzService.whatCanTargetAccessWithRelation("t", "rd", null, "p", "prd", null));
+    assertEquals("The namespace argument is invalid", thrown.getMessage());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhatCanTargetAccessWithParent() {
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+    List<Relation>[] result = new List[1];
+    Map<String, Object> body = runAndCapture(new ResourcesResponse(Arrays.asList("doc1")),
+        "/v1/mgmt/authz/re/targetwithrelation",
+        s -> result[0] = s.whatCanTargetAccessWithRelation("u1", "viewer", "doc", "folder1", "parent", context));
+    assertEquals("u1", body.get("target"));
+    assertEquals("viewer", body.get("relationDefinition"));
+    assertEquals("doc", body.get("namespace"));
+    assertEquals("folder1", body.get("ParentTarget"));
+    assertEquals("parent", body.get("ParentRelationDefinition"));
+    assertEquals(context, body.get("context"));
+    assertEquals(Arrays.asList(Relation.builder().resource("doc1").target("u1").relationDefinition("viewer")
+        .namespace("doc").build()), result[0]);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhatCanTargetAccessWithRelationForNoResources() {
+    List<Relation>[] result = new List[1];
+    Map<String, Object> body = runAndCapture(new ResourcesResponse(null), "/v1/mgmt/authz/re/targetwithrelation",
+        s -> result[0] = s.whatCanTargetAccessWithRelation("u1", "viewer", "doc"));
+    assertFalse(body.containsKey("ParentTarget"));
+    assertFalse(body.containsKey("ParentRelationDefinition"));
+    assertFalse(body.containsKey("context"));
+    assertTrue(result[0].isEmpty());
+  }
+
+  @Test
+  void testCreateRelationsWithTargetNamespace() {
+    Map<String, Object> body = runAndCapture(null, "/v1/mgmt/authz/re/create",
+        s -> s.createRelations(Arrays.asList(fullRelation())));
+    assertEquals(Arrays.asList(fullRelation()), body.get("relations"));
+  }
+
+  @Test
+  void testDeleteRelationsWithTargetNamespace() {
+    Map<String, Object> body = runAndCapture(null, "/v1/mgmt/authz/re/delete",
+        s -> s.deleteRelations(Arrays.asList(fullRelation())));
+    assertEquals(Arrays.asList(fullRelation()), body.get("relations"));
+  }
+
+  @Test
+  void testWhatCanTargetAccessWithTargetNamespace() {
+    List<?>[] result = new List<?>[1];
+    runAndCapture(new RelationsResponse(Arrays.asList(fullRelation())), "/v1/mgmt/authz/re/targetall",
+        s -> result[0] = s.whatCanTargetAccess("u1"));
+    assertEquals(Arrays.asList(fullRelation()), result[0]);
+  }
+
+  @Test
+  void testSaveSchemaWithConditions() {
+    Schema schema = schemaWithConditions();
+    Map<String, Object> body = runAndCapture(null, "/v1/mgmt/authz/schema/save", s -> s.saveSchema(schema, true));
+    assertEquals(schema, body.get("schema"));
+    assertEquals(true, body.get("upgrade"));
+  }
+
+  @Test
+  void testLoadSchemaWithConditions() {
+    Schema[] result = new Schema[1];
+    runAndCapture(new LoadSchemaResponse(schemaWithConditions()), "/v1/mgmt/authz/schema/load",
+        s -> result[0] = s.loadSchema());
+    assertEquals(schemaWithConditions(), result[0]);
+  }
+
+  @Test
+  void testNewFieldsJson() throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    String json = mapper.writeValueAsString(schemaWithConditions());
+    assertThat(json).contains("\"conditions\":[{\"name\":\"DuringShift\",\"params\":[{\"name\":\"hour\","
+        + "\"type\":\"int\"}],\"expression\":\"hour > 8\",\"builtin\":true,\"checkedExpr\":\"AQI=\",\"id\":1}]");
+    assertThat(mapper.writeValueAsString(fullRelation())).contains("\"targetNamespace\":\"user\"");
+    assertThat(mapper.writeValueAsString(new Schema("s", null))).isEqualTo("{\"name\":\"s\"}");
+    assertThat(mapper.writeValueAsString(new Relation("r", "rd", "ns", "t", null, null, null, null)))
+        .doesNotContain("targetNamespace");
+    Schema parsed = mapper.readValue("{\"name\":\"s\",\"namespaces\":null,\"conditions\":[{\"name\":\"DuringShift\","
+        + "\"params\":[{\"name\":\"hour\",\"type\":\"int\"}],\"expression\":\"hour > 8\",\"builtin\":true,"
+        + "\"checkedExpr\":\"AQI=\",\"id\":1}]}", Schema.class);
+    assertEquals(schemaWithConditions().getConditions(), parsed.getConditions());
+    HasRelationsResponse has = mapper.readValue("{\"relationQueries\":[],\"directRelations\":[true,false]}",
+        HasRelationsResponse.class);
+    assertEquals(Arrays.asList(true, false), has.getDirectRelations());
+    assertNull(new HasRelationsResponse(Arrays.asList(new RelationQuery())).getDirectRelations());
+  }
+
+  private static Relation fullRelation() {
+    return Relation.builder().resource("doc1").relationDefinition("viewer").namespace("doc").target("u1")
+        .targetNamespace("user").build();
+  }
+
+  private static Schema schemaWithConditions() {
+    return Schema.builder().name("s").namespaces(Arrays.asList(new Namespace("doc", null)))
+        .conditions(Arrays.asList(Condition.builder().name("DuringShift")
+            .params(Arrays.asList(new ConditionParam("hour", "int"))).expression("hour > 8").builtin(true)
+            .checkedExpr("AQI=").id(1).build()))
+        .build();
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> runAndCapture(Object response, String expectedPath,
+      Consumer<AuthzService> call) {
+    Client client = Client.builder().uri("https://api.descope.com").projectId("someProjectId")
+        .managementKey("someManagementKey").build();
+    AuthzService service = ManagementServiceBuilder.buildServices(client).getAuthzService();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(response).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      call.accept(service);
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), any());
+      assertEquals(expectedPath, uriCaptor.getValue().getPath());
+      assertEquals("Bearer someProjectId:someManagementKey", authHeader.get());
+      return bodyCaptor.getValue();
     }
   }
 

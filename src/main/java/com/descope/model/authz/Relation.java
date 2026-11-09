@@ -21,4 +21,13 @@ public class Relation {
   String targetSetRelationDefinition;
   String targetSetRelationDefinitionNamespace;
   UserQuery query;
+  String targetNamespace;
+
+  // Keeps the pre-targetNamespace constructor for binary compatibility
+  public Relation(String resource, String relationDefinition, String namespace, String target,
+      String targetSetResource, String targetSetRelationDefinition, String targetSetRelationDefinitionNamespace,
+      UserQuery query) {
+    this(resource, relationDefinition, namespace, target, targetSetResource, targetSetRelationDefinition,
+        targetSetRelationDefinitionNamespace, query, null);
+  }
 }

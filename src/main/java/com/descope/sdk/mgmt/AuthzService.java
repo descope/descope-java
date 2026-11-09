@@ -1,6 +1,7 @@
 package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
+import com.descope.model.authz.HasRelationsResponse;
 import com.descope.model.authz.Modified;
 import com.descope.model.authz.Namespace;
 import com.descope.model.authz.Relation;
@@ -117,6 +118,16 @@ public interface AuthzService {
   List<RelationQuery> hasRelations(List<RelationQuery> relationQueries) throws DescopeException;
 
   /**
+   * Query relations to see what relations exists, and whether each one is a direct relation.
+   *
+   * @param relationQueries {@link List} of {@link RelationQuery} to check.
+   * @return {@link HasRelationsResponse} with the queries, each with the boolean flag indicating if relation exists,
+   *     and the matching list of flags indicating if the relation is direct
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  HasRelationsResponse hasRelationsWithDirectRelations(List<RelationQuery> relationQueries) throws DescopeException;
+
+  /**
    * List all the users that have the given relation definition to the given resource.
    *
    * @param resource The resource we are checking
@@ -145,6 +156,22 @@ public interface AuthzService {
       Map<String, Object> context) throws DescopeException;
 
   /**
+   * List all the targets that have the given relation definition to the given resource, evaluating
+   * schema conditions against the given context, and optionally only targets of the given type.
+   *
+   * @param resource The resource we are checking
+   * @param relationDefinition The relation definition we are querying
+   * @param namespace The namespace for the relation definition
+   * @param context Extra context for condition evaluation, may be null or empty
+   * @param targetType Only targets of this type (namespace) are returned, up to 100 characters; null or empty
+   *     returns all targets
+   * @return {@link List} of targets who have the given relation definition
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<String> whoCanAccess(String resource, String relationDefinition, String namespace,
+      Map<String, Object> context, String targetType) throws DescopeException;
+
+  /**
    * Return the list of all defined relations (not recursive) on the given resource.
    *
    * @param resource The resource we are checking
@@ -154,6 +181,16 @@ public interface AuthzService {
   List<Relation> resourceRelations(String resource) throws DescopeException;
 
   /**
+   * Return the list of all defined relations (not recursive) on the given resource.
+   *
+   * @param resource The resource we are checking
+   * @param ignoreTargetSetRelations true to leave out target set relations, may be null
+   * @return {@link List} of {@link Relation} that exist for the given resource
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<Relation> resourceRelations(String resource, Boolean ignoreTargetSetRelations) throws DescopeException;
+
+  /**
    * Return the list of all defined relations (not recursive) for the given targets.
    *
    * @param targets {@link List} of targets we want to check
@@ -161,6 +198,16 @@ public interface AuthzService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   List<Relation> targetsRelations(List<String> targets) throws DescopeException;
+
+  /**
+   * Return the list of all defined relations (not recursive) for the given targets.
+   *
+   * @param targets {@link List} of targets we want to check
+   * @param includeTargetSetRelations true to also include target set relations, may be null
+   * @return {@link List} of {@link Relation} that exist for the given targets
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<Relation> targetsRelations(List<String> targets, Boolean includeTargetSetRelations) throws DescopeException;
 
   /**
    * Return the list of all relations for the given target including derived relations from the schema tree.
@@ -197,6 +244,24 @@ public interface AuthzService {
    */
   List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
       throws DescopeException;
+
+  /**
+   * Return the list of all resources for the given target and a given relation definition
+   * including derived resources from the schema tree, evaluating schema conditions against the given context.
+   * When both parentTarget and parentRelationDefinition are set, only resources that parentTarget has the
+   * parentRelationDefinition (in the same namespace) to are checked.
+   *
+   * @param target The target to check relations for
+   * @param relationDefinition relation definition to filter the results
+   * @param namespace namespace of the relation definition
+   * @param parentTarget optional parent target, up to 100 characters, may be null
+   * @param parentRelationDefinition optional parent relation definition, up to 100 characters, may be null
+   * @param context Extra context for condition evaluation, may be null or empty
+   * @return {@link List} of {@link Relation} that exist for the given target
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace,
+      String parentTarget, String parentRelationDefinition, Map<String, Object> context) throws DescopeException;
 
   /**
    * Return list of targets and resources changed since the given date.

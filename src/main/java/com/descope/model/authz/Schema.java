@@ -16,4 +16,11 @@ import lombok.NoArgsConstructor;
 public class Schema {
   String name;
   List<Namespace> namespaces;
+  List<Condition> conditions;
+
+  // Keeps the pre-conditions constructor for binary compatibility
+  public Schema(String name, List<Namespace> namespaces) {
+    this.name = name;
+    this.namespaces = namespaces;
+  }
 }

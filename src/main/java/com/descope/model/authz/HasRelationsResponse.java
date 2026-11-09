@@ -12,4 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class HasRelationsResponse {
   List<RelationQuery> relationQueries;
+  List<Boolean> directRelations;
+
+  // Keeps the pre-directRelations constructor for binary compatibility
+  public HasRelationsResponse(List<RelationQuery> relationQueries) {
+    this.relationQueries = relationQueries;
+  }
 }

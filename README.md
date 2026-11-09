@@ -1600,6 +1600,24 @@ try {
 AuthzService authz = descopeClient.getManagementServices().getAuthzService();
 List<String> targets = authz.whoCanAccess("doc1", "viewer", "document", context);
 List<Relation> relationsForTarget = authz.whatCanTargetAccess("user123", context);
+// Only return targets of the given type (namespace)
+List<String> userTargets = authz.whoCanAccess("doc1", "viewer", "document", context, "user");
+// Only check resources that the parent target has the parent relation definition to
+List<Relation> viewable = authz.whatCanTargetAccessWithRelation("user123", "viewer", "document",
+    "folder1", "parent", context);
+
+// Leave out (resource) or include (targets) target set relations
+List<Relation> resourceRelations = authz.resourceRelations("doc1", true);
+List<Relation> targetsRelations = authz.targetsRelations(Arrays.asList("user123"), true);
+
+// Check relations, and whether each one is a direct relation
+HasRelationsResponse has = authz.hasRelationsWithDirectRelations(Arrays.asList(
+    new RelationQuery("doc1", "viewer", "document", "user123", false)));
+// has.getRelationQueries().get(0).isHasRelation(), has.getDirectRelations().get(0)
+
+// The authz schema carries the conditions defined in it, and relations their target namespace
+Schema authzSchema = authz.loadSchema();
+// Do something with authzSchema.getConditions() and relationsForTarget.get(0).getTargetNamespace()
 
 // Delete relations
 try {
