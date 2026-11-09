@@ -1,25 +1,42 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
+import static com.descope.sdk.TestUtils.MOCK_REFRESH_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponse;
+import com.descope.proxy.ApiProxy;
+import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -28,11 +45,16 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
 
@@ -203,6 +225,53 @@ public class AuthenticationServiceImplTest {
     roleService.delete(roleAName);
     tenantService.delete(tenantBId);
     roleService.delete(roleBName);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testLogoutAllWithLogoutType() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+
+      authenticationService.logoutAll(MOCK_REFRESH_TOKEN, Arrays.asList("web", "mobile"));
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(), eq(JWTResponse.class));
+      assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/logoutall");
+      assertThat(authHeader.get()).isEqualTo("Bearer " + PROJECT_ID + ":" + MOCK_REFRESH_TOKEN);
+      assertThat((Map<String, Object>) bodyCaptor.getValue())
+          .containsExactly(entry("logoutType", Arrays.asList("web", "mobile")));
+    }
+  }
+
+  @Test
+  void testLogoutAllWithoutLogoutTypeSendsNoBody() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      authenticationService.logoutAll(MOCK_REFRESH_TOKEN);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      verify(apiProxy, times(1)).post(uriCaptor.capture(), isNull(), eq(JWTResponse.class));
+      assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/logoutall");
+    }
+  }
+
+  @Test
+  void testLogoutAllWithLogoutTypeMissingRefreshToken() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authenticationService.logoutAll("", Arrays.asList("web")));
+    assertNotNull(thrown);
+    assertThat(thrown.getMessage()).contains("refresh token");
   }
 
 }

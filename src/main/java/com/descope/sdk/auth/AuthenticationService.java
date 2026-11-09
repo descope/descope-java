@@ -259,6 +259,16 @@ public interface AuthenticationService {
   void logoutAll(String refreshToken) throws DescopeException;
 
   /**
+   * Used to log out of all device sessions of the given session types.
+   *
+   * @param refreshToken - token
+   * @param logoutType - optional session types to log out of (for example "web"), each 1-100 characters.
+   *     When {@code null}, all sessions are logged out.
+   * @throws DescopeException if there is an error
+   */
+  void logoutAll(String refreshToken, List<String> logoutType) throws DescopeException;
+
+  /**
    * Use to retrieve current session user details. The request requires a valid refresh token.
    *
    * @param refreshToken a valid refresh token

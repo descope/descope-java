@@ -634,6 +634,17 @@ try {
 
 ```
 
+To sign the user out only of sessions of specific types, pass the session types as well:
+
+```java
+try {
+    as.logoutAll(refreshToken, Arrays.asList("web"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 ## Management Functions
 
 It is very common for some form of management or automation to be required. These can be performed
