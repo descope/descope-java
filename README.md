@@ -331,7 +331,7 @@ try {
         .loginHint("user@example.com")
         .initiatedEmail("user@example.com")
         .build();
-    SAMLResponse res = ss.start("my-tenant-ID", returnURL, loginOptions, options);
+    SAMLResponse res = ss.start("my-tenant-ID", "https://my-app.com/handle-saml", loginOptions, options);
     String url = res.getUrl();
     String errorId = res.getErrorId();
 } catch (DescopeException de) {
