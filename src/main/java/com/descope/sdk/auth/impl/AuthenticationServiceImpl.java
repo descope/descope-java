@@ -14,9 +14,11 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.ExchangeAccessKeyResponse;
 import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.AccessKeyJWTResponse;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
@@ -123,6 +125,26 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
         mapOf("loginOptions", loginOptions), JWTResponse.class);
     AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
     return authenticationInfo.getToken();
+  }
+
+  @Override
+  public ExchangeAccessKeyResponse exchangeAccessKeyWithResponse(String accessKey) throws DescopeException {
+    return exchangeAccessKeyWithResponse(accessKey, null);
+  }
+
+  @Override
+  public ExchangeAccessKeyResponse exchangeAccessKeyWithResponse(String accessKey, AccessKeyLoginOptions loginOptions)
+      throws DescopeException {
+    if (StringUtils.isBlank(accessKey)) {
+      throw ServerCommonException.invalidArgument("accessKey");
+    }
+    ApiProxy apiProxy = getApiProxy(accessKey);
+    URI exchangeAccessKeyLinkURL = composeExchangeAccessKeyLinkURL();
+
+    AccessKeyJWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL,
+        mapOf("loginOptions", loginOptions), AccessKeyJWTResponse.class);
+    AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
+    return new ExchangeAccessKeyResponse(jwtResponse.getKeyId(), authenticationInfo.getToken());
   }
 
   @Override

@@ -1,25 +1,40 @@
 package com.descope.sdk.auth.impl;
 
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.auth.ExchangeAccessKeyResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.AccessKeyJWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponse;
+import com.descope.proxy.ApiProxy;
+import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -28,11 +43,16 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.descope.utils.JwtUtils;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
 
@@ -66,6 +86,70 @@ public class AuthenticationServiceImplTest {
     assertFalse(authenticationService.validateRoles(MOCK_TOKEN, "someTenant", Arrays.asList("tr2", "tr3")));
     assertTrue(authenticationService.validateRoles(MOCK_TOKEN, Arrays.asList("r1", "r2")));
     assertFalse(authenticationService.validateRoles(MOCK_TOKEN, Arrays.asList("r2", "r3")));
+  }
+
+  @Test
+  void testExchangeAccessKeyWithResponse() {
+    AccessKeyJWTResponse jwtResponse = new AccessKeyJWTResponse();
+    jwtResponse.setKeyId("someKeyId");
+    jwtResponse.setSessionJwt("someSessionJwt");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponse).when(apiProxy).post(any(), any(), any());
+    AccessKeyLoginOptions loginOptions = new AccessKeyLoginOptions(mapOf("k1", "v1"));
+
+    ExchangeAccessKeyResponse res;
+    ArgumentCaptor<Supplier<String>> authCaptor = ArgumentCaptor.forClass(Supplier.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+        mockedJwtUtils.when(() -> JwtUtils.getToken(eq("someSessionJwt"), any())).thenReturn(MOCK_TOKEN);
+        res = authenticationService.exchangeAccessKeyWithResponse("someAccessKey", loginOptions);
+      }
+      mockedApiProxyBuilder.verify(() -> ApiProxyBuilder.buildProxy(authCaptor.capture(), any()));
+    }
+
+    assertEquals("Bearer " + PROJECT_ID + ":someAccessKey", authCaptor.getValue().get());
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    verify(apiProxy).post(uriCaptor.capture(), eq(mapOf("loginOptions", loginOptions)),
+        eq(AccessKeyJWTResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/accesskey/exchange");
+    assertEquals("someKeyId", res.getKeyId());
+    assertEquals(MOCK_TOKEN, res.getSessionToken());
+  }
+
+  @Test
+  void testExchangeAccessKeyWithResponseNoLoginOptions() {
+    AccessKeyJWTResponse jwtResponse = new AccessKeyJWTResponse();
+    jwtResponse.setKeyId("someKeyId");
+    jwtResponse.setSessionJwt("someSessionJwt");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponse).when(apiProxy).post(any(), any(), any());
+
+    ExchangeAccessKeyResponse res;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+        mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+        res = authenticationService.exchangeAccessKeyWithResponse("someAccessKey");
+      }
+    }
+
+    verify(apiProxy).post(any(), eq(mapOf("loginOptions", null)), eq(AccessKeyJWTResponse.class));
+    assertEquals("someKeyId", res.getKeyId());
+    assertEquals(MOCK_TOKEN, res.getSessionToken());
+  }
+
+  @Test
+  void testExchangeAccessKeyWithResponseEmptyAccessKey() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      ServerCommonException thrown = assertThrows(ServerCommonException.class,
+          () -> authenticationService.exchangeAccessKeyWithResponse(""));
+      assertNotNull(thrown);
+      assertThat(thrown.getMessage()).contains("accessKey");
+    }
+    verifyNoInteractions(apiProxy);
   }
 
   @Test
