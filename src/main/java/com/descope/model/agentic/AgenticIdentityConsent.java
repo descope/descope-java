@@ -1,0 +1,28 @@
+package com.descope.model.agentic;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class AgenticIdentityConsent {
+  private String id;
+  private String appId;
+  private String userId;
+  private String[] scopes;
+  private String grantedBy;
+  private long createdTime;
+  private String tenantId;
+  @JsonProperty("ExpireTime")
+  private long expireTime;
+  private long modifiedTime;
+  // Empty for an explicit consent, "idJag" for an identity recorded by a Cross-App Access exchange
+  private String authMethod;
+  // True when an admin blocked this "idJag" identity
+  private boolean blocked;
+}

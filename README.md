@@ -96,7 +96,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+14. [Manage Agentic Identities](#manage-agentic-identities)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1876,6 +1877,50 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Agentic Identities
+
+You can search and revoke agentic identities, the authorization records that bind an OAuth client to a user, tenant, or autonomous client:
+
+```java
+// Set up the agentic service
+AgenticService agenticService = descopeClient.getManagementServices().getAgenticService();
+
+// Search agentic identities
+// All fields are optional, use to filter results
+try {
+    AgenticIdentitySearchResponse res = agenticService.searchIdentities(
+        AgenticIdentitySearchRequest.builder()
+            // .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            // .page(0) // zero-based
+            // .limit(10)
+            .build()
+    );
+    // res.getIdentities(), res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Revoke agentic identities and invalidate their consents
+// At least one of userId, clientId, resourceId or consentId must be set, for example:
+// clientId + userId - one user's grant to a specific agent
+// consentId + userId - a specific consent for a user
+// resourceId + userId - all of a user's grants on one MCP server resource
+// userId alone - all agentic identities for that user across every MCP server
+try {
+    int revoked = agenticService.revokeIdentities(
+        AgenticIdentityRevokeRequest.builder()
+            .userId("user-id")
+            .clientId("client-id")
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Project
