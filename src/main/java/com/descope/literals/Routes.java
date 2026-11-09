@@ -207,6 +207,9 @@ public class Routes {
     public static final String MANAGEMENT_AUDIT_SEARCH_LINK = "/v1/mgmt/audit/search";
     public static final String MANAGEMENT_AUDIT_CREATE_EVENT = "/v1/mgmt/audit/event";
 
+    // Analytics
+    public static final String MANAGEMENT_ANALYTICS_SEARCH = "/v1/mgmt/analytics/search";
+
     // Authz
     public static final String MANAGEMENT_AUTHZ_SCHEMA_SAVE = "/v1/mgmt/authz/schema/save";
     public static final String MANAGEMENT_AUTHZ_SCHEMA_DELETE = "/v1/mgmt/authz/schema/delete";

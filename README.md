@@ -93,10 +93,11 @@ These sections show how to use the SDK to perform API management functions. Befo
 8. [Manage Flows](#manage-flows)
 9. [Manage JWTs](#manage-jwts)
 10. [Audit](#audit)
-11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
-12. [Manage Outbound Applications](#manage-outbound-applications)
-13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+11. [Analytics](#analytics)
+12. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
+13. [Manage Outbound Applications](#manage-outbound-applications)
+14. [Manage Inbound Applications](#manage-inbound-applications)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1510,6 +1511,29 @@ try {
             .name("My Audit Webhook")
             .url("https://my-app.com/audit-hook")
             .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+### Analytics
+
+You can search analytics (summarized) data grouped by time periods.
+
+```java
+AnalyticsService ans = descopeClient.getManagementServices().getAnalyticsService();
+// Count successful logins per day and method over the last 30 days
+try {
+    AnalyticsSearchResponse resp = ans.search(AnalyticsSearchRequest.builder()
+            .from(Instant.now().minus(Duration.ofDays(30)))
+            .to(Instant.now())
+            .actions(Arrays.asList("LoginSucceed"))
+            .groupByMethod(true)
+            .groupByCreated("d")
+            .build());
+    for (AnalyticRecord rec : resp.getAnalytics()) {
+        // rec.getCreated(), rec.getMethod(), rec.getCnt()
+    }
 } catch (DescopeException de) {
     // Handle the error
 }

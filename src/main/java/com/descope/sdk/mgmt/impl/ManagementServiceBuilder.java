@@ -48,6 +48,7 @@ public class ManagementServiceBuilder {
         .accessKeyService(new AccessKeyServiceImpl(client))
         .permissionService(new PermissionServiceImpl(client))
         .auditService(new AuditServiceImpl(client))
+        .analyticsService(new AnalyticsServiceImpl(client))
         .authzService(new AuthzServiceImpl(client))
         .fgaService(new FGAServiceImpl(client))
         .projectService(new ProjectServiceImpl(client))
