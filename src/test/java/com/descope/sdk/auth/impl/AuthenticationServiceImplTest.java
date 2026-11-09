@@ -333,6 +333,28 @@ public class AuthenticationServiceImplTest {
     assertEquals("refresh token", thrown.getMessage());
   }
 
+  @Test
+  void testSsoAuthenticationOnlyWithoutSession() {
+    JWTResponse response = new JWTResponse();
+    response.setSsoAuthenticationOnly(true);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(response).when(apiProxy).post(any(), any(), any());
+    AuthenticationInfo info;
+    try (MockedStatic<ApiProxyBuilder> builder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> jwtUtils = mockStatic(JwtUtils.class)) {
+      builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      jwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      info = refreshAuthService().refreshSessionWithTokenAuthenticationInfo(REFRESH_JWT);
+
+      // Without the flag a missing session JWT still fails
+      response.setSsoAuthenticationOnly(null);
+      assertThrows(DescopeException.class,
+          () -> refreshAuthService().refreshSessionWithTokenAuthenticationInfo(REFRESH_JWT));
+    }
+    assertThat(info.getToken()).isNull();
+    assertTrue(info.getSsoAuthenticationOnly());
+  }
+
   private static AuthenticationService refreshAuthService() {
     Client client = Client.builder()
         .uri("https://api.descope.com")

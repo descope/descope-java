@@ -132,7 +132,12 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   AuthenticationInfo getAuthenticationInfo(JWTResponse jwtResponse) {
-    Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
+    Token sessionToken = null;
+    // Authentication-only SSO issues no session
+    if (!Boolean.TRUE.equals(jwtResponse.getSsoAuthenticationOnly())
+        || StringUtils.isNotBlank(jwtResponse.getSessionJwt())) {
+      sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
+    }
     Token refreshToken = null;
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
