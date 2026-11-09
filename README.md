@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Engines](#manage-engines)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1943,6 +1944,52 @@ try {
 
     // Update the current project's settings to mirror those in the exported data
     ps.importProject(files);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+### Manage Engines
+
+You can create, update, delete and load engines, as well as rotate an engine's secret:
+
+```java
+EngineService es = descopeClient.getManagementServices().getEngineService();
+
+// Create a new engine. The returned engine includes its secret.
+try {
+    Engine engine = es.create("My Engine");
+    String engineId = engine.getId();
+    String secret = engine.getSecret();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update an existing engine's name
+try {
+    Engine engine = es.update("engine-id", "Updated Name");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load an engine by ID. The returned engine's secret is always empty.
+try {
+    Engine engine = es.load("engine-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Rotate an engine's secret. The previous secret is invalidated immediately.
+try {
+    String secret = es.rotateSecret("engine-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete an engine
+try {
+    es.delete("engine-id");
 } catch (DescopeException de) {
     // Handle the error
 }

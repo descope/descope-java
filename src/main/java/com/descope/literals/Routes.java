@@ -331,5 +331,12 @@ public class Routes {
     public static final String USER_REMOVE_PASSKEY_LINK = "/v1/mgmt/user/passkey/delete";
     public static final String USER_LIST_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/list";
     public static final String USER_REMOVE_TOTP_SEED_LINK = "/v1/mgmt/user/totp/delete";
+
+    // Engine
+    public static final String MANAGEMENT_ENGINE_CREATE_LINK = "/v1/mgmt/engine/create";
+    public static final String MANAGEMENT_ENGINE_UPDATE_LINK = "/v1/mgmt/engine/update";
+    public static final String MANAGEMENT_ENGINE_DELETE_LINK = "/v1/mgmt/engine/delete";
+    public static final String MANAGEMENT_ENGINE_LOAD_LINK = "/v1/mgmt/engine/load";
+    public static final String MANAGEMENT_ENGINE_ROTATE_LINK = "/v1/mgmt/engine/rotate";
   }
 }
