@@ -74,10 +74,11 @@ These sections show how to use the SDK to perform various authentication/authori
 4. [OAuth](#oauth)
 5. [SSO/SAML](#ssosaml)
 6. [TOTP Authentication](#totp-authentication)
-7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+7. [WebAuthn (Passkeys)](#webauthn-passkeys)
+8. [Passwords](#passwords)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -387,6 +388,51 @@ try {
     // Handle the error
 }
 
+```
+
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### WebAuthn (Passkeys)
+
+The SDK acts as a mid-layer between the browser's WebAuthn API and Descope. Each start function returns
+`options` to pass to `navigator.credentials.create` or `navigator.credentials.get`, and the browser's
+response is then sent to the matching finish function.
+
+```java
+WebAuthnService ws = descopeClient.getAuthenticationServices().getWebAuthnService();
+
+// Optional passkey options for the browser ceremony
+PasskeyOptions passkeyOptions = PasskeyOptions.builder()
+    .authenticatorSelection(AuthenticatorSelectionCriteria.builder()
+        .authenticatorAttachment(WebAuthnAuthenticatorAttachment.PLATFORM)
+        .residentKey(WebAuthnResidentKey.REQUIRED)
+        .userVerification(WebAuthnUserVerification.REQUIRED)
+        .build())
+    .attestation(WebAuthnAttestation.NONE)
+    .userVerification(WebAuthnUserVerification.PREFERRED)
+    .build();
+
+try {
+    // Sign up, optionally naming the new passkey
+    WebAuthnTransactionResponse start = ws.signUpStart(loginId, user, origin, signUpOptions, passkeyOptions,
+        "My laptop");
+    // Pass start.getOptions() to navigator.credentials.create, then finish with the browser's response
+    AuthenticationInfo info = ws.signUpFinish(new WebAuthnFinishRequest(start.getTransactionId(), response));
+
+    // Sign in
+    start = ws.signInStart(loginId, origin, null, loginOptions, passkeyOptions);
+    info = ws.signInFinish(new WebAuthnFinishRequest(start.getTransactionId(), response));
+
+    // Sign in, or sign up if the user doesn't exist. start.isCreate() says which finish function to call
+    start = ws.signUpOrInStart(loginId, origin, loginOptions, "<sso-app-id>", passkeyOptions, "My laptop");
+
+    // Add a passkey to a signed-in user. With mfa=true, finishing returns a session whose amr
+    // merges the previous factors with the new passkey (null otherwise)
+    start = ws.updateUserDeviceStart(loginId, origin, refreshToken, passkeyOptions, true, "My phone");
+    info = ws.updateUserDeviceFinishWithSession(new WebAuthnFinishRequest(start.getTransactionId(), response));
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)

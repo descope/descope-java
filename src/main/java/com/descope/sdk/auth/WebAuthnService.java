@@ -3,7 +3,9 @@ package com.descope.sdk.auth;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
+import com.descope.model.webauthn.PasskeyOptions;
 import com.descope.model.webauthn.WebAuthnFinishRequest;
 import com.descope.model.webauthn.WebAuthnTransactionResponse;
 
@@ -22,6 +24,23 @@ public interface WebAuthnService {
    * @throws DescopeException on failure of any kind
    */
   WebAuthnTransactionResponse signUpStart(String loginId, User user, String origin) throws DescopeException;
+
+  /**
+   * Use to start an authentication process with webauthn for the new user argument.
+   *
+   * @param loginId the end-user login id
+   * @param user the user details
+   * @param origin the origin of the URL for the web page where the webauthn operation is taking place, as returned
+   *               by calling document.location.origin via javascript.
+   * @param signUpOptions optional {@link SignUpOptions} such as custom claims and template options
+   * @param passkeyOptions optional {@link PasskeyOptions} for the credential creation
+   * @param displayName optional label for the new passkey, shown by the browser and kept by the OS keychain
+   *                    (max 254 characters). It does not change the user's name.
+   * @return transaction id response on success.
+   * @throws DescopeException on failure of any kind
+   */
+  WebAuthnTransactionResponse signUpStart(String loginId, User user, String origin, SignUpOptions signUpOptions,
+      PasskeyOptions passkeyOptions, String displayName) throws DescopeException;
 
   /**
    * Use to finish an authentication process with a given transaction id and credentials after been signed
@@ -46,6 +65,21 @@ public interface WebAuthnService {
    */
   WebAuthnTransactionResponse signInStart(String loginId, String origin, String token, LoginOptions loginOptions)
       throws DescopeException;
+
+  /**
+   * Use to start an authentication validation with webauthn for an existing user with the given loginID.
+   *
+   * @param loginId the end-user login id
+   * @param origin the origin of the URL for the web page where the webauthn operation is taking place, as returned
+   *               by calling document.location.origin via javascript.
+   * @param token when doing step-up or mfa then we need current session token
+   * @param loginOptions {@link LoginOptions LoginOptions}
+   * @param passkeyOptions optional {@link PasskeyOptions} for the credential assertion
+   * @return transaction id response on success
+   * @throws DescopeException on failure of any kind
+   */
+  WebAuthnTransactionResponse signInStart(String loginId, String origin, String token, LoginOptions loginOptions,
+      PasskeyOptions passkeyOptions) throws DescopeException;
 
   /**
    * Use to finish an authentication process with a given transaction id and credentials after been signed
@@ -73,6 +107,27 @@ public interface WebAuthnService {
   WebAuthnTransactionResponse signUpOrInStart(String loginId, String origin) throws DescopeException;
 
   /**
+   * Use to start an authentication validation with webauthn.
+   * If user does not exist, a new user will be created with the given login ID.
+   * The create field in the response object determines which browser API should be called,
+   * either navigator.credentials.create or navigator.credentials.get as well as whether to call signUpFinish
+   * (if create is true) or signInFinish (if create is false) later to finalize the operation.
+   *
+   * @param loginId the end-user login id
+   * @param origin the origin of the URL for the web page where the webauthn operation is taking place, as returned
+   *               by calling document.location.origin via javascript.
+   * @param loginOptions optional {@link LoginOptions LoginOptions}
+   * @param ssoAppId optional SSO application ID
+   * @param passkeyOptions optional {@link PasskeyOptions} for the credential creation or assertion
+   * @param displayName optional label for the new passkey, used only when this resolves to a sign up
+   *                    (max 254 characters)
+   * @return transaction id response on success
+   * @throws DescopeException on failure of any kind
+   */
+  WebAuthnTransactionResponse signUpOrInStart(String loginId, String origin, LoginOptions loginOptions,
+      String ssoAppId, PasskeyOptions passkeyOptions, String displayName) throws DescopeException;
+
+  /**
    * Use to start an add webauthn device process for an existing user with the given loginId.
    * Token is required to send it to Descope, for verification.
    *
@@ -87,6 +142,24 @@ public interface WebAuthnService {
       throws DescopeException;
 
   /**
+   * Use to start an add webauthn device process for an existing user with the given loginId.
+   * Token is required to send it to Descope, for verification.
+   *
+   * @param loginId the end-user login id
+   * @param origin the origin of the URL for the web page where the webauthn operation is taking place, as returned
+   *               by calling document.location.origin via javascript.
+   * @param token an existing refresh token must be established and the token sent to Descope
+   * @param passkeyOptions optional {@link PasskeyOptions} for the credential creation
+   * @param mfa optional, when true {@link #updateUserDeviceFinishWithSession} returns a session whose amr merges
+   *            the previously-passed factors with the new passkey
+   * @param displayName optional label for the new passkey (max 254 characters)
+   * @return transaction id response on success
+   * @throws DescopeException on failure of any kind
+   */
+  WebAuthnTransactionResponse updateUserDeviceStart(String loginId, String origin, String token,
+      PasskeyOptions passkeyOptions, Boolean mfa, String displayName) throws DescopeException;
+
+  /**
    * Use to finish an add webauthn device process with a given transaction id and credentials after been signed
    * by the credentials navigator.
    *
@@ -94,4 +167,14 @@ public interface WebAuthnService {
    * @throws DescopeException on failure of any kind
    */
   void updateUserDeviceFinish(WebAuthnFinishRequest finishRequest) throws DescopeException;
+
+  /**
+   * Use to finish an add webauthn device process with a given transaction id and credentials after been signed
+   * by the credentials navigator.
+   *
+   * @param finishRequest the browser finish response
+   * @return {@link AuthenticationInfo} when the matching update start set mfa, otherwise null
+   * @throws DescopeException on failure of any kind
+   */
+  AuthenticationInfo updateUserDeviceFinishWithSession(WebAuthnFinishRequest finishRequest) throws DescopeException;
 }

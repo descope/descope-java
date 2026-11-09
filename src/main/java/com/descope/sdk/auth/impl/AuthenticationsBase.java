@@ -130,9 +130,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    return new AuthenticationInfo(
-        sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
-        jwtResponse.getIdpResponse());
+    return AuthenticationInfo.from(sessionToken, refreshToken, jwtResponse);
   }
 
   @SuppressWarnings("unchecked")
