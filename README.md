@@ -293,6 +293,35 @@ try {
 
 ```
 
+To pass OAuth prompt values, a login hint or an initiating email, use the `WithOptions` variants (also `startSignInWithOptions` and `startSignUpWithOptions`). They return the redirect URL together with an error ID, set when the server redirects to an error page:
+
+```java
+try {
+    OAuthStartOptions options = OAuthStartOptions.builder()
+        .prompt(Arrays.asList("login", "consent"))
+        .loginHint("user@example.com")
+        .build();
+    OAuthResponse res = oas.startWithOptions("google", "https://my-app.com/handle-oauth", loginOptions, options);
+    String url = res.getUrl();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+To add an OAuth identity to a signed-in user, start an update with the user's refresh token. By default the identity is linked only if the provider's email is already one of the user's login IDs; pass `allowAllMerge` as `true` to link it anyway:
+
+```java
+try {
+    OAuthResponse res = oas.updateUser("google", "https://my-app.com/handle-oauth", refreshToken, false,
+        loginOptions, null);
+    String url = res.getUrl();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```java

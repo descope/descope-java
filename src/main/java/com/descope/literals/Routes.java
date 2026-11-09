@@ -50,6 +50,7 @@ public class Routes {
     public static final String COMPOSE_OAUTH_LINK_SIGN_IN = "/v1/auth/oauth/authorize/signin";
     public static final String COMPOSE_OAUTH_LINK_SIGN_UP = "/v1/auth/oauth/authorize/signup";
     public static final String EXCHANGE_OAUTH_LINK = "/v1/auth/oauth/exchange";
+    public static final String UPDATE_USER_OAUTH_LINK = "/v1/auth/oauth/authorize/update";
 
     // SAML
     public static final String COMPOSE_SAML_START_LINK = "/v1/auth/saml/authorize";
