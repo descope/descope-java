@@ -280,6 +280,10 @@ public class Routes {
     public static final String MANAGEMENT_INBOUND_DELETE_TENANT_CONSENT = "/v1/mgmt/thirdparty/consents/delete/tenant";
     public static final String MANAGEMENT_INBOUND_SEARCH_CONSENT = "/v1/mgmt/thirdparty/consents/search";
 
+    // Descopers
+    public static final String MANAGEMENT_DESCOPER_LINK = "/v1/mgmt/descoper";
+    public static final String MANAGEMENT_DESCOPER_LIST_LINK = "/v1/mgmt/descoper/list";
+
     // Tenant (parity)
     public static final String TENANT_UPDATE_DEFAULT_ROLES_LINK = "/v1/mgmt/tenant/updateDefaultRoles";
 

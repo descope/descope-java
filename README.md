@@ -96,7 +96,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+14. [Manage Descopers](#manage-descopers)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1876,6 +1877,58 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Descopers
+
+You can load, update, delete and list descopers (users of the Descope console):
+
+```java
+// Set up the descoper service
+DescoperService descoperService = descopeClient.getManagementServices().getDescoperService();
+
+// Load a descoper by ID
+try {
+    Descoper descoper = descoperService.getDescoper("descoper-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update a descoper's attributes and/or RBAC (pass null to leave either unchanged)
+try {
+    Descoper descoper = descoperService.updateDescoper(
+        "descoper-id", // required
+        DescoperAttributes.builder()
+            .displayName("Desmond Copeland") // up to 254 characters
+            .email("desmond@descope.com")
+            .phone("+15555555555")
+            .build(),
+        DescoperRBAC.builder()
+            .isCompanyAdmin(false)
+            .tags(Arrays.asList(
+                DescoperTagRole.builder().tags(Arrays.asList("tag1")).role("developer").build()))
+            .projects(Arrays.asList(
+                DescoperProjectRole.builder().projectIds(Arrays.asList("project-id")).role("admin").build()))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a descoper
+try {
+    descoperService.deleteDescoper("descoper-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// List all descopers
+try {
+    DescopersListResponse res = descoperService.listDescopers();
+    List<Descoper> descopers = res.getDescopers();
+    Integer total = res.getTotal();
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Project
