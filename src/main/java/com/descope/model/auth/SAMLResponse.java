@@ -11,4 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SAMLResponse {
   private String url;
+  private String errorId;
+
+  public SAMLResponse(String url) {
+    this(url, null);
+  }
 }

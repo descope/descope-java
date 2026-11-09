@@ -323,6 +323,21 @@ try {
     // Handle the error
 }
 
+// Optionally pass SAML start options, and get the error ID the server may return
+try {
+    SAMLStartOptions options = SAMLStartOptions.builder()
+        .prompt(Arrays.asList("login"))
+        .forceAuthn(true)
+        .loginHint("user@example.com")
+        .initiatedEmail("user@example.com")
+        .build();
+    SAMLResponse res = ss.start("my-tenant-ID", returnURL, loginOptions, options);
+    String url = res.getUrl();
+    String errorId = res.getErrorId();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
