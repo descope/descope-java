@@ -28,7 +28,7 @@ public class EngineServiceImplTest {
             + "\"unknown\":\"x\"},{\"id\":\"e2\",\"name\":\"engine2\"}]}",
         method, path, auth);
     try {
-      List<Engine> engines = new EngineServiceImpl(client(server)).loadAll();
+      final List<Engine> engines = new EngineServiceImpl(client(server)).loadAll();
       assertEquals("GET", method.get());
       assertEquals("/v1/mgmt/engines/load", path.get());
       assertEquals("Bearer P123:mgmt-key", auth.get());
