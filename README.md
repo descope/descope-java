@@ -1373,6 +1373,35 @@ try {
     // Handle the error
 }
 
+// Search flows by their IDs (null or an empty list returns all flows)
+try {
+    FlowsResponse resp = fs.listFlows(Arrays.asList("sign-up", "sign-in"));
+    for (FlowMetadata f : resp.getFlows()) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Run a management flow and get its output
+ManagementFlowOptions options = ManagementFlowOptions.builder()
+    .input(Collections.singletonMap("email", "user@example.com"))
+    .tenant("tenant-id") // optional
+    .build();
+try {
+    Map<String, Object> output = fs.runManagementFlow("my-management-flow", options);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Run a management flow asynchronously, then get its result using the execution ID
+try {
+    String executionId = fs.runManagementFlowAsync("my-management-flow", options);
+    Map<String, Object> output = fs.getManagementFlowAsyncResult(executionId);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ### Manage JWTs

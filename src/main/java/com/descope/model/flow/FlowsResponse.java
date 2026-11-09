@@ -12,4 +12,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FlowsResponse {
   private List<FlowMetadata> flows;
+  private Integer total;
+
+  // Keeps the pre-existing all-args constructor for binary compatibility.
+  public FlowsResponse(List<FlowMetadata> flows) {
+    this.flows = flows;
+  }
 }
