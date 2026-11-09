@@ -4,17 +4,37 @@ import com.descope.sdk.auth.impl.KeyProvider;
 import java.security.Key;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.LongSupplier;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Client {
+  // Cached signing keys are refetched on lookup once this long has passed since the last successful fetch.
+  private static final long KEYS_TTL_NANOS = TimeUnit.MINUTES.toNanos(10);
+  // Unknown key ids refetch at most this often after a successful fetch; stale or expired keys after any attempt.
+  private static final long KEYS_REFETCH_COOLDOWN_NANOS = TimeUnit.SECONDS.toNanos(30);
+  // Cached signing keys are never used once this long has passed since the last successful fetch.
+  private static final long KEYS_MAX_AGE_NANOS = TimeUnit.HOURS.toNanos(1);
+  // Only replaced in tests. Final and initialized so the generated constructors, builder and equals ignore it.
+  @Getter(AccessLevel.NONE)
+  @EqualsAndHashCode.Exclude
+  @ToString.Exclude
+  private final AtomicReference<LongSupplier> clock = new AtomicReference<>(System::nanoTime);
+
   private String uri;
   private String projectId;
   private String managementKey;
@@ -53,16 +73,83 @@ public class Client {
         authManagementKey, null);
   }
 
+  void setClock(LongSupplier clock) {
+    this.clock.set(clock);
+  }
+
+  private long nanoTime() {
+    return clock.get().getAsLong();
+  }
+
   public Key getKey(String keyId) {
     if (providedKey != null) {
       return providedKey;
     }
-    Key k = keys.get().get(keyId);
-    // If key is not found, try to refresh key cache
-    if (k == null) {
-      keys.set(KeyProvider.getKeys(projectId, uri, this));
-      k = keys.get().get(keyId);
+    AtomicReference<Map<String, Key>> ref = keys;
+    Map<String, Key> seen = ref.get();
+    long now = nanoTime();
+    Key k = isExpired(seen, now) ? null : seen.get(keyId);
+    if (k != null && (!isStale(seen, now) || seen instanceof KeySet && ((KeySet) seen).refreshing)) {
+      return k;
     }
-    return k;
+    // One fetch at a time per key cache; callers that waited share its result.
+    synchronized (ref) {
+      Map<String, Key> current = ref.get();
+      now = nanoTime();
+      if (current != seen) {
+        return isExpired(current, now) ? null : current.get(keyId);
+      }
+      boolean expired = isExpired(current, now);
+      if (expired) {
+        k = null;
+      }
+      if (current instanceof KeySet) {
+        KeySet set = (KeySet) current;
+        if (now - (k == null && !expired ? set.fetchedAt : set.attemptedAt) < KEYS_REFETCH_COOLDOWN_NANOS) {
+          return k;
+        }
+        // Lets stale cached keys be served without waiting on this fetch.
+        set.refreshing = true;
+      }
+      try {
+        ref.set(new KeySet(KeyProvider.getKeys(projectId, uri, this), now, now));
+      } catch (Exception e) {
+        log.warn("Failed to fetch signing keys: {}", e.getMessage());
+        // Keep the last keys, still stale, and record the attempt so stale cached keys skip refetching for a while.
+        long fetchedAt = current instanceof KeySet ? ((KeySet) current).fetchedAt : now - KEYS_TTL_NANOS;
+        ref.set(new KeySet(current, fetchedAt, now));
+        if (k == null) {
+          throw e;
+        }
+        return k;
+      } finally {
+        if (current instanceof KeySet) {
+          ((KeySet) current).refreshing = false;
+        }
+      }
+      return ref.get().get(keyId);
+    }
+  }
+
+  private static boolean isStale(Map<String, Key> keys, long now) {
+    return !(keys instanceof KeySet) || now - ((KeySet) keys).fetchedAt >= KEYS_TTL_NANOS;
+  }
+
+  private static boolean isExpired(Map<String, Key> keys, long now) {
+    return keys instanceof KeySet && now - ((KeySet) keys).fetchedAt >= KEYS_MAX_AGE_NANOS;
+  }
+
+  // Fetched keys with the nanoTime() values of the last successful fetch and of the last fetch attempt.
+  private static final class KeySet extends HashMap<String, Key> {
+    private static final long serialVersionUID = 1L;
+    private final long fetchedAt;
+    private final long attemptedAt;
+    private volatile boolean refreshing;
+
+    private KeySet(Map<String, Key> keys, long fetchedAt, long attemptedAt) {
+      super(keys);
+      this.fetchedAt = fetchedAt;
+      this.attemptedAt = attemptedAt;
+    }
   }
 }
