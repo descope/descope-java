@@ -96,7 +96,7 @@ class DescoperServiceImplTest {
   @Test
   void testGetDescoperSuccess() {
     response.set("{\"descoper\":" + DESCOPER_JSON + "}");
-    Descoper descoper = descoperService.getDescoper("U1");
+    final Descoper descoper = descoperService.getDescoper("U1");
     assertEquals("GET", method.get());
     assertEquals("/v1/mgmt/descoper", path.get());
     assertEquals("id=U1", query.get());
@@ -120,7 +120,7 @@ class DescoperServiceImplTest {
         .projects(Collections.singletonList(
             DescoperProjectRole.builder().projectIds(Collections.singletonList("P1")).role("developer").build()))
         .build();
-    Descoper descoper = descoperService.updateDescoper("U1",
+    final Descoper descoper = descoperService.updateDescoper("U1",
         DescoperAttributes.builder().displayName("Name").email("a@example.com").phone("+15555555555").build(),
         rbac);
     assertEquals("PATCH", method.get());
@@ -161,7 +161,7 @@ class DescoperServiceImplTest {
   @Test
   void testListDescopersSuccess() throws IOException {
     response.set("{\"descopers\":[" + DESCOPER_JSON + "],\"total\":1}");
-    DescopersListResponse res = descoperService.listDescopers();
+    final DescopersListResponse res = descoperService.listDescopers();
     assertEquals("POST", method.get());
     assertEquals("/v1/mgmt/descoper/list", path.get());
     assertEquals("Bearer " + PROJECT_ID + ":" + MANAGEMENT_KEY, authorization.get());
