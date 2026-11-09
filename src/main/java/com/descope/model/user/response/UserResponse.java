@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -48,14 +46,10 @@ public class UserResponse {
   Boolean password;
   Boolean editable;
   @JsonProperty("SCIM")
-  @Getter(onMethod_ = @JsonProperty("SCIM"))
-  @Setter(onMethod_ = @JsonProperty("SCIM"))
   Boolean SCIM;
   Boolean push;
   List<String> permissions;
   @JsonProperty("OIDC")
-  @Getter(onMethod_ = @JsonProperty("OIDC"))
-  @Setter(onMethod_ = @JsonProperty("OIDC"))
   Boolean OIDC;
   Long consentExpiration;
   String recoveryEmail;
@@ -91,5 +85,25 @@ public class UserResponse {
         roleNames, userTenants, status, picture, test, createdTime, customAttributes, totp, saml, oauth, ssoAppIds,
         lockReason, tempLockExpiration, null, null, null, null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null);
+  }
+
+  @JsonProperty("SCIM")
+  public Boolean getSCIM() {
+    return SCIM;
+  }
+
+  @JsonProperty("SCIM")
+  public void setSCIM(Boolean scim) {
+    this.SCIM = scim;
+  }
+
+  @JsonProperty("OIDC")
+  public Boolean getOIDC() {
+    return OIDC;
+  }
+
+  @JsonProperty("OIDC")
+  public void setOIDC(Boolean oidc) {
+    this.OIDC = oidc;
   }
 }
