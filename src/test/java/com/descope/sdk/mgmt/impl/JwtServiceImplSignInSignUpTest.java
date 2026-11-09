@@ -85,6 +85,28 @@ class JwtServiceImplSignInSignUpTest {
   }
 
   @Test
+  void signIn_shouldCopyJwtResponseFields() throws DescopeException {
+    String validJwt = MOCK_JWT_RESPONSE.getSessionJwt();
+    String validRefreshJwt = MOCK_JWT_RESPONSE.getRefreshJwt();
+    mockedJwtUtils.when(() -> JwtUtils.getToken(eq(validJwt), any())).thenReturn(MOCK_SESSION_TOKEN);
+    mockedJwtUtils.when(() -> JwtUtils.getToken(eq(validRefreshJwt), any())).thenReturn(MOCK_REFRESH_TOKEN);
+    JWTResponse mockResponse = new JWTResponse();
+    mockResponse.setSessionJwt(validJwt);
+    mockResponse.setRefreshJwt(validRefreshJwt);
+    mockResponse.setSessionExpiration(1234);
+    mockResponse.setCookieName("DSR");
+    mockResponse.setTrustedDeviceJwt("trustedJwt");
+    mockResponse.setClaims(mapOf("k", "v"));
+    when(apiProxy.post(any(URI.class), any(ManagementSignInRequest.class), eq(JWTResponse.class)))
+        .thenReturn(mockResponse);
+    AuthenticationInfo authInfo = jwtService.signIn("mario@descope.com", new LoginOptions());
+    assertEquals(1234, authInfo.getSessionExpiration());
+    assertEquals("DSR", authInfo.getCookieName());
+    assertEquals("trustedJwt", authInfo.getTrustedDeviceJwt());
+    assertEquals(mapOf("k", "v"), authInfo.getClaims());
+  }
+
+  @Test
   void signIn_shouldReturnAuthenticationInfo_whenValidJWT() throws DescopeException {
     // Given
     String validJwt = MOCK_JWT_RESPONSE.getSessionJwt();
