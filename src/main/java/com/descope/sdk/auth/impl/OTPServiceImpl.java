@@ -375,7 +375,8 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     addIfNotNull(signUpUser, "name", user.getName());
     addIfNotNull(signUpUser, byEmail ? "phone" : "email", byEmail ? user.getPhone() : user.getEmail());
     Map<String, Object> request = mapOf("loginId", loginId, "user", signUpUser);
-    addIfNotNull(request, byEmail ? "email" : "phone", byEmail ? user.getEmail() : user.getPhone());
+    addIfNotNull(request, byEmail ? "email" : "phone",
+        byEmail ? user.getEmail() : StringUtils.defaultIfBlank(user.getPhone(), loginId));
     if (signUpOptions != null) {
       Map<String, Object> options = new HashMap<>();
       addIfNotNull(options, "customClaims", signUpOptions.getCustomClaims());

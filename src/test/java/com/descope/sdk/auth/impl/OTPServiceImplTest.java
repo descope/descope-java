@@ -395,6 +395,13 @@ public class OTPServiceImplTest {
   }
 
   @Test
+  void testSignUpIMLoginIdAsPhone() {
+    Sent sent = send(new OTPResponse(null, MOCK_MASKED_PHONE, 3), OTPResponse.class,
+        s -> s.signUpIM(MOCK_PHONE, null, null, null));
+    assertThat(asMap(sent.body).get("phone")).isEqualTo(MOCK_PHONE);
+  }
+
+  @Test
   void testSignUpIMFailures() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> otpService.signUpIM("", null, null, null));
