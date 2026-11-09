@@ -112,6 +112,28 @@ class JwtServiceImplSignInSignUpTest {
     assertEquals(loginId, captor.getValue().getLoginId());
   }
 
+  @Test
+  void signIn_shouldReturnSessionDetails() throws DescopeException {
+    String validJwt = MOCK_JWT_RESPONSE.getSessionJwt();
+    String validRefreshJwt = MOCK_JWT_RESPONSE.getRefreshJwt();
+    mockedJwtUtils.when(() -> JwtUtils.getToken(eq(validJwt), any())).thenReturn(MOCK_SESSION_TOKEN);
+    mockedJwtUtils.when(() -> JwtUtils.getToken(eq(validRefreshJwt), any())).thenReturn(MOCK_REFRESH_TOKEN);
+    JWTResponse mockResponse = new JWTResponse();
+    mockResponse.setSessionJwt(validJwt);
+    mockResponse.setRefreshJwt(validRefreshJwt);
+    mockResponse.setSessionExpiration(1234);
+    mockResponse.setCookieName("DSR");
+    mockResponse.setNextRefreshSeconds(60);
+    mockResponse.setUserCreationDeferred(true);
+    when(apiProxy.post(any(URI.class), any(ManagementSignInRequest.class), eq(JWTResponse.class)))
+        .thenReturn(mockResponse);
+    AuthenticationInfo authInfo = jwtService.signIn("mario@descope.com", new LoginOptions());
+    assertEquals(1234, authInfo.getSessionExpiration());
+    assertEquals("DSR", authInfo.getCookieName());
+    assertEquals(60, authInfo.getNextRefreshSeconds());
+    assertEquals(true, authInfo.getUserCreationDeferred());
+  }
+
   static Stream<String> signUpMethods() {
     return Stream.of("signUp", "signUpOrIn");
   }

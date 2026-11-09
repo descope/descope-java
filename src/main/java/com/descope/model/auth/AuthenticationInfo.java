@@ -1,6 +1,7 @@
 package com.descope.model.auth;
 
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.user.response.UserResponse;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -36,5 +37,14 @@ public class AuthenticationInfo {
       IDPResponse idpResponse) {
     this(token, refreshToken, user, firstSeen, idpResponse, null, null, null, null, null, null, null, null, null,
         null, null, null, null);
+  }
+
+  public static AuthenticationInfo fromJwtResponse(Token token, Token refreshToken, JWTResponse jwtResponse) {
+    return new AuthenticationInfo(token, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
+        jwtResponse.getIdpResponse(), jwtResponse.getSessionExpiration(), jwtResponse.getExternalToken(),
+        jwtResponse.getClaims(), jwtResponse.getTenantSSOID(), jwtResponse.getTrustedDeviceJwt(),
+        jwtResponse.getNextRefreshSeconds(), jwtResponse.getCookieName(), jwtResponse.getSessionCookieName(),
+        jwtResponse.getSessionCookieDomain(), jwtResponse.getUnsavedSSO(), jwtResponse.getKnownDeviceJwt(),
+        jwtResponse.getSsoAuthenticationOnly(), jwtResponse.getUserCreationDeferred());
   }
 }
