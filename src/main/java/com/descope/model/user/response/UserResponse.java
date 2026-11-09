@@ -1,6 +1,7 @@
 package com.descope.model.user.response;
 
 import com.descope.model.auth.AssociatedTenant;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -40,4 +41,63 @@ public class UserResponse {
    * this is greater than now.
    */
   Long tempLockExpiration;
+  List<String> externalIds;
+  Boolean webauthn;
+  Boolean password;
+  Boolean editable;
+  @JsonProperty("SCIM")
+  Boolean scim;
+  Boolean push;
+  List<String> permissions;
+  @JsonProperty("OIDC")
+  Boolean oidc;
+  /** When the user's consent expires, in unix seconds. */
+  Long consentExpiration;
+  String recoveryEmail;
+  Boolean verifiedRecoveryEmail;
+  String recoveryPhone;
+  Boolean verifiedRecoveryPhone;
+  /** Unix seconds. */
+  Long modifiedTime;
+  List<String> roleIds;
+  Boolean recoveryCodes;
+  Boolean dependent;
+  List<UserFamily> userFamilies;
+  String scimTenantId;
+  String samlTenantId;
+  String oidcTenantId;
+  String consentTenantId;
+  /** Unix seconds. */
+  Long lastLoginTime;
+
+  // Keeps the constructor from before the fields above were added
+  public UserResponse(String userId, List<String> loginIds, String email, Boolean verifiedEmail, String phone,
+      Boolean verifiedPhone, String name, String givenName, String middleName, String familyName,
+      List<String> roleNames, List<AssociatedTenant> userTenants, String status, String picture, Boolean test,
+      Long createdTime, Map<String, Object> customAttributes, Boolean totp, Boolean saml,
+      Map<String, Boolean> oauth, List<String> ssoAppIds, String lockReason, Long tempLockExpiration) {
+    this.userId = userId;
+    this.loginIds = loginIds;
+    this.email = email;
+    this.verifiedEmail = verifiedEmail;
+    this.phone = phone;
+    this.verifiedPhone = verifiedPhone;
+    this.name = name;
+    this.givenName = givenName;
+    this.middleName = middleName;
+    this.familyName = familyName;
+    this.roleNames = roleNames;
+    this.userTenants = userTenants;
+    this.status = status;
+    this.picture = picture;
+    this.test = test;
+    this.createdTime = createdTime;
+    this.customAttributes = customAttributes;
+    this.TOTP = totp;
+    this.SAML = saml;
+    this.oAuth = oauth;
+    this.ssoAppIds = ssoAppIds;
+    this.lockReason = lockReason;
+    this.tempLockExpiration = tempLockExpiration;
+  }
 }

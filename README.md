@@ -634,6 +634,21 @@ try {
 
 ```
 
+### Current User Details
+
+Load the signed-in user's details with their `refreshToken`.
+
+```java
+try {
+    UserResponse user = as.me(refreshToken);
+    List<String> permissions = user.getPermissions();
+    Long lastLoginTime = user.getLastLoginTime(); // unix seconds
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 ## Management Functions
 
 It is very common for some form of management or automation to be required. These can be performed
