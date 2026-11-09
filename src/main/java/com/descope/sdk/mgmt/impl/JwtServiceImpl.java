@@ -9,6 +9,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP_OR_IN;
 import static com.descope.literals.Routes.ManagementEndPoints.STOP_IMPERSONATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_JWT_LINK;
+import static com.descope.utils.CollectionUtils.addIfNotNull;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.ClientFunctionalException;
@@ -185,6 +186,13 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   @Override
   public String impersonate(String impersonatorId, String loginId, boolean validateConsent,
       Map<String, Object> customClaims, String tenantId) throws DescopeException {
+    return impersonate(impersonatorId, loginId, validateConsent, customClaims, tenantId, null, null);
+  }
+
+  @Override
+  public String impersonate(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId, Integer refreshDuration, String sessionCookieName)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("loginId");
     }
@@ -197,6 +205,8 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
         "validateConsent", validateConsent,
         "customClaims", customClaims,
         "selectedTenant", tenantId);
+    addIfNotNull(request, "refreshDuration", refreshDuration);
+    addIfNotNull(request, "sessionCookieName", sessionCookieName);
     ApiProxy apiProxy = getApiProxy();
     UpdateJwtResponse jwtResponse = apiProxy.post(getUri(IMPERSONATE_LINK), request, UpdateJwtResponse.class);
     return jwtResponse.getJwt();
@@ -205,6 +215,13 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   @Override
   public String impersonateStepup(String impersonatorId, String loginId, boolean validateConsent,
       Map<String, Object> customClaims, String tenantId) throws DescopeException {
+    return impersonateStepup(impersonatorId, loginId, validateConsent, customClaims, tenantId, null, null);
+  }
+
+  @Override
+  public String impersonateStepup(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId, Integer refreshDuration, String sessionCookieName)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("loginId");
     }
@@ -217,6 +234,8 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
         "validateConsent", validateConsent,
         "customClaims", customClaims,
         "selectedTenant", tenantId);
+    addIfNotNull(request, "refreshDuration", refreshDuration);
+    addIfNotNull(request, "sessionCookieName", sessionCookieName);
     ApiProxy apiProxy = getApiProxy();
     UpdateJwtResponse jwtResponse = apiProxy.post(getUri(IMPERSONATE_STEPUP_LINK), request, UpdateJwtResponse.class);
     return jwtResponse.getJwt();

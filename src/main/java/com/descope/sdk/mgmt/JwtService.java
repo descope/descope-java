@@ -66,6 +66,23 @@ public interface JwtService {
       Map<String, Object> customClaims, String tenantId) throws DescopeException;
 
   /**
+   * Impersonate another user. The impersonator user must have the requested permission
+   * otherwise the operation will fail. A new JWT for the impersonated user will be returned.
+   *
+   * @param impersonatorId    - The ID of the impersonator (a valid login ID or user ID), up to 100 characters
+   * @param loginId           - The login ID of the user to impersonate
+   * @param validateConsent   - Whether to validate that consent to impersonation was given
+   * @param customClaims      - Custom claims to add to the impersonated JWT (optional)
+   * @param tenantId          - The tenant to select for the impersonated user (optional)
+   * @param refreshDuration   - Custom refresh duration in seconds for the impersonation JWT (optional)
+   * @param sessionCookieName - Custom session cookie name, up to 64 characters (optional)
+   * @return - New JWT for the impersonated user
+   */
+  String impersonate(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId, Integer refreshDuration, String sessionCookieName)
+      throws DescopeException;
+
+  /**
    * Impersonate another user with a step-up JWT. The impersonator user must have the requested
    * permission otherwise the operation will fail. A new JWT for the impersonated user will be
    * returned.
@@ -79,6 +96,24 @@ public interface JwtService {
    */
   String impersonateStepup(String impersonatorId, String loginId, boolean validateConsent,
       Map<String, Object> customClaims, String tenantId) throws DescopeException;
+
+  /**
+   * Impersonate another user with a step-up JWT. The impersonator user must have the requested
+   * permission otherwise the operation will fail. A new JWT for the impersonated user will be
+   * returned.
+   *
+   * @param impersonatorId    - The ID of the impersonator (a valid login ID or user ID), up to 100 characters
+   * @param loginId           - The login ID of the user to impersonate
+   * @param validateConsent   - Whether to validate that consent to impersonation was given
+   * @param customClaims      - Custom claims to add to the impersonated JWT (optional)
+   * @param tenantId          - The tenant to select for the impersonated user (optional)
+   * @param refreshDuration   - Custom refresh duration in seconds for the impersonation JWT (optional)
+   * @param sessionCookieName - Custom session cookie name, up to 64 characters (optional)
+   * @return - New step-up JWT for the impersonated user
+   */
+  String impersonateStepup(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId, Integer refreshDuration, String sessionCookieName)
+      throws DescopeException;
 
   /**
    * Stop an active impersonation given the impersonated user's JWT. A new JWT for the original
