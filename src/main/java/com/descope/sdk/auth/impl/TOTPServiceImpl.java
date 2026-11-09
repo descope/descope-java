@@ -28,12 +28,18 @@ class TOTPServiceImpl extends AuthenticationServiceImpl implements TOTPService {
 
   @Override
   public TOTPResponse signUp(String loginId, User user) throws DescopeException {
+    return signUp(loginId, user, null);
+  }
+
+  @Override
+  public TOTPResponse signUp(String loginId, User user, String ssoAppId) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("loginId");
     }
     URI totpSignUpURL = composeSignUpTOTPURL();
 
-    TotpSignUpRequestBody signUpRequest = TotpSignUpRequestBody.builder().loginId(loginId).user(user).build();
+    TotpSignUpRequestBody signUpRequest =
+        TotpSignUpRequestBody.builder().loginId(loginId).user(user).ssoAppId(ssoAppId).build();
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(totpSignUpURL, signUpRequest, TOTPResponse.class);
   }

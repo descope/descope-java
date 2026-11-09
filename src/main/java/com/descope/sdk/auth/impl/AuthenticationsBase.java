@@ -132,7 +132,11 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     }
     return new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
-        jwtResponse.getIdpResponse());
+        jwtResponse.getIdpResponse(), jwtResponse.getSessionExpiration(), jwtResponse.getExternalToken(),
+        jwtResponse.getClaims(), jwtResponse.getTenantSSOID(), jwtResponse.getTrustedDeviceJwt(),
+        jwtResponse.getNextRefreshSeconds(), jwtResponse.getCookieName(), jwtResponse.getSessionCookieName(),
+        jwtResponse.getSessionCookieDomain(), jwtResponse.getUnsavedSSO(), jwtResponse.getKnownDeviceJwt(),
+        jwtResponse.getSsoAuthenticationOnly(), jwtResponse.getUserCreationDeferred());
   }
 
   @SuppressWarnings("unchecked")
