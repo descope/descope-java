@@ -14,8 +14,10 @@ import static com.descope.utils.CollectionUtils.mapOf;
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
+import com.descope.model.jwt.MgmtSignInOptions;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.AnonymousUserRequest;
@@ -30,6 +32,8 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +74,12 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
 
   @Override
   public AuthenticationInfo signIn(String loginId, LoginOptions loginOptions) throws DescopeException {
+    return signIn(loginId, loginOptions, null);
+  }
+
+  @Override
+  public AuthenticationInfo signIn(String loginId, LoginOptions loginOptions, MgmtSignInOptions signInOptions)
+      throws DescopeException {
     // validate input
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("loginId");
@@ -89,6 +99,12 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
             loginOptions.getRevokeOtherSessionsTypes(),
             loginOptions.getCustomClaims(),
             loginOptions.getJwt());
+    if (signInOptions != null) {
+      request.setSsoAppId(signInOptions.getSsoAppId());
+      request.setRefreshDuration(signInOptions.getRefreshDuration());
+      request.setSelectedTenantId(signInOptions.getSelectedTenantId());
+      request.setIgnoreEnforceSSO(signInOptions.getIgnoreEnforceSSO());
+    }
 
     // Make the API call
     URI signInUri = getUri(MANAGEMENT_SIGN_IN);
@@ -128,6 +144,10 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
             signUpUserDetails.getSsoAppId(),
             signUpUserDetails.getCustomClaims()
     );
+    request.setRefreshDuration(signUpUserDetails.getRefreshDuration());
+    request.setSelectedTenantId(signUpUserDetails.getSelectedTenantId());
+    request.setUserTenants(toUserTenants(signUpUserDetails.getUserTenants()));
+    request.setIgnoreEnforceSSO(signUpUserDetails.getIgnoreEnforceSSO());
     // Make the API call
     URI uri = getUri(path);
     ApiProxy apiProxy = getApiProxy();
@@ -136,14 +156,44 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     return validateAndCreateAuthInfo(jwtResponse);
   }
 
+  private static List<Map<String, Object>> toUserTenants(List<AssociatedTenant> tenants) {
+    if (tenants == null) {
+      return null;
+    }
+    List<Map<String, Object>> userTenants = new ArrayList<>();
+    for (AssociatedTenant tenant : tenants) {
+      Map<String, Object> userTenant = new HashMap<>();
+      userTenant.put("tenantId", tenant.getTenantId());
+      if (tenant.getRoleNames() != null) {
+        userTenant.put("roleNames", tenant.getRoleNames());
+      }
+      userTenants.add(userTenant);
+    }
+    return userTenants;
+  }
+
   private AuthenticationInfo validateAndCreateAuthInfo(JWTResponse jwtResponse) throws DescopeException {
     if (jwtResponse == null) {
       throw ClientFunctionalException.invalidToken(); //TODO: consider changing error type here
     }
     Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
     Token refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
-    return new AuthenticationInfo(sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
-        jwtResponse.getIdpResponse());
+    AuthenticationInfo authInfo = new AuthenticationInfo(sessionToken, refreshToken, jwtResponse.getUser(),
+        jwtResponse.getFirstSeen(), jwtResponse.getIdpResponse());
+    authInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
+    authInfo.setExternalToken(jwtResponse.getExternalToken());
+    authInfo.setClaims(jwtResponse.getClaims());
+    authInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
+    authInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    authInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    authInfo.setCookieName(jwtResponse.getCookieName());
+    authInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
+    authInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    authInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    authInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    authInfo.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
+    authInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    return authInfo;
   }
 
   private URI composeUpdateJwtUri() {

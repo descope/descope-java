@@ -1401,6 +1401,15 @@ loginOptions.setCustomClaims(new HashMap<String, Object>() {{
 	put("custom-key2", "custom-value2");
 }});
 AuthenticationInfo res = jwtService.signIn("dummy", loginOptions);
+
+// Optionally set the SSO app, refresh duration (seconds), selected tenant, and keep SSO-enforcing tenants
+MgmtSignInOptions signInOptions = MgmtSignInOptions.builder()
+	.ssoAppId("sso-app-id")
+	.refreshDuration(3600)
+	.selectedTenantId("tenant-id")
+	.ignoreEnforceSSO(true)
+	.build();
+res = jwtService.signIn("dummy", loginOptions, signInOptions);
 ```
 
 Generate a JWT for a user, simulating a signup request.
@@ -1412,6 +1421,17 @@ mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
 	put("custom-key1", "custom-value1");
 	put("custom-key2", "custom-value2");
 		}});
+// Optionally set the refresh duration (seconds), selected tenant, tenants and recovery details
+mgmtSignUpUser.setUser(User.builder()
+	.email("dummy@example.com")
+	.recoveryEmail("recovery@example.com")
+	.recoveryPhone("+12223334444")
+	.build());
+mgmtSignUpUser.setRefreshDuration(3600);
+mgmtSignUpUser.setSelectedTenantId("tenant-id");
+mgmtSignUpUser.setUserTenants(Arrays.asList(
+	AssociatedTenant.builder().tenantId("tenant-id").roleNames(Arrays.asList("role-name")).build()));
+mgmtSignUpUser.setIgnoreEnforceSSO(true);
 AuthenticationInfo res = jwtService.signUp("Dummy", mgmtSignUpUser);
 ```
 
@@ -1425,6 +1445,16 @@ mgmtSignUpUser.setCustomClaims(new HashMap<String, Object>() {{
 	put("custom-key2", "custom-value2");
 		}});
 AuthenticationInfo res = jwtService.signUpOrIn("Dummy", mgmtSignUpUser);
+```
+
+Generate a JWT for an anonymous user, optionally with roles.
+
+```java
+JwtService jwtService = descopeClient.getManagementServices().getJwtService();
+AuthenticationInfo res = jwtService.anonymous(AnonymousUserRequest.builder()
+	.selectedTenant("tenant-id")
+	.roles(Arrays.asList("role-name"))
+	.build());
 ```
 
 Generate a client assertion JWT for OAuth 2.0 client credentials flow.

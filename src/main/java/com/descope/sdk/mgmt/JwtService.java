@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.jwt.MgmtSignInOptions;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.AnonymousUserRequest;
@@ -24,14 +25,46 @@ public interface JwtService {
   Token updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims)
       throws DescopeException;
 
+  /**
+   * Sign up a new user and generate a JWT for them, without going through an authentication method.
+   *
+   * @param loginId           - The login ID of the user (required)
+   * @param signUpUserDetails - Optional user details and JWT options. In {@code userTenants}, each tenant
+   *                          needs a {@code tenantId}; only {@code tenantId} and {@code roleNames} are sent.
+   * @return - The session and refresh tokens, the user and the rest of the JWT response
+   */
   AuthenticationInfo signUp(String loginId, MgmtSignUpUser signUpUserDetails)
           throws DescopeException;
 
+  /**
+   * Sign up a new user, or sign in an existing one, and generate a JWT for them.
+   *
+   * @param loginId           - The login ID of the user (required)
+   * @param signUpUserDetails - Optional user details and JWT options, as in {@link #signUp}
+   * @return - The session and refresh tokens, the user and the rest of the JWT response
+   */
   AuthenticationInfo signUpOrIn(String loginId, MgmtSignUpUser signUpUserDetails)
           throws DescopeException;
 
   AuthenticationInfo signIn(String loginId, LoginOptions loginOptions) throws DescopeException;
 
+  /**
+   * Sign in an existing user and generate a JWT for them, without going through an authentication method.
+   *
+   * @param loginId           - The login ID of the user (required)
+   * @param loginOptions      - Optional step-up, MFA, custom claims and session revocation options
+   * @param signInOptions     - Optional SSO app, refresh duration, selected tenant and enforce SSO options
+   * @return - The session and refresh tokens, the user and the rest of the JWT response
+   */
+  AuthenticationInfo signIn(String loginId, LoginOptions loginOptions, MgmtSignInOptions signInOptions)
+      throws DescopeException;
+
+  /**
+   * Generate a JWT for an anonymous user. Each of the request's {@code roles} must be non-empty.
+   *
+   * @param request - Optional custom claims, selected tenant, refresh duration and roles
+   * @return - The session and refresh tokens
+   */
   AuthenticationInfo anonymous(AnonymousUserRequest request) throws DescopeException;
 
   /**
