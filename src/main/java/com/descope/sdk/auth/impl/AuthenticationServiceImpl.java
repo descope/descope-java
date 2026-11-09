@@ -26,6 +26,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
@@ -215,6 +216,19 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     ApiProxy apiProxy = getApiProxy(refreshToken);
     URI logOutURL = composeLogOutLinkURL();
     apiProxy.post(logOutURL, null, JWTResponse.class);
+  }
+
+  @Override
+  public void logout(String refreshToken, List<String> logoutType) throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+    Map<String, Object> body = new HashMap<>();
+    if (logoutType != null) {
+      body.put("logoutType", logoutType);
+    }
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    apiProxy.post(composeLogOutLinkURL(), body, JWTResponse.class);
   }
 
   @Override

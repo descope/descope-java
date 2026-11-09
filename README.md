@@ -622,6 +622,17 @@ try {
 
 ```
 
+You can also pass logout types with the request:
+
+```java
+try {
+    as.logout(refreshToken, Arrays.asList("logoutType1"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 It is also possible to sign the user out of all the devices they are currently signed-in with. Calling `logoutAll` will
 invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have created.
 
