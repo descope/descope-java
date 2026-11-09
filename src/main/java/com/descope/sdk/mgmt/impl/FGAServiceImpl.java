@@ -4,6 +4,8 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CHE
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CREATE_RELATIONS;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_DELETE_RELATIONS;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_LOAD_SCHEMA;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_MAPPABLE_RESOURCES;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_MAPPABLE_SCHEMA;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_LOAD;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_SAVE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_SAVE_SCHEMA;
@@ -13,10 +15,15 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.fga.FGACheckInfo;
+import com.descope.model.fga.FGACheckRequest;
 import com.descope.model.fga.FGACheckResponse;
 import com.descope.model.fga.FGACheckResponse.FGACheckResponseTuple;
 import com.descope.model.fga.FGACheckResult;
 import com.descope.model.fga.FGALoadSchemaResponse;
+import com.descope.model.fga.FGAMappableResources;
+import com.descope.model.fga.FGAMappableResourcesQuery;
+import com.descope.model.fga.FGAMappableResourcesResponse;
+import com.descope.model.fga.FGAMappableSchema;
 import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
@@ -75,8 +82,12 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
     }
     schema.setDsl(response.getDsl());
     schema.setVersion(response.getVersion());
-    if (response.getSchema() != null && response.getSchema().getConditions() != null) {
-      schema.setConditions(response.getSchema().getConditions());
+    if (response.getSchema() != null) {
+      if (response.getSchema().getConditions() != null) {
+        schema.setConditions(response.getSchema().getConditions());
+      }
+      schema.setName(response.getSchema().getName());
+      schema.setNamespaces(response.getSchema().getNamespaces());
     }
     return schema;
   }
@@ -143,6 +154,52 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
   }
 
   @Override
+  public FGACheckResponse checkWithRequest(FGACheckRequest request) throws DescopeException {
+    if (request == null) {
+      throw ServerCommonException.invalidArgument("check request");
+    }
+    boolean hasTuples = request.getTuples() != null && !request.getTuples().isEmpty();
+    boolean hasCheckTuples = request.getCheckTuples() != null && !request.getCheckTuples().isEmpty();
+    if (hasTuples == hasCheckTuples) {
+      throw ServerCommonException.invalidArgument("tuples or checkTuples");
+    }
+
+    Map<String, Object> requestBody = new HashMap<>();
+    if (hasTuples) {
+      requestBody.put("tuples", request.getTuples());
+    } else {
+      requestBody.put("checkTuples", request.getCheckTuples());
+    }
+    if (request.getContext() != null && !request.getContext().isEmpty()) {
+      requestBody.put("context", request.getContext());
+    }
+    if (request.getComputePaths() != null) {
+      requestBody.put("computePaths", request.getComputePaths());
+    }
+    if (request.getListConditions() != null) {
+      requestBody.put("listConditions", request.getListConditions());
+    }
+
+    ApiProxy apiProxy = getApiProxy();
+    FGACheckResponse response = apiProxy.post(getFgaUri(MANAGEMENT_FGA_CHECK), requestBody, FGACheckResponse.class);
+    if (response == null) {
+      response = new FGACheckResponse();
+    }
+    if (response.getTuples() == null) {
+      response.setTuples(new ArrayList<>());
+    }
+    for (FGACheckResponseTuple tuple : response.getTuples()) {
+      if (tuple.getInfo() == null) {
+        tuple.setInfo(new FGACheckInfo());
+      }
+      if (tuple.getInfo().getMissingContext() == null) {
+        tuple.getInfo().setMissingContext(new ArrayList<>());
+      }
+    }
+    return response;
+  }
+
+  @Override
   public List<FGAResourceDetails> loadResourcesDetails(List<FGAResourceIdentifier> resourceIdentifiers) 
       throws DescopeException {
     if (resourceIdentifiers == null || resourceIdentifiers.isEmpty()) {
@@ -190,5 +247,48 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
 
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_FGA_RESOURCES_SAVE), requestBody, Void.class);
+  }
+
+  @Override
+  public FGAMappableSchema loadMappableSchema(String tenantId, Long resourcesLimit) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("tenantId");
+    }
+
+    Map<String, String> params = new HashMap<>();
+    params.put("tenantId", tenantId);
+    if (resourcesLimit != null) {
+      params.put("resourcesLimit", resourcesLimit.toString());
+    }
+
+    ApiProxy apiProxy = getApiProxy();
+    FGAMappableSchema response =
+        apiProxy.get(getQueryParamUri(MANAGEMENT_FGA_MAPPABLE_SCHEMA, params), FGAMappableSchema.class);
+    return response == null ? new FGAMappableSchema() : response;
+  }
+
+  @Override
+  public List<FGAMappableResources> searchMappableResources(String tenantId,
+      List<FGAMappableResourcesQuery> resourcesQueries, Long resourcesLimit) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("tenantId");
+    }
+
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("tenantId", tenantId);
+    if (resourcesQueries != null) {
+      requestBody.put("resourcesQueries", resourcesQueries);
+    }
+    if (resourcesLimit != null) {
+      requestBody.put("resourcesLimit", resourcesLimit.toString());
+    }
+
+    ApiProxy apiProxy = getApiProxy();
+    FGAMappableResourcesResponse response = apiProxy.post(getUri(MANAGEMENT_FGA_MAPPABLE_RESOURCES), requestBody,
+        FGAMappableResourcesResponse.class);
+    if (response == null || response.getMappableResources() == null) {
+      return new ArrayList<>();
+    }
+    return response.getMappableResources();
   }
 }

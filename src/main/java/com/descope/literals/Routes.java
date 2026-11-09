@@ -235,6 +235,8 @@ public class Routes {
     public static final String MANAGEMENT_FGA_RESOURCES_LOAD = "/v1/mgmt/fga/resources/load";
     public static final String MANAGEMENT_FGA_RESOURCES_SAVE = "/v1/mgmt/fga/resources/save";
     public static final String MANAGEMENT_FGA_SCHEMA_DRY_RUN = "/v1/mgmt/fga/schema/dryrun";
+    public static final String MANAGEMENT_FGA_MAPPABLE_SCHEMA = "/v1/mgmt/fga/mappable/schema";
+    public static final String MANAGEMENT_FGA_MAPPABLE_RESOURCES = "/v1/mgmt/fga/mappable/resources";
 
     // Password settings
     public static final String MANAGEMENT_PASSWORD_SETTINGS = "/v1/mgmt/password/settings";

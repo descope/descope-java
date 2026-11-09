@@ -1544,6 +1544,8 @@ try {
     if (deletes != null && deletes.isHasDeletes()) {
         System.out.println("Would delete relations: " + deletes.getRelations());
         System.out.println("Would delete types: " + deletes.getTypes());
+        // Number of relations the deletes would remove, capped when deletes.isTupleCountCapped()
+        System.out.println("Would delete relations count: " + deletes.getDeletedTupleCount());
     }
 } catch (DescopeException de) {
     // Handle the error
@@ -1552,7 +1554,8 @@ try {
 // Load the current authorization schema
 try {
     FGASchema schema = fs.loadSchema();
-    // Do something with schema.getDsl(), schema.getVersion() and schema.getConditions()
+    // Do something with schema.getDsl(), schema.getVersion(), schema.getConditions(),
+    // schema.getName() and schema.getNamespaces()
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1596,6 +1599,29 @@ try {
     // Handle the error
 }
 
+// Check relations with a context per relation, and get the path of relations that allowed
+// each check and the IDs of the conditions it evaluated
+Map<String, Object> viewerContext = new HashMap<>();
+viewerContext.put("role", "viewer");
+
+try {
+    FGACheckResponse response = fs.checkWithRequest(FGACheckRequest.builder()
+        .checkTuples(Arrays.asList(new FGACheckTuple(relations.get(0), viewerContext)))
+        .context(context)
+        .computePaths(true)
+        .listConditions(true)
+        .build());
+    // Condition IDs refer to the conditions of schema version response.getSchemaVersion()
+    for (FGACheckResponseTuple result : response.getTuples()) {
+        FGACheckInfo info = result.getInfo();
+        // info.getPath() - the relations that allowed the check
+        // info.getTrueConditions() / info.getFalseConditions() - IDs of the conditions evaluated
+        // info.getError() - set when the relation is invalid
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // The same context can be passed to the authz queries that evaluate conditions
 AuthzService authz = descopeClient.getManagementServices().getAuthzService();
 List<String> targets = authz.whoCanAccess("doc1", "viewer", "document", context);
@@ -1634,15 +1660,37 @@ try {
     // Handle the error
 }
 
+// Load the mappable schema of a tenant and up to 10 mappable resources per type
+try {
+    FGAMappableSchema mappableSchema = fs.loadMappableSchema("my-tenant-id", 10L);
+    // Do something with mappableSchema.getSchema() and mappableSchema.getMappableResources()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search for mappable resources of a tenant
+List<FGAMappableResourcesQuery> queries = Arrays.asList(
+    new FGAMappableResourcesQuery("document", Arrays.asList("doc"))
+);
+
+try {
+    List<FGAMappableResources> mappableResources = fs.searchMappableResources("my-tenant-id", queries, 10L);
+    for (FGAMappableResources resources : mappableResources) {
+        // Do something with resources.getType() and resources.getResources()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 #### Routing FGA calls to an FGA cache
 
 If you run an FGA cache (authzcache) instance, set `fgaCacheUrl` on the config, or the
 `DESCOPE_FGA_CACHE_URL` env var, and the calls it serves are sent there instead of the Descope base URL:
-`saveSchema`, `createRelations`, `deleteRelations` and `check` on the FGA service, plus `whoCanAccess` and
+`saveSchema`, `createRelations`, `deleteRelations`, `check` and `checkWithRequest` on the FGA service, plus `whoCanAccess` and
 `whatCanTargetAccess` on the authz service. Every other call, including `loadSchema`, `dryRunSchema` and the
-resource details calls, stays on the base URL. Leave it unset to send everything to the base URL.
+resource details and mappable calls, stays on the base URL. Leave it unset to send everything to the base URL.
 
 ```java
 var descopeClient = new DescopeClient(Config.builder()

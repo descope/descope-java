@@ -21,5 +21,11 @@ public class FGALoadSchemaResponse {
   @AllArgsConstructor
   public static class FGALoadSchemaConditions {
     private List<FGACondition> conditions;
+    private String name;
+    private List<FGANamespace> namespaces;
+
+    public FGALoadSchemaConditions(List<FGACondition> conditions) {
+      this.conditions = conditions;
+    }
   }
 }

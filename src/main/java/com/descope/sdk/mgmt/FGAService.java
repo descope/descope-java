@@ -1,7 +1,12 @@
 package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
+import com.descope.model.fga.FGACheckRequest;
+import com.descope.model.fga.FGACheckResponse;
 import com.descope.model.fga.FGACheckResult;
+import com.descope.model.fga.FGAMappableResources;
+import com.descope.model.fga.FGAMappableResourcesQuery;
+import com.descope.model.fga.FGAMappableSchema;
 import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
@@ -84,6 +89,19 @@ public interface FGAService {
   List<FGACheckResult> check(List<FGARelation> relations, Map<String, Object> context) throws DescopeException;
 
   /**
+   * Checks if the given FGA relations are satisfied, with per-tuple context and optional
+   * check paths and evaluated conditions in the results.
+   *
+   * <p>Set either {@code tuples} or {@code checkTuples} on the request, not both. A check tuple's
+   * context overrides the request-level context.
+   *
+   * @param request the relations to check and the check options
+   * @return the check results and the schema version the condition IDs refer to
+   * @throws DescopeException if the operation fails
+   */
+  FGACheckResponse checkWithRequest(FGACheckRequest request) throws DescopeException;
+
+  /**
    * Loads detailed information for the given resource identifiers.
    *
    * @param resourceIdentifiers list of resource identifiers to load details for
@@ -100,4 +118,28 @@ public interface FGAService {
    * @throws DescopeException if the operation fails
    */
   void saveResourcesDetails(List<FGAResourceDetails> resourcesDetails) throws DescopeException;
+
+  /**
+   * Loads the mappable schema for a tenant (only listing the relation definitions of each
+   * namespace), along with a list of mappable resources.
+   *
+   * @param tenantId the tenant to load the mappable schema for
+   * @param resourcesLimit maximum number of resources to return per type, may be null
+   * @return the mappable schema and resources
+   * @throws DescopeException if the operation fails
+   */
+  FGAMappableSchema loadMappableSchema(String tenantId, Long resourcesLimit) throws DescopeException;
+
+  /**
+   * Searches for mappable resources of a tenant.
+   *
+   * @param tenantId the tenant to search in
+   * @param resourcesQueries the resource types and queries to search for, may be null; each query
+   *     is at most 100 characters
+   * @param resourcesLimit maximum number of resources to return per type, may be null
+   * @return the matching mappable resources, grouped by type
+   * @throws DescopeException if the operation fails
+   */
+  List<FGAMappableResources> searchMappableResources(String tenantId,
+      List<FGAMappableResourcesQuery> resourcesQueries, Long resourcesLimit) throws DescopeException;
 }
