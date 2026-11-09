@@ -236,6 +236,47 @@ try {
 
 ```
 
+Overloads also take a messaging provider ID and, for sign in and sign up or in, an SSO
+application ID and whether to use the user's recovery details. Any of them can be `null`.
+
+```java
+try {
+    String uri = "http://myapp.com/verify-enchanted-link";
+    String providerId = "my-provider";
+    String ssoAppId = "my-sso-app";
+    LoginOptions loginOptions = LoginOptions.builder().locale("en").build();
+    EnchantedLinkResponse signUpRes = els.signUp(loginId, uri, user, signUpOptions, providerId);
+    PhoneEnchantedLinkResponse phoneSignUpRes = els.signUpWithPhone(phoneNumber, uri, user, signUpOptions, providerId);
+    // Pass the session JWT as the token when loginOptions request step-up or MFA
+    EnchantedLinkResponse signInRes = els.signIn(loginId, uri, null, loginOptions, providerId, ssoAppId, false);
+    PhoneEnchantedLinkResponse phoneSignInRes =
+        els.signInWithPhone(phoneNumber, uri, null, loginOptions, providerId, ssoAppId, false);
+    EnchantedLinkResponse signUpOrInRes = els.signUpOrIn(loginId, uri, loginOptions, providerId, ssoAppId, false);
+    PhoneEnchantedLinkResponse phoneSignUpOrInRes =
+        els.signUpOrInWithPhone(phoneNumber, uri, loginOptions, providerId, ssoAppId, false);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+To update the email or phone of a signed-in user, send an enchanted link with their refresh
+token. The overloads with a provider ID, locale and `failOnConflict` (fail instead of merging
+when another user already has the address) accept `null` for any of them.
+
+```java
+try {
+    String uri = "http://myapp.com/verify-enchanted-link";
+    EnchantedLinkResponse emailRes = els.updateUserEmail(loginId, email, uri, refreshToken,
+        new UpdateOptions(true, false), templateOptions, "my-provider", "en", true);
+    PhoneEnchantedLinkResponse phoneRes = els.updateUserPhone(loginId, phoneNumber, uri, refreshToken,
+        new UpdateOptions(true, false), templateOptions, "my-provider", "en", true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 After sending the link, you must poll to receive a valid session using the `PendingRef` from
 the previous step. A valid session will be returned only after the user clicks the right link.
 
@@ -265,6 +306,8 @@ To verify an enchanted link, your redirect page must call the validation functio
 
 try {
     els.verify(token);
+    // Or, with a PKCE code verifier (32 bytes, base64 encoded)
+    els.verify(token, pkceVerifier);
 } catch (DescopeException de) {
     // Token is invalid, handle the error
 }
