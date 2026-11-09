@@ -152,6 +152,9 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      throw ServerCommonException.invalidArgument("Login Options");
+    }
     SignInRequest signInRequest =
         new SignInRequest(uri, loginId, loginOptions, providerId, ssoAppId, useRecovery);
 

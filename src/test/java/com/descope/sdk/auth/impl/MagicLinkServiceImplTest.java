@@ -442,6 +442,14 @@ class MagicLinkServiceImplTest {
   }
 
   @Test
+  void testSignUpOrInWithOptionsForStepup() {
+    LoginOptions loginOptions = LoginOptions.builder().stepup(true).build();
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, MOCK_EMAIL, null, loginOptions, null, null, null));
+    assertEquals("The Login Options argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testUpdateUserEmailWithProviderLocaleAndConflict() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     doReturn(new MaskedEmailRes(MOCK_MASKED_EMAIL)).when(apiProxy).post(any(), any(), any());
