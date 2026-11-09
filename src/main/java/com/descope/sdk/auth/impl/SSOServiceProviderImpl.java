@@ -8,6 +8,8 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.OAuthResponse;
+import com.descope.model.auth.SSOResponse;
+import com.descope.model.auth.SSOStartOptions;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
@@ -48,6 +50,21 @@ class SSOServiceProviderImpl extends AuthenticationServiceImpl implements SSOSer
   @Override
   public String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken,
       String ssoId, String loginHint, boolean forceAuthn) throws DescopeException {
+    return startFlow(tenant, redirectUrl, prompt, loginOptions, refreshToken, ssoId, loginHint, forceAuthn, null,
+        OAuthResponse.class).getUrl();
+  }
+
+  @Override
+  public SSOResponse start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions,
+      String refreshToken, String ssoId, String loginHint, boolean forceAuthn, SSOStartOptions options)
+      throws DescopeException {
+    return startFlow(tenant, redirectUrl, prompt, loginOptions, refreshToken, ssoId, loginHint, forceAuthn, options,
+        SSOResponse.class);
+  }
+
+  private <T> T startFlow(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions,
+      String refreshToken, String ssoId, String loginHint, boolean forceAuthn, SSOStartOptions options,
+      Class<T> responseClass) {
     if (StringUtils.isBlank(tenant)) {
       throw ServerCommonException.invalidArgument("Tenant");
     }
@@ -67,6 +84,9 @@ class SSOServiceProviderImpl extends AuthenticationServiceImpl implements SSOSer
     if (forceAuthn) {
       request.put("forceAuthn", "true");
     }
+    if (options != null && StringUtils.isNotBlank(options.getInitiatedEmail())) {
+      request.put("initiatedEmail", options.getInitiatedEmail());
+    }
     ApiProxy apiProxy;
     if (JwtUtils.isJWTRequired(loginOptions)) {
       if (StringUtils.isBlank(refreshToken)) {
@@ -76,7 +96,7 @@ class SSOServiceProviderImpl extends AuthenticationServiceImpl implements SSOSer
     } else {
       apiProxy = getApiProxy();
     }
-    return apiProxy.post(getQueryParamUri(COMPOSE_SSO_START_LINK, request), loginOptions, OAuthResponse.class).getUrl();
+    return apiProxy.post(getQueryParamUri(COMPOSE_SSO_START_LINK, request), loginOptions, responseClass);
   }
 
   @Override

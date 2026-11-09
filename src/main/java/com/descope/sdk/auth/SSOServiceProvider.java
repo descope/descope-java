@@ -2,6 +2,8 @@ package com.descope.sdk.auth;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.SSOResponse;
+import com.descope.model.auth.SSOStartOptions;
 import com.descope.model.magiclink.LoginOptions;
 
 public interface SSOServiceProvider {
@@ -80,6 +82,24 @@ public interface SSOServiceProvider {
    */
   String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken,
       String ssoId, String loginHint, boolean forceAuthn) throws DescopeException;
+
+  /**
+   * Start an SSO login flow with additional options.
+   *
+   * @param tenant - tenant
+   * @param redirectUrl - URL to redirect user to overriding configuration
+   * @param prompt - prompt to the user overriding configuration
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @param refreshToken - existing refresh token for step-up or MFA
+   * @param ssoId - optional SSO connection ID
+   * @param loginHint - optional login hint for the identity provider
+   * @param forceAuthn - for SAML connections, require the identity provider to authenticate the user again
+   * @param options - {@link SSOStartOptions options}, may be null
+   * @return the redirect URL that needs to return to client, and an error ID if the server returned one
+   * @throws DescopeException - error upon failure
+   */
+  SSOResponse start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken,
+      String ssoId, String loginHint, boolean forceAuthn, SSOStartOptions options) throws DescopeException;
 
   /**
    * ExchangeToken - Finalize SAML/OIDC SSO authentication.

@@ -340,6 +340,30 @@ try {
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+To start an SSO flow (SAML or OIDC) with additional options, and get the error ID the server may return, use the SSO service provider:
+
+```java
+SSOServiceProvider sso = descopeClient.getAuthenticationServices().getSsoServiceProvider();
+
+try {
+    LoginOptions loginOptions = LoginOptions.builder().tenantId("my-tenant-ID").build();
+    SSOStartOptions options = SSOStartOptions.builder().initiatedEmail("user@example.com").build();
+    SSOResponse res = sso.start("my-tenant-ID", "https://my-app.com/handle-sso", "login", loginOptions, null,
+        null, "user@example.com", false, options);
+    String url = res.getUrl();
+    String errorId = res.getErrorId();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Exchange the returned code for a session
+try {
+    AuthenticationInfo info = sso.exchangeToken(code);
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### TOTP Authentication
 
 The user can authenticate using an authenticator app, such as Google Authenticator.
