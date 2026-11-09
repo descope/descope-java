@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Engines](#manage-engines)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1947,6 +1948,25 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Engines
+
+You can load all of the project's engines:
+
+```java
+// Set up the engine service
+EngineService engineService = descopeClient.getManagementServices().getEngineService();
+
+// Load all engines (the engine secret is not returned)
+try {
+    List<Engine> engines = engineService.loadAll();
+    for (Engine e : engines) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Code Examples
