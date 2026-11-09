@@ -125,28 +125,17 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   AuthenticationInfo getAuthenticationInfo(JWTResponse jwtResponse) {
-    Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
+    Token sessionToken = null;
+    // Authentication-only SSO logins issue no session
+    if (!Boolean.TRUE.equals(jwtResponse.getSsoAuthenticationOnly())
+        || StringUtils.isNotBlank(jwtResponse.getSessionJwt())) {
+      sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
+    }
     Token refreshToken = null;
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    AuthenticationInfo info = new AuthenticationInfo(
-        sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
-        jwtResponse.getIdpResponse());
-    info.setSessionExpiration(jwtResponse.getSessionExpiration());
-    info.setExternalToken(jwtResponse.getExternalToken());
-    info.setClaims(jwtResponse.getClaims());
-    info.setTenantSSOID(jwtResponse.getTenantSSOID());
-    info.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
-    info.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
-    info.setCookieName(jwtResponse.getCookieName());
-    info.setSessionCookieName(jwtResponse.getSessionCookieName());
-    info.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
-    info.setUnsavedSSO(jwtResponse.getUnsavedSSO());
-    info.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
-    info.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
-    info.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
-    return info;
+    return AuthenticationInfo.fromResponse(sessionToken, refreshToken, jwtResponse);
   }
 
   @SuppressWarnings("unchecked")

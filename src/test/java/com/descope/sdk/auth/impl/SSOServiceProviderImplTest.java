@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 
+import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.OAuthResponse;
@@ -236,6 +237,34 @@ class SSOServiceProviderImplTest {
     assertThat(user.getOidcTenantId()).isEqualTo("ot");
     assertThat(user.getConsentTenantId()).isEqualTo("ct");
     assertThat(user.getLastLoginTime()).isEqualTo(50L);
+  }
+
+  @Test
+  void testExchangeTokenAuthenticationOnlyWithoutSession() {
+    JWTResponse jwtResponse = new JWTResponse();
+    jwtResponse.setSsoAuthenticationOnly(true);
+    jwtResponse.setTenantSSOID("sso1");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponse).when(apiProxy).post(any(), any(), any());
+    AuthenticationInfo info;
+    try (MockedStatic<ApiProxyBuilder> builder = mockStatic(ApiProxyBuilder.class)) {
+      builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      info = ssoService.exchangeToken("someCode");
+    }
+    assertThat(info.getToken()).isNull();
+    assertThat(info.getRefreshToken()).isNull();
+    assertThat(info.getSsoAuthenticationOnly()).isTrue();
+    assertThat(info.getTenantSSOID()).isEqualTo("sso1");
+  }
+
+  @Test
+  void testExchangeTokenWithoutSessionThrows() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new JWTResponse()).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> builder = mockStatic(ApiProxyBuilder.class)) {
+      builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      assertThrows(DescopeException.class, () -> ssoService.exchangeToken("someCode"));
+    }
   }
 
   private URI captureStart(Supplier<String> call, LoginOptions options) {

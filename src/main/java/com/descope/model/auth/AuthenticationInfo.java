@@ -1,6 +1,7 @@
 package com.descope.model.auth;
 
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.user.response.UserResponse;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -26,7 +27,7 @@ public class AuthenticationInfo {
   private String sessionCookieDomain;
   private Boolean unsavedSSO;
   private String knownDeviceJwt;
-  /** Set when the login only verified the person: no user was created, updated or signed in. */
+  /** Set when the login only verified the person: no user was signed in and no session was issued. */
   private Boolean ssoAuthenticationOnly;
   private Boolean userCreationDeferred;
 
@@ -38,5 +39,15 @@ public class AuthenticationInfo {
 
   public AuthenticationInfo(Token token, Token refreshToken, UserResponse user, Boolean firstSeen) {
     this(token, refreshToken, user, firstSeen, null);
+  }
+
+  /** Builds the authentication info from validated tokens and every field of the response. */
+  public static AuthenticationInfo fromResponse(Token token, Token refreshToken, JWTResponse jwtResponse) {
+    return new AuthenticationInfo(token, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
+        jwtResponse.getIdpResponse(), jwtResponse.getSessionExpiration(), jwtResponse.getExternalToken(),
+        jwtResponse.getClaims(), jwtResponse.getTenantSSOID(), jwtResponse.getTrustedDeviceJwt(),
+        jwtResponse.getNextRefreshSeconds(), jwtResponse.getCookieName(), jwtResponse.getSessionCookieName(),
+        jwtResponse.getSessionCookieDomain(), jwtResponse.getUnsavedSSO(), jwtResponse.getKnownDeviceJwt(),
+        jwtResponse.getSsoAuthenticationOnly(), jwtResponse.getUserCreationDeferred());
   }
 }
