@@ -11,6 +11,7 @@ import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
+import com.descope.model.user.response.LogoutSessionRange;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
@@ -18,6 +19,7 @@ import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserPasskey;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.model.user.response.UsersBatchResponse;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -138,6 +140,42 @@ public interface UserService {
    *                          
    */
   void logoutUserByUserId(String userId, String... sessionTypes) throws DescopeException;
+
+  /**
+   * Logs out sessions created in the given time range (optionally only the given session types).
+   * Each session is logged out on its next refresh or validation. before defaults to the server's
+   * current time when null; prefer passing null over Instant.now(), since a before in the future is
+   * rejected. The range stays active for a year. Deleting it stops it from logging out matching
+   * sessions it hasn't logged out yet; sessions already logged out stay logged out.
+   *
+   * @param before Optional (nullable), sessions created before this time are logged out. Null for the
+   *     server's current time. At least one of before and after is required.
+   * @param after Optional (nullable), sessions created after this time are logged out. Null for an
+   *     open-ended range.
+   * @param sessionTypes Optional list of session types to log out, null or empty for all session types
+   * @return {@link LogoutSessionRange LogoutSessionRange} the range as stored by the server, which may
+   *     store a later after than requested
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  LogoutSessionRange logoutSessionsCreatedBetween(Instant before, Instant after, List<String> sessionTypes)
+      throws DescopeException;
+
+  /**
+   * List the active logout session ranges.
+   *
+   * @return The list of {@link LogoutSessionRange LogoutSessionRange}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<LogoutSessionRange> listLogoutSessionRanges() throws DescopeException;
+
+  /**
+   * Deletes a logout sessions range. It stops logging out matching sessions it hasn't logged out yet;
+   * sessions already logged out stay logged out.
+   *
+   * @param id The range ID is required.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  void deleteLogoutSessionRange(String id) throws DescopeException;
 
 
   /**
