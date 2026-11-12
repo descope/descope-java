@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/descope/descope-java/compare/java-sdk-1.6.2...java-sdk-1.7.0) (2026-11-12)
+
+
+### Features
+
+* **mgmt:** log out sessions by creation time ([#405](https://github.com/descope/descope-java/issues/405)) ([c54364b](https://github.com/descope/descope-java/commit/c54364b3ce482e5aa6cadaf22305c9f37d1ef31e))
+
 ## [1.6.2](https://github.com/descope/descope-java/compare/java-sdk-1.6.1...java-sdk-1.6.2) (2026-11-09)
 
 
