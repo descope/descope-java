@@ -75,9 +75,10 @@ These sections show how to use the SDK to perform various authentication/authori
 5. [SSO/SAML](#ssosaml)
 6. [TOTP Authentication](#totp-authentication)
 7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+8. [NOTP](#notp)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -480,6 +481,56 @@ try {
 }
 
 ```
+
+### NOTP
+
+NOTP lets users authenticate by sending a message from a messaging app, such as WhatsApp.
+Starting the flow returns a `redirectUrl` that opens the messaging app, a QR `image` for the same
+link, and a `pendingRef` used to poll for the session. The user can either `sign up`, `sign in`
+or `sign up or in`.
+
+```java
+NOTPService ns = descopeClient.getAuthenticationServices().getNotpService();
+NOTPResponse res = null;
+try {
+    // The login ID is optional, since it can be taken from the message the user sends
+    res = ns.signUpOrIn("whatsapp", phoneNumber, null, null);
+    // Or sign up with user details
+    User user = User.builder().name("Desmond Copeland").build();
+    res = ns.signUp("whatsapp", phoneNumber, user, null, null);
+    // Or sign in; step-up and mfa require the user's refresh token
+    NOTPLoginOptions loginOptions = NOTPLoginOptions.builder().stepup(true).build();
+    res = ns.signIn("whatsapp", phoneNumber, refreshToken, loginOptions, null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Show res.getRedirectUrl() or res.getImage() to the user
+```
+
+Then poll for the session using the `pendingRef`, the same way as with [Enchanted Link](#enchanted-link).
+A valid session is returned only after the user sends the message.
+
+```java
+try {
+    AuthenticationInfo info = ns.getSession(res.getPendingRef());
+} catch (DescopeException de) {
+    // Not verified yet: poll again after X seconds, or handle the error
+}
+```
+
+To update a user's phone, the user must be logged in and verify the new phone the same way:
+
+```java
+try {
+    NOTPUpdateOptions updateOptions = NOTPUpdateOptions.builder().addToLoginIds(true).build();
+    NOTPResponse res = ns.updateUser("whatsapp", loginId, newPhone, refreshToken, updateOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 ### Session Validation
 
