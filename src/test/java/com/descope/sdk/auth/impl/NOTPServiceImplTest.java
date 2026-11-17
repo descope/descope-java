@@ -111,7 +111,7 @@ public class NOTPServiceImplTest {
         .tenantId("someTenant")
         .build();
     try (MockedStatic<ApiProxyBuilder> mocked = mockProxy()) {
-      NOTPResponse response =
+      final NOTPResponse response =
           notpService.signUp(NOTPProvider.WHATSAPP, MOCK_PHONE, user, signUpOptions, REQUEST_OPTIONS);
 
       NOTPSignUpRequest sent =
@@ -159,7 +159,7 @@ public class NOTPServiceImplTest {
         .ssoAppId("someSsoAppId")
         .build();
     try (MockedStatic<ApiProxyBuilder> mocked = mockProxy()) {
-      NOTPResponse response = notpService.signIn(
+      final NOTPResponse response = notpService.signIn(
           NOTPProvider.WHATSAPP, MOCK_PHONE, MOCK_REFRESH_TOKEN, loginOptions, REQUEST_OPTIONS);
 
       NOTPSignInRequest sent =
@@ -212,7 +212,7 @@ public class NOTPServiceImplTest {
         .tenantId("someTenant")
         .build();
     try (MockedStatic<ApiProxyBuilder> mocked = mockProxy()) {
-      NOTPResponse response =
+      final NOTPResponse response =
           notpService.signUpOrIn(NOTPProvider.WHATSAPP, MOCK_PHONE, signUpOptions, REQUEST_OPTIONS);
 
       NOTPSignInRequest sent =
