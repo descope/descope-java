@@ -135,7 +135,7 @@ public interface MagicLinkService {
    * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
    * @param loginId - User login ID
    * @param uri - Base URI
-   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param loginOptions - {@link LoginOptions LoginOptions}, without step-up or mfa
    * @param signInOptions - optional provider, template, SSO app and recovery options
    * @return masked address where the link was sent (email, whatsapp or phone)
    * @throws DescopeException - error upon failure

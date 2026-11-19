@@ -153,6 +153,10 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
+    // Sign-up-or-in takes no session token
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      throw ServerCommonException.invalidArgument("loginOptions.stepup/mfa");
+    }
     SignInRequest signInRequest = composeSignInRequest(uri, loginId, loginOptions, signInOptions);
 
     ApiProxy apiProxy = getApiProxy();

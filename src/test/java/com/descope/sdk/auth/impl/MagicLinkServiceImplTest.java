@@ -355,6 +355,14 @@ class MagicLinkServiceImplTest {
   }
 
   @Test
+  void testSignUpOrInWithStepUp() {
+    LoginOptions loginOptions = LoginOptions.builder().stepup(true).build();
+    ServerCommonException thrown = assertThrows(ServerCommonException.class, () -> magicLinkService.signUpOrIn(
+        DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN, loginOptions, null));
+    assertEquals("The loginOptions.stepup/mfa argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testSignUpOrInWithoutOptionsSendsSameBody() {
     SentRequest sent = send(new MaskedEmailRes(MOCK_MASKED_EMAIL),
         s -> s.signUpOrIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN));
