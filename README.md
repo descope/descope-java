@@ -634,6 +634,20 @@ try {
 
 ```
 
+You can also pass the logout types to sign out of. This returns the server's response, which includes the
+cookie domain and path to clear.
+
+```java
+try {
+    JWTResponse res = as.logoutAll(refreshToken, Arrays.asList("web", "mobile"));
+    String cookieDomain = res.getCookieDomain();
+    String cookiePath = res.getCookiePath();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 ## Management Functions
 
 It is very common for some form of management or automation to be required. These can be performed

@@ -6,15 +6,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
@@ -28,11 +37,24 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
 
@@ -205,4 +227,93 @@ public class AuthenticationServiceImplTest {
     roleService.delete(roleBName);
   }
 
+
+  @Test
+  void testLogoutAllWithLogoutTypeForEmptyRefreshToken() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authenticationService.logoutAll("", Arrays.asList("web")));
+    assertNotNull(thrown);
+    assertEquals("refresh token", thrown.getMessage());
+  }
+
+  @Test
+  void testLogoutAllWithLogoutTypeForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"sessionJwt\":\"s\",\"refreshJwt\":\"r\",\"cookieDomain\":\"example.com\",\"cookiePath\":\"/\","
+            + "\"cookieMaxAge\":1,\"cookieExpiration\":2,\"user\":{\"userId\":\"u1\"},\"firstSeen\":true,"
+            + "\"idpResponse\":{\"idpGroups\":[\"g\"]},\"sessionExpiration\":3,\"externalToken\":\"e\","
+            + "\"claims\":{\"c\":\"v\"},\"tenantSSOID\":\"t1\",\"trustedDeviceJwt\":\"td\","
+            + "\"nextRefreshSeconds\":4,\"cookieName\":\"DSR\",\"sessionCookieName\":\"DS\","
+            + "\"sessionCookieDomain\":\"s.example.com\",\"unsavedSSO\":true,\"knownDeviceJwt\":\"kd\","
+            + "\"ssoAuthenticationOnly\":true,\"userCreationDeferred\":true,\"unknownField\":1}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      JWTResponse response = authenticationService.logoutAll("someRefreshToken", Arrays.asList("web", "mobile"));
+      ClassicHttpRequest request = captor.getValue();
+      assertEquals("POST", request.getMethod());
+      assertTrue(request.getRequestUri().endsWith("/v1/auth/logoutall"));
+      assertEquals("Bearer " + TestUtils.PROJECT_ID + ":someRefreshToken",
+          request.getHeader("Authorization").getValue());
+      Map<?, ?> body = requestBody(request);
+      assertEquals(1, body.size());
+      assertEquals(Arrays.asList("web", "mobile"), body.get("logoutType"));
+      assertEquals("s", response.getSessionJwt());
+      assertEquals("r", response.getRefreshJwt());
+      assertEquals("example.com", response.getCookieDomain());
+      assertEquals("/", response.getCookiePath());
+      assertEquals(1, response.getCookieMaxAge());
+      assertEquals(2, response.getCookieExpiration());
+      assertEquals("u1", response.getUser().getUserId());
+      assertTrue(response.getFirstSeen());
+      assertEquals(Arrays.asList("g"), response.getIdpResponse().getIdpGroups());
+      assertEquals(3, response.getSessionExpiration());
+      assertEquals("e", response.getExternalToken());
+      assertEquals("v", response.getClaims().get("c"));
+      assertEquals("t1", response.getTenantSSOID());
+      assertEquals("td", response.getTrustedDeviceJwt());
+      assertEquals(4, response.getNextRefreshSeconds());
+      assertEquals("DSR", response.getCookieName());
+      assertEquals("DS", response.getSessionCookieName());
+      assertEquals("s.example.com", response.getSessionCookieDomain());
+      assertTrue(response.getUnsavedSSO());
+      assertEquals("kd", response.getKnownDeviceJwt());
+      assertTrue(response.getSsoAuthenticationOnly());
+      assertTrue(response.getUserCreationDeferred());
+    }
+  }
+
+  @Test
+  void testLogoutAllWithoutLogoutType() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"cookieName\":null,\"user\":null}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      JWTResponse response = authenticationService.logoutAll("someRefreshToken", null);
+      assertTrue(requestBody(captor.getValue()).isEmpty());
+      assertNotNull(response);
+      assertNull(response.getUser());
+    }
+  }
+
+  private CloseableHttpClient mockHttpClient(ArgumentCaptor<ClassicHttpRequest> captor, int statusCode,
+      String responseBody) throws IOException {
+    CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+    doAnswer(inv -> {
+      ClassicHttpResponse response = mock(ClassicHttpResponse.class);
+      when(response.getCode()).thenReturn(statusCode);
+      HttpEntity entity = mock(HttpEntity.class);
+      when(entity.getContent())
+          .thenReturn(new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8)));
+      when(response.getEntity()).thenReturn(entity);
+      return ((HttpClientResponseHandler) inv.getArgument(1)).handleResponse(response);
+    }).when(httpClient).execute(captor.capture(), any(HttpClientResponseHandler.class));
+    return httpClient;
+  }
+
+  private Map<?, ?> requestBody(ClassicHttpRequest request) throws IOException {
+    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+    request.getEntity().writeTo(bs);
+    return new ObjectMapper().readValue(bs.toByteArray(), Map.class);
+  }
 }

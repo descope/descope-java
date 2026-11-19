@@ -15,6 +15,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.ExchangeTokenRequest;
+import com.descope.model.auth.LogoutRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -225,6 +226,16 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     ApiProxy apiProxy = getApiProxy(refreshToken);
     URI logOutAllURL = composeLogOutAllLinkURL();
     apiProxy.post(logOutAllURL, null, JWTResponse.class);
+  }
+
+  @Override
+  public JWTResponse logoutAll(String refreshToken, List<String> logoutType) throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    LogoutRequest request = new LogoutRequest(logoutType);
+    return apiProxy.post(composeLogOutAllLinkURL(), request, JWTResponse.class);
   }
 
   @Override
