@@ -236,6 +236,29 @@ try {
 
 ```
 
+Sign-in, sign-up and sign-up-or-in also take optional delivery settings: the messaging
+provider and template, and for sign-in the SSO app and whether to send to the recovery
+address. Login options can carry a tenant, an SSO app and a PKCE challenge, whose verifier
+is then passed when verifying the link.
+
+```java
+try {
+    LoginOptions loginOptions = LoginOptions.builder().tenantId("tenant").pkceChallenge(challenge).build();
+    EnchantedLinkSignInOptions signInOptions = EnchantedLinkSignInOptions.builder()
+        .providerId("provider").templateId("template").ssoAppId("app").useRecovery(true).build();
+    EnchantedLinkResponse signInRes = els.signIn(loginId, uri, null, loginOptions, signInOptions);
+    EnchantedLinkResponse signUpOrInRes = els.signUpOrIn(loginId, uri, null, loginOptions, signInOptions);
+
+    User user = User.builder().name("name").recoveryEmail("recovery@example.com").build();
+    SignUpOptions signUpOptions = SignUpOptions.builder().locale("en").tenantId("tenant").build();
+    EnchantedLinkResponse signUpRes = els.signUp(loginId, uri, user, signUpOptions,
+        new EnchantedLinkSignUpOptions("provider", "template"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 After sending the link, you must poll to receive a valid session using the `PendingRef` from
 the previous step. A valid session will be returned only after the user clicks the right link.
 
@@ -265,8 +288,25 @@ To verify an enchanted link, your redirect page must call the validation functio
 
 try {
     els.verify(token);
+    // Or, when the link was sent with a PKCE challenge
+    els.verify(token, verifier);
 } catch (DescopeException de) {
     // Token is invalid, handle the error
+}
+
+```
+
+To update a signed-in user's email or phone through an enchanted link, pass their refresh
+token. `UpdateOptions` can also set the messaging provider, template, locale and `failOnConflict`.
+
+```java
+try {
+    UpdateOptions options = UpdateOptions.builder()
+        .providerId("provider").templateId("template").locale("en").failOnConflict(true).build();
+    EnchantedLinkResponse emailRes = els.updateUserEmail(loginId, newEmail, uri, refreshToken, options);
+    PhoneEnchantedLinkResponse phoneRes = els.updateUserPhone(loginId, newPhone, uri, refreshToken, options);
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 ```

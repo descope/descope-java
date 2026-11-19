@@ -21,9 +21,16 @@ public class SignUpRequest {
   private String uri;
   private SignUpOptions loginOptions;
   private String phone;
+  private String providerId;
+  private String templateId;
 
   public SignUpRequest(String email, String loginId, User user, String uri,
       SignUpOptions loginOptions) {
     this(email, loginId, user, uri, loginOptions, null);
+  }
+
+  public SignUpRequest(String email, String loginId, User user, String uri,
+      SignUpOptions loginOptions, String phone) {
+    this(email, loginId, user, uri, loginOptions, phone, null, null);
   }
 }
