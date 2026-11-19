@@ -113,7 +113,7 @@ public interface OTPService {
    *
    * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
    * @param loginId - User login ID
-   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param loginOptions - {@link LoginOptions LoginOptions}, without step-up or MFA
    * @param signInOptions - {@link OTPSignInOptions OTPSignInOptions} optional provider, template, SSO app and
    *     recovery options
    * @return masked address where the code was sent (email, whatsapp or phone)

@@ -124,6 +124,10 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    // Sign-up-or-in takes no refresh JWT for step-up or MFA
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      throw ServerCommonException.invalidArgument("loginOptions");
+    }
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI otpSignUpOrInURL = composeSignUpOrInURL(deliveryMethod);

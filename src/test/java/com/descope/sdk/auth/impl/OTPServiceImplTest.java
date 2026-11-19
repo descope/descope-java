@@ -384,6 +384,14 @@ public class OTPServiceImplTest {
   }
 
   @Test
+  void testSignUpOrInWithOptionsRejectsStepUp() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> otpService.signUpOrIn(DeliveryMethod.SMS, MOCK_PHONE, LoginOptions.builder().stepup(true).build(),
+            null));
+    assertEquals("The loginOptions argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testSignUpWithOptions() {
     User user = User.builder()
         .loginId("login-1").name("Some Name").phone(MOCK_PHONE)
