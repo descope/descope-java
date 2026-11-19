@@ -249,7 +249,8 @@ public class AuthenticationServiceImplTest {
             + "\"ssoAuthenticationOnly\":true,\"userCreationDeferred\":true,\"unknownField\":1}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
-      JWTResponse response = authenticationService.logoutAll("someRefreshToken", Arrays.asList("web", "mobile"));
+      final JWTResponse response =
+          authenticationService.logoutAll("someRefreshToken", Arrays.asList("web", "mobile"));
       ClassicHttpRequest request = captor.getValue();
       assertEquals("POST", request.getMethod());
       assertTrue(request.getRequestUri().endsWith("/v1/auth/logoutall"));
