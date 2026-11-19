@@ -174,6 +174,56 @@ try {
 
 ```
 
+Sign in, sign up or sign up or in accept optional request options, such as the messaging provider and template:
+
+```java
+try {
+    String uri = "http://myapp.com/verify-magic-link";
+    MagicLinkSignInOptions signInOptions = MagicLinkSignInOptions.builder()
+        .providerId("my-provider")
+        .templateId("my-template")
+        .build();
+    LoginOptions loginOptions = LoginOptions.builder().tenantId("my-tenant").build();
+    String maskedAddress = mls.signIn(DeliveryMethod.EMAIL, loginId, uri, null, loginOptions, signInOptions);
+    maskedAddress = mls.signUpOrIn(DeliveryMethod.EMAIL, loginId, uri, loginOptions, signInOptions);
+
+    // The phone option applies to SMS and WhatsApp sign-up only
+    String phone = "+12125551234";
+    MagicLinkSignUpOptions signUpRequestOptions = MagicLinkSignUpOptions.builder()
+        .phone(phone)
+        .providerId("my-provider")
+        .templateId("my-template")
+        .build();
+    SignUpOptions signUpOptions = SignUpOptions.builder().locale("en").tenantId("my-tenant").build();
+    maskedAddress = mls.signUp(DeliveryMethod.SMS, phone, uri, User.builder().phone(phone).build(), signUpOptions,
+        signUpRequestOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+To update a user's email or phone through a magic link, pass the refresh token of the user's session. Update options
+can also set the messaging provider, template, locale, and whether to fail instead of merging on a conflict:
+
+```java
+try {
+    UpdateOptions updateOptions = UpdateOptions.builder()
+        .addToLoginIds(true)
+        .providerId("my-provider")
+        .templateId("my-template")
+        .locale("en")
+        .failOnConflict(true)
+        .build();
+    String maskedEmail = mls.updateUserEmail(loginId, "new@descope.com", uri, refreshToken, updateOptions);
+    String maskedPhone = mls.updateUserPhone(DeliveryMethod.SMS, loginId, "+12125551234", uri, refreshToken,
+        updateOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```java

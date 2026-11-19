@@ -5,6 +5,8 @@ import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.MagicLinkSignInOptions;
+import com.descope.model.magiclink.MagicLinkSignUpOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
 import java.util.Map;
@@ -31,6 +33,30 @@ public interface MagicLinkService {
       String uri,
       String token,
       LoginOptions loginOptions)
+      throws DescopeException;
+
+  /**
+   * SignIn - Use to login a user based on a magic link that will be sent either email, sms or
+   * whatsapp and choose the selected delivery method for verification (see auth/DeliveryMethod).
+   * returns the masked address where the link was sent (email, sms or whatsapp) or an error upon
+   * failure.
+   *
+   * @param deliveryMethod - {@link DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param uri - Base URI
+   * @param token - when doing step-up or mfa then we need current session token
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param signInOptions - optional provider, template, SSO app and recovery options
+   * @return masked address where the link was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signIn(
+      DeliveryMethod deliveryMethod,
+      String loginId,
+      String uri,
+      String token,
+      LoginOptions loginOptions,
+      MagicLinkSignInOptions signInOptions)
       throws DescopeException;
 
   /**
@@ -63,6 +89,22 @@ public interface MagicLinkService {
       throws DescopeException;
 
   /**
+   * Use to create a new user based on the given loginID either email, sms or whatsapp. Choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param uri - Base URI
+   * @param user - {@link User User}
+   * @param signupOptions - optional claims, template, locale and tenant options
+   * @param signUpRequestOptions - optional phone (SMS and WhatsApp only), provider and template
+   * @return masked address where the link was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user, SignUpOptions signupOptions,
+      MagicLinkSignUpOptions signUpRequestOptions) throws DescopeException;
+
+  /**
    * Verify - Use to verify a SignIn/SignUp request, based on the magic link token generated. if the
    * link was generated with crossDevice, the authentication info will be nil, and should returned
    * with GetSession.
@@ -85,6 +127,21 @@ public interface MagicLinkService {
    */
   String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri)
       throws DescopeException;
+
+  /**
+   * Use to login in using loginID, if user does not exist, a new user will be created with the
+   * given loginID. Choose the selected delivery method for verification
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param uri - Base URI
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param signInOptions - optional provider, template, SSO app and recovery options
+   * @return masked address where the link was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri, LoginOptions loginOptions,
+      MagicLinkSignInOptions signInOptions) throws DescopeException;
 
   /**
    * Use to update email and validate via magiclink.
