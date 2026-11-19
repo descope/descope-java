@@ -78,6 +78,7 @@ These sections show how to use the SDK to perform various authentication/authori
 8. [Session Validation](#session-validation)
 9. [Roles & Permission Validation](#roles--permission-validation)
 10. [Logging Out](#logging-out)
+11. [Email Verification](#email-verification)
 
 ## Management Functions
 
@@ -632,6 +633,22 @@ try {
     // Handle the error
 }
 
+```
+
+### Email Verification
+
+Email Verification is in beta and available when the project enabled it. Get a single-use nonce for the hidden
+email-verification-token input of a sign-in page. The browser binds it into the email verification token it issues,
+so the token can only be redeemed once and only for this project.
+
+```java
+EmailVerificationService evs = descopeClient.getAuthenticationServices().getEmailVerificationService();
+try {
+    EmailVerificationStartResponse resp = evs.start();
+    String nonce = resp.getNonce();
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Management Functions
