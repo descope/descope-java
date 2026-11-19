@@ -6,6 +6,8 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.SignUpOptions;
+import com.descope.model.otp.OTPSignInOptions;
+import com.descope.model.otp.OTPSignUpOptions;
 import com.descope.model.user.User;
 import java.util.Map;
 
@@ -38,6 +40,22 @@ public interface OTPService {
       throws DescopeException;
 
   /**
+   * Use to login a user based on the given loginID either email or a phone and choose the selected
+   * delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param refreshToken - if doing step-up or mfa refresh token is required
+   * @param signInOptions - {@link OTPSignInOptions OTPSignInOptions} optional provider, template, SSO app and
+   *     recovery options
+   * @return - masked address where the code was sent (email or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions, String refreshToken,
+      OTPSignInOptions signInOptions) throws DescopeException;
+
+  /**
    * Use to create a new user based on the given loginID either email or a phone. choose the
    * selected delivery method for verification.
    *
@@ -64,6 +82,21 @@ public interface OTPService {
       throws DescopeException;
 
   /**
+   * Use to create a new user based on the given loginID either email or a phone. choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param user - {@link User User}
+   * @param signupOptions - optional claims, template, locale and tenant, sent as the login options
+   * @param otpSignUpOptions - {@link OTPSignUpOptions OTPSignUpOptions} optional provider and template
+   * @return masked address where the code was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUp(DeliveryMethod deliveryMethod, String loginId, User user, SignUpOptions signupOptions,
+      OTPSignUpOptions otpSignUpOptions) throws DescopeException;
+
+  /**
    * Use to login in using loginID, if user does not exist, a new user will be created with the
    * given loginID.
    *
@@ -73,6 +106,21 @@ public interface OTPService {
    * @throws DescopeException - error upon failure
    */
   String signUpOrIn(DeliveryMethod deliveryMethod, String loginId) throws DescopeException;
+
+  /**
+   * Use to login in using loginID, if user does not exist, a new user will be created with the
+   * given loginID.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param signInOptions - {@link OTPSignInOptions OTPSignInOptions} optional provider, template, SSO app and
+   *     recovery options
+   * @return masked address where the code was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions,
+      OTPSignInOptions signInOptions) throws DescopeException;
 
   /**
    * Use to verify a SignIn/SignUp based on the given loginID either an email or a phone followed by

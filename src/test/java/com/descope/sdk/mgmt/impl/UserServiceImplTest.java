@@ -792,6 +792,16 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testGenerateForTestUserRejectsInstantMessage() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateOtpForTestUser("someLoginId", DeliveryMethod.IM));
+    assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.IM));
+    assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testGenerateOtpForTestUserForSuccess() {
     OTPTestUserResponse mockResponse = new OTPTestUserResponse("12345", "someLogin");
     ApiProxy apiProxy = mock(ApiProxy.class);

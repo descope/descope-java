@@ -1,11 +1,14 @@
 package com.descope.model.user.response;
 
 import com.descope.model.auth.AssociatedTenant;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -29,8 +32,12 @@ public class UserResponse {
   Boolean test;
   Long createdTime;
   Map<String, Object> customAttributes;
+  // Aliases accept the spec's names; the getters' lowercase names still work
+  @Setter(onMethod_ = {@JsonAlias({"TOTP"})})
   Boolean TOTP;
+  @Setter(onMethod_ = {@JsonAlias({"SAML"})})
   Boolean SAML;
+  @Setter(onMethod_ = {@JsonAlias({"OAuth"})})
   Map<String, Boolean> oAuth;
   List<String> ssoAppIds;
   /** Auth method that triggered brute-force protection, empty when none. */
@@ -40,4 +47,67 @@ public class UserResponse {
    * this is greater than now.
    */
   Long tempLockExpiration;
+  List<String> externalIds;
+  Boolean webauthn;
+  Boolean password;
+  Boolean editable;
+  @JsonProperty("SCIM")
+  @JsonAlias({"scim"})
+  Boolean scim;
+  Boolean push;
+  List<String> permissions;
+  @JsonProperty("OIDC")
+  @JsonAlias({"oidc"})
+  Boolean oidc;
+  Long consentExpiration;
+  String recoveryEmail;
+  Boolean verifiedRecoveryEmail;
+  String recoveryPhone;
+  Boolean verifiedRecoveryPhone;
+  Long modifiedTime;
+  /** Role IDs, not in the same order as roleNames. */
+  List<String> roleIds;
+  /** Whether the user has set up recovery codes. */
+  Boolean recoveryCodes;
+  Boolean dependent;
+  List<UserFamily> userFamilies;
+  /** Tenant whose SCIM connection provisioned the user, empty when none or ambiguous. */
+  String scimTenantId;
+  /** Tenant whose SAML SSO created the user or merged its login, empty when none or ambiguous. */
+  String samlTenantId;
+  /** Tenant whose OIDC SSO created the user or merged its login, empty when none or ambiguous. */
+  String oidcTenantId;
+  String consentTenantId;
+  /** Last authentication time in unix seconds, 0 when the user never logged in. */
+  Long lastLoginTime;
+
+  public UserResponse(String userId, List<String> loginIds, String email, Boolean verifiedEmail, String phone,
+      Boolean verifiedPhone, String name, String givenName, String middleName, String familyName,
+      List<String> roleNames, List<AssociatedTenant> userTenants, String status, String picture, Boolean test,
+      Long createdTime, Map<String, Object> customAttributes, Boolean totp, Boolean saml,
+      Map<String, Boolean> oauth, List<String> ssoAppIds, String lockReason, Long tempLockExpiration) {
+    this.userId = userId;
+    this.loginIds = loginIds;
+    this.email = email;
+    this.verifiedEmail = verifiedEmail;
+    this.phone = phone;
+    this.verifiedPhone = verifiedPhone;
+    this.name = name;
+    this.givenName = givenName;
+    this.middleName = middleName;
+    this.familyName = familyName;
+    this.roleNames = roleNames;
+    this.userTenants = userTenants;
+    this.status = status;
+    this.picture = picture;
+    this.test = test;
+    this.createdTime = createdTime;
+    this.customAttributes = customAttributes;
+    this.TOTP = totp;
+    this.SAML = saml;
+    this.oAuth = oauth;
+    this.ssoAppIds = ssoAppIds;
+    this.lockReason = lockReason;
+    this.tempLockExpiration = tempLockExpiration;
+  }
 }

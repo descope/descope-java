@@ -110,7 +110,7 @@ For rate limiting information, please confer to the [API Rate Limits](#api-rate-
 
 ### OTP Authentication
 
-Send a user a one-time password (OTP) using your preferred delivery method (_email / SMS / Voice call / WhatsApp_). An email address or phone number must be provided accordingly.
+Send a user a one-time password (OTP) using your preferred delivery method (_email / SMS / Voice call / WhatsApp / instant message_). An email address or phone number must be provided accordingly.
 
 The user can either `sign up`, `sign in` or `sign up or in`
 
@@ -130,6 +130,26 @@ try {
 }
 ```
 
+Sign-up can also take login options and a messaging provider or template. Sign-in and sign-up-or-in take the same
+provider and template, plus an SSO app and recovery flag:
+
+```java
+String maskedPhone = otps.signUp(DeliveryMethod.IM, "+12125551234",
+    User.builder().phone("+12125551234").recoveryEmail("desmond@descope.com").build(),
+    SignUpOptions.builder().tenantId("tenant-ID").locale("en").build(),
+    OTPSignUpOptions.builder().providerId("provider-ID").templateId("template-ID").build());
+
+OTPSignInOptions signInOptions = OTPSignInOptions.builder()
+    .providerId("provider-ID")
+    .templateId("template-ID")
+    .ssoAppId("sso-app-ID")
+    .useRecovery(false)
+    .build();
+String maskedAddress = otps.signIn(DeliveryMethod.EMAIL, loginId,
+    LoginOptions.builder().tenantId("tenant-ID").build(), null, signInOptions);
+maskedAddress = otps.signUpOrIn(DeliveryMethod.EMAIL, loginId, null, signInOptions);
+```
+
 The user will receive a code using the selected delivery method. Verify that code using:
 
 ```java
@@ -142,6 +162,22 @@ try {
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+`AuthenticationInfo` also carries the cookie settings (`getCookieName()`, `getCookieDomain()`, `getCookiePath()`, `getCookieMaxAge()`, `getCookieExpiration()`) and the other values of the verify response, such as `getTenantSSOID()` and `getTrustedDeviceJwt()`.
+
+To update a logged-in user's email or phone with an OTP, pass the user's refresh token. The update options can set the messaging provider, template, locale, conflict handling and MFA:
+
+```java
+UpdateOptions updateOptions = UpdateOptions.builder()
+    .providerId("provider-ID")
+    .templateId("template-ID")
+    .locale("en")
+    .failOnConflict(true)
+    .mfa(true) // keep the refresh token's auth methods and add the verified address to them
+    .build();
+String maskedEmail = otps.updateUserEmail(loginId, "new@descope.com", refreshToken, updateOptions);
+String maskedPhone = otps.updateUserPhone(DeliveryMethod.SMS, loginId, "+12125551234", refreshToken, updateOptions);
+```
 
 ### Magic Link
 

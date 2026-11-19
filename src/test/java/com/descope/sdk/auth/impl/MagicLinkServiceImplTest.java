@@ -50,6 +50,7 @@ import java.util.Map;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junitpioneer.jupiter.RetryingTest;
 import org.mockito.MockedStatic;
 
@@ -64,6 +65,17 @@ class MagicLinkServiceImplTest {
     this.magicLinkService =
         AuthenticationServiceBuilder.buildServices(client).getMagicLinkService();
     this.userService = ManagementServiceBuilder.buildServices(client).getUserService();
+  }
+
+  @Test
+  void testInstantMessageIsRejected() {
+    for (Executable call : Arrays.<Executable>asList(
+        () -> magicLinkService.signIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL, null, null),
+        () -> magicLinkService.signUp(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL, new User()),
+        () -> magicLinkService.signUpOrIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL))) {
+      ServerCommonException thrown = assertThrows(ServerCommonException.class, call);
+      assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+    }
   }
 
   @Test

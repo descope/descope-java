@@ -51,6 +51,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    rejectInstantMessage(deliveryMethod);
 
     ApiProxy apiProxy;
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
@@ -80,6 +81,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
       user = new User();
     }
 
+    rejectInstantMessage(deliveryMethod);
     verifyDeliveryMethod(deliveryMethod, loginId, user);
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpURL = composeMagicLinkSignUpURI(deliveryMethod);
@@ -114,6 +116,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    rejectInstantMessage(deliveryMethod);
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
@@ -206,6 +209,13 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     ApiProxy apiProxy = getApiProxy(refreshToken);
     Masked masked = apiProxy.post(magicLinkUpdateUserPhone, updatePhoneRequest, maskedClass);
     return masked.getMasked();
+  }
+
+  // Magic links have no IM route
+  private static void rejectInstantMessage(DeliveryMethod deliveryMethod) {
+    if (deliveryMethod == DeliveryMethod.IM) {
+      throw ServerCommonException.invalidArgument("DeliveryMethod");
+    }
   }
 
   private URI composeMagicLinkSignInURI(DeliveryMethod deliveryMethod) {

@@ -61,6 +61,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       case SMS:
       case VOICE:
       case WHATSAPP:
+      case IM:
         String phone = user.getPhone();
         if (StringUtils.isBlank(phone)) {
           phone = loginId;
@@ -89,6 +90,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       case SMS:
       case VOICE:
       case WHATSAPP:
+      case IM:
         return MaskedPhoneRes.class;
       case EMAIL:
         return MaskedEmailRes.class;
@@ -130,9 +132,27 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    return new AuthenticationInfo(
+    AuthenticationInfo authenticationInfo = new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
         jwtResponse.getIdpResponse());
+    authenticationInfo.setCookieDomain(jwtResponse.getCookieDomain());
+    authenticationInfo.setCookiePath(jwtResponse.getCookiePath());
+    authenticationInfo.setCookieMaxAge(jwtResponse.getCookieMaxAge());
+    authenticationInfo.setCookieExpiration(jwtResponse.getCookieExpiration());
+    authenticationInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
+    authenticationInfo.setExternalToken(jwtResponse.getExternalToken());
+    authenticationInfo.setClaims(jwtResponse.getClaims());
+    authenticationInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
+    authenticationInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    authenticationInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    authenticationInfo.setCookieName(jwtResponse.getCookieName());
+    authenticationInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
+    authenticationInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    authenticationInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    authenticationInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    authenticationInfo.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
+    authenticationInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    return authenticationInfo;
   }
 
   @SuppressWarnings("unchecked")
