@@ -1,6 +1,7 @@
 package com.descope.model.user.response;
 
 import com.descope.model.auth.AssociatedTenant;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -40,4 +41,66 @@ public class UserResponse {
    * this is greater than now.
    */
   Long tempLockExpiration;
+  List<String> externalIds;
+  Boolean webauthn;
+  Boolean password;
+  Boolean editable;
+  Boolean SCIM;
+  Boolean push;
+  List<String> permissions;
+  Boolean OIDC;
+  Long consentExpiration;
+  String recoveryEmail;
+  Boolean verifiedRecoveryEmail;
+  String recoveryPhone;
+  Boolean verifiedRecoveryPhone;
+  Long modifiedTime;
+  /** Role IDs; order doesn't match roleNames. */
+  List<String> roleIds;
+  Boolean recoveryCodes;
+  Boolean dependent;
+  List<UserFamily> userFamilies;
+  String scimTenantId;
+  String samlTenantId;
+  String oidcTenantId;
+  String consentTenantId;
+  /** Previous sign-in time in unix seconds, 0 when none. */
+  Long lastLoginTime;
+
+  public UserResponse(String userId, List<String> loginIds, String email, Boolean verifiedEmail, String phone,
+      Boolean verifiedPhone, String name, String givenName, String middleName, String familyName,
+      List<String> roleNames, List<AssociatedTenant> userTenants, String status, String picture, Boolean test,
+      Long createdTime, Map<String, Object> customAttributes, Boolean totp, Boolean saml,
+      Map<String, Boolean> oauth, List<String> ssoAppIds, String lockReason, Long tempLockExpiration) {
+    this(userId, loginIds, email, verifiedEmail, phone, verifiedPhone, name, givenName, middleName, familyName,
+        roleNames, userTenants, status, picture, test, createdTime, customAttributes, totp, saml, oauth, ssoAppIds,
+        lockReason, tempLockExpiration, null, null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null);
+  }
+
+  // The spec's upper-case keys; the getters keep serializing the lower-case names
+  @JsonAlias("TOTP")
+  public void setTOTP(Boolean totp) {
+    this.TOTP = totp;
+  }
+
+  @JsonAlias("SAML")
+  public void setSAML(Boolean saml) {
+    this.SAML = saml;
+  }
+
+  @JsonAlias("OAuth")
+  public void setOAuth(Map<String, Boolean> oauth) {
+    this.oAuth = oauth;
+  }
+
+  @JsonAlias("SCIM")
+  public void setSCIM(Boolean scim) {
+    this.SCIM = scim;
+  }
+
+  @JsonAlias("OIDC")
+  public void setOIDC(Boolean oidc) {
+    this.OIDC = oidc;
+  }
 }

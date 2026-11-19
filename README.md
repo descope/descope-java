@@ -293,6 +293,33 @@ try {
 
 ```
 
+Optional authorize parameters, such as prompt and login hint, can be passed with `OAuthAuthorizeOptions`. `startSignIn` and `startSignUp` take the same arguments:
+
+```java
+OAuthAuthorizeOptions options = OAuthAuthorizeOptions.builder()
+    .prompt(Arrays.asList(OAuthPrompt.LOGIN, OAuthPrompt.CONSENT))
+    .loginHint("user@example.com")
+    .build();
+
+try {
+    String url = oas.start("google", "https://my-app.com/handle-oauth", loginOptions, null, options);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+To add an OAuth provider to a logged-in user, start an update with the user's refresh token. Set `allowAllMerge` to add the provider even when its email isn't one of the user's login IDs:
+
+```java
+try {
+    String url = oas.updateUser("google", "https://my-app.com/handle-oauth", refreshToken, false, loginOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```java
