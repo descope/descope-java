@@ -545,6 +545,23 @@ try {
 }
 ```
 
+### Access Key Exchange
+
+Exchange an access key for a session token, optionally with custom claims and a selected tenant
+the access key is associated with
+
+```java
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthService();
+try {
+    Token t = as.exchangeAccessKey(accessKey, AccessKeyLoginOptions.builder()
+        .customClaims(Collections.singletonMap("k1", "v1"))
+        .selectedTenant("t1")
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### Roles & Permission Validation
 
 When using Roles & Permission, it's important to validate the user has the required
