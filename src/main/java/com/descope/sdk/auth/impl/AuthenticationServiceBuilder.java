@@ -17,6 +17,7 @@ public class AuthenticationServiceBuilder {
         .passwordService(new PasswordServiceImpl(client))
         .magicLinkService(new MagicLinkServiceImpl(client))
         .enchantedLinkService(new EnchantedLinkServiceImpl(client))
+        .notpService(new NOTPServiceImpl(client))
         .webAuthnService(new WebAuthnServiceImpl(client))
         .build();
   }

@@ -40,6 +40,10 @@ public class Routes {
     public static final String UPDATE_EMAIL_ENCHANTED_LINK = "/v1/auth/enchantedlink/update/email";
     public static final String UPDATE_PHONE_ENCHANTED_LINK = "/v1/auth/enchantedlink/update/phone";
 
+    // NOTP
+    public static final String NOTP_LINK = "/v1/auth/notp";
+    public static final String NOTP_SESSION = "/v1/auth/notp/pending-session";
+
     // TOTP
     public static final String SIGN_UP_TOTP_LINK = "/v1/auth/totp/signup";
     public static final String UPDATE_USER_TOTP_LINK = "/v1/auth/totp/update";
