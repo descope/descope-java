@@ -293,6 +293,28 @@ try {
 
 ```
 
+Provider prompts, a login hint and the initiating user's email can also be sent, along with login options such as the tenant to sign in to. The same options are available on `startSignIn` and `startSignUp`:
+
+```java
+try {
+    LoginOptions options = LoginOptions.builder().tenantId("tenant-id").build();
+    String url = oas.start("google", returnUrl, options, null,
+        Arrays.asList(OAuthPrompt.LOGIN, OAuthPrompt.SELECT_ACCOUNT), "user@example.com", null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+To add an OAuth provider to a signed in user, start an update with the user's refresh token:
+
+```java
+try {
+    String url = oas.updateUser("google", returnUrl, refreshToken, false, null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```java

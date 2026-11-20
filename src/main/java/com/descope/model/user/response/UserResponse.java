@@ -1,11 +1,14 @@
 package com.descope.model.user.response;
 
 import com.descope.model.auth.AssociatedTenant;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -31,6 +34,8 @@ public class UserResponse {
   Map<String, Object> customAttributes;
   Boolean TOTP;
   Boolean SAML;
+  // the spec's "OAuth" key doesn't match the setter's implicit "oauth" name
+  @Setter(onMethod_ = {@JsonAlias({"OAuth"})})
   Map<String, Boolean> oAuth;
   List<String> ssoAppIds;
   /** Auth method that triggered brute-force protection, empty when none. */
@@ -40,4 +45,46 @@ public class UserResponse {
    * this is greater than now.
    */
   Long tempLockExpiration;
+  List<String> externalIds;
+  Boolean webauthn;
+  Boolean password;
+  Boolean editable;
+  @JsonProperty("SCIM")
+  Boolean scim;
+  Boolean push;
+  List<String> permissions;
+  @JsonProperty("OIDC")
+  Boolean oidc;
+  Long consentExpiration;
+  String recoveryEmail;
+  Boolean verifiedRecoveryEmail;
+  String recoveryPhone;
+  Boolean verifiedRecoveryPhone;
+  Long modifiedTime;
+  /** Role IDs; order does not match roleNames. */
+  List<String> roleIds;
+  /** Whether the user has set up recovery codes. */
+  Boolean recoveryCodes;
+  Boolean dependent;
+  List<UserFamily> userFamilies;
+  /** Tenant whose SCIM connection provisioned the user, empty when none or ambiguous. */
+  String scimTenantId;
+  /** Tenant whose SAML SSO created or merged the user, empty when none or ambiguous. */
+  String samlTenantId;
+  /** Tenant whose OIDC SSO created or merged the user, empty when none or ambiguous. */
+  String oidcTenantId;
+  String consentTenantId;
+  /** Unix seconds of the previous sign-in, 0 when none. */
+  Long lastLoginTime;
+
+  public UserResponse(String userId, List<String> loginIds, String email, Boolean verifiedEmail, String phone,
+      Boolean verifiedPhone, String name, String givenName, String middleName, String familyName,
+      List<String> roleNames, List<AssociatedTenant> userTenants, String status, String picture, Boolean test,
+      Long createdTime, Map<String, Object> customAttributes, Boolean totp, Boolean saml,
+      Map<String, Boolean> oauth, List<String> ssoAppIds, String lockReason, Long tempLockExpiration) {
+    this(userId, loginIds, email, verifiedEmail, phone, verifiedPhone, name, givenName, middleName, familyName,
+        roleNames, userTenants, status, picture, test, createdTime, customAttributes, totp, saml, oauth, ssoAppIds,
+        lockReason, tempLockExpiration, null, null, null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null);
+  }
 }
