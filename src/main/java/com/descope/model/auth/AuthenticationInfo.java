@@ -1,6 +1,7 @@
 package com.descope.model.auth;
 
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.user.response.UserResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,5 +37,24 @@ public class AuthenticationInfo {
       IDPResponse idpResponse) {
     this(token, refreshToken, user, firstSeen, idpResponse, null, null, null, null, null, null, null, null, null,
         null, null, null);
+  }
+
+  /** Builds the info from a JWT response, copying every response field. */
+  public static AuthenticationInfo fromJwtResponse(Token token, Token refreshToken, JWTResponse jwtResponse) {
+    AuthenticationInfo info = new AuthenticationInfo(token, refreshToken, jwtResponse.getUser(),
+        jwtResponse.getFirstSeen(), jwtResponse.getIdpResponse());
+    info.setSessionExpiration(jwtResponse.getSessionExpiration());
+    info.setExternalToken(jwtResponse.getExternalToken());
+    info.setTenantSSOID(jwtResponse.getTenantSSOID());
+    info.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    info.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    info.setCookieName(jwtResponse.getCookieName());
+    info.setSessionCookieName(jwtResponse.getSessionCookieName());
+    info.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    info.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    info.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    info.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
+    info.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    return info;
   }
 }
