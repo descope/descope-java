@@ -174,6 +174,38 @@ try {
 
 ```
 
+Sign-in and sign-up-or-in optionally take the provider to deliver the link with, the SSO application
+to sign in to, and whether to send the link to the user's recovery address. Sign-up optionally takes
+the provider and the message template to use.
+
+```java
+try {
+    String maskedAddress = mls.signIn(DeliveryMethod.EMAIL, loginId, uri, null, loginOptions,
+        "providerId", "ssoAppId", true);
+    maskedAddress = mls.signUpOrIn(DeliveryMethod.SMS, phoneNumber, uri, "providerId", "ssoAppId", false);
+    maskedAddress = mls.signUp(DeliveryMethod.EMAIL, loginId, uri, user, signUpOptions, "providerId", "templateId");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+To update a user's email or phone, verified by a magic link, pass the user's refresh token.
+The provider, message template, locale and whether to fail instead of merging with another user
+that already has the address are optional.
+
+```java
+try {
+    String maskedEmail = mls.updateUserEmail(loginId, "new@example.com", uri, refreshToken,
+        new UpdateOptions(true, false), null, "providerId", "templateId", "en", true);
+    String maskedPhone = mls.updateUserPhone(DeliveryMethod.WHATSAPP, loginId, "+15555555555", uri, refreshToken,
+        null, null, "providerId", "templateId", "en", true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```java

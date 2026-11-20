@@ -19,6 +19,26 @@ public class JWTResponse {
   private UserResponse user;
   private Boolean firstSeen;
   private IDPResponse idpResponse;
+  private Integer sessionExpiration;
+  private String externalToken;
+  private String tenantSSOID;
+  private String trustedDeviceJwt;
+  private Integer nextRefreshSeconds;
+  private String cookieName;
+  private String sessionCookieName;
+  private String sessionCookieDomain;
+  private Boolean unsavedSSO;
+  private String knownDeviceJwt;
+  /** Set only when the login went through an SSO configuration classified as authentication only. */
+  private Boolean ssoAuthenticationOnly;
+  private Boolean userCreationDeferred;
+
+  // Keeps the pre-sessionExpiration all-args constructor available to callers that use it positionally.
+  public JWTResponse(String sessionJwt, String refreshJwt, String cookieDomain, String cookiePath,
+      Integer cookieMaxAge, Integer cookieExpiration, UserResponse user, Boolean firstSeen, IDPResponse idpResponse) {
+    this(sessionJwt, refreshJwt, cookieDomain, cookiePath, cookieMaxAge, cookieExpiration, user, firstSeen,
+        idpResponse, null, null, null, null, null, null, null, null, null, null, null, null);
+  }
 
   public JWTResponse(String sessionJwt, String refreshJwt, String cookieDomain, String cookiePath,
       Integer cookieMaxAge, Integer cookieExpiration, UserResponse user, Boolean firstSeen) {
