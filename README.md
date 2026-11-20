@@ -236,6 +236,25 @@ try {
 
 ```
 
+Sign-in and sign-up-or-in optionally take the provider to deliver the link with, the SSO application
+to sign in to, and whether to send the link to the user's recovery address. Sign-up optionally takes
+the provider and the message template to use.
+
+```java
+try {
+    res = els.signIn(loginId, uri, null, loginOptions, "providerId", "ssoAppId", true);
+    res = els.signUpOrIn(loginId, uri, "providerId", "ssoAppId", false);
+    res = els.signUp(loginId, uri, user, signUpOptions, "providerId", "templateId");
+    PhoneEnchantedLinkResponse phoneRes =
+        els.signInWithPhone(phoneNumber, uri, null, loginOptions, "providerId", "ssoAppId", true);
+    phoneRes = els.signUpOrInWithPhone(phoneNumber, uri, "providerId", "ssoAppId", false);
+    phoneRes = els.signUpWithPhone(phoneNumber, uri, user, signUpOptions, "providerId", "templateId");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 After sending the link, you must poll to receive a valid session using the `PendingRef` from
 the previous step. A valid session will be returned only after the user clicks the right link.
 
@@ -267,6 +286,33 @@ try {
     els.verify(token);
 } catch (DescopeException de) {
     // Token is invalid, handle the error
+}
+
+```
+
+When the link was requested with a PKCE challenge, pass the matching verifier:
+
+```java
+try {
+    els.verify(token, pkceVerifier);
+} catch (DescopeException de) {
+    // Token is invalid, handle the error
+}
+
+```
+
+To update a user's email or phone, verified by an enchanted link, pass the user's refresh token.
+The provider, message template, locale and whether to fail instead of merging with another user
+that already has the address are optional.
+
+```java
+try {
+    EnchantedLinkResponse emailRes = els.updateUserEmail(loginId, "new@example.com", uri, refreshToken,
+        new UpdateOptions(true, false), null, "providerId", "templateId", "en", true);
+    PhoneEnchantedLinkResponse phoneRes = els.updateUserPhone(loginId, "+15555555555", uri, refreshToken,
+        null, null, "providerId", "templateId", "en", true);
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 ```

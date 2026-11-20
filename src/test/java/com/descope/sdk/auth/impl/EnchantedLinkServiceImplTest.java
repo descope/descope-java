@@ -11,6 +11,7 @@ import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_URL;
 import static com.descope.sdk.TestUtils.PROJECT_ID;
+import static com.descope.sdk.TestUtils.UPDATE_MOCK_EMAIL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,11 +28,14 @@ import static org.mockito.Mockito.verify;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.IDPResponse;
+import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.enchantedlink.PhoneEnchantedLinkResponse;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.jwt.response.SigningKeysResponse;
 import com.descope.model.magiclink.request.SignInRequest;
 import com.descope.model.magiclink.request.SignUpRequest;
@@ -39,6 +43,7 @@ import com.descope.model.magiclink.request.UpdatePhoneRequest;
 import com.descope.model.user.User;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
+import com.descope.model.user.response.UserFamily;
 import com.descope.model.user.response.UserResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -48,10 +53,20 @@ import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
 import com.descope.utils.UriUtils;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -346,6 +361,399 @@ public class EnchantedLinkServiceImplTest {
         enchantedLinkService.verify("token");
       }
     }
+  }
+
+  @Test
+  void signInSendsProviderSsoAppAndRecovery() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL))
+        .when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    EnchantedLinkResponse response = withProxy(apiProxy, header,
+        () -> enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null, null, "p1", "app1", true));
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(), eq(EnchantedLinkResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signin/email");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID);
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("URI", MOCK_DOMAIN, "loginId", MOCK_EMAIL,
+        "providerId", "p1", "ssoAppId", "app1", "useRecovery", true));
+    assertThat(response.getPendingRef()).isEqualTo(MOCK_URL);
+    assertThat(response.getLinkId()).isEqualTo(MOCK_URL);
+    assertThat(response.getMaskedEmail()).isEqualTo(MOCK_MASKED_EMAIL);
+  }
+
+  @Test
+  void signInWithPhoneSendsProviderSsoAppAndRecovery() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new PhoneEnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_PHONE))
+        .when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    PhoneEnchantedLinkResponse response = withProxy(apiProxy, header,
+        () -> enchantedLinkService.signInWithPhone(MOCK_PHONE, MOCK_DOMAIN, null, null, "p1", "app1", false));
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(),
+        eq(PhoneEnchantedLinkResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signin/sms");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID);
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("URI", MOCK_DOMAIN, "loginId", MOCK_PHONE,
+        "providerId", "p1", "ssoAppId", "app1", "useRecovery", false));
+    assertThat(response.getMaskedPhone()).isEqualTo(MOCK_MASKED_PHONE);
+  }
+
+  @Test
+  void signInWithoutNewFieldsOmitsThem() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    AtomicReference<String> header = new AtomicReference<>();
+    withProxy(apiProxy, header, () -> enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null, null));
+
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(any(), bodyCaptor.capture(), eq(EnchantedLinkResponse.class));
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("URI", MOCK_DOMAIN, "loginId", MOCK_EMAIL));
+  }
+
+  @Test
+  void signInWithNewFieldsRejectsEmptyLoginId() {
+    assertEquals("The Login ID argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.signIn("", MOCK_DOMAIN, null, null, "p1", "app1", true)).getMessage());
+    assertEquals("The Login ID argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.signInWithPhone("", MOCK_DOMAIN, null, null, "p1", "app1", true)).getMessage());
+  }
+
+  @Test
+  void signUpOrInSendsProviderSsoAppAndRecovery() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL))
+        .when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    EnchantedLinkResponse response = withProxy(apiProxy, header,
+        () -> enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN, "p1", "app1", true));
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(), eq(EnchantedLinkResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signup-in/email");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID);
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("URI", MOCK_DOMAIN, "loginId", MOCK_EMAIL,
+        "providerId", "p1", "ssoAppId", "app1", "useRecovery", true));
+    assertThat(response.getMaskedEmail()).isEqualTo(MOCK_MASKED_EMAIL);
+  }
+
+  @Test
+  void signUpOrInWithPhoneSendsProviderSsoAppAndRecovery() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new PhoneEnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_PHONE))
+        .when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    PhoneEnchantedLinkResponse response = withProxy(apiProxy, header,
+        () -> enchantedLinkService.signUpOrInWithPhone(MOCK_PHONE, MOCK_DOMAIN, "p1", "app1", true));
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(),
+        eq(PhoneEnchantedLinkResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signup-in/sms");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID);
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("URI", MOCK_DOMAIN, "loginId", MOCK_PHONE,
+        "providerId", "p1", "ssoAppId", "app1", "useRecovery", true));
+    assertThat(response.getMaskedPhone()).isEqualTo(MOCK_MASKED_PHONE);
+  }
+
+  @Test
+  void signUpOrInWithNewFieldsRejectsEmptyLoginId() {
+    assertEquals("The Login ID argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.signUpOrIn("", MOCK_DOMAIN, "p1", "app1", true)).getMessage());
+    assertEquals("The Login ID argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.signUpOrInWithPhone("", MOCK_DOMAIN, "p1", "app1", true)).getMessage());
+  }
+
+  @Test
+  void signUpSendsProviderAndTemplate() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL))
+        .when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    EnchantedLinkResponse response = withProxy(apiProxy, header,
+        () -> enchantedLinkService.signUp(MOCK_EMAIL, MOCK_DOMAIN, null, null, "p1", "t1"));
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(), eq(EnchantedLinkResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signup/email");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID);
+    Map<String, Object> body = toJson(bodyCaptor.getValue());
+    assertThat(body).containsEntry("providerId", "p1").containsEntry("templateId", "t1")
+        .containsEntry("email", MOCK_EMAIL).containsEntry("loginId", MOCK_EMAIL).containsEntry("URI", MOCK_DOMAIN);
+    assertThat(response.getMaskedEmail()).isEqualTo(MOCK_MASKED_EMAIL);
+  }
+
+  @Test
+  void signUpWithPhoneSendsProviderAndTemplate() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new PhoneEnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_PHONE))
+        .when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    PhoneEnchantedLinkResponse response = withProxy(apiProxy, header,
+        () -> enchantedLinkService.signUpWithPhone(MOCK_PHONE, MOCK_DOMAIN, null, null, "p1", "t1"));
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(),
+        eq(PhoneEnchantedLinkResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/signup/sms");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID);
+    Map<String, Object> body = toJson(bodyCaptor.getValue());
+    assertThat(body).containsEntry("providerId", "p1").containsEntry("templateId", "t1")
+        .containsEntry("phone", MOCK_PHONE).containsEntry("loginId", MOCK_PHONE).containsEntry("URI", MOCK_DOMAIN);
+    assertThat(response.getMaskedPhone()).isEqualTo(MOCK_MASKED_PHONE);
+  }
+
+  @Test
+  void signUpWithoutNewFieldsOmitsThem() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    AtomicReference<String> header = new AtomicReference<>();
+    withProxy(apiProxy, header, () -> enchantedLinkService.signUp(MOCK_EMAIL, MOCK_DOMAIN, null));
+
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(any(), bodyCaptor.capture(), eq(EnchantedLinkResponse.class));
+    assertThat(toJson(bodyCaptor.getValue())).doesNotContainKeys("providerId", "templateId");
+  }
+
+  @Test
+  void updateUserEmailSendsNewFields() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new EnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_EMAIL))
+        .when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    EnchantedLinkResponse response = withProxy(apiProxy, header,
+        () -> enchantedLinkService.updateUserEmail(MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN, MOCK_REFRESH_TOKEN,
+            new UpdateOptions(true, false), null, "p1", "t1", "en", true));
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(), eq(EnchantedLinkResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/update/email");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID + ":" + MOCK_REFRESH_TOKEN);
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("email", UPDATE_MOCK_EMAIL, "loginId", MOCK_EMAIL,
+        "URI", MOCK_DOMAIN, "crossDevice", false, "addToLoginIDs", true, "onMergeUseExisting", false,
+        "providerId", "p1", "templateId", "t1", "locale", "en", "failOnConflict", true));
+    assertThat(response.getMaskedEmail()).isEqualTo(MOCK_MASKED_EMAIL);
+  }
+
+  @Test
+  void updateUserPhoneSendsNewFields() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new PhoneEnchantedLinkResponse(MOCK_URL, MOCK_URL, MOCK_MASKED_PHONE))
+        .when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    PhoneEnchantedLinkResponse response = withProxy(apiProxy, header,
+        () -> enchantedLinkService.updateUserPhone(MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, MOCK_REFRESH_TOKEN,
+            new UpdateOptions(true, false), null, "p1", "t1", "en", false));
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(),
+        eq(PhoneEnchantedLinkResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/update/phone/sms");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID + ":" + MOCK_REFRESH_TOKEN);
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("phone", MOCK_PHONE, "loginId", MOCK_EMAIL,
+        "URI", MOCK_DOMAIN, "crossDevice", false, "addToLoginIDs", true, "onMergeUseExisting", false,
+        "providerId", "p1", "templateId", "t1", "locale", "en", "failOnConflict", false));
+    assertThat(response.getMaskedPhone()).isEqualTo(MOCK_MASKED_PHONE);
+  }
+
+  @Test
+  void updateUserWithoutNewFieldsOmitsThem() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    AtomicReference<String> header = new AtomicReference<>();
+    withProxy(apiProxy, header, () -> enchantedLinkService.updateUserEmail(
+        MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null));
+
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(any(), bodyCaptor.capture(), eq(EnchantedLinkResponse.class));
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("email", UPDATE_MOCK_EMAIL, "loginId", MOCK_EMAIL,
+        "URI", MOCK_DOMAIN, "crossDevice", false, "addToLoginIDs", false, "onMergeUseExisting", false));
+  }
+
+  @Test
+  void updateUserWithNewFieldsRejectsInvalidArguments() {
+    assertEquals("The Login ID argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserEmail("", UPDATE_MOCK_EMAIL, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null,
+            null, "p1", "t1", "en", true)).getMessage());
+    assertEquals("The Email argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserEmail(MOCK_EMAIL, "", MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null,
+            null, "p1", "t1", "en", true)).getMessage());
+    assertEquals("The Refresh Token argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserEmail(MOCK_EMAIL, UPDATE_MOCK_EMAIL, MOCK_DOMAIN, "", null,
+            null, "p1", "t1", "en", true)).getMessage());
+    assertEquals("The Login ID argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserPhone("", MOCK_PHONE, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null,
+            null, "p1", "t1", "en", true)).getMessage());
+    assertEquals("The Phone argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserPhone(MOCK_EMAIL, "", MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null,
+            null, "p1", "t1", "en", true)).getMessage());
+    assertEquals("The Refresh Token argument is invalid", assertThrows(ServerCommonException.class,
+        () -> enchantedLinkService.updateUserPhone(MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, "", null,
+            null, "p1", "t1", "en", true)).getMessage());
+  }
+
+  @Test
+  void verifySendsPkceVerifier() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    AtomicReference<String> header = new AtomicReference<>();
+    withProxy(apiProxy, header, () -> {
+      enchantedLinkService.verify("token", "verifier".getBytes(StandardCharsets.UTF_8));
+      return null;
+    });
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(), eq(EmptyResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/verify");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID);
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("token", "token", "pkceVerifier",
+        Base64.getEncoder().encodeToString("verifier".getBytes(StandardCharsets.UTF_8))));
+  }
+
+  @Test
+  void verifyWithoutPkceVerifierOmitsIt() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    AtomicReference<String> header = new AtomicReference<>();
+    withProxy(apiProxy, header, () -> {
+      enchantedLinkService.verify("token");
+      return null;
+    });
+
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(any(), bodyCaptor.capture(), eq(EmptyResponse.class));
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("token", "token"));
+  }
+
+  @Test
+  void getSessionReadsFullResponse() throws Exception {
+    String json = "{\"sessionJwt\":\"s\",\"refreshJwt\":\"r\",\"firstSeen\":true,"
+        + "\"sessionExpiration\":11,\"externalToken\":\"et\",\"tenantSSOID\":\"ts\","
+        + "\"trustedDeviceJwt\":\"td\",\"nextRefreshSeconds\":12,\"cookieName\":\"cn\","
+        + "\"sessionCookieName\":\"scn\",\"sessionCookieDomain\":\"scd\",\"unsavedSSO\":true,"
+        + "\"knownDeviceJwt\":\"kd\",\"ssoAuthenticationOnly\":true,\"userCreationDeferred\":true,"
+        + "\"idpResponse\":{\"samlResponse\":\"sr\",\"samlGeneratedUser\":\"sgu\","
+        + "\"samlGeneratedRoles\":\"sgr\",\"oidcResponse\":\"or\",\"oidcGeneratedUser\":\"ogu\","
+        + "\"oidcGeneratedRoles\":\"ogr\",\"idpGroups\":[\"g\"]},"
+        + "\"user\":{\"userId\":\"u1\",\"externalIds\":[\"e1\"],\"OAuth\":{\"google\":true},"
+        + "\"webauthn\":true,\"password\":true,\"editable\":true,\"SCIM\":true,\"push\":true,"
+        + "\"permissions\":[\"perm\"],\"OIDC\":true,\"consentExpiration\":21,"
+        + "\"recoveryEmail\":\"re@x.com\",\"verifiedRecoveryEmail\":true,\"recoveryPhone\":\"+1\","
+        + "\"verifiedRecoveryPhone\":true,\"modifiedTime\":22,\"roleIds\":[\"rid\"],"
+        + "\"recoveryCodes\":true,\"dependent\":true,\"userFamilies\":[{\"familyId\":\"f1\","
+        + "\"roleNames\":[\"fr\"],\"permissions\":[\"fp\"],\"familyScopedAttributes\":{\"a\":\"b\"}}],"
+        + "\"scimTenantId\":\"st\",\"samlTenantId\":\"sat\",\"oidcTenantId\":\"ot\","
+        + "\"consentTenantId\":\"ct\",\"lastLoginTime\":23,\"unknownField\":1}}";
+    JWTResponse jwtResponse = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(json, JWTResponse.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponse).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    AuthenticationInfo info;
+    try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      info = withProxy(apiProxy, header, () -> enchantedLinkService.getSession("testRef"));
+    }
+
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy, times(1)).post(uriCaptor.capture(), bodyCaptor.capture(), eq(JWTResponse.class));
+    assertThat(uriCaptor.getValue().getPath()).isEqualTo("/v1/auth/enchantedlink/pending-session");
+    assertThat(header.get()).isEqualTo("Bearer " + PROJECT_ID);
+    assertThat(toJson(bodyCaptor.getValue())).isEqualTo(jsonOf("pendingRef", "testRef"));
+
+    assertThat(info.getSessionExpiration()).isEqualTo(11);
+    assertThat(info.getExternalToken()).isEqualTo("et");
+    assertThat(info.getTenantSSOID()).isEqualTo("ts");
+    assertThat(info.getTrustedDeviceJwt()).isEqualTo("td");
+    assertThat(info.getNextRefreshSeconds()).isEqualTo(12);
+    assertThat(info.getCookieName()).isEqualTo("cn");
+    assertThat(info.getSessionCookieName()).isEqualTo("scn");
+    assertThat(info.getSessionCookieDomain()).isEqualTo("scd");
+    assertThat(info.getUnsavedSSO()).isTrue();
+    assertThat(info.getKnownDeviceJwt()).isEqualTo("kd");
+    assertThat(info.getSsoAuthenticationOnly()).isTrue();
+    assertThat(info.getUserCreationDeferred()).isTrue();
+
+    IDPResponse idp = info.getIdpResponse();
+    assertThat(idp.getSamlResponse()).isEqualTo("sr");
+    assertThat(idp.getSamlGeneratedUser()).isEqualTo("sgu");
+    assertThat(idp.getSamlGeneratedRoles()).isEqualTo("sgr");
+    assertThat(idp.getOidcResponse()).isEqualTo("or");
+    assertThat(idp.getOidcGeneratedUser()).isEqualTo("ogu");
+    assertThat(idp.getOidcGeneratedRoles()).isEqualTo("ogr");
+    assertThat(idp.getIdpGroups()).containsExactly("g");
+
+    UserResponse user = info.getUser();
+    assertThat(user.getUserId()).isEqualTo("u1");
+    assertThat(user.getExternalIds()).containsExactly("e1");
+    assertThat(user.getOAuth()).containsEntry("google", true);
+    assertThat(user.getWebauthn()).isTrue();
+    assertThat(user.getPassword()).isTrue();
+    assertThat(user.getEditable()).isTrue();
+    assertThat(user.getScim()).isTrue();
+    assertThat(user.getPush()).isTrue();
+    assertThat(user.getPermissions()).containsExactly("perm");
+    assertThat(user.getOidc()).isTrue();
+    assertThat(user.getConsentExpiration()).isEqualTo(21L);
+    assertThat(user.getRecoveryEmail()).isEqualTo("re@x.com");
+    assertThat(user.getVerifiedRecoveryEmail()).isTrue();
+    assertThat(user.getRecoveryPhone()).isEqualTo("+1");
+    assertThat(user.getVerifiedRecoveryPhone()).isTrue();
+    assertThat(user.getModifiedTime()).isEqualTo(22L);
+    assertThat(user.getRoleIds()).containsExactly("rid");
+    assertThat(user.getRecoveryCodes()).isTrue();
+    assertThat(user.getDependent()).isTrue();
+    assertThat(user.getUserFamilies()).hasSize(1);
+    UserFamily family = user.getUserFamilies().get(0);
+    assertThat(family.getFamilyId()).isEqualTo("f1");
+    assertThat(family.getRoleNames()).containsExactly("fr");
+    assertThat(family.getPermissions()).containsExactly("fp");
+    assertThat(family.getFamilyScopedAttributes()).containsEntry("a", "b");
+    assertThat(user.getScimTenantId()).isEqualTo("st");
+    assertThat(user.getSamlTenantId()).isEqualTo("sat");
+    assertThat(user.getOidcTenantId()).isEqualTo("ot");
+    assertThat(user.getConsentTenantId()).isEqualTo("ct");
+    assertThat(user.getLastLoginTime()).isEqualTo(23L);
+  }
+
+  @Test
+  void userResponseStillReadsLowercaseOauth() throws Exception {
+    UserResponse user = new ObjectMapper().readValue("{\"oauth\":{\"google\":true}}", UserResponse.class);
+    assertThat(user.getOAuth()).containsEntry("google", true);
+  }
+
+  /** Runs the call with the given proxy and captures the Authorization header it was built with. */
+  @SuppressWarnings("unchecked")
+  private static <T> T withProxy(ApiProxy apiProxy, AtomicReference<String> header, Supplier<T> call) {
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        header.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      return call.get();
+    }
+  }
+
+  private static Map<String, Object> jsonOf(Object... keysAndValues) {
+    Map<String, Object> m = new HashMap<>();
+    for (int i = 0; i < keysAndValues.length; i += 2) {
+      m.put((String) keysAndValues[i], keysAndValues[i + 1]);
+    }
+    return m;
+  }
+
+  /** Serializes a request body the way the API proxy does. */
+  private static Map<String, Object> toJson(Object body) throws JsonProcessingException {
+    ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(Include.NON_NULL);
+    return objectMapper.readValue(objectMapper.writeValueAsString(body), new TypeReference<Map<String, Object>>() {});
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

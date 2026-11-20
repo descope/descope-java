@@ -130,9 +130,22 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    return new AuthenticationInfo(
+    AuthenticationInfo authenticationInfo = new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
         jwtResponse.getIdpResponse());
+    authenticationInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
+    authenticationInfo.setExternalToken(jwtResponse.getExternalToken());
+    authenticationInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
+    authenticationInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    authenticationInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    authenticationInfo.setCookieName(jwtResponse.getCookieName());
+    authenticationInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
+    authenticationInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    authenticationInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    authenticationInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    authenticationInfo.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
+    authenticationInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    return authenticationInfo;
   }
 
   @SuppressWarnings("unchecked")

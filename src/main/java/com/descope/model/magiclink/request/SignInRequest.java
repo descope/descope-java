@@ -18,4 +18,12 @@ public class SignInRequest {
 
   private String loginId;
   private LoginOptions loginOptions;
+  private String providerId;
+  private String ssoAppId;
+  private Boolean useRecovery;
+
+  // Keeps the pre-providerId all-args constructor available to callers that use it positionally.
+  public SignInRequest(String uri, String loginId, LoginOptions loginOptions) {
+    this(uri, loginId, loginOptions, null, null, null);
+  }
 }
