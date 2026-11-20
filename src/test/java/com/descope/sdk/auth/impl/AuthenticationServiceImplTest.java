@@ -6,10 +6,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
@@ -28,11 +38,24 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
 
@@ -205,4 +228,66 @@ public class AuthenticationServiceImplTest {
     roleService.delete(roleBName);
   }
 
+  @Test
+  void testLogoutAllWithLogoutTypes() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"cookiePath\":\"/\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      authenticationService.logoutAll("refresh", Arrays.asList("web", "mobile"));
+      ClassicHttpRequest request = captor.getValue();
+      assertEquals("POST", request.getMethod());
+      assertTrue(request.getRequestUri().endsWith("/v1/auth/logoutall"));
+      assertEquals("Bearer " + TestUtils.PROJECT_ID + ":refresh", request.getHeader("Authorization").getValue());
+      assertEquals(mapOf("logoutType", Arrays.asList("web", "mobile")), requestBody(request));
+    }
+  }
+
+  @Test
+  void testLogoutAllWithoutLogoutTypes() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      authenticationService.logoutAll("refresh");
+      ClassicHttpRequest request = captor.getValue();
+      assertTrue(request.getRequestUri().endsWith("/v1/auth/logoutall"));
+      assertEquals("Bearer " + TestUtils.PROJECT_ID + ":refresh", request.getHeader("Authorization").getValue());
+      assertNull(request.getEntity());
+    }
+  }
+
+  @Test
+  void testLogoutAllForEmptyRefreshToken() throws Exception {
+    CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      ServerCommonException thrown = assertThrows(ServerCommonException.class,
+          () -> authenticationService.logoutAll("", Arrays.asList("web")));
+      assertEquals("refresh token", thrown.getMessage());
+      verify(httpClient, never()).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
+    }
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private CloseableHttpClient mockHttpClient(ArgumentCaptor<ClassicHttpRequest> captor, int statusCode,
+      String responseBody) throws IOException {
+    CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+    doAnswer(inv -> {
+      ClassicHttpResponse response = mock(ClassicHttpResponse.class);
+      when(response.getCode()).thenReturn(statusCode);
+      HttpEntity entity = mock(HttpEntity.class);
+      when(entity.getContent())
+          .thenReturn(new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8)));
+      when(response.getEntity()).thenReturn(entity);
+      return ((HttpClientResponseHandler) inv.getArgument(1)).handleResponse(response);
+    }).when(httpClient).execute(captor.capture(), any(HttpClientResponseHandler.class));
+    return httpClient;
+  }
+
+  private Map<?, ?> requestBody(ClassicHttpRequest request) throws IOException {
+    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+    request.getEntity().writeTo(bs);
+    return new ObjectMapper().readValue(bs.toByteArray(), Map.class);
+  }
 }
