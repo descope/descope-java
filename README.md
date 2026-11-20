@@ -524,6 +524,25 @@ The implementation can defer according to your implementation. See our [examples
 If Roles & Permissions are used, validate them immediately after validating the session. See the [next section](#roles--permission-validation)
 for more information.
 
+#### Exchanging an Access Key
+
+An access key can be exchanged for a session token:
+
+```java
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthService();
+try {
+    // Optionally add custom claims to the session token
+    AccessKeyLoginOptions loginOptions = new AccessKeyLoginOptions(mapOf("k1", "v1"));
+    Token t = as.exchangeAccessKey(accessKey, loginOptions);
+    // Or get the ID of the exchanged access key along with the session token
+    AccessKeyAuthenticationInfo info = as.exchangeAccessKeyAuthenticationInfo(accessKey, loginOptions);
+    String keyId = info.getKeyId();
+    Token sessionToken = info.getToken();
+} catch (DescopeException de) {
+    // Handle the unauthorized error
+}
+```
+
 #### Session Validation Using Middleware
 
 Alternatively, you can validate the session using Spring Framework middleware. See example using [java-spring](https://github.com/descope/java-spring).

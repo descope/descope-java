@@ -12,11 +12,13 @@ import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AccessKeyAuthenticationInfo;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.ExchangeAccessKeyResponse;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
@@ -113,16 +115,27 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public Token exchangeAccessKey(String accessKey, AccessKeyLoginOptions loginOptions) throws DescopeException {
+    return exchangeAccessKeyAuthenticationInfo(accessKey, loginOptions).getToken();
+  }
+
+  @Override
+  public AccessKeyAuthenticationInfo exchangeAccessKeyAuthenticationInfo(String accessKey) throws DescopeException {
+    return exchangeAccessKeyAuthenticationInfo(accessKey, null);
+  }
+
+  @Override
+  public AccessKeyAuthenticationInfo exchangeAccessKeyAuthenticationInfo(String accessKey,
+      AccessKeyLoginOptions loginOptions) throws DescopeException {
     if (StringUtils.isBlank(accessKey)) {
       throw ServerCommonException.invalidArgument("accessKey");
     }
     ApiProxy apiProxy = getApiProxy(accessKey);
     URI exchangeAccessKeyLinkURL = composeExchangeAccessKeyLinkURL();
 
-    JWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL,
-        mapOf("loginOptions", loginOptions), JWTResponse.class);
-    AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
-    return authenticationInfo.getToken();
+    ExchangeAccessKeyResponse response = apiProxy.post(exchangeAccessKeyLinkURL,
+        mapOf("loginOptions", loginOptions), ExchangeAccessKeyResponse.class);
+    AuthenticationInfo authenticationInfo = getAuthenticationInfo(response);
+    return new AccessKeyAuthenticationInfo(authenticationInfo.getToken(), response.getKeyId());
   }
 
   @Override
