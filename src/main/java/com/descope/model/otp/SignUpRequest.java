@@ -18,4 +18,11 @@ public class SignUpRequest {
   private String loginId;
   private User user;
   private SignUpOptions loginOptions;
+  private String providerId;
+  private String templateId;
+
+  public SignUpRequest(String whatsApp, String phone, String email, String loginId, User user,
+      SignUpOptions loginOptions) {
+    this(whatsApp, phone, email, loginId, user, loginOptions, null, null);
+  }
 }

@@ -51,6 +51,9 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    if (deliveryMethod == DeliveryMethod.IM) {
+      throw ServerCommonException.invalidArgument("Method");
+    }
 
     ApiProxy apiProxy;
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
@@ -78,6 +81,9 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
       SignUpOptions signupOptions) throws DescopeException {
     if (user == null) {
       user = new User();
+    }
+    if (deliveryMethod == DeliveryMethod.IM) {
+      throw ServerCommonException.invalidArgument("Method");
     }
 
     verifyDeliveryMethod(deliveryMethod, loginId, user);
@@ -113,6 +119,9 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
 
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (deliveryMethod == DeliveryMethod.IM) {
+      throw ServerCommonException.invalidArgument("Method");
     }
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);

@@ -13,8 +13,31 @@ public class AuthenticationInfo {
   private UserResponse user;
   private Boolean firstSeen;
   private IDPResponse idpResponse;
+  private Long sessionExpiration;
+  private String externalToken;
+  /** Tenant SSO configuration that performed the authentication. */
+  private String tenantSSOID;
+  private String trustedDeviceJwt;
+  private Integer nextRefreshSeconds;
+  private String cookieName;
+  private String sessionCookieName;
+  private String sessionCookieDomain;
+  private Boolean unsavedSSO;
+  private String knownDeviceJwt;
+  /** Set when the login went through an authentication-only SSO configuration and issued no session. */
+  private Boolean ssoAuthenticationOnly;
+  private Boolean userCreationDeferred;
 
   public AuthenticationInfo(Token token, Token refreshToken, UserResponse user, Boolean firstSeen) {
     this(token, refreshToken, user, firstSeen, null);
+  }
+
+  public AuthenticationInfo(Token token, Token refreshToken, UserResponse user, Boolean firstSeen,
+      IDPResponse idpResponse) {
+    this.token = token;
+    this.refreshToken = refreshToken;
+    this.user = user;
+    this.firstSeen = firstSeen;
+    this.idpResponse = idpResponse;
   }
 }

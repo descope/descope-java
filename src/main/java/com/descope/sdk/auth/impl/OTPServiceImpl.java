@@ -1,6 +1,7 @@
 package com.descope.sdk.auth.impl;
 
 import static com.descope.enums.DeliveryMethod.EMAIL;
+import static com.descope.enums.DeliveryMethod.IM;
 import static com.descope.enums.DeliveryMethod.SMS;
 import static com.descope.enums.DeliveryMethod.VOICE;
 import static com.descope.enums.DeliveryMethod.WHATSAPP;
@@ -24,10 +25,14 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.magiclink.response.Masked;
 import com.descope.model.otp.AuthenticationVerifyRequestBody;
+import com.descope.model.otp.OTPSignInOptions;
+import com.descope.model.otp.OTPSignUpOptions;
+import com.descope.model.otp.OTPUpdateOptions;
 import com.descope.model.otp.SignInRequest;
 import com.descope.model.otp.SignUpRequest;
 import com.descope.model.otp.UpdateEmailRequestBody;
 import com.descope.model.otp.UpdatePhoneRequestBody;
+import com.descope.model.otp.response.OTPResponse;
 import com.descope.model.user.User;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.OTPService;
@@ -53,20 +58,27 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
-    ApiProxy apiProxy;
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI otpSignInURL = composeSignInURL(deliveryMethod);
     SignInRequest signInRequest = new SignInRequest(loginId, loginOptions);
-    if (JwtUtils.isJWTRequired(loginOptions)) {
-      if (StringUtils.isBlank(refreshToken)) {
-        throw ServerCommonException.invalidArgument("refreshToken");
-      }
-      apiProxy = getApiProxy(refreshToken);
-    } else {
-      apiProxy = getApiProxy();
-    }
+    ApiProxy apiProxy = getSignInApiProxy(loginOptions, refreshToken);
     Masked masked = apiProxy.post(otpSignInURL, signInRequest, maskedClass);
     return masked.getMasked();
+  }
+
+  @Override
+  public OTPResponse signIn(DeliveryMethod deliveryMethod, String loginId, LoginOptions loginOptions,
+      String refreshToken, OTPSignInOptions signInOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (deliveryMethod == null) {
+      throw ServerCommonException.invalidArgument("Method");
+    }
+    URI otpSignInURL = composeSignInURL(deliveryMethod);
+    SignInRequest signInRequest = newSignInRequest(loginId, loginOptions, signInOptions);
+    ApiProxy apiProxy = getSignInApiProxy(loginOptions, refreshToken);
+    return apiProxy.post(otpSignInURL, signInRequest, OTPResponse.class);
   }
 
   @Override
@@ -95,6 +107,31 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   @Override
+  public OTPResponse signUp(DeliveryMethod deliveryMethod, String loginId, User user, SignUpOptions signUpOptions,
+      OTPSignUpOptions otpSignUpOptions) throws DescopeException {
+    if (deliveryMethod == null) {
+      throw ServerCommonException.invalidArgument("Method");
+    }
+    if (user == null) {
+      user = new User();
+    }
+    verifyDeliveryMethod(deliveryMethod, loginId, user);
+    SignUpRequest signUpRequest = WHATSAPP.equals(deliveryMethod)
+        ? SignUpRequest.builder().phone(user.getPhone()).build()
+        : newSignUpRequest(deliveryMethod, user);
+    signUpRequest.setLoginId(loginId);
+    signUpRequest.setUser(user);
+    signUpRequest.setLoginOptions(signUpOptions);
+    if (otpSignUpOptions != null) {
+      signUpRequest.setProviderId(otpSignUpOptions.getProviderId());
+      signUpRequest.setTemplateId(otpSignUpOptions.getTemplateId());
+    }
+    URI otpSignUpURL = composeSignUpURI(deliveryMethod);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(otpSignUpURL, signUpRequest, OTPResponse.class);
+  }
+
+  @Override
   public String signUpOrIn(DeliveryMethod deliveryMethod, String loginId) throws DescopeException {
 
     if (StringUtils.isBlank(loginId)) {
@@ -107,6 +144,21 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
     ApiProxy apiProxy = getApiProxy();
     Masked masked = apiProxy.post(otpSignUpOrInURL, signInRequest, maskedClass);
     return masked.getMasked();
+  }
+
+  @Override
+  public OTPResponse signUpOrIn(DeliveryMethod deliveryMethod, String loginId, OTPSignInOptions signInOptions)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (deliveryMethod == null) {
+      throw ServerCommonException.invalidArgument("Method");
+    }
+    URI otpSignUpOrInURL = composeSignUpOrInURL(deliveryMethod);
+    SignInRequest signInRequest = newSignInRequest(loginId, null, signInOptions);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(otpSignUpOrInURL, signInRequest, OTPResponse.class);
   }
 
   @Override
@@ -144,31 +196,20 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   @Override
   public String updateUserEmail(String loginId, String email, String refreshToken, UpdateOptions updateOptions,
       Map<String, String> templateOptions) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("Login ID");
-    }
-    if (StringUtils.isBlank(email) || !EMAIL_PATTERN.matcher(email).matches()) {
-      throw ServerCommonException.invalidArgument("Email");
-    }
-    if (StringUtils.isBlank(refreshToken)) {
-      throw ServerCommonException.invalidArgument("Refresh Token");
-    }
-    Class<? extends Masked> maskedClass = getMaskedValue(EMAIL);
-    URI otpUpdateUserEmail = composeUpdateUserEmailOTP();
-    if (updateOptions == null) {
-      updateOptions = new UpdateOptions();
-    }
-    UpdateEmailRequestBody updateEmailRequest = UpdateEmailRequestBody
-        .builder()
-        .email(email)
-        .loginId(loginId)
-        .addToLoginIds(updateOptions.isAddToLoginIds())
-        .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
-        .templateOptions(templateOptions)
-        .build();
+    UpdateEmailRequestBody updateEmailRequest =
+        newUpdateEmailRequest(loginId, email, refreshToken, updateOptions, templateOptions, null);
     ApiProxy apiProxy = getApiProxy(refreshToken);
-    Masked masked = apiProxy.post(otpUpdateUserEmail, updateEmailRequest, maskedClass);
+    Masked masked = apiProxy.post(composeUpdateUserEmailOTP(), updateEmailRequest, getMaskedValue(EMAIL));
     return masked.getMasked();
+  }
+
+  @Override
+  public OTPResponse updateUserEmail(String loginId, String email, String refreshToken, UpdateOptions updateOptions,
+      Map<String, String> templateOptions, OTPUpdateOptions otpUpdateOptions) throws DescopeException {
+    UpdateEmailRequestBody updateEmailRequest =
+        newUpdateEmailRequest(loginId, email, refreshToken, updateOptions, templateOptions, otpUpdateOptions);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    return apiProxy.post(composeUpdateUserEmailOTP(), updateEmailRequest, OTPResponse.class);
   }
 
   @Override
@@ -180,6 +221,59 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   @Override
   public String updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
       UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException {
+    UpdatePhoneRequestBody updatePhoneRequestBody =
+        newUpdatePhoneRequest(deliveryMethod, loginId, phone, refreshToken, updateOptions, templateOptions, null);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    Masked masked = apiProxy.post(composeUpdateUserPhoneOTP(deliveryMethod), updatePhoneRequestBody,
+        getMaskedValue(SMS));
+    return masked.getMasked();
+  }
+
+  @Override
+  public OTPResponse updateUserPhone(DeliveryMethod deliveryMethod, String loginId, String phone, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, OTPUpdateOptions otpUpdateOptions)
+      throws DescopeException {
+    UpdatePhoneRequestBody updatePhoneRequestBody = newUpdatePhoneRequest(deliveryMethod, loginId, phone,
+        refreshToken, updateOptions, templateOptions, otpUpdateOptions);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    return apiProxy.post(composeUpdateUserPhoneOTP(deliveryMethod), updatePhoneRequestBody, OTPResponse.class);
+  }
+
+  private UpdateEmailRequestBody newUpdateEmailRequest(String loginId, String email, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, OTPUpdateOptions otpUpdateOptions) {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(email) || !EMAIL_PATTERN.matcher(email).matches()) {
+      throw ServerCommonException.invalidArgument("Email");
+    }
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
+    if (otpUpdateOptions == null) {
+      otpUpdateOptions = new OTPUpdateOptions();
+    }
+    return UpdateEmailRequestBody
+        .builder()
+        .email(email)
+        .loginId(loginId)
+        .addToLoginIds(updateOptions.isAddToLoginIds())
+        .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+        .templateOptions(templateOptions)
+        .providerId(otpUpdateOptions.getProviderId())
+        .templateId(otpUpdateOptions.getTemplateId())
+        .locale(otpUpdateOptions.getLocale())
+        .failOnConflict(otpUpdateOptions.getFailOnConflict())
+        .mfa(otpUpdateOptions.getMfa())
+        .build();
+  }
+
+  private UpdatePhoneRequestBody newUpdatePhoneRequest(DeliveryMethod deliveryMethod, String loginId, String phone,
+      String refreshToken, UpdateOptions updateOptions, Map<String, String> templateOptions,
+      OTPUpdateOptions otpUpdateOptions) {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -187,28 +281,51 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
       throw ServerCommonException.invalidArgument("Phone");
     }
     if (deliveryMethod != DeliveryMethod.WHATSAPP && deliveryMethod != DeliveryMethod.SMS
-        && deliveryMethod != DeliveryMethod.VOICE) {
+        && deliveryMethod != DeliveryMethod.VOICE && deliveryMethod != DeliveryMethod.IM) {
       throw ServerCommonException.invalidArgument("Method");
     }
     if (StringUtils.isBlank(refreshToken)) {
       throw ServerCommonException.invalidArgument("Refresh Token");
     }
-    Class<? extends Masked> maskedClass = getMaskedValue(SMS);
-    URI otpUpdateUserPhone = composeUpdateUserPhoneOTP(deliveryMethod);
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
-    UpdatePhoneRequestBody updatePhoneRequestBody = UpdatePhoneRequestBody
+    if (otpUpdateOptions == null) {
+      otpUpdateOptions = new OTPUpdateOptions();
+    }
+    return UpdatePhoneRequestBody
         .builder()
         .phone(phone)
         .loginId(loginId)
         .addToLoginIds(updateOptions.isAddToLoginIds())
         .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
         .templateOptions(templateOptions)
+        .providerId(otpUpdateOptions.getProviderId())
+        .templateId(otpUpdateOptions.getTemplateId())
+        .locale(otpUpdateOptions.getLocale())
+        .failOnConflict(otpUpdateOptions.getFailOnConflict())
+        .mfa(otpUpdateOptions.getMfa())
         .build();
-    ApiProxy apiProxy = getApiProxy(refreshToken);
-    Masked masked = apiProxy.post(otpUpdateUserPhone, updatePhoneRequestBody, maskedClass);
-    return masked.getMasked();
+  }
+
+  private ApiProxy getSignInApiProxy(LoginOptions loginOptions, String refreshToken) {
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      if (StringUtils.isBlank(refreshToken)) {
+        throw ServerCommonException.invalidArgument("refreshToken");
+      }
+      return getApiProxy(refreshToken);
+    }
+    return getApiProxy();
+  }
+
+  private SignInRequest newSignInRequest(String loginId, LoginOptions loginOptions, OTPSignInOptions signInOptions) {
+    SignInRequest signInRequest = new SignInRequest(loginId, loginOptions);
+    if (signInOptions != null) {
+      signInRequest.setProviderId(signInOptions.getProviderId());
+      signInRequest.setSsoAppId(signInOptions.getSsoAppId());
+      signInRequest.setUseRecovery(signInOptions.getUseRecovery());
+    }
+    return signInRequest;
   }
 
   private URI composeUpdateUserPhoneOTP(DeliveryMethod deliveryMethod) {
@@ -228,7 +345,7 @@ class OTPServiceImpl extends AuthenticationServiceImpl implements OTPService {
   }
 
   private SignUpRequest newSignUpRequest(DeliveryMethod deliveryMethod, User user) {
-    if (SMS.equals(deliveryMethod) || VOICE.equals(deliveryMethod)) {
+    if (SMS.equals(deliveryMethod) || VOICE.equals(deliveryMethod) || IM.equals(deliveryMethod)) {
       return SignUpRequest.builder().phone(user.getPhone()).build();
     } else if (WHATSAPP.equals(deliveryMethod)) {
       return SignUpRequest.builder().whatsApp(user.getPhone()).build();

@@ -19,10 +19,37 @@ public class JWTResponse {
   private UserResponse user;
   private Boolean firstSeen;
   private IDPResponse idpResponse;
+  private Long sessionExpiration;
+  private String externalToken;
+  /** Tenant SSO configuration that performed the authentication. */
+  private String tenantSSOID;
+  private String trustedDeviceJwt;
+  private Integer nextRefreshSeconds;
+  private String cookieName;
+  private String sessionCookieName;
+  private String sessionCookieDomain;
+  private Boolean unsavedSSO;
+  private String knownDeviceJwt;
+  /** Set when the login went through an authentication-only SSO configuration and issued no session. */
+  private Boolean ssoAuthenticationOnly;
+  private Boolean userCreationDeferred;
 
   public JWTResponse(String sessionJwt, String refreshJwt, String cookieDomain, String cookiePath,
       Integer cookieMaxAge, Integer cookieExpiration, UserResponse user, Boolean firstSeen) {
     this(sessionJwt, refreshJwt, cookieDomain, cookiePath, cookieMaxAge, cookieExpiration, user,
         firstSeen, null);
+  }
+
+  public JWTResponse(String sessionJwt, String refreshJwt, String cookieDomain, String cookiePath,
+      Integer cookieMaxAge, Integer cookieExpiration, UserResponse user, Boolean firstSeen, IDPResponse idpResponse) {
+    this.sessionJwt = sessionJwt;
+    this.refreshJwt = refreshJwt;
+    this.cookieDomain = cookieDomain;
+    this.cookiePath = cookiePath;
+    this.cookieMaxAge = cookieMaxAge;
+    this.cookieExpiration = cookieExpiration;
+    this.user = user;
+    this.firstSeen = firstSeen;
+    this.idpResponse = idpResponse;
   }
 }

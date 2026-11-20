@@ -258,6 +258,23 @@ class MagicLinkServiceImplTest {
   }
 
   @Test
+  void testImDeliveryMethodIsRejected() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL, null, null));
+    assertEquals("The Method argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signUp(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL, new User()));
+    assertEquals("The Method argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signUpOrIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL));
+    assertEquals("The Method argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> magicLinkService.updateUserPhone(
+            DeliveryMethod.IM, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN, MOCK_REFRESH_TOKEN, null));
+    assertEquals("The Method argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testUpdateUserPhoneForInvalidMethod() {
     ServerCommonException thrown =
         assertThrows(

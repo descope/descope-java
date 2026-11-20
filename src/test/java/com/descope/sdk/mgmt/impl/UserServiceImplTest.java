@@ -825,6 +825,16 @@ public class UserServiceImplTest {
   }
 
   @Test
+  void testGenerateForTestUserRejectsImDeliveryMethod() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateOtpForTestUser("someLoginId", DeliveryMethod.IM));
+    assertEquals("The Delivery Method argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.IM));
+    assertEquals("The Delivery Method argument is invalid", thrown.getMessage());
+  }
+
+  @Test
   void testGenerateEnchantedLinkForTestUserForEmptyLoginId() {
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> userService.generateEnchantedLinkForTestUser("", mockUrl));

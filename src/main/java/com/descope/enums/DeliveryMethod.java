@@ -6,7 +6,9 @@ public enum DeliveryMethod {
   EMAIL("email"),
   SMS("sms"),
   VOICE("voice"),
-  WHATSAPP("whatsapp");
+  WHATSAPP("whatsapp"),
+  /** Instant messaging; supported by OTP only. */
+  IM("im");
 
   @Getter
   private final String value;

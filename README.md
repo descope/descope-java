@@ -130,6 +130,41 @@ try {
 }
 ```
 
+The overloads that take OTP options return an `OTPResponse` with the masked address and the verification attempts. `DeliveryMethod.IM` (instant messaging) is a phone delivery method supported by OTP only.
+
+```java
+try {
+  // Sign up with a messaging provider and template
+  OTPResponse res = otps.signUp(DeliveryMethod.SMS, "+12125551234", User.builder().phone("+12125551234").build(),
+      null, OTPSignUpOptions.builder().providerId("my-provider").templateId("my-template").build());
+  String maskedPhone = res.getMaskedPhone();
+  Integer verificationAttempts = res.getVerificationAttempts();
+
+  // Sign in, or sign up or in, with optional OTP parameters
+  OTPSignInOptions signInOptions = OTPSignInOptions.builder()
+      .providerId("my-provider")
+      .ssoAppId("my-sso-app")
+      .useRecovery(false)
+      .build();
+  res = otps.signIn(DeliveryMethod.EMAIL, loginId, null, null, signInOptions);
+  res = otps.signUpOrIn(DeliveryMethod.IM, "+12125551234", signInOptions);
+
+  // Update the user's email or phone with optional OTP parameters (requires the user's refresh token)
+  OTPUpdateOptions updateOptions = OTPUpdateOptions.builder()
+      .providerId("my-provider")
+      .templateId("my-template")
+      .locale("en")
+      .failOnConflict(true)
+      .mfa(true)
+      .build();
+  res = otps.updateUserEmail(loginId, "new@descope.com", refreshToken,
+      UpdateOptions.builder().addToLoginIds(true).build(), null, updateOptions);
+  res = otps.updateUserPhone(DeliveryMethod.SMS, loginId, "+12125551235", refreshToken, null, null, updateOptions);
+} catch (DescopeException de) {
+  // Handle the error
+}
+```
+
 The user will receive a code using the selected delivery method. Verify that code using:
 
 ```java

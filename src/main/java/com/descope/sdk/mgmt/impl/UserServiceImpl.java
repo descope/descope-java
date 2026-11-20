@@ -726,6 +726,9 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
+    if (deliveryMethod == DeliveryMethod.IM) {
+      throw ServerCommonException.invalidArgument("Delivery Method");
+    }
     URI otpForTestUserUri = composeOTPForTestUserUri();
     OTPTestUserRequest request = new OTPTestUserRequest(loginId, deliveryMethod.getValue());
     ApiProxy apiProxy = getApiProxy();
@@ -737,6 +740,9 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       DeliveryMethod deliveryMethod) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (deliveryMethod == DeliveryMethod.IM) {
+      throw ServerCommonException.invalidArgument("Delivery Method");
     }
     URI maginLinkForTestUserUri = composeMaginLinkForTestUserUri();
     MagicLinkTestUserRequest request = new MagicLinkTestUserRequest(loginId, deliveryMethod.getValue(), uri);

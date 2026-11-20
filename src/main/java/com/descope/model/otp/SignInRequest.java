@@ -14,4 +14,12 @@ public class SignInRequest {
 
   private String loginId;
   private LoginOptions loginOptions;
+  private String providerId;
+  private String ssoAppId;
+  private Boolean useRecovery;
+
+  public SignInRequest(String loginId, LoginOptions loginOptions) {
+    this.loginId = loginId;
+    this.loginOptions = loginOptions;
+  }
 }
