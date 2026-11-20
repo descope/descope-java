@@ -7,6 +7,7 @@ import static com.descope.literals.Routes.AuthEndPoints.HISTORY_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_ALL_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.ME_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.MY_TENANTS_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.TENANT_SELECT_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
@@ -15,6 +16,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.ExchangeTokenRequest;
+import com.descope.model.auth.MyTenantsResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -26,6 +28,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
@@ -246,6 +249,25 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     ApiProxy apiProxy = getApiProxy(refreshToken);
     return apiProxy.getArray(getUri(HISTORY_LINK), new TypeReference<List<UserHistoryResponse>>() {
     });
+  }
+
+  @Override
+  public MyTenantsResponse myTenants(String refreshToken, boolean dct, List<String> tenantIds)
+      throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+    if (dct && CollectionUtils.isNotEmpty(tenantIds)) {
+      throw ServerCommonException.invalidArgument("tenantIds (only one of dct or tenant IDs should be provided)");
+    }
+    validateJWT(refreshToken); // Will make sure token is still valid
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    Map<String, Object> body = new HashMap<>();
+    body.put("dct", dct);
+    if (tenantIds != null) {
+      body.put("ids", tenantIds);
+    }
+    return apiProxy.post(getUri(MY_TENANTS_LINK), body, MyTenantsResponse.class);
   }
 
   @Override

@@ -545,6 +545,24 @@ try {
 }
 ```
 
+You can also load the tenants of the current user: either the tenant selected on the session (`dct`),
+or specific tenants by their IDs. Only one of them may be provided.
+
+```java
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthService();
+try {
+    // The tenant selected on the session
+    MyTenantsResponse selected = as.myTenants(refreshToken, true, null);
+    // Specific tenants the user belongs to
+    MyTenantsResponse tenants = as.myTenants(refreshToken, false, Arrays.asList("t1", "t2"));
+    for (MyTenant tenant : tenants.getTenants()) {
+        // Use tenant.getId(), tenant.getName() and tenant.getCustomAttributes()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### Roles & Permission Validation
 
 When using Roles & Permission, it's important to validate the user has the required
