@@ -8,7 +8,6 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -34,8 +33,6 @@ public class UserResponse {
   Map<String, Object> customAttributes;
   Boolean TOTP;
   Boolean SAML;
-  // the spec's "OAuth" key doesn't match the setter's implicit "oauth" name
-  @Setter(onMethod_ = {@JsonAlias({"OAuth"})})
   Map<String, Boolean> oAuth;
   List<String> ssoAppIds;
   /** Auth method that triggered brute-force protection, empty when none. */
@@ -76,6 +73,12 @@ public class UserResponse {
   String consentTenantId;
   /** Unix seconds of the previous sign-in, 0 when none. */
   Long lastLoginTime;
+
+  // the spec's "OAuth" key doesn't match the setter's implicit "oauth" name
+  @JsonAlias({"OAuth"})
+  public void setOAuth(Map<String, Boolean> oauth) {
+    this.oAuth = oauth;
+  }
 
   public UserResponse(String userId, List<String> loginIds, String email, Boolean verifiedEmail, String phone,
       Boolean verifiedPhone, String name, String givenName, String middleName, String familyName,
