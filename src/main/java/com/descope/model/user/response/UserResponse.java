@@ -8,7 +8,6 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -34,7 +33,6 @@ public class UserResponse {
   Map<String, Object> customAttributes;
   Boolean TOTP;
   Boolean SAML;
-  @Setter(onMethod_ = {@JsonAlias("OAuth")})
   Map<String, Boolean> oAuth;
   List<String> ssoAppIds;
   /** Auth method that triggered brute-force protection, empty when none. */
@@ -78,6 +76,12 @@ public class UserResponse {
    * the current one.
    */
   Long lastLoginTime;
+
+  // Accepts the API's "OAuth" key
+  @JsonAlias("OAuth")
+  public void setOAuth(Map<String, Boolean> oauth) {
+    this.oAuth = oauth;
+  }
 
   // Keeps the pre-existing all-args constructor binary compatible
   public UserResponse(String userId, List<String> loginIds, String email, Boolean verifiedEmail, String phone,

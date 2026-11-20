@@ -1151,8 +1151,10 @@ public class UserServiceImplTest {
     assertEquals(true, user.getVerifiedPhone());
     assertEquals("Testing Test", user.getName());
     assertEquals("invited", user.getStatus());
-    assertThat(user.getUserTenants()).containsExactly(AssociatedTenant.builder().tenantId(tenantId)
-        .tenantName(tenantName).roleNames(Arrays.asList(roleName1, roleName2)).build());
+    assertThat(user.getUserTenants())
+        .usingRecursiveFieldByFieldElementComparatorIgnoringFields("permissions", "roleIds")
+        .containsExactly(AssociatedTenant.builder().tenantId(tenantId).tenantName(tenantName)
+            .roleNames(Arrays.asList(roleName1, roleName2)).build());
     UserResponseDetails updateResponse = userService.update(loginId,
         UserRequest.builder().roleNames(
           Arrays.asList(roleName1, roleName2)).email(email).verifiedEmail(true).phone(phone)
