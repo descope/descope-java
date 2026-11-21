@@ -62,6 +62,7 @@ import com.descope.sdk.auth.impl.AuthenticationServiceBuilder;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -907,6 +908,23 @@ public class UserServiceImplTest {
     UserResponse none = new ObjectMapper().readValue("{\"userId\":\"u2\"}", UserResponse.class);
     assertNull(none.getLockReason());
     assertNull(none.getTempLockExpiration());
+  }
+
+  @Test
+  void testUserResponseFieldsAreNotSentBack() throws Exception {
+    UserResponse user = new ObjectMapper().readValue("{\"userId\":\"u1\",\"TOTP\":true,\"SCIM\":true,"
+        + "\"userTenants\":[{\"tenantId\":\"t1\",\"roleNames\":[\"r\"],\"permissions\":[\"p\"],"
+        + "\"roleIds\":[\"ri\"]}]}", UserResponse.class);
+    assertTrue(user.getTOTP());
+    assertTrue(user.getSCIM());
+    String tenants = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        .writeValueAsString(UserRequest.builder().userTenants(user.getUserTenants()).build());
+    assertFalse(tenants.contains("permissions"));
+    assertFalse(tenants.contains("roleIds"));
+    assertTrue(tenants.contains("\"tenantId\":\"t1\""));
+    String serialized = new ObjectMapper().writeValueAsString(user);
+    assertTrue(serialized.contains("\"totp\":true"));
+    assertFalse(serialized.contains("\"TOTP\""));
   }
 
   @Test

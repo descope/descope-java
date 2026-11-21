@@ -43,6 +43,18 @@ public interface AuthenticationService {
   AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException;
 
   /**
+   * Use to refresh the given session using a refresh token, sending an external token along with the
+   * refresh request. Returns the new authentication info with tokens.
+   *
+   * @param refreshToken - Refresh Token
+   * @param externalToken - optional external token, not sent when empty
+   * @return {@link AuthenticationInfo the full authentication info including refresh token and user}
+   * @throws DescopeException - error upon failure
+   */
+  AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken, String externalToken)
+      throws DescopeException;
+
+  /**
     * For a user with access to multiple tenants, set a specific tenant as the
     * current selected one.
     * This returns updated JWTs.
