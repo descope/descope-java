@@ -152,4 +152,24 @@ public class SamlLinkServiceImplTest {
         .containsEntry("title", "Staff Engineer");
     Assertions.assertThat(authenticationInfo.getIdpResponse().getIdpOIDCClaims()).isNull();
   }
+
+  @Test
+  void testExchangeTokenAuthenticationOnlyWithoutSession() {
+    JWTResponse jwtResponse = new JWTResponse("", "", null, null, null, null,
+        MOCK_JWT_RESPONSE.getUser(), false, null, true);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponse).when(apiProxy).post(any(), any(), any());
+
+    AuthenticationInfo authenticationInfo;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      authenticationInfo = samlService.exchangeToken("somecode");
+    }
+
+    Assertions.assertThat(authenticationInfo.getToken()).isNull();
+    Assertions.assertThat(authenticationInfo.getRefreshToken()).isNull();
+    Assertions.assertThat(authenticationInfo.getUser()).isNotNull();
+    Assertions.assertThat(authenticationInfo.getSsoAuthenticationOnly()).isTrue();
+  }
 }

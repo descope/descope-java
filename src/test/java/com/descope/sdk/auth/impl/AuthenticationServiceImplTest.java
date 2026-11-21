@@ -16,6 +16,7 @@ import static org.mockito.Mockito.mockStatic;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ClientFunctionalException;
+import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
@@ -105,8 +106,10 @@ public class AuthenticationServiceImplTest {
         MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
-      assertThrows(ClientFunctionalException.class,
+      ClientFunctionalException thrown = assertThrows(ClientFunctionalException.class,
           () -> authenticationService.refreshSessionWithToken("someRefreshJwt"));
+      assertEquals(ErrorCode.INVALID_TOKEN, thrown.getCode());
+      assertEquals("Invalid Token", thrown.getMessage());
     }
   }
 
