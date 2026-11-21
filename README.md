@@ -503,6 +503,16 @@ try {
     // Handle the unauthorized error
 }
 
+// To get the full refresh response (rotated refresh token, user, cookie settings, etc.),
+// optionally sending an external token with the refresh
+try {
+    AuthenticationInfo info = as.refreshSessionWithTokenAuthenticationInfo(refreshToken, "some-external-token");
+    String tenantSSOID = info.getTenantSSOID();
+    Integer sessionExpiration = info.getSessionExpiration();
+} catch (DescopeException de) {
+    // Handle the unauthorized error
+}
+
 // Alternatively, you could combine the two and
 // have the session validated and automatically refreshed when expired
 try {

@@ -3,6 +3,7 @@ package com.descope.sdk.auth.impl;
 import static com.descope.literals.AppConstants.BEARER_AUTHORIZATION_PREFIX;
 import static com.descope.literals.AppConstants.TENANTS_CLAIM_KEY;
 import static com.descope.literals.Routes.AuthEndPoints.REFRESH_TOKEN_LINK;
+import static com.descope.utils.CollectionUtils.mapOf;
 import static com.descope.utils.PatternUtils.EMAIL_PATTERN;
 import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 
@@ -116,11 +117,16 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   }
 
   AuthenticationInfo refreshSession(String refreshToken) {
+    return refreshSession(refreshToken, null);
+  }
+
+  AuthenticationInfo refreshSession(String refreshToken, String externalToken) {
     validateJWT(refreshToken);
     ApiProxy apiProxy = getApiProxy(refreshToken);
     URI refreshTokenLinkURL = composeRefreshTokenLinkURL();
 
-    JWTResponse jwtResponse = apiProxy.post(refreshTokenLinkURL, null, JWTResponse.class);
+    Map<String, Object> body = StringUtils.isBlank(externalToken) ? null : mapOf("externalToken", externalToken);
+    JWTResponse jwtResponse = apiProxy.post(refreshTokenLinkURL, body, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
   }
 
@@ -130,9 +136,27 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    return new AuthenticationInfo(
+    AuthenticationInfo authInfo = new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
         jwtResponse.getIdpResponse());
+    authInfo.setCookieDomain(jwtResponse.getCookieDomain());
+    authInfo.setCookiePath(jwtResponse.getCookiePath());
+    authInfo.setCookieMaxAge(jwtResponse.getCookieMaxAge());
+    authInfo.setCookieExpiration(jwtResponse.getCookieExpiration());
+    authInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
+    authInfo.setExternalToken(jwtResponse.getExternalToken());
+    authInfo.setClaims(jwtResponse.getClaims());
+    authInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
+    authInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    authInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    authInfo.setCookieName(jwtResponse.getCookieName());
+    authInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
+    authInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    authInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    authInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    authInfo.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
+    authInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    return authInfo;
   }
 
   @SuppressWarnings("unchecked")
