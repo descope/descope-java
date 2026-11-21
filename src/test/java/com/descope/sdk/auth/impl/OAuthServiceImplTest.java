@@ -8,6 +8,7 @@ import static com.descope.sdk.TestUtils.MOCK_URL;
 import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
+import com.descope.exception.ClientFunctionalException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.IDPResponse;
 import com.descope.model.auth.OAuthResponse;
@@ -29,6 +31,8 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.OAuthService;
 import com.descope.utils.JwtUtils;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Map;
@@ -170,6 +174,45 @@ public class OAuthServiceImplTest {
     Assertions.assertThat(authenticationInfo.getIdpResponse().getIdpOIDCClaims())
         .containsEntry("email_verified", true)
         .containsEntry("locale", "en-US");
+  }
+
+  @Test
+  void testExchangeTokenAuthenticationOnlyWithoutSession() throws Exception {
+    JWTResponse jwtResponse = parseJWTResponse("{\"sessionJwt\":\"\",\"refreshJwt\":\"\","
+        + "\"user\":{\"userId\":\"U-auth-only\",\"loginIds\":[\"someone@example.com\"]},"
+        + "\"firstSeen\":false,\"ssoAuthenticationOnly\":true}");
+
+    AuthenticationInfo authenticationInfo = exchangeTokenReturning(jwtResponse);
+
+    Assertions.assertThat(authenticationInfo).isNotNull();
+    Assertions.assertThat(authenticationInfo.getToken()).isNull();
+    Assertions.assertThat(authenticationInfo.getRefreshToken()).isNull();
+    Assertions.assertThat(authenticationInfo.getUser().getUserId()).isEqualTo("U-auth-only");
+  }
+
+  @Test
+  void testExchangeTokenWithoutSessionThrows() throws Exception {
+    JWTResponse jwtResponse = parseJWTResponse("{\"sessionJwt\":\"\",\"refreshJwt\":\"\"}");
+
+    assertThrows(ClientFunctionalException.class, () -> exchangeTokenReturning(jwtResponse));
+  }
+
+  private AuthenticationInfo exchangeTokenReturning(JWTResponse jwtResponse) {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+        mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+        return oauthService.exchangeToken("somecode");
+      }
+    }
+  }
+
+  // Deserialized the way the API proxy does it
+  private static JWTResponse parseJWTResponse(String json) throws Exception {
+    return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .readValue(json, JWTResponse.class);
   }
 
   void testExampleRequireBrowser() throws Exception {
