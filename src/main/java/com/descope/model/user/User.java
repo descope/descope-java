@@ -16,6 +16,13 @@ public class User {
   private String givenName;
   private String middleName;
   private String familyName;
+  private String loginId;
+  private String recoveryEmail;
+  private String recoveryPhone;
+
+  public User(String name, String email, String phone, String givenName, String middleName, String familyName) {
+    this(name, email, phone, givenName, middleName, familyName, null, null, null);
+  }
 
   public User(String name, String email, String phone) {
     this(name, email, phone, null, null, null);

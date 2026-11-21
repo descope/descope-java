@@ -135,6 +135,16 @@ class MagicLinkServiceImplTest {
   }
 
   @Test
+  void testImIsRejected() {
+    assertEquals("The DeliveryMethod argument is invalid", assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL, null, null)).getMessage());
+    assertEquals("The DeliveryMethod argument is invalid", assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signUp(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL, null)).getMessage());
+    assertEquals("The DeliveryMethod argument is invalid", assertThrows(ServerCommonException.class,
+        () -> magicLinkService.signUpOrIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_URL)).getMessage());
+  }
+
+  @Test
   void testSignUpOrInForSuccess() {
     ApiProxy apiProxy = mock(ApiProxy.class);
     MaskedEmailRes maskedEmailRes = new MaskedEmailRes(MOCK_MASKED_EMAIL);

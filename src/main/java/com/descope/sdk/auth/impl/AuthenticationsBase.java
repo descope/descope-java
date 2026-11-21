@@ -61,6 +61,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       case SMS:
       case VOICE:
       case WHATSAPP:
+      case IM:
         String phone = user.getPhone();
         if (StringUtils.isBlank(phone)) {
           phone = loginId;
@@ -89,6 +90,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       case SMS:
       case VOICE:
       case WHATSAPP:
+      case IM:
         return MaskedPhoneRes.class;
       case EMAIL:
         return MaskedEmailRes.class;
@@ -130,9 +132,27 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    return new AuthenticationInfo(
+    AuthenticationInfo info = new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
         jwtResponse.getIdpResponse());
+    info.setCookieDomain(jwtResponse.getCookieDomain());
+    info.setCookiePath(jwtResponse.getCookiePath());
+    info.setCookieMaxAge(jwtResponse.getCookieMaxAge());
+    info.setCookieExpiration(jwtResponse.getCookieExpiration());
+    info.setSessionExpiration(jwtResponse.getSessionExpiration());
+    info.setExternalToken(jwtResponse.getExternalToken());
+    info.setClaims(jwtResponse.getClaims());
+    info.setTenantSSOID(jwtResponse.getTenantSSOID());
+    info.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    info.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    info.setCookieName(jwtResponse.getCookieName());
+    info.setSessionCookieName(jwtResponse.getSessionCookieName());
+    info.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    info.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    info.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    info.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
+    info.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    return info;
   }
 
   @SuppressWarnings("unchecked")

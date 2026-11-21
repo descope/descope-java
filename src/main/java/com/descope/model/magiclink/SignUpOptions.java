@@ -13,4 +13,13 @@ import lombok.NoArgsConstructor;
 public class SignUpOptions {
   private Map<String, Object> customClaims;
   private Map<String, String> templateOptions;
+  private String locale;
+  /** Base64-encoded PKCE challenge, used only by enchanted links. */
+  private String pkceChallenge;
+  private String templateId;
+  private String tenantId;
+
+  public SignUpOptions(Map<String, Object> customClaims, Map<String, String> templateOptions) {
+    this(customClaims, templateOptions, null, null, null, null);
+  }
 }
