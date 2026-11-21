@@ -188,6 +188,7 @@ public class OAuthServiceImplTest {
     Assertions.assertThat(authenticationInfo.getToken()).isNull();
     Assertions.assertThat(authenticationInfo.getRefreshToken()).isNull();
     Assertions.assertThat(authenticationInfo.getUser().getUserId()).isEqualTo("U-auth-only");
+    Assertions.assertThat(authenticationInfo.getSsoAuthenticationOnly()).isTrue();
   }
 
   @Test

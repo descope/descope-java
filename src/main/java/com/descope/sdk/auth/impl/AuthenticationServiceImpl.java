@@ -271,7 +271,7 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     ExchangeTokenRequest request = new ExchangeTokenRequest(code);
     ApiProxy apiProxy = getApiProxy();
     JWTResponse jwtResponse = apiProxy.post(url, request, JWTResponse.class);
-    return getAuthenticationInfo(jwtResponse);
+    return getAuthenticationInfo(jwtResponse, true);
   }
 
   private URI composeExchangeAccessKeyLinkURL() {
