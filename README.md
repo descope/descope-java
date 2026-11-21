@@ -545,6 +545,27 @@ try {
 }
 ```
 
+### Access Key Exchange
+
+Exchange an access key for a session token. Login options can add custom claims and select one of the
+access key's tenants.
+
+```java
+AuthenticationService as = descopeClient.getAuthenticationServices().getAuthService();
+try {
+    AccessKeyLoginOptions loginOptions = AccessKeyLoginOptions.builder()
+        .customClaims(mapOf("k1", "v1"))
+        .selectedTenant("t1")
+        .build();
+    Token t = as.exchangeAccessKey(accessKey, loginOptions);
+    // Or, to also get the access key's ID
+    ExchangeAccessKeyResponse resp = as.exchangeAccessKeyWithResponse(accessKey, loginOptions);
+    // Use resp.getToken().getJwt() and resp.getKeyId()
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### Roles & Permission Validation
 
 When using Roles & Permission, it's important to validate the user has the required

@@ -1,25 +1,39 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.sdk.TestUtils.MOCK_JWT_RESPONSE;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.auth.ExchangeAccessKeyResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponse;
+import com.descope.proxy.ApiProxy;
+import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -28,11 +42,17 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.descope.utils.JwtUtils;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
 
@@ -82,6 +102,73 @@ public class AuthenticationServiceImplTest {
         authenticationService.getMatchedPermissions(MOCK_TOKEN, null));
     assertEquals(Arrays.asList("p1", "p2"),
         authenticationService.getMatchedPermissions(MOCK_TOKEN, Arrays.asList("p1", "p2", "p3")));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testExchangeAccessKeyWithResponse() {
+    Client client = authManagementKeyClient();
+    AuthenticationService as = AuthenticationServiceBuilder.buildServices(client).getAuthService();
+    AuthenticationServiceImpl.ExchangeAccessKeyJwtResponse response =
+        new AuthenticationServiceImpl.ExchangeAccessKeyJwtResponse();
+    response.setSessionJwt("someSessionJwt");
+    response.setKeyId("someKeyId");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(response).when(apiProxy).post(any(), any(), any());
+    AccessKeyLoginOptions loginOptions = AccessKeyLoginOptions.builder()
+        .customClaims(mapOf("k1", "v1"))
+        .selectedTenant("t1")
+        .build();
+    AtomicReference<String> header = new AtomicReference<>();
+    ExchangeAccessKeyResponse resp;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        header.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      mockedJwtUtils.when(() -> JwtUtils.getToken(eq("someSessionJwt"), any())).thenReturn(MOCK_TOKEN);
+      resp = as.exchangeAccessKeyWithResponse("someAccessKey", loginOptions);
+    }
+
+    // The access key takes the auth management key's slot
+    assertEquals("Bearer " + client.getProjectId() + ":someAccessKey", header.get());
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy).post(uri.capture(), body.capture(),
+        eq(AuthenticationServiceImpl.ExchangeAccessKeyJwtResponse.class));
+    assertEquals("/v1/auth/accesskey/exchange", uri.getValue().getPath());
+    assertEquals(mapOf("loginOptions", loginOptions), body.getValue());
+    assertEquals(MOCK_TOKEN, resp.getToken());
+    assertEquals("someKeyId", resp.getKeyId());
+  }
+
+  @Test
+  void testExchangeAccessKeyWithResponseMissingAccessKey() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authenticationService.exchangeAccessKeyWithResponse("", null));
+    assertNotNull(thrown);
+    assertEquals("The accessKey argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testExchangeAccessKeySendsSelectedTenant() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(MOCK_JWT_RESPONSE).when(apiProxy).post(any(), any(), any());
+    AccessKeyLoginOptions loginOptions = AccessKeyLoginOptions.builder().selectedTenant("t1").build();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      assertEquals(MOCK_TOKEN, authenticationService.exchangeAccessKey("someAccessKey", loginOptions));
+    }
+    verify(apiProxy).post(any(), eq(mapOf("loginOptions", loginOptions)), eq(JWTResponse.class));
+  }
+
+  private static Client authManagementKeyClient() {
+    Client client = TestUtils.getClient();
+    client.setAuthManagementKey("someAuthManagementKey");
+    return client;
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

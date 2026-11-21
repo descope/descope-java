@@ -52,6 +52,17 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     return ApiProxyBuilder.buildProxy(() -> token, client);
   }
 
+  // The access key takes the auth management key's slot, so that key is never added.
+  ApiProxy getAccessKeyApiProxy(String accessKey) {
+    String projectId = client.getProjectId();
+    if (StringUtils.isBlank(projectId)) {
+      return ApiProxyBuilder.buildProxy(client.getSdkInfo());
+    }
+
+    String token = AuthUtils.getBearerHeader(projectId, accessKey);
+    return ApiProxyBuilder.buildProxy(() -> token, client);
+  }
+
   void verifyDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, User user) {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");

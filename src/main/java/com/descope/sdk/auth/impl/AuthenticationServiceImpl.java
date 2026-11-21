@@ -14,6 +14,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.ExchangeAccessKeyResponse;
 import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
@@ -28,6 +29,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -123,6 +126,20 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
         mapOf("loginOptions", loginOptions), JWTResponse.class);
     AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
     return authenticationInfo.getToken();
+  }
+
+  @Override
+  public ExchangeAccessKeyResponse exchangeAccessKeyWithResponse(String accessKey, AccessKeyLoginOptions loginOptions)
+      throws DescopeException {
+    if (StringUtils.isBlank(accessKey)) {
+      throw ServerCommonException.invalidArgument("accessKey");
+    }
+    ApiProxy apiProxy = getAccessKeyApiProxy(accessKey);
+    URI exchangeAccessKeyLinkURL = composeExchangeAccessKeyLinkURL();
+
+    ExchangeAccessKeyJwtResponse response = apiProxy.post(exchangeAccessKeyLinkURL,
+        mapOf("loginOptions", loginOptions), ExchangeAccessKeyJwtResponse.class);
+    return new ExchangeAccessKeyResponse(validateAndCreateToken(response.getSessionJwt()), response.getKeyId());
   }
 
   @Override
@@ -288,5 +305,12 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   private URI composeLogOutAllLinkURL() {
     return getUri(LOG_OUT_ALL_LINK);
+  }
+
+  @Data
+  @NoArgsConstructor
+  static class ExchangeAccessKeyJwtResponse {
+    private String sessionJwt;
+    private String keyId;
   }
 }

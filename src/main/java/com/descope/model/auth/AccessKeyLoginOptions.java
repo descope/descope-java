@@ -12,4 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AccessKeyLoginOptions {
   private Map<String, Object> customClaims;
+  private String selectedTenant;
+
+  public AccessKeyLoginOptions(Map<String, Object> customClaims) {
+    this(customClaims, null);
+  }
 }
