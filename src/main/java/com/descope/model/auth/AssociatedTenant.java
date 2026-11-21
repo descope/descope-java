@@ -14,4 +14,13 @@ public class AssociatedTenant {
   private String tenantId;
   private String tenantName;
   private List<String> roleNames;
+  private List<String> permissions;
+  /** Not in the same order as roleNames. */
+  private List<String> roleIds;
+
+  public AssociatedTenant(String tenantId, String tenantName, List<String> roleNames) {
+    this.tenantId = tenantId;
+    this.tenantName = tenantName;
+    this.roleNames = roleNames;
+  }
 }
