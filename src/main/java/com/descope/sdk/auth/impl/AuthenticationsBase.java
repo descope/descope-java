@@ -43,12 +43,17 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
   // The auth management key, when configured, rides along with every authentication request so
   // that methods whose public access has been disabled can still be used.
   ApiProxy getApiProxy(String refreshToken) {
+    return getApiProxy(refreshToken, true);
+  }
+
+  ApiProxy getApiProxy(String refreshToken, boolean withAuthManagementKey) {
     String projectId = client.getProjectId();
     if (StringUtils.isBlank(projectId)) {
       return ApiProxyBuilder.buildProxy(client.getSdkInfo());
     }
 
-    String token = AuthUtils.getBearerHeader(projectId, refreshToken, client.getAuthManagementKey());
+    String authManagementKey = withAuthManagementKey ? client.getAuthManagementKey() : null;
+    String token = AuthUtils.getBearerHeader(projectId, refreshToken, authManagementKey);
     return ApiProxyBuilder.buildProxy(() -> token, client);
   }
 
