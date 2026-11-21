@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -99,7 +100,24 @@ public class UserCustomAttributesServiceImplTest {
       CustomAttributesResponse res = userCustomAttributesService.getCustomAttributes();
       assertEquals(1, res.getData().size());
       assertEquals(Integer.MAX_VALUE, res.getTotal());
+      assertEquals(3000000000L, res.getTotalLong());
     }
+  }
+
+  @Test
+  void testCustomAttributesResponseTotalAccessors() {
+    CustomAttributesResponse res = new CustomAttributesResponse(null, 5);
+    assertEquals(5, res.getTotal());
+    assertEquals(5L, res.getTotalLong());
+    res.setTotalLong(3000000000L);
+    assertEquals(Integer.MAX_VALUE, res.getTotal());
+    assertEquals(3000000000L, res.getTotalLong());
+    res.setTotal(7);
+    assertEquals(7L, res.getTotalLong());
+    assertEquals(7, CustomAttributesResponse.builder().total(7).build().getTotal());
+    assertEquals(3000000000L, CustomAttributesResponse.builder().totalLong(3000000000L).build().getTotalLong());
+    assertNotEquals(CustomAttributesResponse.builder().totalLong(3000000000L).build(),
+        CustomAttributesResponse.builder().totalLong(4000000000L).build());
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
