@@ -342,6 +342,8 @@ try {
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+When `info.getSsoAuthenticationOnly()` is true (login through an authentication-only SSO configuration), no session was issued and `info.getToken()` is null: do not treat the result as a login.
+
 ### TOTP Authentication
 
 The user can authenticate using an authenticator app, such as Google Authenticator.
