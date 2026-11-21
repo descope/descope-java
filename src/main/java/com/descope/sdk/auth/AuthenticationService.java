@@ -4,6 +4,7 @@ import com.descope.exception.DescopeException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
 import java.util.List;
@@ -257,6 +258,17 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error
    */
   void logoutAll(String refreshToken) throws DescopeException;
+
+  /**
+   * Used to log out of all device sessions, optionally limited to the given session types.
+   *
+   * @param refreshToken - token
+   * @param logoutType - optional list of session types to log out; each value must be non-empty.
+   *                     Leaving it empty logs out all sessions.
+   * @return {@link JWTResponse} the server response, including the cookie settings to clear
+   * @throws DescopeException if there is an error
+   */
+  JWTResponse logoutAll(String refreshToken, List<String> logoutType) throws DescopeException;
 
   /**
    * Use to retrieve current session user details. The request requires a valid refresh token.
