@@ -221,6 +221,34 @@ try {
 
 ```
 
+The overloads that take an options object send the redirect URI as `redirectUrl`, and accept
+optional provider, template, SSO app, recovery, locale and tenant settings:
+
+```java
+try {
+    String uri = "http://myapp.com/verify-enchanted-link";
+    LoginOptions loginOptions = LoginOptions.builder().tenantId("tenant-id").build();
+    EnchantedLinkSignInOptions options = EnchantedLinkSignInOptions.builder()
+        .providerId("provider-id")
+        .templateId("template-id")
+        .build();
+    res = els.signIn(loginId, uri, null, loginOptions, options);
+    // Same options for sign-up-or-in
+    res = els.signUpOrIn(loginId, uri, null, loginOptions, options);
+
+    SignUpOptions signUpOptions = SignUpOptions.builder().locale("en").tenantId("tenant-id").build();
+    res = els.signUp(loginId, uri, user, signUpOptions,
+        EnchantedLinkSignUpOptions.builder().templateId("template-id").build());
+
+    // Update the user's email, with the user's refresh token
+    res = els.updateUserEmail(loginId, newEmail, uri, refreshToken, new UpdateOptions(), null,
+        EnchantedLinkUpdateOptions.builder().locale("en").failOnConflict(true).build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 To deliver the enchanted link by SMS, use the `WithPhone` variants, which take a phone
 number as the login ID and return a `PhoneEnchantedLinkResponse` carrying `maskedPhone`.
 The SMS carries only the correct link, so there is nothing for the user to choose.
@@ -244,6 +272,7 @@ the previous step. A valid session will be returned only after the user clicks t
 for (int i = retriesCount; i > 0; i--) {
     try {
         AuthenticationInfo info = els.getSession(res.getPendingRef());
+        // info also carries the response's cookie settings, e.g. info.getCookieDomain()
     } catch (DescopeException de) {
         if (i > 1) {
             // Poll again after X seconds
@@ -265,6 +294,8 @@ To verify an enchanted link, your redirect page must call the validation functio
 
 try {
     els.verify(token);
+    // Or, when the sign-in sent a PKCE challenge
+    els.verify(token, pkceVerifier);
 } catch (DescopeException de) {
     // Token is invalid, handle the error
 }

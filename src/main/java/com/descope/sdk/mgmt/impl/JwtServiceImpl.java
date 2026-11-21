@@ -142,8 +142,7 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     }
     Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
     Token refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
-    return new AuthenticationInfo(sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
-        jwtResponse.getIdpResponse());
+    return AuthenticationInfo.fromJwtResponse(sessionToken, refreshToken, jwtResponse);
   }
 
   private URI composeUpdateJwtUri() {
