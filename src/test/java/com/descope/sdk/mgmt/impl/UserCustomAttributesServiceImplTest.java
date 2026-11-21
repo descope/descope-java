@@ -22,6 +22,7 @@ import com.descope.model.customattributes.CustomAttributesResponse;
 import com.descope.model.customattributes.DeleteCustomAttributesRequest;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.UserCustomAttributesService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -102,6 +103,32 @@ public class UserCustomAttributesServiceImplTest {
       assertEquals(Integer.MAX_VALUE, res.getTotal());
       assertEquals(3000000000L, res.getTotalLong());
     }
+  }
+
+  @Test
+  void testCreateCustomAttributesTotalAboveIntMax() throws Exception {
+    CloseableHttpClient httpClient = mockHttpClient(
+        "{\"data\":[{\"name\":\"a\",\"type\":1}],\"total\":\"3000000000\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      CustomAttributesResponse res = userCustomAttributesService.createCustomAttributes(
+          CreateCustomAttributesRequest.builder()
+              .attributes(Arrays.asList(CustomAttribute.builder().name("a").type(1).build()))
+              .build());
+      assertEquals(1, res.getData().size());
+      assertEquals(Integer.MAX_VALUE, res.getTotal());
+      assertEquals(3000000000L, res.getTotalLong());
+    }
+  }
+
+  @Test
+  void testCustomAttributesResponseSerializesTotal() throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    assertEquals("{\"data\":null,\"total\":5}",
+        mapper.writeValueAsString(CustomAttributesResponse.builder().total(5).build()));
+    String large = mapper.writeValueAsString(CustomAttributesResponse.builder().totalLong(3000000000L).build());
+    assertEquals("{\"data\":null,\"total\":3000000000}", large);
+    assertEquals(3000000000L, mapper.readValue(large, CustomAttributesResponse.class).getTotalLong());
   }
 
   @Test

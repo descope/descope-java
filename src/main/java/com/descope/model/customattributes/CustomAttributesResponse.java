@@ -1,5 +1,6 @@
 package com.descope.model.customattributes;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import java.util.List;
@@ -31,6 +32,7 @@ public class CustomAttributesResponse {
    * @return the total as an int
    * @see #getTotalLong()
    */
+  @JsonIgnore
   public int getTotal() {
     return (int) Math.min(total, Integer.MAX_VALUE);
   }
@@ -40,7 +42,7 @@ public class CustomAttributesResponse {
    *
    * @return the total as a long
    */
-  @JsonIgnore
+  @JsonGetter("total")
   public long getTotalLong() {
     return total;
   }
