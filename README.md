@@ -292,8 +292,14 @@ try {
 }
 
 // For step-up or MFA, pass the user's current refresh JWT in the login options
-LoginOptions stepUpOptions = LoginOptions.builder().stepup(true).jwt(refreshToken).build();
-String stepUpUrl = oas.start("google", returnUrl, stepUpOptions);
+try {
+    String returnUrl = "https://my-app.com/handle-oauth";
+    String refreshToken = "user-refresh-jwt"; // the user's current refresh JWT
+    LoginOptions stepUpOptions = LoginOptions.builder().stepup(true).jwt(refreshToken).build();
+    oas.start("google", returnUrl, stepUpOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
 
 ```
 
