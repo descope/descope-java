@@ -622,6 +622,20 @@ try {
 
 ```
 
+To pass logout types or read the server's response, such as the cookie path and domain to clear, use the overload
+that takes a list of logout types (or `null`):
+
+```java
+try {
+    JWTResponse res = as.logout(refreshToken, Arrays.asList("logout-type"));
+    String cookiePath = res.getCookiePath();
+    String cookieDomain = res.getCookieDomain();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 It is also possible to sign the user out of all the devices they are currently signed-in with. Calling `logoutAll` will
 invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have created.
 
