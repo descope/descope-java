@@ -122,6 +122,8 @@ public class OAuthServiceImplTest {
           .isInstanceOf(ServerCommonException.class).hasMessageContaining("refreshToken");
       assertThatThrownBy(() -> oauthService.startSignIn("google", null, LoginOptions.builder().mfa(true).build()))
           .isInstanceOf(ServerCommonException.class).hasMessageContaining("refreshToken");
+      assertThatThrownBy(() -> oauthService.startSignUp("google", null, LoginOptions.builder().stepup(true).build()))
+          .isInstanceOf(ServerCommonException.class).hasMessageContaining("refreshToken");
     }
     verify(apiProxy, never()).post(any(), any(), any());
   }
