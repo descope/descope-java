@@ -21,6 +21,13 @@ import com.descope.model.client.Client;
 import com.descope.model.enchantedlink.EmptyResponse;
 import com.descope.model.enchantedlink.EnchantedLinkResponse;
 import com.descope.model.enchantedlink.EnchantedLinkSessionBody;
+import com.descope.model.enchantedlink.EnchantedLinkSignInOptions;
+import com.descope.model.enchantedlink.EnchantedLinkSignInRequest;
+import com.descope.model.enchantedlink.EnchantedLinkSignUpOptions;
+import com.descope.model.enchantedlink.EnchantedLinkSignUpRequest;
+import com.descope.model.enchantedlink.EnchantedLinkUpdateOptions;
+import com.descope.model.enchantedlink.EnchantedLinkUpdateRequest;
+import com.descope.model.enchantedlink.EnchantedLinkVerifyRequest;
 import com.descope.model.enchantedlink.PhoneEnchantedLinkResponse;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
@@ -51,9 +58,52 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
+  public EnchantedLinkResponse signIn(String loginId, String uri, String token, LoginOptions loginOptions,
+      EnchantedLinkSignInOptions options) throws DescopeException {
+    return signInWithOptions(composeEnchantedLinkSignInURL(EMAIL), loginId, uri, token, loginOptions, options,
+        EnchantedLinkResponse.class);
+  }
+
+  @Override
   public PhoneEnchantedLinkResponse signInWithPhone(String loginId, String uri, String token,
       LoginOptions loginOptions) throws DescopeException {
     return signInByDeliveryMethod(SMS, loginId, uri, token, loginOptions, PhoneEnchantedLinkResponse.class);
+  }
+
+  @Override
+  public PhoneEnchantedLinkResponse signInWithPhone(String loginId, String uri, String token,
+      LoginOptions loginOptions, EnchantedLinkSignInOptions options) throws DescopeException {
+    return signInWithOptions(composeEnchantedLinkSignInURL(SMS), loginId, uri, token, loginOptions, options,
+        PhoneEnchantedLinkResponse.class);
+  }
+
+  private <R> R signInWithOptions(URI url, String loginId, String uri, String token, LoginOptions loginOptions,
+      EnchantedLinkSignInOptions options, Class<R> responseClass) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    ApiProxy apiProxy;
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      if (StringUtils.isBlank(token)) {
+        throw ServerCommonException.invalidArgument("token");
+      }
+      apiProxy = getApiProxy(token);
+    } else {
+      apiProxy = getApiProxy();
+    }
+    if (options == null) {
+      options = new EnchantedLinkSignInOptions();
+    }
+    EnchantedLinkSignInRequest request = EnchantedLinkSignInRequest.builder()
+        .loginId(loginId)
+        .redirectUrl(uri)
+        .loginOptions(loginOptions)
+        .providerId(options.getProviderId())
+        .templateId(options.getTemplateId())
+        .ssoAppId(options.getSsoAppId())
+        .useRecovery(options.getUseRecovery())
+        .build();
+    return apiProxy.post(url, request, responseClass);
   }
 
   private <R> R signInByDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, String uri, String token,
@@ -88,6 +138,12 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
+  public EnchantedLinkResponse signUp(String loginId, String uri, User user, SignUpOptions signupOptions,
+      EnchantedLinkSignUpOptions options) throws DescopeException {
+    return signUpWithOptions(EMAIL, loginId, uri, user, signupOptions, options, EnchantedLinkResponse.class);
+  }
+
+  @Override
   public PhoneEnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user)
       throws DescopeException {
     return signUpWithPhone(loginId, uri, user, null);
@@ -97,6 +153,42 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   public PhoneEnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user,
       SignUpOptions signupOptions) throws DescopeException {
     return signUpByDeliveryMethod(SMS, loginId, uri, user, signupOptions, PhoneEnchantedLinkResponse.class);
+  }
+
+  @Override
+  public PhoneEnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user,
+      SignUpOptions signupOptions, EnchantedLinkSignUpOptions options) throws DescopeException {
+    return signUpWithOptions(SMS, loginId, uri, user, signupOptions, options, PhoneEnchantedLinkResponse.class);
+  }
+
+  private <R> R signUpWithOptions(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
+      SignUpOptions signupOptions, EnchantedLinkSignUpOptions options, Class<R> responseClass)
+      throws DescopeException {
+    if (user == null) {
+      user = new User();
+    }
+    if (options == null) {
+      options = new EnchantedLinkSignUpOptions();
+    }
+    EnchantedLinkSignUpRequest.EnchantedLinkSignUpRequestBuilder builder = EnchantedLinkSignUpRequest.builder()
+        .loginId(loginId)
+        .redirectUrl(uri)
+        .loginOptions(signupOptions)
+        .providerId(options.getProviderId())
+        .templateId(options.getTemplateId());
+    if (deliveryMethod == SMS) {
+      builder.phone(loginId);
+      if (StringUtils.isBlank(user.getPhone())) {
+        user.setPhone(loginId);
+      }
+    } else {
+      builder.email(loginId);
+      if (StringUtils.isBlank(user.getEmail())) {
+        user.setEmail(loginId);
+      }
+    }
+    EnchantedLinkSignUpRequest request = builder.user(user).build();
+    return getApiProxy().post(composeEnchantedLinkSignUpURL(deliveryMethod), request, responseClass);
   }
 
   private <R> R signUpByDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
@@ -132,8 +224,22 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
+  public EnchantedLinkResponse signUpOrIn(String loginId, String uri, String token, LoginOptions loginOptions,
+      EnchantedLinkSignInOptions options) throws DescopeException {
+    return signInWithOptions(composeEnchantedLinkSignUpOrInURL(EMAIL), loginId, uri, token, loginOptions, options,
+        EnchantedLinkResponse.class);
+  }
+
+  @Override
   public PhoneEnchantedLinkResponse signUpOrInWithPhone(String loginId, String uri) throws DescopeException {
     return signUpOrInByDeliveryMethod(SMS, loginId, uri, PhoneEnchantedLinkResponse.class);
+  }
+
+  @Override
+  public PhoneEnchantedLinkResponse signUpOrInWithPhone(String loginId, String uri, String token,
+      LoginOptions loginOptions, EnchantedLinkSignInOptions options) throws DescopeException {
+    return signInWithOptions(composeEnchantedLinkSignUpOrInURL(SMS), loginId, uri, token, loginOptions, options,
+        PhoneEnchantedLinkResponse.class);
   }
 
   private <R> R signUpOrInByDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, String uri,
@@ -165,6 +271,12 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
     VerifyRequest verifyRequest = new VerifyRequest(token);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(verifyEnchantedLinkURL, verifyRequest, EmptyResponse.class);
+  }
+
+  @Override
+  public void verify(String token, String pkceVerifier) throws DescopeException {
+    EnchantedLinkVerifyRequest verifyRequest = new EnchantedLinkVerifyRequest(token, pkceVerifier);
+    getApiProxy().post(composeVerifyEnchantedLinkURL(), verifyRequest, EmptyResponse.class);
   }
 
   @Override
@@ -205,6 +317,25 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   }
 
   @Override
+  public EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, EnchantedLinkUpdateOptions options)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(email) || !EMAIL_PATTERN.matcher(email).matches()) {
+      throw ServerCommonException.invalidArgument("Email");
+    }
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
+    EnchantedLinkUpdateRequest request =
+        updateRequestBuilder(loginId, uri, updateOptions, templateOptions, options).email(email).build();
+    return getApiProxy(refreshToken).post(composeUpdateUserEmailEnchantedLink(), request,
+        EnchantedLinkResponse.class);
+  }
+
+  @Override
   public PhoneEnchantedLinkResponse updateUserPhone(String loginId, String phone, String uri, String refreshToken,
       UpdateOptions updateOptions) throws DescopeException {
     return updateUserPhone(loginId, phone, uri, refreshToken, updateOptions, null);
@@ -239,6 +370,46 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
 
     ApiProxy apiProxy = getApiProxy(refreshToken);
     return apiProxy.post(enchantedLinkUpdateUserPhone, updatePhoneRequest, PhoneEnchantedLinkResponse.class);
+  }
+
+  @Override
+  public PhoneEnchantedLinkResponse updateUserPhone(String loginId, String phone, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, EnchantedLinkUpdateOptions options)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    if (StringUtils.isBlank(phone) || !PHONE_PATTERN.matcher(phone).matches()) {
+      throw ServerCommonException.invalidArgument("Phone");
+    }
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.invalidArgument("Refresh Token");
+    }
+    EnchantedLinkUpdateRequest request =
+        updateRequestBuilder(loginId, uri, updateOptions, templateOptions, options).phone(phone).build();
+    return getApiProxy(refreshToken).post(composeUpdateUserPhoneEnchantedLink(), request,
+        PhoneEnchantedLinkResponse.class);
+  }
+
+  private static EnchantedLinkUpdateRequest.EnchantedLinkUpdateRequestBuilder updateRequestBuilder(String loginId,
+      String uri, UpdateOptions updateOptions, Map<String, String> templateOptions,
+      EnchantedLinkUpdateOptions options) {
+    if (updateOptions == null) {
+      updateOptions = new UpdateOptions();
+    }
+    if (options == null) {
+      options = new EnchantedLinkUpdateOptions();
+    }
+    return EnchantedLinkUpdateRequest.builder()
+        .loginId(loginId)
+        .redirectUrl(uri)
+        .addToLoginIds(updateOptions.isAddToLoginIds())
+        .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+        .templateOptions(templateOptions)
+        .providerId(options.getProviderId())
+        .templateId(options.getTemplateId())
+        .locale(options.getLocale())
+        .failOnConflict(options.getFailOnConflict());
   }
 
   private URI composeUpdateUserEmailEnchantedLink() {
