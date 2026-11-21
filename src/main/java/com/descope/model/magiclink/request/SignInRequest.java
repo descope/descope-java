@@ -18,4 +18,15 @@ public class SignInRequest {
 
   private String loginId;
   private LoginOptions loginOptions;
+  private String providerId;
+  private String templateId;
+  private String ssoAppId;
+  private Boolean useRecovery;
+
+  // Keeps the previous all-args constructor for positional callers
+  public SignInRequest(String uri, String loginId, LoginOptions loginOptions) {
+    this.uri = uri;
+    this.loginId = loginId;
+    this.loginOptions = loginOptions;
+  }
 }

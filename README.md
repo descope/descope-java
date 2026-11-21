@@ -174,11 +174,48 @@ try {
 
 ```
 
+Each method also takes optional settings, such as the messaging provider and template to send the link with,
+or the tenant to sign in to:
+
+```java
+try {
+    String uri = "http://myapp.com/verify-magic-link";
+    SignInOptions signInOptions = SignInOptions.builder()
+        .providerId("my-provider")
+        .templateId("my-template")
+        .build();
+    LoginOptions loginOptions = LoginOptions.builder().tenantId("my-tenant").build();
+    // Pass the user's refresh token instead of null when loginOptions sets stepup or mfa
+    String maskedAddress = mls.signIn(DeliveryMethod.EMAIL, loginId, uri, null, loginOptions, signInOptions);
+    maskedAddress = mls.signUpOrIn(DeliveryMethod.EMAIL, loginId, uri, null, loginOptions, signInOptions);
+
+    SignUpOptions signUpOptions = SignUpOptions.builder().tenantId("my-tenant").locale("en").build();
+    maskedAddress = mls.signUp(DeliveryMethod.EMAIL, loginId, uri, user, signUpOptions,
+        new MessageOptions("my-provider", "my-template"));
+
+    UpdateMessageOptions updateMessageOptions = UpdateMessageOptions.builder()
+        .templateId("my-template")
+        .locale("en")
+        .failOnConflict(true)
+        .build();
+    maskedAddress = mls.updateUserEmail(loginId, "new@descope.com", uri, refreshToken, null, null,
+        updateMessageOptions);
+    maskedAddress = mls.updateUserPhone(DeliveryMethod.SMS, loginId, "+12125551234", uri, refreshToken, null, null,
+        updateMessageOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```java
 try {
     AuthenticationInfo info = mls.verify(token);
+    // The response's cookie settings and extra details are on the result too
+    String cookieDomain = info.getCookieDomain();
+    String tenantSSOID = info.getTenantSSOID();
 } catch (DescopeException de) {
     // Handle the error
 }
