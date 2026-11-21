@@ -1,6 +1,7 @@
 package com.descope.sdk.auth.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -9,6 +10,7 @@ import com.descope.model.client.Client;
 import com.descope.model.client.SdkInfo;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.sdk.auth.AuthenticationService;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -25,6 +27,7 @@ class AuthenticationsBaseTest {
   private static final String MANAGEMENT_KEY = "some-management-key";
   private static final String AUTH_MANAGEMENT_KEY = "some-auth-management-key";
   private static final String REFRESH_TOKEN = "some-refresh-token";
+  private static final String ACCESS_KEY = "some-access-key";
 
   @Test
   void testNoAuthManagementKey() {
@@ -56,6 +59,17 @@ class AuthenticationsBaseTest {
         .isEqualTo("Bearer " + PROJECT_ID);
     assertThat(authHeader(client(MANAGEMENT_KEY, AUTH_MANAGEMENT_KEY), AuthenticationsBase::getApiProxy))
         .isEqualTo("Bearer " + PROJECT_ID + ":" + AUTH_MANAGEMENT_KEY);
+  }
+
+  @Test
+  void testExchangeAccessKeyNeverSendsAuthManagementKey() {
+    Client client = client(null, AUTH_MANAGEMENT_KEY);
+    AuthenticationService auth = AuthenticationServiceBuilder.buildServices(client).getAuthService();
+    // The mocked proxy returns no response, only the header matters
+    assertThat(authHeader(client, base -> {
+      catchThrowable(() -> auth.exchangeAccessKey(ACCESS_KEY));
+      return null;
+    })).isEqualTo("Bearer " + PROJECT_ID + ":" + ACCESS_KEY);
   }
 
   private static Client client(String managementKey, String authManagementKey) {
