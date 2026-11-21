@@ -71,13 +71,14 @@ These sections show how to use the SDK to perform various authentication/authori
 1. [OTP Authentication](#otp-authentication)
 2. [Magic Link](#magic-link)
 3. [Enchanted Link](#enchanted-link)
-4. [OAuth](#oauth)
-5. [SSO/SAML](#ssosaml)
-6. [TOTP Authentication](#totp-authentication)
-7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+4. [NOTP (WhatsApp)](#notp-whatsapp)
+5. [OAuth](#oauth)
+6. [SSO/SAML](#ssosaml)
+7. [TOTP Authentication](#totp-authentication)
+8. [Passwords](#passwords)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -268,6 +269,73 @@ try {
 } catch (DescopeException de) {
     // Token is invalid, handle the error
 }
+
+```
+
+The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### NOTP (WhatsApp)
+
+Using the NOTP APIs, users authenticate by sending a message from a messaging app such as WhatsApp,
+instead of receiving a code. Each call returns a `redirectUrl` that opens the app with the message
+ready to send, a QR `image` of the same link, and a `pendingRef` to poll for the session.
+
+The login ID is a phone number, or empty to use the phone number the message is sent from.
+The user can either `sign up`, `sign in` or `sign up or in`
+
+```java
+NOTPService ns = descopeClient.getAuthenticationServices().getNotpService();
+NOTPResponse res = null;
+try {
+    // Optional user details; the phone defaults to the login ID
+    NOTPSignUpUser user = NOTPSignUpUser.builder().name("Joe Person").build();
+    res = ns.signUp(NOTPProvider.WHATSAPP, phoneNumber, user, null, null);
+    // Or sign in an existing user, or sign up or in
+    res = ns.signIn(NOTPProvider.WHATSAPP, phoneNumber, null, null, null);
+    res = ns.signUpOrIn(NOTPProvider.WHATSAPP, phoneNumber, null, null, null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+For step-up or MFA, set `stepup` or `mfa` in `NOTPLoginOptions` and pass the user's refresh token.
+
+```java
+NOTPLoginOptions loginOptions = NOTPLoginOptions.builder().stepup(true).build();
+res = ns.signIn(NOTPProvider.WHATSAPP, phoneNumber, loginOptions, null, refreshToken);
+
+```
+
+Show the user the `redirectUrl` or the QR `image`, then poll for a valid session using the
+`pendingRef`. A valid session will be returned only after the user sends the message.
+
+```java
+// Poll for a certain number of tries / time frame
+for (int i = retriesCount; i > 0; i--) {
+    try {
+        AuthenticationInfo info = ns.getSession(res.getPendingRef());
+    } catch (DescopeException de) {
+        if (i > 1) {
+            // Poll again after X seconds
+            TimeUnit.SECONDS.sleep(retryInterval);
+            continue;
+        }
+        else {
+            // Handle the error
+            break;
+        }
+    }
+}
+
+```
+
+To update a logged-in user's phone, pass their login ID and refresh token, then poll with the
+returned `pendingRef` the same way.
+
+```java
+NOTPUpdateOptions updateOptions = NOTPUpdateOptions.builder().addToLoginIds(true).build();
+res = ns.updateUserPhone(NOTPProvider.WHATSAPP, loginId, phoneNumber, refreshToken, updateOptions);
 
 ```
 
