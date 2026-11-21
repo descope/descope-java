@@ -1,6 +1,7 @@
 package com.descope.model.auth;
 
 import com.descope.sdk.auth.AuthenticationService;
+import com.descope.sdk.auth.EmailVerificationService;
 import com.descope.sdk.auth.EnchantedLinkService;
 import com.descope.sdk.auth.MagicLinkService;
 import com.descope.sdk.auth.OAuthService;
@@ -26,4 +27,5 @@ public class AuthenticationServices {
   MagicLinkService magicLinkService;
   EnchantedLinkService enchantedLinkService;
   WebAuthnService webAuthnService;
+  EmailVerificationService emailVerificationService;
 }

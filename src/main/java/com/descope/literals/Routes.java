@@ -82,6 +82,9 @@ public class Routes {
 
     // Tenant
     public static final String TENANT_SELECT_LINK = "/v1/auth/tenant/select";
+
+    // Email Verification
+    public static final String EMAIL_VERIFICATION_START_LINK = "/v1/auth/emailverification/start";
   }
 
   @UtilityClass
