@@ -6,6 +6,7 @@ import com.descope.sdk.auth.MagicLinkService;
 import com.descope.sdk.auth.OAuthService;
 import com.descope.sdk.auth.OTPService;
 import com.descope.sdk.auth.PasswordService;
+import com.descope.sdk.auth.RecoveryCodesService;
 import com.descope.sdk.auth.SAMLService;
 import com.descope.sdk.auth.SSOServiceProvider;
 import com.descope.sdk.auth.TOTPService;
@@ -26,4 +27,5 @@ public class AuthenticationServices {
   MagicLinkService magicLinkService;
   EnchantedLinkService enchantedLinkService;
   WebAuthnService webAuthnService;
+  RecoveryCodesService recoveryCodesService;
 }
