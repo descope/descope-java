@@ -11,6 +11,11 @@ public class MaskedPhoneRes implements Masked {
 
   // Masked phone to which the message was sent
   private String maskedPhone;
+  private Integer verificationAttempts;
+
+  public MaskedPhoneRes(String maskedPhone) {
+    this.maskedPhone = maskedPhone;
+  }
 
   @Override
   public String getMasked() {

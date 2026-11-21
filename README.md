@@ -143,6 +143,29 @@ try {
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+OTP can also be sent over an instant message (`DeliveryMethod.IM`) to a phone number. The overloads that take
+`OTPSignInOptions`, `OTPSignUpOptions` or `OTPUpdateOptions` choose the message provider and template, and return a
+`Masked` with the masked address and the number of verification attempts:
+
+```java
+try {
+  LoginOptions loginOptions = LoginOptions.builder().tenantId("tenant-id").build();
+  OTPSignInOptions signInOptions = OTPSignInOptions.builder().providerId("provider-id").templateId("template-id").build();
+  Masked masked = otps.signIn(DeliveryMethod.EMAIL, loginId, loginOptions, null, signInOptions);
+  // Sign up or in takes the same options
+  masked = otps.signUpOrIn(DeliveryMethod.IM, "+12125551234", null, null, signInOptions);
+  // Sign up
+  OTPSignUpOptions signUpOptions = OTPSignUpOptions.builder().providerId("provider-id").build();
+  masked = otps.signUp(DeliveryMethod.SMS, "+12125551234", user, null, signUpOptions);
+  // Update a phone, adding it as a second factor to the existing refresh token
+  OTPUpdateOptions updateOptions = OTPUpdateOptions.builder().mfa(true).locale("en").build();
+  masked = otps.updateUserPhone(DeliveryMethod.IM, loginId, "+12125551234", refreshToken, null, null, updateOptions);
+  Integer attempts = masked.getVerificationAttempts();
+} catch (DescopeException de) {
+  // Handle the error
+}
+```
+
 ### Magic Link
 
 Send a user a Magic Link using your preferred delivery method (_email / SMS / WhatsApp_).

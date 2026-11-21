@@ -11,6 +11,11 @@ public class MaskedEmailRes implements Masked {
 
   // Masked email to which the message was sent
   private String maskedEmail;
+  private Integer verificationAttempts;
+
+  public MaskedEmailRes(String maskedEmail) {
+    this.maskedEmail = maskedEmail;
+  }
 
   @Override
   public String getMasked() {
