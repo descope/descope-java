@@ -634,6 +634,18 @@ try {
 
 ```
 
+To sign the user out of only some session types, pass them as a list. This call also returns the server response,
+including the cookie settings to clear.
+
+```java
+try {
+    JWTResponse res = as.logoutAll(refreshToken, Arrays.asList("web", "mobile"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 ## Management Functions
 
 It is very common for some form of management or automation to be required. These can be performed

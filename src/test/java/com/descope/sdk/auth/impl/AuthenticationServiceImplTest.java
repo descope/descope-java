@@ -1,25 +1,41 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.sdk.TestUtils.MOCK_REFRESH_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.auth.IDPResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponse;
+import com.descope.proxy.ApiProxy;
+import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -28,11 +44,16 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
 
@@ -82,6 +103,71 @@ public class AuthenticationServiceImplTest {
         authenticationService.getMatchedPermissions(MOCK_TOKEN, null));
     assertEquals(Arrays.asList("p1", "p2"),
         authenticationService.getMatchedPermissions(MOCK_TOKEN, Arrays.asList("p1", "p2", "p3")));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testLogoutAllWithLogoutType() {
+    JWTResponse jwtResponse = new JWTResponse(
+        "someSessionJwt", "someRefreshJwt", "my-domain", "/my-path", 0, 0, TestUtils.MOCK_USER_RESPONSE, true,
+        new IDPResponse(), 3600, "someExternalToken", mapOf("someClaim", (Object) "someValue"), "someTenantSSOID",
+        "someTrustedDeviceJwt", 60, "DSR", "DS", "my-session-domain", true, "someKnownDeviceJwt", false, true);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponse).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+
+      JWTResponse response = authenticationService.logoutAll(MOCK_REFRESH_TOKEN, Arrays.asList("web", "mobile"));
+      assertEquals(jwtResponse, response);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(JWTResponse.class));
+      assertEquals("/v1/auth/logoutall", uriCaptor.getValue().getPath());
+      assertEquals("Bearer " + PROJECT_ID + ":" + MOCK_REFRESH_TOKEN, authHeader.get());
+      assertEquals(mapOf("logoutType", Arrays.asList("web", "mobile")), bodyCaptor.getValue());
+    }
+  }
+
+  @Test
+  void testLogoutAllWithoutLogoutTypeKeepsNoBody() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      authenticationService.logoutAll(MOCK_REFRESH_TOKEN);
+
+      verify(apiProxy).post(any(URI.class), eq(null), eq(JWTResponse.class));
+    }
+  }
+
+  @Test
+  void testLogoutAllNullLogoutTypeOmitted() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      assertNull(authenticationService.logoutAll(MOCK_REFRESH_TOKEN, null));
+
+      verify(apiProxy).post(any(URI.class), eq(mapOf("logoutType", null)), eq(JWTResponse.class));
+    }
+  }
+
+  @Test
+  void testLogoutAllMissingRefreshToken() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      ServerCommonException thrown = assertThrows(ServerCommonException.class,
+          () -> authenticationService.logoutAll("", Arrays.asList("web")));
+      assertNotNull(thrown);
+      verifyNoInteractions(apiProxy);
+    }
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

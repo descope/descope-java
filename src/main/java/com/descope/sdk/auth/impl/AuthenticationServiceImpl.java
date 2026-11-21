@@ -219,12 +219,21 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public void logoutAll(String refreshToken) throws DescopeException {
+    postLogoutAll(refreshToken, null);
+  }
+
+  @Override
+  public JWTResponse logoutAll(String refreshToken, List<String> logoutType) throws DescopeException {
+    return postLogoutAll(refreshToken, mapOf("logoutType", (Object) logoutType));
+  }
+
+  private JWTResponse postLogoutAll(String refreshToken, Map<String, Object> body) throws DescopeException {
     if (StringUtils.isBlank(refreshToken)) {
       throw ServerCommonException.missingArguments("refresh token");
     }
     ApiProxy apiProxy = getApiProxy(refreshToken);
     URI logOutAllURL = composeLogOutAllLinkURL();
-    apiProxy.post(logOutAllURL, null, JWTResponse.class);
+    return apiProxy.post(logOutAllURL, body, JWTResponse.class);
   }
 
   @Override
