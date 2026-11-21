@@ -94,6 +94,8 @@ class JwtServiceImplSignInSignUpTest {
     JWTResponse mockResponse = new JWTResponse();
     mockResponse.setSessionJwt(validJwt);
     mockResponse.setRefreshJwt(validRefreshJwt);
+    mockResponse.setCookieDomain("example.com");
+    mockResponse.setUserCreationDeferred(true);
     when(apiProxy.post(any(URI.class), any(ManagementSignInRequest.class), eq(JWTResponse.class)))
         .thenReturn(mockResponse);
     // When
@@ -106,6 +108,8 @@ class JwtServiceImplSignInSignUpTest {
     assertNotNull(authInfo.getRefreshToken());
     assertEquals(MOCK_SESSION_TOKEN.getJwt(), authInfo.getToken().getJwt());
     assertEquals(MOCK_REFRESH_TOKEN.getJwt(), authInfo.getRefreshToken().getJwt());
+    assertEquals("example.com", authInfo.getCookieDomain());
+    assertEquals(true, authInfo.getUserCreationDeferred());
     // Verify API call
     ArgumentCaptor<ManagementSignInRequest> captor = ArgumentCaptor.forClass(ManagementSignInRequest.class);
     verify(apiProxy).post(any(URI.class), captor.capture(), eq(JWTResponse.class));
