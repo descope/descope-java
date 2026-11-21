@@ -1,11 +1,13 @@
 package com.descope.sdk.auth.impl;
 
+import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
+import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.client.Client;
 import com.descope.model.client.SdkInfo;
 import com.descope.proxy.ApiProxy;
@@ -68,6 +70,10 @@ class AuthenticationsBaseTest {
     // The mocked proxy returns no response, only the header matters
     assertThat(authHeader(client, base -> {
       catchThrowable(() -> auth.exchangeAccessKey(ACCESS_KEY));
+      return null;
+    })).isEqualTo("Bearer " + PROJECT_ID + ":" + ACCESS_KEY);
+    assertThat(authHeader(client, base -> {
+      catchThrowable(() -> auth.exchangeAccessKey(ACCESS_KEY, new AccessKeyLoginOptions(mapOf("k", "v"))));
       return null;
     })).isEqualTo("Bearer " + PROJECT_ID + ":" + ACCESS_KEY);
   }

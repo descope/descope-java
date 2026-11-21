@@ -40,8 +40,8 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     return getApiProxy(null);
   }
 
-  // The auth management key, when configured, rides along with every authentication request so
-  // that methods whose public access has been disabled can still be used.
+  // The auth management key, when configured, rides along with every authentication request except
+  // the access key exchange, so that methods whose public access has been disabled can still be used.
   ApiProxy getApiProxy(String refreshToken) {
     return getApiProxy(refreshToken, true);
   }
