@@ -25,8 +25,8 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
-import com.descope.model.client.Client;
 import com.descope.model.auth.IDPResponse;
+import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
@@ -122,6 +122,7 @@ public class AuthenticationServiceImplTest {
       });
 
       JWTResponse response = authenticationService.logoutAll(MOCK_REFRESH_TOKEN, Arrays.asList("web", "mobile"));
+      assertEquals(jwtResponse, response);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
       ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
@@ -129,7 +130,6 @@ public class AuthenticationServiceImplTest {
       assertEquals("/v1/auth/logoutall", uriCaptor.getValue().getPath());
       assertEquals("Bearer " + PROJECT_ID + ":" + MOCK_REFRESH_TOKEN, authHeader.get());
       assertEquals(mapOf("logoutType", Arrays.asList("web", "mobile")), bodyCaptor.getValue());
-      assertEquals(jwtResponse, response);
     }
   }
 
