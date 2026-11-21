@@ -1,6 +1,7 @@
 package com.descope.model.user.response;
 
 import com.descope.model.auth.AssociatedTenant;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -40,4 +41,20 @@ public class UserResponse {
    * this is greater than now.
    */
   Long tempLockExpiration;
+
+  // API sends these keys; Lombok won't copy JsonAlias to setters
+  @JsonAlias({"TOTP"})
+  public void setTOTP(Boolean totp) {
+    this.TOTP = totp;
+  }
+
+  @JsonAlias({"SAML"})
+  public void setSAML(Boolean saml) {
+    this.SAML = saml;
+  }
+
+  @JsonAlias({"OAuth"})
+  public void setOAuth(Map<String, Boolean> oauth) {
+    this.oAuth = oauth;
+  }
 }
