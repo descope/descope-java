@@ -293,6 +293,33 @@ try {
 
 ```
 
+To also pass a prompt, a login hint or the email of the user that initiated the authentication, use the extended
+overloads of `start`, `startSignIn` and `startSignUp`. When `loginOptions` sets `stepup` or `mfa`, pass the user's
+refresh token:
+
+```java
+try {
+    String url = oas.startSignIn("google", "https://my-app.com/handle-oauth",
+        Arrays.asList(OAuthPrompt.CONSENT, OAuthPrompt.SELECT_ACCOUNT), "user@example.com", null,
+        LoginOptions.builder().tenantId("tenant-id").build(), null, null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+To add an OAuth provider to a logged in user, pass the user's refresh token:
+
+```java
+try {
+    // allowAllMerge lets the update go through even when the OAuth account and the user share no identifier
+    String url = oas.startUpdateUser("google", "https://my-app.com/handle-oauth", false, loginOptions, refreshToken);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```java
