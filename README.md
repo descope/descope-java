@@ -307,6 +307,8 @@ try {
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+When `info.getSsoAuthenticationOnly()` is true (OAuth, SAML or SSO login through an authentication-only configuration), no session was issued and `info.getToken()` is null: do not treat the result as a login.
+
 ### SSO/SAML
 
 Users can authenticate to a specific tenant using SAML or Single Sign On. Configure your SSO/SAML settings on the [Descope console](https://app.descope.com/settings/authentication/sso). To start a flow call:

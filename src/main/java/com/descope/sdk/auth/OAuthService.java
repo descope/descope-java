@@ -80,7 +80,8 @@ public interface OAuthService {
    * Use to exchange the OAuth code with actual {@link AuthenticationInfo}.
    *
    * @param code - Code to be validated
-   * @return {@link AuthenticationInfo}
+   * @return {@link AuthenticationInfo}. When {@code getSsoAuthenticationOnly()} is true,
+   *     no session was issued and the token is null: do not treat the result as a login.
    */
   AuthenticationInfo exchangeToken(String code) throws DescopeException;
 }
