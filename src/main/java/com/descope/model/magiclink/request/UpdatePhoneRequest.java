@@ -21,4 +21,14 @@ public class UpdatePhoneRequest {
   private boolean addToLoginIds;
   private boolean onMergeUseExisting;
   private Map<String, String> templateOptions;
+  private String providerId;
+  private String templateId;
+  private String locale;
+  private Boolean failOnConflict;
+
+  // Keeps the previous all-args constructor for positional callers
+  public UpdatePhoneRequest(String phone, String loginId, String uri, boolean crossDevice, boolean addToLoginIds,
+      boolean onMergeUseExisting, Map<String, String> templateOptions) {
+    this(phone, loginId, uri, crossDevice, addToLoginIds, onMergeUseExisting, templateOptions, null, null, null, null);
+  }
 }
