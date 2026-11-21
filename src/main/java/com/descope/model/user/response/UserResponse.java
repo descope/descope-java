@@ -7,7 +7,6 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -31,12 +30,8 @@ public class UserResponse {
   Boolean test;
   Long createdTime;
   Map<String, Object> customAttributes;
-  // The API sends these names; Jackson otherwise only reads the lowercased ones
-  @Setter(onMethod_ = @JsonAlias("TOTP"))
   Boolean TOTP;
-  @Setter(onMethod_ = @JsonAlias("SAML"))
   Boolean SAML;
-  @Setter(onMethod_ = @JsonAlias("OAuth"))
   Map<String, Boolean> oAuth;
   List<String> ssoAppIds;
   /** Auth method that triggered brute-force protection, empty when none. */
@@ -50,11 +45,9 @@ public class UserResponse {
   Boolean webauthn;
   Boolean password;
   Boolean editable;
-  @Setter(onMethod_ = @JsonAlias("SCIM"))
   Boolean SCIM;
   Boolean push;
   List<String> permissions;
-  @Setter(onMethod_ = @JsonAlias("OIDC"))
   Boolean OIDC;
   Long consentExpiration;
   String recoveryEmail;
@@ -101,5 +94,31 @@ public class UserResponse {
     this.ssoAppIds = ssoAppIds;
     this.lockReason = lockReason;
     this.tempLockExpiration = tempLockExpiration;
+  }
+
+  // The API sends these names; Jackson otherwise only reads the lowercased ones
+  @JsonAlias("TOTP")
+  public void setTOTP(Boolean totp) {
+    this.TOTP = totp;
+  }
+
+  @JsonAlias("SAML")
+  public void setSAML(Boolean saml) {
+    this.SAML = saml;
+  }
+
+  @JsonAlias("OAuth")
+  public void setOAuth(Map<String, Boolean> oauth) {
+    this.oAuth = oauth;
+  }
+
+  @JsonAlias("SCIM")
+  public void setSCIM(Boolean scim) {
+    this.SCIM = scim;
+  }
+
+  @JsonAlias("OIDC")
+  public void setOIDC(Boolean oidc) {
+    this.OIDC = oidc;
   }
 }

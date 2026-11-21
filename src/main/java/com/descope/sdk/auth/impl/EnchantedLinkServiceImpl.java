@@ -329,8 +329,8 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
     if (StringUtils.isBlank(refreshToken)) {
       throw ServerCommonException.invalidArgument("Refresh Token");
     }
-    EnchantedLinkUpdateRequest request =
-        updateRequestBuilder(loginId, uri, updateOptions, templateOptions, options).email(email).build();
+    EnchantedLinkUpdateRequest request = updateRequest(loginId, uri, updateOptions, templateOptions, options);
+    request.setEmail(email);
     return getApiProxy(refreshToken).post(composeUpdateUserEmailEnchantedLink(), request,
         EnchantedLinkResponse.class);
   }
@@ -385,13 +385,13 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
     if (StringUtils.isBlank(refreshToken)) {
       throw ServerCommonException.invalidArgument("Refresh Token");
     }
-    EnchantedLinkUpdateRequest request =
-        updateRequestBuilder(loginId, uri, updateOptions, templateOptions, options).phone(phone).build();
+    EnchantedLinkUpdateRequest request = updateRequest(loginId, uri, updateOptions, templateOptions, options);
+    request.setPhone(phone);
     return getApiProxy(refreshToken).post(composeUpdateUserPhoneEnchantedLink(), request,
         PhoneEnchantedLinkResponse.class);
   }
 
-  private static EnchantedLinkUpdateRequest.EnchantedLinkUpdateRequestBuilder updateRequestBuilder(String loginId,
+  private static EnchantedLinkUpdateRequest updateRequest(String loginId,
       String uri, UpdateOptions updateOptions, Map<String, String> templateOptions,
       EnchantedLinkUpdateOptions options) {
     if (updateOptions == null) {
@@ -409,7 +409,8 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
         .providerId(options.getProviderId())
         .templateId(options.getTemplateId())
         .locale(options.getLocale())
-        .failOnConflict(options.getFailOnConflict());
+        .failOnConflict(options.getFailOnConflict())
+        .build();
   }
 
   private URI composeUpdateUserEmailEnchantedLink() {

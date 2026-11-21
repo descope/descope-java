@@ -130,27 +130,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    AuthenticationInfo authInfo = new AuthenticationInfo(
-        sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
-        jwtResponse.getIdpResponse());
-    authInfo.setCookieDomain(jwtResponse.getCookieDomain());
-    authInfo.setCookiePath(jwtResponse.getCookiePath());
-    authInfo.setCookieMaxAge(jwtResponse.getCookieMaxAge());
-    authInfo.setCookieExpiration(jwtResponse.getCookieExpiration());
-    authInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
-    authInfo.setExternalToken(jwtResponse.getExternalToken());
-    authInfo.setClaims(jwtResponse.getClaims());
-    authInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
-    authInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
-    authInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
-    authInfo.setCookieName(jwtResponse.getCookieName());
-    authInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
-    authInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
-    authInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
-    authInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
-    authInfo.setSsoAuthenticationOnly(jwtResponse.getSsoAuthenticationOnly());
-    authInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
-    return authInfo;
+    return AuthenticationInfo.fromJwtResponse(sessionToken, refreshToken, jwtResponse);
   }
 
   @SuppressWarnings("unchecked")
