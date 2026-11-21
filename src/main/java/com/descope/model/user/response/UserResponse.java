@@ -8,7 +8,6 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Data
 @NoArgsConstructor
@@ -32,12 +31,8 @@ public class UserResponse {
   Boolean test;
   Long createdTime;
   Map<String, Object> customAttributes;
-  // Aliases read the spec's casing
-  @Setter(onMethod_ = @JsonAlias("TOTP"))
   Boolean TOTP;
-  @Setter(onMethod_ = @JsonAlias("SAML"))
   Boolean SAML;
-  @Setter(onMethod_ = @JsonAlias("OAuth"))
   Map<String, Boolean> oAuth;
   List<String> ssoAppIds;
   /** Auth method that triggered brute-force protection, empty when none. */
@@ -107,5 +102,21 @@ public class UserResponse {
     this.ssoAppIds = ssoAppIds;
     this.lockReason = lockReason;
     this.tempLockExpiration = tempLockExpiration;
+  }
+
+  // Aliases read the spec's casing
+  @JsonAlias("TOTP")
+  public void setTOTP(Boolean totp) {
+    this.TOTP = totp;
+  }
+
+  @JsonAlias("SAML")
+  public void setSAML(Boolean saml) {
+    this.SAML = saml;
+  }
+
+  @JsonAlias("OAuth")
+  public void setOAuth(Map<String, Boolean> oauth) {
+    this.oAuth = oauth;
   }
 }
