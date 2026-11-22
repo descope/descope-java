@@ -19,10 +19,19 @@ public class JWTResponse {
   private UserResponse user;
   private Boolean firstSeen;
   private IDPResponse idpResponse;
+  // Set when an authentication-only SSO login issued no session
+  private Boolean ssoAuthenticationOnly;
 
   public JWTResponse(String sessionJwt, String refreshJwt, String cookieDomain, String cookiePath,
       Integer cookieMaxAge, Integer cookieExpiration, UserResponse user, Boolean firstSeen) {
     this(sessionJwt, refreshJwt, cookieDomain, cookiePath, cookieMaxAge, cookieExpiration, user,
         firstSeen, null);
+  }
+
+  public JWTResponse(String sessionJwt, String refreshJwt, String cookieDomain, String cookiePath,
+      Integer cookieMaxAge, Integer cookieExpiration, UserResponse user, Boolean firstSeen,
+      IDPResponse idpResponse) {
+    this(sessionJwt, refreshJwt, cookieDomain, cookiePath, cookieMaxAge, cookieExpiration, user,
+        firstSeen, idpResponse, null);
   }
 }

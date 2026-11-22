@@ -20,7 +20,8 @@ public interface SAMLService {
    * ExchangeToken - Finalize SAML authentication.
    *
    * @param code - Code to be validated
-   * @return Authentication info
+   * @return Authentication info. When {@code getSsoAuthenticationOnly()} is true, no session
+   *     was issued and the token is null: do not treat the result as a login.
    * @throws DescopeException - error upon failure
    */
 

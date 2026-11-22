@@ -8,9 +8,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 
+import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.OAuthResponse;
 import com.descope.model.client.Client;
 import com.descope.model.client.SdkInfo;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -85,6 +87,27 @@ class SSOServiceProviderImplTest {
     URI uri = captureStart(() -> ssoService.start("tenant-id", null, null, options, "refresh-token",
         "connection-id", null, true), options);
     assertThat(uri.getRawQuery()).contains("tenant=tenant-id", "ssoId=connection-id", "forceAuthn=true");
+  }
+
+  // SSO shares the code exchange: an authentication-only login returns without a session
+  @Test
+  void testExchangeTokenAuthenticationOnlyWithoutSession() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    // No session or refresh JWT, flagged ssoAuthenticationOnly (last argument)
+    doReturn(new JWTResponse("", "", null, null, null, null, null, false, null, true))
+        .when(apiProxy).post(any(), any(), any());
+    AuthenticationInfo info;
+    try (MockedStatic<ApiProxyBuilder> builder = mockStatic(ApiProxyBuilder.class)) {
+      builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      info = ssoService.exchangeToken("somecode");
+    }
+    // It called the SSO exchange route, and returned no tokens with the flag set
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    verify(apiProxy).post(uri.capture(), any(), eq(JWTResponse.class));
+    assertThat(uri.getValue().getPath()).isEqualTo("/v1/auth/sso/exchange");
+    assertThat(info.getToken()).isNull();
+    assertThat(info.getRefreshToken()).isNull();
+    assertThat(info.getSsoAuthenticationOnly()).isTrue();
   }
 
   private URI captureStart(Supplier<String> call, LoginOptions options) {

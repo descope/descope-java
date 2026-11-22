@@ -6,20 +6,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 import com.descope.enums.DeliveryMethod;
+import com.descope.exception.ClientFunctionalException;
+import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
+import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.UserResponse;
+import com.descope.proxy.ApiProxy;
+import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.OTPService;
@@ -28,11 +39,13 @@ import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
+import com.descope.utils.JwtUtils;
 import java.util.Arrays;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
 
@@ -82,6 +95,26 @@ public class AuthenticationServiceImplTest {
         authenticationService.getMatchedPermissions(MOCK_TOKEN, null));
     assertEquals(Arrays.asList("p1", "p2"),
         authenticationService.getMatchedPermissions(MOCK_TOKEN, Arrays.asList("p1", "p2", "p3")));
+  }
+
+  // Only the code exchange may return without a session; refresh must still reject a missing one
+  @Test
+  void testRefreshAuthenticationOnlyWithoutSessionThrows() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    // A response with no session or refresh JWT, flagged ssoAuthenticationOnly (last argument)
+    doReturn(new JWTResponse("", "", null, null, null, null, null, null, null, true))
+        .when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      // The refresh token passes validation, so only the missing session can fail
+      mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      ClientFunctionalException thrown = assertThrows(ClientFunctionalException.class,
+          () -> authenticationService.refreshSessionWithToken("someRefreshJwt"));
+      // The session check's error, despite the authentication-only flag
+      assertEquals(ErrorCode.INVALID_TOKEN, thrown.getCode());
+      assertEquals("Invalid Token", thrown.getMessage());
+    }
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
