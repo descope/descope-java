@@ -116,7 +116,8 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     if (StringUtils.isBlank(accessKey)) {
       throw ServerCommonException.invalidArgument("accessKey");
     }
-    ApiProxy apiProxy = getApiProxy(accessKey);
+    // A third bearer part is read as an access key, so omit the auth management key
+    ApiProxy apiProxy = getApiProxy(accessKey, false);
     URI exchangeAccessKeyLinkURL = composeExchangeAccessKeyLinkURL();
 
     JWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL,
