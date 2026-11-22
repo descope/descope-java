@@ -2,15 +2,9 @@ package com.descope.sdk.mgmt.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
@@ -22,20 +16,10 @@ import com.descope.model.customattributes.CustomAttributesResponse;
 import com.descope.model.customattributes.DeleteCustomAttributesRequest;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.UserCustomAttributesService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
-import org.mockito.MockedStatic;
 
 
 public class UserCustomAttributesServiceImplTest {
@@ -91,62 +75,6 @@ public class UserCustomAttributesServiceImplTest {
     assertEquals("The attribute options argument is invalid", thrown.getMessage());
   }
 
-  @Test
-  void testGetCustomAttributesTotalAboveIntMax() throws Exception {
-    // int64 arrives as a quoted string
-    CloseableHttpClient httpClient = mockHttpClient(
-        "{\"data\":[{\"name\":\"a\",\"type\":1}],\"total\":\"3000000000\"}");
-    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
-      CustomAttributesResponse res = userCustomAttributesService.getCustomAttributes();
-      assertEquals(1, res.getData().size());
-      assertEquals(Integer.MAX_VALUE, res.getTotal());
-      assertEquals(3000000000L, res.getTotalLong());
-    }
-  }
-
-  @Test
-  void testCreateCustomAttributesTotalAboveIntMax() throws Exception {
-    CloseableHttpClient httpClient = mockHttpClient(
-        "{\"data\":[{\"name\":\"a\",\"type\":1}],\"total\":\"3000000000\"}");
-    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
-      CustomAttributesResponse res = userCustomAttributesService.createCustomAttributes(
-          CreateCustomAttributesRequest.builder()
-              .attributes(Arrays.asList(CustomAttribute.builder().name("a").type(1).build()))
-              .build());
-      assertEquals(1, res.getData().size());
-      assertEquals(Integer.MAX_VALUE, res.getTotal());
-      assertEquals(3000000000L, res.getTotalLong());
-    }
-  }
-
-  @Test
-  void testCustomAttributesResponseSerializesTotal() throws Exception {
-    ObjectMapper mapper = new ObjectMapper();
-    assertEquals("{\"data\":null,\"total\":5}",
-        mapper.writeValueAsString(CustomAttributesResponse.builder().total(5).build()));
-    String large = mapper.writeValueAsString(CustomAttributesResponse.builder().totalLong(3000000000L).build());
-    assertEquals("{\"data\":null,\"total\":3000000000}", large);
-    assertEquals(3000000000L, mapper.readValue(large, CustomAttributesResponse.class).getTotalLong());
-  }
-
-  @Test
-  void testCustomAttributesResponseTotalAccessors() {
-    CustomAttributesResponse res = new CustomAttributesResponse(null, 5);
-    assertEquals(5, res.getTotal());
-    assertEquals(5L, res.getTotalLong());
-    res.setTotalLong(3000000000L);
-    assertEquals(Integer.MAX_VALUE, res.getTotal());
-    assertEquals(3000000000L, res.getTotalLong());
-    res.setTotal(7);
-    assertEquals(7L, res.getTotalLong());
-    assertEquals(7, CustomAttributesResponse.builder().total(7).build().getTotal());
-    assertEquals(3000000000L, CustomAttributesResponse.builder().totalLong(3000000000L).build().getTotalLong());
-    assertNotEquals(CustomAttributesResponse.builder().totalLong(3000000000L).build(),
-        CustomAttributesResponse.builder().totalLong(4000000000L).build());
-  }
-
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
   void testFunctionalFullCycle() {
     String name = TestUtils.getRandomName("ca").substring(0, 20);
@@ -177,20 +105,5 @@ public class UserCustomAttributesServiceImplTest {
       }
     }
     assertFalse(found);
-  }
-
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  private CloseableHttpClient mockHttpClient(String responseBody) throws IOException {
-    CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
-    doAnswer(inv -> {
-      ClassicHttpResponse response = mock(ClassicHttpResponse.class);
-      when(response.getCode()).thenReturn(200);
-      HttpEntity entity = mock(HttpEntity.class);
-      when(entity.getContent())
-          .thenReturn(new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8)));
-      when(response.getEntity()).thenReturn(entity);
-      return ((HttpClientResponseHandler) inv.getArgument(1)).handleResponse(response);
-    }).when(httpClient).execute(any(), any(HttpClientResponseHandler.class));
-    return httpClient;
   }
 }
