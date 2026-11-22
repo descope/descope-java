@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CustomAttributesResponse {
   private List<CustomAttribute> data;
+  // int64 in the API; int suffices, as a project never has 2^31 custom attributes
   private int total;
 }
