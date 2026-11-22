@@ -7,6 +7,7 @@ import static com.descope.sdk.TestUtils.MOCK_TOKEN;
 import static com.descope.sdk.TestUtils.MOCK_URL;
 import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static com.descope.utils.CollectionUtils.mapOf;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,12 +16,16 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import com.descope.exception.ClientFunctionalException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.IDPResponse;
 import com.descope.model.auth.OAuthResponse;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.jwt.response.SigningKeysResponse;
@@ -36,6 +41,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,6 +86,73 @@ public class OAuthServiceImplTest {
       Assertions.assertThat(start).isNotBlank().contains("aa=");
       Assertions.assertThat(start).isNotBlank().contains("bb=");
     }
+  }
+
+  @Test
+  void testStartStepUpAndMfaSendRefreshJwtAsBearer() {
+    String refreshJwt = "some-refresh-jwt";
+    for (LoginOptions options : Arrays.asList(LoginOptions.builder().stepup(true).jwt(refreshJwt).build(),
+        LoginOptions.builder().mfa(true).jwt(refreshJwt).build())) {
+      String expected = "Bearer " + PROJECT_ID + ":" + refreshJwt;
+      Assertions.assertThat(startAuthHeader(null, s -> s.start("google", null, options))).isEqualTo(expected);
+      Assertions.assertThat(startAuthHeader(null, s -> s.start("google", null, options, null))).isEqualTo(expected);
+      Assertions.assertThat(startAuthHeader(null, s -> s.startSignIn("google", null, options))).isEqualTo(expected);
+      Assertions.assertThat(startAuthHeader(null, s -> s.startSignIn("google", null, options, null)))
+          .isEqualTo(expected);
+      Assertions.assertThat(startAuthHeader(null, s -> s.startSignUp("google", null, options))).isEqualTo(expected);
+      Assertions.assertThat(startAuthHeader(null, s -> s.startSignUp("google", null, options, null)))
+          .isEqualTo(expected);
+      Assertions.assertThat(startAuthHeader("some-auth-management-key", s -> s.start("google", null, options)))
+          .isEqualTo(expected + ":some-auth-management-key");
+    }
+  }
+
+  @Test
+  void testStartWithoutStepUpOrMfaSendsProjectIdOnly() {
+    LoginOptions options = LoginOptions.builder().jwt("some-refresh-jwt").build();
+    Assertions.assertThat(startAuthHeader(null, s -> s.start("google", null, options)))
+        .isEqualTo("Bearer " + PROJECT_ID);
+    Assertions.assertThat(startAuthHeader(null, s -> s.start("google", null, null)))
+        .isEqualTo("Bearer " + PROJECT_ID);
+  }
+
+  @Test
+  void testStartStepUpWithoutRefreshJwtFails() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      assertThatThrownBy(() -> oauthService.start("google", null, LoginOptions.builder().stepup(true).build()))
+          .isInstanceOf(ServerCommonException.class).hasMessageContaining("refreshToken");
+      assertThatThrownBy(() -> oauthService.startSignIn("google", null, LoginOptions.builder().mfa(true).build()))
+          .isInstanceOf(ServerCommonException.class).hasMessageContaining("refreshToken");
+      assertThatThrownBy(() -> oauthService.startSignUp("google", null, LoginOptions.builder().stepup(true).build()))
+          .isInstanceOf(ServerCommonException.class).hasMessageContaining("refreshToken");
+    }
+    verify(apiProxy, never()).post(any(), any(), any());
+  }
+
+  /** Runs the given start call and returns the Authorization header it was sent with. */
+  @SuppressWarnings("unchecked")
+  private static String startAuthHeader(String authManagementKey, Function<OAuthService, String> call) {
+    Client client = Client.builder()
+        .uri("https://api.descope.com")
+        .projectId(PROJECT_ID)
+        .authManagementKey(authManagementKey)
+        .sdkInfo(SdkInfo.builder().name("java").build())
+        .build();
+    OAuthService service = AuthenticationServiceBuilder.buildServices(client).getOauthService();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> captured = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        captured.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      Assertions.assertThat(call.apply(service)).contains(MOCK_URL);
+    }
+    return captured.get();
   }
 
   @Test

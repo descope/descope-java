@@ -7,12 +7,14 @@ import static com.descope.literals.Routes.AuthEndPoints.EXCHANGE_OAUTH_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.OAuthResponse;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.OAuthService;
+import com.descope.utils.JwtUtils;
 import java.net.URI;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +31,16 @@ class OAuthServiceImpl extends AuthenticationServiceImpl implements OAuthService
       params.put("redirectURL", redirectURL);
     }
     URI oauthURL = getQueryParamUri(url, params);
-    ApiProxy apiProxy = getApiProxy();
+    ApiProxy apiProxy;
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      // Step-up and MFA need the user's refresh JWT as the bearer
+      if (StringUtils.isBlank(loginOptions.getJwt())) {
+        throw ServerCommonException.invalidArgument("refreshToken");
+      }
+      apiProxy = getApiProxy(loginOptions.getJwt());
+    } else {
+      apiProxy = getApiProxy();
+    }
     OAuthResponse res = apiProxy.post(oauthURL, loginOptions, OAuthResponse.class);
     url = res.getUrl();
     String resUrl = appendQueryParams(url, authParams);
