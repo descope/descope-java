@@ -153,8 +153,10 @@ public class SamlLinkServiceImplTest {
     Assertions.assertThat(authenticationInfo.getIdpResponse().getIdpOIDCClaims()).isNull();
   }
 
+  // SAML shares the code exchange: an authentication-only login returns without a session
   @Test
   void testExchangeTokenAuthenticationOnlyWithoutSession() {
+    // No session or refresh JWT, a user, and flagged ssoAuthenticationOnly (last argument)
     JWTResponse jwtResponse = new JWTResponse("", "", null, null, null, null,
         MOCK_JWT_RESPONSE.getUser(), false, null, true);
     ApiProxy apiProxy = mock(ApiProxy.class);
@@ -167,6 +169,7 @@ public class SamlLinkServiceImplTest {
       authenticationInfo = samlService.exchangeToken("somecode");
     }
 
+    // No tokens, but the user and the flag reach the caller
     Assertions.assertThat(authenticationInfo.getToken()).isNull();
     Assertions.assertThat(authenticationInfo.getRefreshToken()).isNull();
     Assertions.assertThat(authenticationInfo.getUser()).isNotNull();

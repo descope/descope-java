@@ -89,9 +89,11 @@ class SSOServiceProviderImplTest {
     assertThat(uri.getRawQuery()).contains("tenant=tenant-id", "ssoId=connection-id", "forceAuthn=true");
   }
 
+  // SSO shares the code exchange: an authentication-only login returns without a session
   @Test
   void testExchangeTokenAuthenticationOnlyWithoutSession() {
     ApiProxy apiProxy = mock(ApiProxy.class);
+    // No session or refresh JWT, flagged ssoAuthenticationOnly (last argument)
     doReturn(new JWTResponse("", "", null, null, null, null, null, false, null, true))
         .when(apiProxy).post(any(), any(), any());
     AuthenticationInfo info;
@@ -99,6 +101,7 @@ class SSOServiceProviderImplTest {
       builder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       info = ssoService.exchangeToken("somecode");
     }
+    // It called the SSO exchange route, and returned no tokens with the flag set
     ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
     verify(apiProxy).post(uri.capture(), any(), eq(JWTResponse.class));
     assertThat(uri.getValue().getPath()).isEqualTo("/v1/auth/sso/exchange");

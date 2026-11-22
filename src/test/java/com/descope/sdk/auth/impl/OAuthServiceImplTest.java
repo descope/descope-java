@@ -176,14 +176,17 @@ public class OAuthServiceImplTest {
         .containsEntry("locale", "en-US");
   }
 
+  // An authentication-only login: the exchange returns the user without a session instead of throwing
   @Test
   void testExchangeTokenAuthenticationOnlyWithoutSession() throws Exception {
+    // The backend's JSON for such a login: empty JWTs, the user, and ssoAuthenticationOnly
     JWTResponse jwtResponse = parseJWTResponse("{\"sessionJwt\":\"\",\"refreshJwt\":\"\","
         + "\"user\":{\"userId\":\"U-auth-only\",\"loginIds\":[\"someone@example.com\"]},"
         + "\"firstSeen\":false,\"ssoAuthenticationOnly\":true}");
 
     AuthenticationInfo authenticationInfo = exchangeTokenReturning(jwtResponse);
 
+    // No tokens, but the user and the flag reach the caller
     Assertions.assertThat(authenticationInfo).isNotNull();
     Assertions.assertThat(authenticationInfo.getToken()).isNull();
     Assertions.assertThat(authenticationInfo.getRefreshToken()).isNull();
@@ -191,6 +194,7 @@ public class OAuthServiceImplTest {
     Assertions.assertThat(authenticationInfo.getSsoAuthenticationOnly()).isTrue();
   }
 
+  // Without the authentication-only flag, a missing session is still an error, as before
   @Test
   void testExchangeTokenWithoutSessionThrows() throws Exception {
     JWTResponse jwtResponse = parseJWTResponse("{\"sessionJwt\":\"\",\"refreshJwt\":\"\"}");
