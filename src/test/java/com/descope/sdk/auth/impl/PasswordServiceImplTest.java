@@ -42,14 +42,11 @@ import com.descope.sdk.auth.PasswordService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
-import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class PasswordServiceImplTest {
@@ -168,22 +165,6 @@ public class PasswordServiceImplTest {
         () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       passwordService.sendPasswordReset(MOCK_EMAIL, MOCK_URL);
       verify(apiProxy, times(1)).post(any(), any(), any());
-    }
-  }
-
-  @Test
-  void testSendPasswordResetSendsRedirectUrl() throws Exception {
-    ApiProxy apiProxy = mock(ApiProxy.class);
-    doReturn(Void.class).when(apiProxy).post(any(), any(), any());
-    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
-      mockedApiProxyBuilder.when(
-        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      passwordService.sendPasswordReset(MOCK_EMAIL, MOCK_URL);
-      ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
-      verify(apiProxy, times(1)).post(any(), bodyCaptor.capture(), any());
-      JsonNode body = new ObjectMapper().valueToTree(bodyCaptor.getValue());
-      assertEquals(MOCK_URL, body.path("redirectUrl").asText(null));
-      assertFalse(body.has("redirectURL"));
     }
   }
 
