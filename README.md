@@ -291,6 +291,16 @@ try {
     // Handle the error
 }
 
+// For step-up or MFA, pass the user's current refresh JWT in the login options
+try {
+    String returnUrl = "https://my-app.com/handle-oauth";
+    String refreshToken = "user-refresh-jwt"; // the user's current refresh JWT
+    LoginOptions stepUpOptions = LoginOptions.builder().stepup(true).jwt(refreshToken).build();
+    oas.start("google", returnUrl, stepUpOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
