@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.7.0](https://github.com/descope/descope-java/compare/java-sdk-1.6.2...java-sdk-1.7.0) (2026-11-22)
+
+
+### Features
+
+* **mgmt:** log out sessions by creation time ([#405](https://github.com/descope/descope-java/issues/405)) ([c54364b](https://github.com/descope/descope-java/commit/c54364b3ce482e5aa6cadaf22305c9f37d1ef31e))
+
+
+### Bug Fixes
+
+* **auth:** send the refresh JWT on OAuth step-up and MFA start ([#471](https://github.com/descope/descope-java/issues/471)) ([a327b16](https://github.com/descope/descope-java/commit/a327b1608b1e56f58a401b7c4fd62a527503a391))
+* read TOTP, SAML and OAuth into UserResponse ([#470](https://github.com/descope/descope-java/issues/470)) ([179c6e2](https://github.com/descope/descope-java/commit/179c6e22cf9a522fe25c75ac9d56b4750d146b61))
+* return authentication-only SSO exchange results instead of throwing ([#473](https://github.com/descope/descope-java/issues/473)) ([825481e](https://github.com/descope/descope-java/commit/825481ee16e7b765fdf74a592a4b85cf0b80304e))
+* return Group objects from GroupService load methods ([#474](https://github.com/descope/descope-java/issues/474)) ([620d1fe](https://github.com/descope/descope-java/commit/620d1fec8cad44f3e4d6f736fc69144efd90696b))
+* send only the access key when exchanging it with an auth management key set ([#469](https://github.com/descope/descope-java/issues/469)) ([aa9b3aa](https://github.com/descope/descope-java/commit/aa9b3aa07e9e8b479a4d972c43931dd86dadcdbc))
+* send password reset redirect URL as redirectUrl ([#472](https://github.com/descope/descope-java/issues/472)) ([0d7467b](https://github.com/descope/descope-java/commit/0d7467bc3c0d1afc6f210f4c4768da5dd2b65a06))
+
+
+### Documentation
+
+* note why custom attributes total stays int ([#475](https://github.com/descope/descope-java/issues/475)) ([d7f11ee](https://github.com/descope/descope-java/commit/d7f11ee776adb2fff857f9c199033b42bf76c69f))
+
 ## [1.6.2](https://github.com/descope/descope-java/compare/java-sdk-1.6.1...java-sdk-1.6.2) (2026-11-09)
 
 
