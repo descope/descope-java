@@ -79,7 +79,7 @@ public class JwtServiceImplTest {
     assertThatThrownBy(() -> jwtService.generateClientAssertionJwt(
             "issuer",
             "subject",
-            java.util.List.of("https://example.com"),
+            java.util.Arrays.asList("https://example.com"),
             3600,
             false,
             "HS256"
@@ -98,7 +98,7 @@ public class JwtServiceImplTest {
         () -> jwtService.generateClientAssertionJwt(
             "issuer",
             "subject",
-            java.util.List.of("https://example.com"),
+            java.util.Arrays.asList("https://example.com"),
             3600,
             false,
             "RS256"
