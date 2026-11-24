@@ -2,14 +2,19 @@ package com.descope.sdk.mgmt.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
@@ -31,12 +36,26 @@ import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.SsoService;
 import com.descope.sdk.mgmt.TenantService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -280,6 +299,107 @@ class SsoServiceImplTest {
       ssoService.configureMapping("someTenantID", Arrays.asList(mockRoleMapping), attributeMapping);
       verify(apiProxy, times(1)).post(any(), any(), any());
     }
+  }
+
+  @Test
+  void testConfigureSAMLSettingsAcceptedAudiences() throws Exception {
+    // null, also what the constructor without acceptedAudiences gives, keeps the stored values
+    Map<?, ?> settings = sentSAMLSettings("/v1/mgmt/sso/saml", () -> ssoService.configureSAMLSettings("t1",
+        new SSOSAMLSettings("https://idp.com", "entityId", "idpCert", null, null, null, null, null, null, null),
+        null, null));
+    assertEquals("https://idp.com", settings.get("idpUrl"));
+    assertFalse(settings.containsKey("acceptedAudiences"));
+    assertFalse(settings.containsKey("replaceAcceptedAudiences"));
+
+    settings = sentSAMLSettings("/v1/mgmt/sso/saml", () -> ssoService.configureSAMLSettings("t1",
+        samlSettings().acceptedAudiences(Arrays.asList("urn:other:audience", "")).build(), null, null));
+    assertEquals(Arrays.asList("urn:other:audience", ""), settings.get("acceptedAudiences"));
+    assertEquals(Boolean.TRUE, settings.get("replaceAcceptedAudiences"));
+
+    settings = sentSAMLSettings("/v1/mgmt/sso/saml", () -> ssoService.configureSAMLSettings("t1",
+        samlSettings().acceptedAudiences(Collections.emptyList()).build(), null, null));
+    assertEquals(Collections.emptyList(), settings.get("acceptedAudiences"));
+    assertEquals(Boolean.TRUE, settings.get("replaceAcceptedAudiences"));
+  }
+
+  @Test
+  void testConfigureSAMLSettingsByMetadataAcceptedAudiences() throws Exception {
+    // null, also what the constructor without acceptedAudiences gives, keeps the stored values
+    Map<?, ?> settings = sentSAMLSettings("/v1/mgmt/sso/saml/metadata",
+        () -> ssoService.configureSAMLSettingsByMetadata("t1",
+            new SSOSAMLSettingsByMetadata("https://idp.com/md", null, null, null, null, null, null, null), null, null));
+    assertEquals("https://idp.com/md", settings.get("idpMetadataUrl"));
+    assertFalse(settings.containsKey("acceptedAudiences"));
+    assertFalse(settings.containsKey("replaceAcceptedAudiences"));
+
+    settings = sentSAMLSettings("/v1/mgmt/sso/saml/metadata", () -> ssoService.configureSAMLSettingsByMetadata("t1",
+        samlSettingsByMetadata().acceptedAudiences(Arrays.asList("urn:other:audience", "")).build(), null, null));
+    assertEquals(Arrays.asList("urn:other:audience", ""), settings.get("acceptedAudiences"));
+    assertEquals(Boolean.TRUE, settings.get("replaceAcceptedAudiences"));
+
+    settings = sentSAMLSettings("/v1/mgmt/sso/saml/metadata", () -> ssoService.configureSAMLSettingsByMetadata("t1",
+        samlSettingsByMetadata().acceptedAudiences(Collections.emptyList()).build(), null, null));
+    assertEquals(Collections.emptyList(), settings.get("acceptedAudiences"));
+    assertEquals(Boolean.TRUE, settings.get("replaceAcceptedAudiences"));
+  }
+
+  @Test
+  void testLoadSettingsAcceptedAudiences() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor,
+        "{\"tenant\":{\"id\":\"t1\"},\"saml\":{\"acceptedAudiences\":[\"urn:other:audience\",\"\"]}}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      SSOTenantSettingsResponse resp = ssoService.loadSettings("t1");
+      assertTrue(captor.getValue().getRequestUri().contains("/v2/mgmt/sso/settings"));
+      assertEquals(Arrays.asList("urn:other:audience", ""), resp.getSaml().getAcceptedAudiences());
+    }
+    httpClient = mockHttpClient(captor, "{\"tenant\":{\"id\":\"t1\"},\"saml\":{}}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      assertNull(ssoService.loadSettings("t1").getSaml().getAcceptedAudiences());
+    }
+  }
+
+  private static SSOSAMLSettings.SSOSAMLSettingsBuilder samlSettings() {
+    return SSOSAMLSettings.builder().idpUrl("https://idp.com").entityId("entityId").idpCert("idpCert");
+  }
+
+  private static SSOSAMLSettingsByMetadata.SSOSAMLSettingsByMetadataBuilder samlSettingsByMetadata() {
+    return SSOSAMLSettingsByMetadata.builder().idpMetadataUrl("https://idp.com/md");
+  }
+
+  // Runs configure against a mocked HTTP client and returns the "settings" object of the JSON body it sent.
+  private Map<?, ?> sentSAMLSettings(String path, Runnable configure) throws IOException {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, "{}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      configure.run();
+    }
+    ClassicHttpRequest request = captor.getValue();
+    assertTrue(request.getRequestUri().endsWith(path));
+    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+    request.getEntity().writeTo(bs);
+    Map<?, ?> body = new ObjectMapper().readValue(bs.toByteArray(), Map.class);
+    assertEquals("t1", body.get("tenantId"));
+    return (Map<?, ?>) body.get("settings");
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private CloseableHttpClient mockHttpClient(ArgumentCaptor<ClassicHttpRequest> captor, String responseBody)
+      throws IOException {
+    CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
+    doAnswer(inv -> {
+      ClassicHttpResponse response = mock(ClassicHttpResponse.class);
+      when(response.getCode()).thenReturn(200);
+      HttpEntity entity = mock(HttpEntity.class);
+      when(entity.getContent())
+          .thenReturn(new ByteArrayInputStream(responseBody.getBytes(StandardCharsets.UTF_8)));
+      when(response.getEntity()).thenReturn(entity);
+      return ((HttpClientResponseHandler) inv.getArgument(1)).handleResponse(response);
+    }).when(httpClient).execute(captor.capture(), any(HttpClientResponseHandler.class));
+    return httpClient;
   }
   
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

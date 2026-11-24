@@ -1071,19 +1071,34 @@ AttributeMapping am = new AttributeMapping("Tenant Name", "Tenant Email", "Tenan
 
 
 // Using Manual Configuration
-SSOSAMLSettings manualSettings = new SSOSAMLSettings(idpUrl, entityId, idpCert, am, rm);
+SSOSAMLSettings manualSettings = SSOSAMLSettings.builder()
+    .idpUrl(idpUrl)
+    .entityId(entityId)
+    .idpCert(idpCert)
+    .attributeMapping(am)
+    .roleMappings(rm)
+    // Optional - audience values the IdP's SAML assertions may carry in place of the tenant's SP entity ID,
+    // for an IdP that sends a different audience and can't be changed. Leave it unset (null) to keep the
+    // stored values. Any list replaces them, and an empty list clears them.
+    .acceptedAudiences(Arrays.asList("urn:idp:audience"))
+    .build();
 
 try {
-    ss.configureSAMLSettings(tenantId, manualSettings, domains);
+    ss.configureSAMLSettings(tenantId, manualSettings, redirectUrl, domains);
 } catch (DescopeException de) {
     // Handle the error
 }
 
 // Using metadata URL
-SSOSAMLSettingsByMetadata metadataSettings = new SSOSAMLSettingsByMetadata(idpMetadataUrl ,am, rm);
+SSOSAMLSettingsByMetadata metadataSettings = SSOSAMLSettingsByMetadata.builder()
+    .idpMetadataUrl(idpMetadataUrl)
+    .attributeMapping(am)
+    .roleMappings(rm)
+    .acceptedAudiences(Arrays.asList("urn:idp:audience")) // Optional - same as in the manual configuration
+    .build();
 
 try {
-    ss.configureSAMLSettingsByMetadata(tenantId, metadataSettings, domains);
+    ss.configureSAMLSettingsByMetadata(tenantId, metadataSettings, redirectUrl, domains);
 } catch (DescopeException de) {
     // Handle the error
 }
