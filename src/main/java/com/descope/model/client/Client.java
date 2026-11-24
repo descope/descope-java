@@ -51,18 +51,22 @@ public class Client {
   // Fetched once when the management services are built and sent on every management request so
   // the edge can apply the right rate limit bucket. Blank when the handshake failed.
   private String rateLimitTier;
+  // Connect, response and connection-request timeout for HTTP calls, in seconds.
+  @Builder.Default
+  private int httpTimeoutSeconds = 30;
 
   // Keeps the pre-fgaCacheUri all-args constructor available to callers that use it positionally.
   public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
       SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys) {
-    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, null, null, null);
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, null, null, null, 30);
   }
 
   // Keeps the pre-authManagementKey all-args constructor available to callers that use it
   // positionally.
   public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
       SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys, String fgaCacheUri) {
-    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, fgaCacheUri, null, null);
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, fgaCacheUri, null, null,
+        30);
   }
 
   // Keeps the pre-rateLimitTier all-args constructor available to callers that use it positionally.
@@ -70,7 +74,16 @@ public class Client {
       SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys, String fgaCacheUri,
       String authManagementKey) {
     this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, fgaCacheUri,
-        authManagementKey, null);
+        authManagementKey, null, 30);
+  }
+
+  // Keeps the pre-httpTimeoutSeconds all-args constructor available to callers that use it
+  // positionally.
+  public Client(String uri, String projectId, String managementKey, Map<String, String> headers,
+      SdkInfo sdkInfo, Key providedKey, AtomicReference<Map<String, Key>> keys, String fgaCacheUri,
+      String authManagementKey, String rateLimitTier) {
+    this(uri, projectId, managementKey, headers, sdkInfo, providedKey, keys, fgaCacheUri,
+        authManagementKey, rateLimitTier, 30);
   }
 
   void setClock(LongSupplier clock) {

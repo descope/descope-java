@@ -8,10 +8,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.UserConflictException;
+import com.descope.model.client.Client;
 import com.descope.model.client.SdkInfo;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,15 +23,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.util.Timeout;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 class AbstractProxyImplTest {
@@ -82,11 +88,31 @@ class AbstractProxyImplTest {
       }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
 
       try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-        mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+        HttpClientsStub.stub(mockedHttpClients, mockClient);
         ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
         Object result = proxy.get(URI.create("http://localhost/test"), Map.class);
         assertEquals(2, callCount.get(), "Expected retry for status " + statusCode);
         assertTrue(result instanceof Map);
+      }
+    }
+  }
+
+  @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  void testHttpTimeoutIsConfigurable() throws IOException {
+    CloseableHttpClient mockClient = mock(CloseableHttpClient.class);
+    doAnswer(inv -> ((HttpClientResponseHandler) inv.getArgument(1))
+        .handleResponse(successResponse("{}")))
+        .when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
+    for (int[] c : new int[][] {{5, 5}, {0, 30}}) {
+      try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+        HttpClientBuilder builder = HttpClientsStub.stub(mockedHttpClients, mockClient);
+        Client client = Client.builder().httpTimeoutSeconds(c[0]).build();
+        new ApiProxyImpl(() -> "", client).get(URI.create("http://localhost/test"), Map.class);
+        ArgumentCaptor<RequestConfig> captor = ArgumentCaptor.forClass(RequestConfig.class);
+        verify(builder).setDefaultRequestConfig(captor.capture());
+        assertEquals(Timeout.ofSeconds(c[1]), captor.getValue().getResponseTimeout());
+        assertEquals(Timeout.ofSeconds(c[1]), captor.getValue().getConnectionRequestTimeout());
       }
     }
   }
@@ -105,7 +131,7 @@ class AbstractProxyImplTest {
     }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
 
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+      HttpClientsStub.stub(mockedHttpClients, mockClient);
       ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
       assertThrows(DescopeException.class,
           () -> proxy.get(URI.create("http://localhost/test"), Map.class));
@@ -129,7 +155,7 @@ class AbstractProxyImplTest {
       }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
 
       try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-        mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+        HttpClientsStub.stub(mockedHttpClients, mockClient);
         ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
         assertThrows(DescopeException.class,
             () -> proxy.get(URI.create("http://localhost/test"), Map.class));
@@ -153,7 +179,7 @@ class AbstractProxyImplTest {
     }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
 
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+      HttpClientsStub.stub(mockedHttpClients, mockClient);
       ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
       Object result = proxy.get(URI.create("http://localhost/test"), Map.class);
       assertEquals(4, callCount.get());
@@ -176,7 +202,7 @@ class AbstractProxyImplTest {
       }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
 
       try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-        mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+        HttpClientsStub.stub(mockedHttpClients, mockClient);
         ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
         UserConflictException thrown = assertThrows(UserConflictException.class,
             () -> proxy.get(URI.create("http://localhost/test"), Map.class));
@@ -203,7 +229,7 @@ class AbstractProxyImplTest {
       }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
 
       try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-        mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+        HttpClientsStub.stub(mockedHttpClients, mockClient);
         ApiProxyImpl proxy = new ApiProxyImpl((SdkInfo) null);
         DescopeException thrown = assertThrows(DescopeException.class,
             () -> proxy.get(URI.create("http://localhost/test"), Map.class));

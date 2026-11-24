@@ -94,10 +94,12 @@ abstract class AbstractProxyImpl {
     addHeaders(req);
     log.debug(String.format("Sending %s request to %s", req.getMethod(), req.getRequestUri()));
     // Configure explicit timeouts to prevent indefinite hangs
+    Timeout timeout = Timeout.ofSeconds(
+        client != null && client.getHttpTimeoutSeconds() > 0 ? client.getHttpTimeoutSeconds() : 30);
     RequestConfig requestConfig = RequestConfig.custom()
-        .setConnectTimeout(Timeout.ofSeconds(30))
-        .setResponseTimeout(Timeout.ofSeconds(30))
-        .setConnectionRequestTimeout(Timeout.ofSeconds(30))
+        .setConnectTimeout(timeout)
+        .setResponseTimeout(timeout)
+        .setConnectionRequestTimeout(timeout)
         .build();
     try (final CloseableHttpClient httpClient = HttpClients.custom()
         .setDefaultRequestConfig(requestConfig)
