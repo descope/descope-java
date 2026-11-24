@@ -56,6 +56,11 @@ public class Config {
   // instead. If neither values are set then any disabled authentication method API call will fail.
   private String authManagementKey;
 
+  // HttpTimeoutSeconds (optional, 30) - connect, response and connection-request timeout for
+  // every SDK HTTP call. Non-positive values use the default.
+  @Builder.Default
+  private int httpTimeoutSeconds = 30;
+
   // Keeps the pre-fgaCacheUrl all-args constructor available to callers that use it positionally.
   public Config(String projectId, String managementKey, String publicKey, String descopeBaseUrl,
       Map<String, String> customDefaultHeaders) {
@@ -67,6 +72,14 @@ public class Config {
   public Config(String projectId, String managementKey, String publicKey, String descopeBaseUrl,
       Map<String, String> customDefaultHeaders, String fgaCacheUrl) {
     this(projectId, managementKey, publicKey, descopeBaseUrl, customDefaultHeaders, fgaCacheUrl, null);
+  }
+
+  // Keeps the pre-httpTimeoutSeconds all-args constructor available to callers that use it
+  // positionally.
+  public Config(String projectId, String managementKey, String publicKey, String descopeBaseUrl,
+      Map<String, String> customDefaultHeaders, String fgaCacheUrl, String authManagementKey) {
+    this(projectId, managementKey, publicKey, descopeBaseUrl, customDefaultHeaders, fgaCacheUrl,
+        authManagementKey, 30);
   }
 
   public String initializeProjectId() {

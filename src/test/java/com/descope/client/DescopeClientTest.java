@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import com.descope.exception.ClientSetupException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.client.Client;
 import com.descope.model.user.response.UserResponseDetails;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 
@@ -53,6 +55,23 @@ class DescopeClientTest {
             Assertions.assertThat(u).isNotNull();
           }
         });
+  }
+
+  @Test
+  void testHttpTimeoutPassedToClient() throws Exception {
+    String publicKey = new ObjectMapper().writeValueAsString(MOCK_SIGNING_KEY);
+    DescopeClient descopeClient = new DescopeClient(Config.builder()
+        .projectId("P123456789012345678901234567").managementKey("key").publicKey(publicKey)
+        .httpTimeoutSeconds(90).build());
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    when(apiProxy.get(any(), any())).thenReturn(mock(UserResponseDetails.class));
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      ArgumentCaptor<Client> client = ArgumentCaptor.forClass(Client.class);
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), client.capture()))
+          .thenReturn(apiProxy);
+      descopeClient.getManagementServices().getUserService().load("kuku");
+      Assertions.assertThat(client.getValue().getHttpTimeoutSeconds()).isEqualTo(90);
+    }
   }
 
   @Test
