@@ -23,4 +23,5 @@ public class SSOSAMLSettingsResponse {
   private String redirectUrl;
   private String spSignCertificate;
   private String subjectNameIdFormat;
+  private List<String> acceptedAudiences;
 }
