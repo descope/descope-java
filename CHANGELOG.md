@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/descope/descope-java/compare/java-sdk-1.7.0...java-sdk-1.8.0) (2026-11-25)
+
+
+### Features
+
+* **mgmt:** support accepted audiences in SAML SSO settings ([#476](https://github.com/descope/descope-java/issues/476)) ([619da7a](https://github.com/descope/descope-java/commit/619da7ae4d7f074f51135f08b2b37c709a7b4692))
+
 ## [1.7.0](https://github.com/descope/descope-java/compare/java-sdk-1.6.2...java-sdk-1.7.0) (2026-11-22)
 
 
