@@ -73,6 +73,7 @@ public class DescopeClient {
         .projectId(projectId)
         .managementKey(config.getManagementKey())
         .authManagementKey(config.getAuthManagementKey())
+        .httpTimeoutSeconds(config.getHttpTimeoutSeconds())
         .headers(
             Collections.isEmpty(config.getCustomDefaultHeaders())
               ? new HashMap<>() : new HashMap<>(config.getCustomDefaultHeaders()))

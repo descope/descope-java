@@ -54,6 +54,7 @@ import com.descope.model.user.response.UserResponseDetails;
 import com.descope.model.user.response.UsersBatchResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
+import com.descope.proxy.impl.HttpClientsStub;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.AuthenticationService;
 import com.descope.sdk.auth.MagicLinkService;
@@ -1494,7 +1495,7 @@ public class UserServiceImplTest {
     CloseableHttpClient httpClient = mockHttpClient(captor, 200,
         "{\"id\":\"r1\",\"after\":\"2026-01-01T00:00:00Z\",\"before\":\"2026-02-01T10:30:00Z\"}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      HttpClientsStub.stub(mockedHttpClients, httpClient);
       final LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
           null, Instant.parse("2026-01-01T00:00:00Z"), null);
       Map<?, ?> body = requestBody(captor.getValue());
@@ -1521,7 +1522,7 @@ public class UserServiceImplTest {
         "{\"id\":\"r1\",\"after\":\"2026-01-01T00:00:00Z\",\"before\":\"2026-02-01T10:30:00Z\","
             + "\"sessionTypes\":[\"web\"]}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      HttpClientsStub.stub(mockedHttpClients, httpClient);
       final LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
           Instant.parse("2026-02-01T10:30:00Z"), Instant.parse("2026-01-01T00:00:00Z"), Arrays.asList("web"));
       Map<?, ?> body = requestBody(captor.getValue());
@@ -1542,7 +1543,7 @@ public class UserServiceImplTest {
     CloseableHttpClient httpClient = mockHttpClient(captor, 200,
         "{\"id\":\"r1\",\"after\":\"1970-01-01T00:00:00Z\",\"before\":\"2026-02-01T10:30:00Z\"}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      HttpClientsStub.stub(mockedHttpClients, httpClient);
       final LogoutSessionRange range = userService.logoutSessionsCreatedBetween(
           Instant.parse("2026-02-01T10:30:00Z"), null, null);
       Map<?, ?> body = requestBody(captor.getValue());
@@ -1563,7 +1564,7 @@ public class UserServiceImplTest {
             + "\"sessionTypes\":[]},{\"id\":\"r2\",\"after\":\"2026-01-01T00:00:00Z\","
             + "\"before\":\"2026-01-02T00:00:00Z\",\"sessionTypes\":[\"web\",\"mobile\"]}]}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      HttpClientsStub.stub(mockedHttpClients, httpClient);
       List<LogoutSessionRange> ranges = userService.listLogoutSessionRanges();
       assertTrue(captor.getValue().getRequestUri().endsWith("/v1/mgmt/user/logout/sessions/list"));
       assertTrue(requestBody(captor.getValue()).isEmpty());
@@ -1582,7 +1583,7 @@ public class UserServiceImplTest {
     ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
     CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      HttpClientsStub.stub(mockedHttpClients, httpClient);
       userService.deleteLogoutSessionRange("r1");
       assertTrue(captor.getValue().getRequestUri().endsWith("/v1/mgmt/user/logout/sessions/delete"));
       assertEquals(mapOf("id", "r1"), requestBody(captor.getValue()));
@@ -1595,7 +1596,7 @@ public class UserServiceImplTest {
     CloseableHttpClient httpClient = mockHttpClient(captor, 404,
         "{\"errorDescription\":\"Logout session range not found\"}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      HttpClientsStub.stub(mockedHttpClients, httpClient);
       ServerCommonException thrown = assertThrows(ServerCommonException.class,
           () -> userService.deleteLogoutSessionRange("unknown"));
       assertEquals("404", thrown.getCode());

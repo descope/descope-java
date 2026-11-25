@@ -85,7 +85,7 @@ class LicenseHeaderTest {
     }).when(mockClient).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
 
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
-      mockedHttpClients.when(HttpClients::createDefault).thenReturn(mockClient);
+      HttpClientsStub.stub(mockedHttpClients, mockClient);
       ApiProxyImpl proxy = new ApiProxyImpl(() -> "Bearer P123:mgmt-key", client);
       proxy.get(URI.create(uri), Map.class);
     }

@@ -10,6 +10,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP
 import static com.descope.literals.Routes.ManagementEndPoints.STOP_IMPERSONATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_JWT_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
+import static com.descope.utils.JwtUtils.ALLOWED_ALGORITHMS;
 
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.DescopeException;
@@ -35,7 +36,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 class JwtServiceImpl extends ManagementsBase implements JwtService {
-
   JwtServiceImpl(Client client) {
     super(client);
   }
@@ -165,6 +165,10 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     }
     if (expiresIn == null || expiresIn <= 0) {
       throw ServerCommonException.invalidArgument("expiresIn");
+    }
+    // Validate algorithm against whitelist to prevent algorithm confusion attacks
+    if (algorithm != null && !ALLOWED_ALGORITHMS.contains(algorithm)) {
+      throw ServerCommonException.invalidArgument("algorithm");
     }
 
     ClientAssertionRequest request = ClientAssertionRequest.builder()
