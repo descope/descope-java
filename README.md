@@ -301,6 +301,29 @@ try {
     // Handle the error
 }
 
+// Optionally pass prompts, a login hint and the initiating user's email to the OAuth provider.
+// startSignIn and startSignUp take the same arguments.
+try {
+    String returnUrl = "https://my-app.com/handle-oauth";
+    LoginOptions tenantOptions = LoginOptions.builder().tenantId("my-tenant-ID").build();
+    List<OAuthPrompt> prompt = Arrays.asList(OAuthPrompt.LOGIN, OAuthPrompt.CONSENT);
+    oas.start("google", returnUrl, tenantOptions, null, prompt, "user@example.com", "user@example.com");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Add an OAuth provider to an existing, signed in user. allowAllMerge updates the user
+// even when it shares no identifier, such as email, with the OAuth user.
+try {
+    String returnUrl = "https://my-app.com/handle-oauth";
+    String refreshToken = "user-refresh-jwt"; // the user's current refresh JWT
+    oas.updateUser("github", returnUrl, refreshToken, null, false);
+    oas.updateUser("github", returnUrl, refreshToken, null, true,
+        Arrays.asList(OAuthPrompt.SELECT_ACCOUNT), "user@example.com", null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 The user will authenticate with the authentication provider, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
