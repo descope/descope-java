@@ -636,6 +636,24 @@ try {
 
 ```
 
+To also log the user out of their SSO identity provider, pass `LogoutOptions` with `ssoLogout`. When the session
+signed in through a SAML SSO configuration with single logout on, the response's `ssoLogoutUrl` is set, and you must
+send the browser there. The optional `redirectUrl` is where the browser lands afterwards; it must be in the project's
+approved domains, and when empty the SSO configuration's redirect URL is used. The Descope session ends either way.
+
+```java
+try {
+    LogoutResponse res = as.logout(refreshToken,
+        LogoutOptions.builder().ssoLogout(true).redirectUrl("https://app.example.com/signed-out").build());
+    if (StringUtils.isNotBlank(res.getSsoLogoutUrl())) {
+        // Redirect the browser to res.getSsoLogoutUrl()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 It is also possible to sign the user out of all the devices they are currently signed-in with. Calling `logoutAll` will
 invalidate all user's refresh tokens. After calling this function, you must invalidate or remove any cookies you have created.
 
