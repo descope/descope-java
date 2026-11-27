@@ -334,5 +334,15 @@ public class Routes {
     public static final String USER_REMOVE_PASSKEY_LINK = "/v1/mgmt/user/passkey/delete";
     public static final String USER_LIST_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/list";
     public static final String USER_REMOVE_TOTP_SEED_LINK = "/v1/mgmt/user/totp/delete";
+
+    // JWT Templates
+    public static final String MANAGEMENT_JWT_TEMPLATE_CREATE_LINK = "/v1/mgmt/jwt/templates/create";
+    public static final String MANAGEMENT_JWT_TEMPLATE_UPDATE_LINK = "/v1/mgmt/jwt/templates/update";
+    public static final String MANAGEMENT_JWT_TEMPLATE_LOAD_LINK = "/v1/mgmt/jwt/templates/load";
+    public static final String MANAGEMENT_JWT_TEMPLATE_LIST_LINK = "/v1/mgmt/jwt/templates/list";
+    public static final String MANAGEMENT_JWT_TEMPLATE_VALIDATE_LINK = "/v1/mgmt/jwt/templates/validate";
+    public static final String MANAGEMENT_JWT_TEMPLATE_LIBRARY_LIST_LINK = "/v1/mgmt/jwt/templates/library/list";
+    public static final String MANAGEMENT_JWT_TEMPLATE_LIBRARY_LOAD_LINK = "/v1/mgmt/jwt/templates/library/load";
+    public static final String MANAGEMENT_JWT_TEMPLATE_LIBRARY_APPLY_LINK = "/v1/mgmt/jwt/templates/library/apply";
   }
 }

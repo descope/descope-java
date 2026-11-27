@@ -13,4 +13,9 @@ import lombok.NoArgsConstructor;
 public class UpdateJwtRequest {
   String jwt;
   Map<String, Object> customClaims;
+  Integer refreshDuration;
+
+  public UpdateJwtRequest(String jwt, Map<String, Object> customClaims) {
+    this(jwt, customClaims, null);
+  }
 }

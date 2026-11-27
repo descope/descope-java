@@ -92,11 +92,12 @@ These sections show how to use the SDK to perform API management functions. Befo
 7. [Query SSO Groups](#query-sso-groups)
 8. [Manage Flows](#manage-flows)
 9. [Manage JWTs](#manage-jwts)
-10. [Audit](#audit)
-11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
-12. [Manage Outbound Applications](#manage-outbound-applications)
-13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+10. [Manage JWT Templates](#manage-jwt-templates)
+11. [Audit](#audit)
+12. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
+13. [Manage Outbound Applications](#manage-outbound-applications)
+14. [Manage Inbound Applications](#manage-inbound-applications)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1431,6 +1432,11 @@ try {
                 put("custom-key1", "custom-value1");
                 put("custom-key2", "custom-value2");
             }}).getJwt();
+    // Optionally set the refresh duration of the new JWT
+    String withRefreshDuration = jwts.updateJWTWithCustomClaims("original-jwt",
+            new HashMap<String, Object>() {{
+                put("custom-key1", "custom-value1");
+            }}, 3600).getJwt();
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1502,6 +1508,51 @@ try {
     String stepupJwt = jwtService.impersonateStepup("impersonator-id", "target-login-id", true, null, "tenant-id");
     // Return to the original user
     String originalJwt = jwtService.stopImpersonation(jwt, null, "tenant-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+### Manage JWT Templates
+
+You can create, update, load, list and validate JWT templates, and create templates from the Descope library.
+
+```java
+JwtTemplateService jts = descopeClient.getManagementServices().getJwtTemplateService();
+try {
+    // Create a template. A name and a type are required.
+    JwtTemplate created = jts.create(JwtTemplate.builder()
+            .name("my-template")
+            .type(JwtTemplate.TYPE_USER)
+            .authSchema(JwtTemplate.AUTH_SCHEMA_TENANT_ONLY)
+            .template(new HashMap<String, Object>() {{
+                put("custom-key1", "custom-value1");
+            }})
+            .build());
+
+    // Update it by its ID. Fields left null are not sent.
+    created.setDescription("My template");
+    JwtTemplate updated = jts.update(created);
+
+    // Load one template, or all of them
+    JwtTemplate loaded = jts.load(created.getId());
+    List<JwtTemplate> templates = jts.list();
+
+    // Validate a stored template by its ID, or a template that isn't stored
+    JwtTemplateValidationResponse res = jts.validate(created.getId(), null);
+    if (!Boolean.TRUE.equals(res.getValid())) {
+        for (JwtTemplateValidationIssue issue : res.getIssues()) {
+            // issue.getField(), issue.getCode(), issue.getMessage(), issue.getHint()
+        }
+    }
+
+    // Browse the Descope library and create a template from one of its entries
+    List<JwtTemplateLibraryEntry> entries = jts.listLibrary();
+    JwtTemplateLibraryEntry entry = jts.loadLibraryEntry(entries.get(0).getId());
+    JwtTemplate fromLibrary = jts.applyFromLibrary(ApplyJwtTemplateFromLibraryRequest.builder()
+            .libraryEntryId(entry.getId())
+            .nameOverride("my-library-template") // Optional overrides
+            .build());
 } catch (DescopeException de) {
     // Handle the error
 }
