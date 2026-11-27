@@ -8,6 +8,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_R
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_CREATE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_DELETE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_DELETE_RESOURCES;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_DELETE_RESOURCES_RELATIONS;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_HAS_RELATIONS;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_RESOURCE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_AUTHZ_RE_TARGETS;
@@ -176,6 +177,16 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
   }
 
   @Override
+  public void deleteResourceRelationsForResources(List<String> resources) throws DescopeException {
+    if (resources == null || resources.isEmpty()) {
+      throw ServerCommonException.invalidArgument("resources");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    Map<String, Object> request = mapOf("resources", resources);
+    apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_DELETE_RESOURCES_RELATIONS), request, Void.class);
+  }
+
+  @Override
   public List<RelationQuery> hasRelations(List<RelationQuery> relationQueries) throws DescopeException {
     if (relationQueries == null || relationQueries.isEmpty()) {
       throw ServerCommonException.invalidArgument("relationQueries");
@@ -196,6 +207,12 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
   @Override
   public List<String> whoCanAccess(String resource, String relationDefinition, String namespace,
       Map<String, Object> context) throws DescopeException {
+    return whoCanAccess(resource, relationDefinition, namespace, null, context);
+  }
+
+  @Override
+  public List<String> whoCanAccess(String resource, String relationDefinition, String namespace, String targetType,
+      Map<String, Object> context) throws DescopeException {
     if (StringUtils.isBlank(resource)) {
       throw ServerCommonException.invalidArgument("resource");
     }
@@ -208,6 +225,9 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     ApiProxy apiProxy = getApiProxy();
     Map<String, Object> request =
         mapOf("resource", resource, "relationDefinition", relationDefinition, "namespace", namespace);
+    if (!StringUtils.isBlank(targetType)) {
+      request.put("targetType", targetType);
+    }
     if (context != null && !context.isEmpty()) {
       request.put("context", context);
     }
@@ -259,6 +279,12 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
   @Override
   public List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
       throws DescopeException {
+    return whatCanTargetAccessWithRelation(target, relationDefinition, namespace, null, null, null);
+  }
+
+  @Override
+  public List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace,
+      String parentTarget, String parentRelationDefinition, Map<String, Object> context) throws DescopeException {
     if (StringUtils.isBlank(target)) {
       throw ServerCommonException.invalidArgument("target");
     }
@@ -268,9 +294,18 @@ class AuthzServiceImpl extends ManagementsBase implements AuthzService {
     if (StringUtils.isBlank(namespace)) {
       throw ServerCommonException.invalidArgument("namespace");
     }
-    ApiProxy apiProxy = getApiProxy();
     Map<String, Object> request = mapOf("target", target, "relationDefinition", relationDefinition,
         "namespace", namespace);
+    if (!StringUtils.isBlank(parentTarget)) {
+      request.put("ParentTarget", parentTarget);
+    }
+    if (!StringUtils.isBlank(parentRelationDefinition)) {
+      request.put("ParentRelationDefinition", parentRelationDefinition);
+    }
+    if (context != null && !context.isEmpty()) {
+      request.put("context", context);
+    }
+    ApiProxy apiProxy = getApiProxy();
     ResourcesResponse resp = apiProxy.post(getUri(MANAGEMENT_AUTHZ_RE_TARGET_WITH_RELATION), request,
         ResourcesResponse.class);
     List<Relation> relations =
