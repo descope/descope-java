@@ -142,7 +142,7 @@ public class AuthenticationServiceImplTest {
         return apiProxy;
       });
       mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
-      AuthenticationInfo authInfo = authenticationService.selectTenant("someTenant", "someRefreshJwt");
+      final AuthenticationInfo authInfo = authenticationService.selectTenant("someTenant", "someRefreshJwt");
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
       ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
