@@ -1,7 +1,12 @@
 package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
+import com.descope.model.fga.FGACheckOptions;
 import com.descope.model.fga.FGACheckResult;
+import com.descope.model.fga.FGACheckTuple;
+import com.descope.model.fga.FGAMappableResourceQuery;
+import com.descope.model.fga.FGAMappableResources;
+import com.descope.model.fga.FGAMappableSchema;
 import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
@@ -82,6 +87,63 @@ public interface FGAService {
    * @throws DescopeException if the operation fails
    */
   List<FGACheckResult> check(List<FGARelation> relations, Map<String, Object> context) throws DescopeException;
+
+  /**
+   * Checks if the given FGA relations are satisfied, with options that add details to each result.
+   *
+   * @param relations list of relations to check
+   * @param context extra context for condition evaluation, may be null or empty
+   * @param options optional flags, may be null: {@code computePaths} sets each result's
+   *     {@code path}, {@code listConditions} sets its
+   *     {@code trueConditions} and {@code falseConditions}
+   * @return list of check results indicating whether each relation is allowed
+   * @throws DescopeException if the operation fails
+   */
+  List<FGACheckResult> check(List<FGARelation> relations, Map<String, Object> context, FGACheckOptions options)
+      throws DescopeException;
+
+  /**
+   * Checks if the given FGA relations are satisfied, each with its own condition context.
+   *
+   * @param checkTuples list of relations to check, each with an optional context that overrides
+   *     the request-level context
+   * @param context extra context for condition evaluation of tuples without their own, may be null or empty
+   * @param options optional flags, may be null, as in
+   *     {@link #check(List, Map, FGACheckOptions)}
+   * @return list of check results indicating whether each relation is allowed
+   * @throws DescopeException if the operation fails
+   */
+  List<FGACheckResult> checkTuples(List<FGACheckTuple> checkTuples, Map<String, Object> context,
+      FGACheckOptions options) throws DescopeException;
+
+  /**
+   * Deletes all FGA relations (tuples) in the project. This cannot be undone.
+   *
+   * @throws DescopeException if the operation fails
+   */
+  void deleteAllRelations() throws DescopeException;
+
+  /**
+   * Searches the resources a tenant can map, by resource type.
+   *
+   * @param tenantId the tenant ID, required
+   * @param resourcesQueries the resource types to search, each with optional search queries
+   * @param resourcesLimit the maximum number of resources to return per type, may be null for no limit
+   * @return the matching resources, grouped by type
+   * @throws DescopeException if the operation fails
+   */
+  List<FGAMappableResources> searchMappableResources(String tenantId, List<FGAMappableResourceQuery> resourcesQueries,
+      Long resourcesLimit) throws DescopeException;
+
+  /**
+   * Loads the FGA schema a tenant can map, together with its mappable resources.
+   *
+   * @param tenantId the tenant ID, required
+   * @param resourcesLimit the maximum number of resources to return per type, may be null for no limit
+   * @return the mappable schema and resources
+   * @throws DescopeException if the operation fails
+   */
+  FGAMappableSchema loadMappableSchema(String tenantId, Long resourcesLimit) throws DescopeException;
 
   /**
    * Loads detailed information for the given resource identifiers.

@@ -1640,6 +1640,36 @@ try {
     // Handle the error
 }
 
+// Ask for the path of relations behind each allowed check, and for the IDs of the
+// schema conditions that evaluated true or false
+FGACheckOptions options = FGACheckOptions.builder().computePaths(true).listConditions(true).build();
+
+try {
+    List<FGACheckResult> results = fs.check(relations, context, options);
+    for (FGACheckResult result : results) {
+        FGACheckInfo info = result.getInfo();
+        // info.getPath() - the relations that granted access
+        // info.getTrueConditions() and info.getFalseConditions() - schema condition IDs
+        // info.getSchemaVersion() - the schema version the check was evaluated against
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Check relations that each need their own context; a tuple without one uses the shared context
+Map<String, Object> tupleContext = new HashMap<>();
+tupleContext.put("ip", "10.0.0.1");
+List<FGACheckTuple> checkTuples = Arrays.asList(
+    new FGACheckTuple(new FGARelation("doc1", "document", "viewer", "user456", "user"), tupleContext),
+    new FGACheckTuple(new FGARelation("doc1", "document", "owner", "user123", "user"), null)
+);
+
+try {
+    List<FGACheckResult> results = fs.checkTuples(checkTuples, context, null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // The same context can be passed to the authz queries that evaluate conditions
 AuthzService authz = descopeClient.getManagementServices().getAuthzService();
 List<String> targets = authz.whoCanAccess("doc1", "viewer", "document", context);
@@ -1678,15 +1708,44 @@ try {
     // Handle the error
 }
 
+// Search the resources a tenant can map, up to 5 per type (pass null for no limit)
+List<FGAMappableResourceQuery> queries = Arrays.asList(
+    new FGAMappableResourceQuery("document", Arrays.asList("Important"))
+);
+
+try {
+    List<FGAMappableResources> mappable = fs.searchMappableResources("tenant-id", queries, 5L);
+    for (FGAMappableResources group : mappable) {
+        // Do something with group.getType() and group.getResources()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load the schema a tenant can map, with its mappable resources
+try {
+    FGAMappableSchema mappableSchema = fs.loadMappableSchema("tenant-id", null);
+    // Do something with mappableSchema.getSchema() and mappableSchema.getMappableResources()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete all relations in the project. This cannot be undone.
+try {
+    fs.deleteAllRelations();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 #### Routing FGA calls to an FGA cache
 
 If you run an FGA cache (authzcache) instance, set `fgaCacheUrl` on the config, or the
 `DESCOPE_FGA_CACHE_URL` env var, and the calls it serves are sent there instead of the Descope base URL:
-`saveSchema`, `createRelations`, `deleteRelations` and `check` on the FGA service, plus `whoCanAccess` and
-`whatCanTargetAccess` on the authz service. Every other call, including `loadSchema`, `dryRunSchema` and the
-resource details calls, stays on the base URL. Leave it unset to send everything to the base URL.
+`saveSchema`, `createRelations`, `deleteRelations`, `check` and `checkTuples` on the FGA service, plus `whoCanAccess`
+and `whatCanTargetAccess` on the authz service. Every other call, including `loadSchema`, `dryRunSchema`,
+`deleteAllRelations`, the mappable resources calls and the resource details calls, stays on the base URL. Leave it unset to send everything to the base URL.
 
 ```java
 var descopeClient = new DescopeClient(Config.builder()

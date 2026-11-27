@@ -2,8 +2,11 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CHECK;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_CREATE_RELATIONS;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_DELETE_ALL_RELATIONS;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_DELETE_RELATIONS;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_LOAD_SCHEMA;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_MAPPABLE_RESOURCES;
+import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_MAPPABLE_SCHEMA;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_LOAD;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_RESOURCES_SAVE;
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_FGA_SAVE_SCHEMA;
@@ -13,15 +16,21 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.fga.FGACheckInfo;
+import com.descope.model.fga.FGACheckOptions;
 import com.descope.model.fga.FGACheckResponse;
 import com.descope.model.fga.FGACheckResponse.FGACheckResponseTuple;
 import com.descope.model.fga.FGACheckResult;
+import com.descope.model.fga.FGACheckTuple;
 import com.descope.model.fga.FGALoadSchemaResponse;
+import com.descope.model.fga.FGAMappableResourceQuery;
+import com.descope.model.fga.FGAMappableResources;
+import com.descope.model.fga.FGAMappableSchema;
 import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
 import com.descope.model.fga.FGASchema;
 import com.descope.model.fga.FGASchemaDryRunResponse;
+import com.descope.model.fga.FGASearchMappableResourcesResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.FGAService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -115,14 +124,57 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
   @Override
   public List<FGACheckResult> check(List<FGARelation> relations, Map<String, Object> context)
       throws DescopeException {
+    return check(relations, context, null);
+  }
+
+  @Override
+  public List<FGACheckResult> check(List<FGARelation> relations, Map<String, Object> context,
+      FGACheckOptions options) throws DescopeException {
     if (relations == null || relations.isEmpty()) {
       throw ServerCommonException.invalidArgument("relations list");
     }
 
     Map<String, Object> requestBody = new HashMap<>();
     requestBody.put("tuples", relations);
+    return postCheck(requestBody, context, options);
+  }
+
+  @Override
+  public List<FGACheckResult> checkTuples(List<FGACheckTuple> checkTuples, Map<String, Object> context,
+      FGACheckOptions options) throws DescopeException {
+    if (checkTuples == null || checkTuples.isEmpty()) {
+      throw ServerCommonException.invalidArgument("check tuples list");
+    }
+    for (FGACheckTuple checkTuple : checkTuples) {
+      if (checkTuple == null || checkTuple.getTuple() == null) {
+        throw ServerCommonException.invalidArgument("check tuple");
+      }
+    }
+
+    List<Map<String, Object>> tuples = new ArrayList<>();
+    for (FGACheckTuple checkTuple : checkTuples) {
+      Map<String, Object> tuple = new HashMap<>();
+      tuple.put("tuple", checkTuple.getTuple());
+      if (checkTuple.getContext() != null && !checkTuple.getContext().isEmpty()) {
+        tuple.put("context", checkTuple.getContext());
+      }
+      tuples.add(tuple);
+    }
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("checkTuples", tuples);
+    return postCheck(requestBody, context, options);
+  }
+
+  private List<FGACheckResult> postCheck(Map<String, Object> requestBody, Map<String, Object> context,
+      FGACheckOptions options) {
     if (context != null && !context.isEmpty()) {
       requestBody.put("context", context);
+    }
+    if (options != null && options.getComputePaths() != null) {
+      requestBody.put("computePaths", options.getComputePaths());
+    }
+    if (options != null && options.getListConditions() != null) {
+      requestBody.put("listConditions", options.getListConditions());
     }
 
     ApiProxy apiProxy = getApiProxy();
@@ -137,9 +189,58 @@ class FGAServiceImpl extends ManagementsBase implements FGAService {
       if (info.getMissingContext() == null) {
         info.setMissingContext(new ArrayList<>());
       }
+      // Version is per response, so every result carries it
+      info.setSchemaVersion(response.getSchemaVersion());
       results.add(new FGACheckResult(tuple.isAllowed(), tuple.getTuple(), info));
     }
     return results;
+  }
+
+  @Override
+  public void deleteAllRelations() throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.delete(getUri(MANAGEMENT_FGA_DELETE_ALL_RELATIONS), null, Void.class);
+  }
+
+  @Override
+  public List<FGAMappableResources> searchMappableResources(String tenantId,
+      List<FGAMappableResourceQuery> resourcesQueries, Long resourcesLimit) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("tenantId");
+    }
+
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("tenantId", tenantId);
+    if (resourcesQueries != null) {
+      requestBody.put("resourcesQueries", resourcesQueries);
+    }
+    if (resourcesLimit != null && resourcesLimit > 0) {
+      requestBody.put("resourcesLimit", String.valueOf(resourcesLimit));
+    }
+
+    ApiProxy apiProxy = getApiProxy();
+    FGASearchMappableResourcesResponse response = apiProxy.post(getUri(MANAGEMENT_FGA_MAPPABLE_RESOURCES),
+        requestBody, FGASearchMappableResourcesResponse.class);
+    if (response == null || response.getMappableResources() == null) {
+      return new ArrayList<>();
+    }
+    return response.getMappableResources();
+  }
+
+  @Override
+  public FGAMappableSchema loadMappableSchema(String tenantId, Long resourcesLimit) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("tenantId");
+    }
+
+    Map<String, String> params = new HashMap<>();
+    params.put("tenantId", tenantId);
+    if (resourcesLimit != null && resourcesLimit > 0) {
+      params.put("resourcesLimit", String.valueOf(resourcesLimit));
+    }
+
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(getQueryParamUri(MANAGEMENT_FGA_MAPPABLE_SCHEMA, params), FGAMappableSchema.class);
   }
 
   @Override

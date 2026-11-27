@@ -12,6 +12,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FGACheckResponse {
   private List<FGACheckResponseTuple> tuples;
+  private String schemaVersion;
+
+  public FGACheckResponse(List<FGACheckResponseTuple> tuples) {
+    this.tuples = tuples;
+  }
 
   @Data
   @Builder
