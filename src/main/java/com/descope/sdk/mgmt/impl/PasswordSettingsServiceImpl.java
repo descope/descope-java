@@ -69,6 +69,14 @@ class PasswordSettingsServiceImpl extends ManagementsBase implements PasswordSet
     addIfNotNull(req, "reuseAmount", settings.getReuseAmount());
     addIfNotNull(req, "lock", settings.getLock());
     addIfNotNull(req, "lockAttempts", settings.getLockAttempts());
+    addIfNotNull(req, "tempLock", settings.getTempLock());
+    addIfNotNull(req, "tempLockAttempts", settings.getTempLockAttempts());
+    addIfNotNull(req, "tempLockDuration", settings.getTempLockDuration());
+    addIfNotNull(req, "enablePasswordStrength", settings.getEnablePasswordStrength());
+    addIfNotNull(req, "passwordStrengthScore", settings.getPasswordStrengthScore());
+    addIfNotNull(req, "anyLetter", settings.getAnyLetter());
+    addIfNotNull(req, "disallowedCharacters", settings.getDisallowedCharacters());
+    addIfNotNull(req, "disallowEmailMatch", settings.getDisallowEmailMatch());
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(managementPasswordSettingsUri(null), req, Void.class);
   }
