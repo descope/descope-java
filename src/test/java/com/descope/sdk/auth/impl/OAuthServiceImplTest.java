@@ -19,6 +19,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import com.descope.enums.OAuthPrompt;
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
@@ -36,10 +37,15 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.OAuthService;
 import com.descope.utils.JwtUtils;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -47,6 +53,7 @@ import java.util.function.Supplier;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class OAuthServiceImplTest {
@@ -130,6 +137,155 @@ public class OAuthServiceImplTest {
           .isInstanceOf(ServerCommonException.class).hasMessageContaining("refreshToken");
     }
     verify(apiProxy, never()).post(any(), any(), any());
+  }
+
+  @Test
+  void testStartWithPromptLoginHintAndInitiatedEmail() throws Exception {
+    LoginOptions options = LoginOptions.builder().tenantId("t1").ssoAppId("app1")
+        .pkceChallenge("challenge".getBytes(StandardCharsets.UTF_8)).build();
+    List<OAuthPrompt> prompt = Arrays.asList(OAuthPrompt.LOGIN, OAuthPrompt.SELECT_ACCOUNT);
+    Map<String, Function<OAuthService, String>> calls = mapOf(
+        "/v1/auth/oauth/authorize",
+        s -> s.start("google", "https://my-app.com/cb", options, null, prompt, "hint@x.com", "init@x.com"),
+        "/v1/auth/oauth/authorize/signin",
+        s -> s.startSignIn("google", "https://my-app.com/cb", options, null, prompt, "hint@x.com", "init@x.com"));
+    calls.put("/v1/auth/oauth/authorize/signup",
+        s -> s.startSignUp("google", "https://my-app.com/cb", options, null, prompt, "hint@x.com", "init@x.com"));
+    for (Map.Entry<String, Function<OAuthService, String>> e : calls.entrySet()) {
+      ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+      ApiProxy apiProxy = mock(ApiProxy.class);
+      doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(uri.capture(), body.capture(), any());
+      try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+        mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+        Assertions.assertThat(e.getValue().apply(oauthService)).isEqualTo(MOCK_URL);
+      }
+      Assertions.assertThat(uri.getValue().getPath()).isEqualTo(e.getKey());
+      Assertions.assertThat(uri.getValue().getRawQuery().split("&")).containsExactlyInAnyOrder(
+          "provider=google", "redirectURL=https%3A%2F%2Fmy-app.com%2Fcb", "loginHint=hint%40x.com",
+          "initiatedEmail=init%40x.com", "prompt=login", "prompt=select_account");
+      Assertions.assertThat(toJson(body.getValue())).contains("\"tenantId\":\"t1\"", "\"ssoAppId\":\"app1\"",
+          "\"pkceChallenge\":\"Y2hhbGxlbmdl\"");
+      Assertions.assertThat(startAuthHeader(null, e.getValue())).isEqualTo("Bearer " + PROJECT_ID);
+    }
+  }
+
+  @Test
+  void testStartWithoutNewFieldsOmitsThem() throws Exception {
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(uri.capture(), body.capture(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      oauthService.start("google", null, new LoginOptions(), null, null, null, null);
+    }
+    Assertions.assertThat(uri.getValue().getRawQuery()).isEqualTo("provider=google");
+    Assertions.assertThat(toJson(body.getValue())).doesNotContain("tenantId", "ssoAppId", "pkceChallenge");
+  }
+
+  @Test
+  void testStartWithNullPromptFails() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      assertThatThrownBy(() -> oauthService.start("google", null, null, null,
+          Collections.singletonList(null), null, null))
+          .isInstanceOf(ServerCommonException.class).hasMessageContaining("prompt");
+    }
+    verify(apiProxy, never()).post(any(), any(), any());
+  }
+
+  @Test
+  void testUpdateUser() throws Exception {
+    LoginOptions options = LoginOptions.builder().tenantId("t1").build();
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(uri.capture(), body.capture(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      String url = oauthService.updateUser("github", "https://my-app.com/cb", "some-refresh-jwt", options, true,
+          Arrays.asList(OAuthPrompt.CONSENT), "hint@x.com", "init@x.com");
+      Assertions.assertThat(url).isEqualTo(MOCK_URL);
+    }
+    Assertions.assertThat(uri.getValue().getPath()).isEqualTo("/v1/auth/oauth/authorize/update");
+    Assertions.assertThat(uri.getValue().getRawQuery().split("&")).containsExactlyInAnyOrder(
+        "provider=github", "redirectUrl=https%3A%2F%2Fmy-app.com%2Fcb", "allowAllMerge=true",
+        "loginHint=hint%40x.com", "initiatedEmail=init%40x.com", "prompt=consent");
+    Assertions.assertThat(body.getValue()).isSameAs(options);
+    Assertions.assertThat(toJson(body.getValue())).contains("\"tenantId\":\"t1\"");
+  }
+
+  @Test
+  void testUpdateUserSendsRefreshJwtAsBearer() {
+    String expected = "Bearer " + PROJECT_ID + ":some-refresh-jwt";
+    Assertions.assertThat(startAuthHeader(null, s -> s.updateUser("github", null, "some-refresh-jwt", null, false)))
+        .isEqualTo(expected);
+    Assertions.assertThat(startAuthHeader("some-auth-management-key",
+        s -> s.updateUser("github", null, "some-refresh-jwt", null, false)))
+        .isEqualTo(expected + ":some-auth-management-key");
+  }
+
+  @Test
+  void testUpdateUserMinimalRequest() throws Exception {
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new OAuthResponse(MOCK_URL)).when(apiProxy).post(uri.capture(), body.capture(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      oauthService.updateUser("github", null, "some-refresh-jwt", null, false);
+    }
+    Assertions.assertThat(uri.getValue().getRawQuery()).isEqualTo("provider=github");
+    Assertions.assertThat(body.getValue()).isInstanceOf(LoginOptions.class);
+  }
+
+  @Test
+  void testUpdateUserInvalidArgumentsFail() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      assertThatThrownBy(() -> oauthService.updateUser("github", null, "", null, false))
+          .isInstanceOf(ServerCommonException.class).hasMessageContaining("refreshToken");
+      assertThatThrownBy(() -> oauthService.updateUser("", null, "some-refresh-jwt", null, false))
+          .isInstanceOf(ServerCommonException.class).hasMessageContaining("provider");
+      assertThatThrownBy(() -> oauthService.updateUser("github", null, "some-refresh-jwt", null, false,
+          Collections.singletonList(null), null, null))
+          .isInstanceOf(ServerCommonException.class).hasMessageContaining("prompt");
+    }
+    verify(apiProxy, never()).post(any(), any(), any());
+  }
+
+  @Test
+  void testExchangeTokenNewResponseFields() throws Exception {
+    JWTResponse jwtResponse = parseJWTResponse("{\"sessionJwt\":\"s\",\"refreshJwt\":\"r\","
+        + "\"sessionExpiration\":11,\"externalToken\":\"ext\",\"claims\":{\"a\":\"b\"},"
+        + "\"tenantSSOID\":\"sso1\",\"trustedDeviceJwt\":\"tdj\",\"nextRefreshSeconds\":22,"
+        + "\"cookieName\":\"DSR\",\"sessionCookieName\":\"DS\",\"sessionCookieDomain\":\"x.com\","
+        + "\"unsavedSSO\":true,\"knownDeviceJwt\":\"kdj\",\"userCreationDeferred\":true,"
+        + "\"externalPasskey\":true,\"unknownField\":1}");
+
+    AuthenticationInfo info = exchangeTokenReturning(jwtResponse);
+
+    Assertions.assertThat(info.getSessionExpiration()).isEqualTo(11);
+    Assertions.assertThat(info.getExternalToken()).isEqualTo("ext");
+    Assertions.assertThat(info.getClaims()).containsEntry("a", "b");
+    Assertions.assertThat(info.getTenantSSOID()).isEqualTo("sso1");
+    Assertions.assertThat(info.getTrustedDeviceJwt()).isEqualTo("tdj");
+    Assertions.assertThat(info.getNextRefreshSeconds()).isEqualTo(22);
+    Assertions.assertThat(info.getCookieName()).isEqualTo("DSR");
+    Assertions.assertThat(info.getSessionCookieName()).isEqualTo("DS");
+    Assertions.assertThat(info.getSessionCookieDomain()).isEqualTo("x.com");
+    Assertions.assertThat(info.getUnsavedSSO()).isTrue();
+    Assertions.assertThat(info.getKnownDeviceJwt()).isEqualTo("kdj");
+    Assertions.assertThat(info.getUserCreationDeferred()).isTrue();
+    Assertions.assertThat(info.getExternalPasskey()).isTrue();
+  }
+
+  // Serialized the way the API proxy does it
+  private static String toJson(Object body) throws Exception {
+    return new ObjectMapper().setSerializationInclusion(Include.NON_NULL).writeValueAsString(body);
   }
 
   /** Runs the given start call and returns the Authorization header it was sent with. */
