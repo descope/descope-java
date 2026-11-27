@@ -525,6 +525,17 @@ try {
     // unauthorized error
 }
 
+// Exchange an access key for a session token. Use exchangeAccessKeyWithResponse
+// to also get the ID of the access key
+try {
+    ExchangeAccessKeyResponse resp = as.exchangeAccessKeyWithResponse(accessKey,
+            new AccessKeyLoginOptions(mapOf("k", "v")));
+    Token t = resp.getToken();
+    String keyId = resp.getKeyId();
+} catch (DescopeException de) {
+    // unauthorized error
+}
+
 ```
 
 Choose the right session validation and refresh combination that suits your needs.

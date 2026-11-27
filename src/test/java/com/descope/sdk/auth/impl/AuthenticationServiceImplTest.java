@@ -13,14 +13,17 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.auth.ExchangeAccessKeyResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -40,11 +43,13 @@ import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
@@ -95,6 +100,38 @@ public class AuthenticationServiceImplTest {
         authenticationService.getMatchedPermissions(MOCK_TOKEN, null));
     assertEquals(Arrays.asList("p1", "p2"),
         authenticationService.getMatchedPermissions(MOCK_TOKEN, Arrays.asList("p1", "p2", "p3")));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testExchangeAccessKeyWithResponse() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    AuthenticationServiceImpl.ExchangeAccessKeyJWTResponse response =
+        new AuthenticationServiceImpl.ExchangeAccessKeyJWTResponse();
+    response.setSessionJwt("someSessionJwt");
+    response.setKeyId("someKeyId");
+    doReturn(response).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      AccessKeyLoginOptions loginOptions = new AccessKeyLoginOptions(mapOf("k", "v"));
+      ExchangeAccessKeyResponse result = authenticationService.exchangeAccessKeyWithResponse("someKey", loginOptions);
+      assertEquals(MOCK_TOKEN, result.getToken());
+      assertEquals("someKeyId", result.getKeyId());
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), any());
+      assertEquals("/v1/auth/accesskey/exchange", uriCaptor.getValue().getPath());
+      assertEquals(mapOf("loginOptions", loginOptions), bodyCaptor.getValue());
+    }
+  }
+
+  @Test
+  void testExchangeAccessKeyWithResponseMissingKey() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authenticationService.exchangeAccessKeyWithResponse(""));
+    assertEquals("The accessKey argument is invalid", thrown.getMessage());
   }
 
   // Only the code exchange may return without a session; refresh must still reject a missing one
