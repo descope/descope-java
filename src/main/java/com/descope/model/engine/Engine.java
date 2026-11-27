@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class Engine {
   private String id;
   private String name;
-  // Only set by create and rotate
+  // Only set by create; rotateEngineSecret returns the new secret directly
   private String secret;
   // Epoch seconds
   private Integer createdTime;
