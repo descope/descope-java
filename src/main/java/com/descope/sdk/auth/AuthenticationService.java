@@ -3,6 +3,8 @@ package com.descope.sdk.auth;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.LogoutOptions;
+import com.descope.model.auth.LogoutResponse;
 import com.descope.model.jwt.Token;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
@@ -257,6 +259,16 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error
    */
   void logoutAll(String refreshToken) throws DescopeException;
+
+  /**
+   * Used to log out of all device sessions, optionally also logging the user out of their SSO identity provider.
+   *
+   * @param refreshToken - token
+   * @param options - optional {@link LogoutOptions}, may be null
+   * @return {@link LogoutResponse} with the SSO logout URL to send the browser to, when there is one
+   * @throws DescopeException if there is an error
+   */
+  LogoutResponse logoutAll(String refreshToken, LogoutOptions options) throws DescopeException;
 
   /**
    * Use to retrieve current session user details. The request requires a valid refresh token.
