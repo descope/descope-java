@@ -52,6 +52,7 @@ public class ManagementServiceBuilder {
         .fgaService(new FGAServiceImpl(client))
         .projectService(new ProjectServiceImpl(client))
         .passwordSettingsService(new PasswordSettingsServiceImpl(client))
+        .authAccessService(new AuthAccessServiceImpl(client))
         .ssoApplicationService(new SsoApplicationServiceImpl(client))
         .outboundAppsService(new OutboundAppsServiceImpl(client))
         .outboundAppsByTokenService(new OutboundAppsByTokenServiceImpl(client))
