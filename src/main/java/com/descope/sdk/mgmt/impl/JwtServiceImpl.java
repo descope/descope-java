@@ -54,13 +54,19 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   @Override
   public Token updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims)
       throws DescopeException {
+    return updateJWTWithCustomClaims(jwt, customClaims, null);
+  }
+
+  @Override
+  public Token updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims, Integer refreshDuration)
+      throws DescopeException {
     if (StringUtils.isBlank(jwt)) {
       throw ServerCommonException.invalidArgument("JWT");
     }
 
     // customClaims can be nil, it will mean that this JWT will be validated, and updated authz data
     // will be set
-    UpdateJwtRequest updateJwtRequest = new UpdateJwtRequest(jwt, customClaims);
+    UpdateJwtRequest updateJwtRequest = new UpdateJwtRequest(jwt, customClaims, refreshDuration);
     URI updateJwtUri = composeUpdateJwtUri();
     ApiProxy apiProxy = getApiProxy();
 

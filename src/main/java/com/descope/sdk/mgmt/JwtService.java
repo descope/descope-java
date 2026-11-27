@@ -24,6 +24,18 @@ public interface JwtService {
   Token updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims)
       throws DescopeException;
 
+  /**
+   * Update a valid JWT with the custom claims provided. The new JWT will be
+   * returned.
+   *
+   * @param jwt             - Old JWT
+   * @param customClaims    - Custom Claims
+   * @param refreshDuration - Refresh duration for the new JWT (optional, not sent when {@code null})
+   * @return - New JWT
+   */
+  Token updateJWTWithCustomClaims(String jwt, Map<String, Object> customClaims, Integer refreshDuration)
+      throws DescopeException;
+
   AuthenticationInfo signUp(String loginId, MgmtSignUpUser signUpUserDetails)
           throws DescopeException;
 
