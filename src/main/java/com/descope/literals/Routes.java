@@ -205,6 +205,9 @@ public class Routes {
     public static final String MANAGEMENT_PROJECT_CLONE = "/v1/mgmt/project/clone";
     public static final String MANAGEMENT_PROJECT_EXPORT = "/v1/mgmt/project/export";
     public static final String MANAGEMENT_PROJECT_IMPORT = "/v1/mgmt/project/import";
+    public static final String MANAGEMENT_PROJECT_SNAPSHOT_EXPORT = "/v1/mgmt/project/snapshot/export";
+    public static final String MANAGEMENT_PROJECT_SNAPSHOT_IMPORT = "/v1/mgmt/project/snapshot/import";
+    public static final String MANAGEMENT_PROJECT_SNAPSHOT_VALIDATE = "/v1/mgmt/project/snapshot/validate";
 
     // Audit
     public static final String MANAGEMENT_AUDIT_SEARCH_LINK = "/v1/mgmt/audit/search";

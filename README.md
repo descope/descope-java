@@ -1943,6 +1943,14 @@ try {
     // Handle the error
 }
 
+// Clone the current project to a new production project with the given tags
+try {
+    NewProjectResponse resp = ps.cloneProject("New Project Name", ProjectEnvironment.Production,
+        Arrays.asList("tag1", "tag2"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Update the project's tags
 try {
     ps.updateTags(Arrays.asList("production", "eu"));
@@ -1987,6 +1995,35 @@ try {
 
     // Update the current project's settings to mirror those in the exported data
     ps.importProject(files);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+You can also work with project snapshots. A snapshot doesn't include secrets, so provide the ones the
+import needs in `inputSecrets`, and validate the snapshot first to find out which are missing.
+
+```java
+try {
+    // Export a snapshot of the current project, leave the format unset for the default
+    ExportSnapshotResponse exported = ps.exportSnapshot(ExportSnapshotRequest.builder().build());
+
+    ImportSnapshotRequest req = ImportSnapshotRequest.builder()
+        .files(exported.getFiles())
+        .inputSecrets(SnapshotSecrets.builder()
+            .connectors(Arrays.asList(SnapshotSecret.builder()
+                .id("connector-id").name("My Connector").type("connector-type").value("connector-secret")
+                .build()))
+            .build())
+        .build();
+
+    // Check the snapshot can be imported, and which secrets it still needs
+    ValidateSnapshotResponse validation = ps.validateSnapshot(req);
+    if (validation.isOk()) {
+        // Update the current project's settings to mirror those in the snapshot
+        ps.importSnapshot(req);
+    }
 } catch (DescopeException de) {
     // Handle the error
 }
