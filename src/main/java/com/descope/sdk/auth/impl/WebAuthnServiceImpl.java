@@ -15,9 +15,12 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
+import com.descope.model.webauthn.PasskeyOptions;
 import com.descope.model.webauthn.WebAuthnFinishRequest;
 import com.descope.model.webauthn.WebAuthnTransactionResponse;
+import com.descope.model.webauthn.WebAuthnUpdateFinishResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.auth.WebAuthnService;
 import com.descope.utils.JwtUtils;
@@ -33,6 +36,12 @@ public class WebAuthnServiceImpl extends AuthenticationServiceImpl implements We
 
   @Override
   public WebAuthnTransactionResponse signUpStart(String loginId, User user, String origin) throws DescopeException {
+    return signUpStart(loginId, user, origin, null, null, null);
+  }
+
+  @Override
+  public WebAuthnTransactionResponse signUpStart(String loginId, User user, String origin,
+      SignUpOptions signUpOptions, PasskeyOptions passkeyOptions, String displayName) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -44,6 +53,10 @@ public class WebAuthnServiceImpl extends AuthenticationServiceImpl implements We
     }
     URI webAuthnSignUpURL = getUri(WEBAUTHN_SIGN_UP_START);
     Map<String, Object> signUpRequest = mapOf("loginId", loginId, "user", user, "origin", origin);
+    if (signUpOptions != null) {
+      signUpRequest.put("loginOptions", signUpOptions);
+    }
+    putPasskeyFields(signUpRequest, passkeyOptions, displayName);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(webAuthnSignUpURL, signUpRequest, WebAuthnTransactionResponse.class);
   }
@@ -64,6 +77,12 @@ public class WebAuthnServiceImpl extends AuthenticationServiceImpl implements We
   @Override
   public WebAuthnTransactionResponse signInStart(String loginId, String origin, String token, LoginOptions loginOptions)
       throws DescopeException {
+    return signInStart(loginId, origin, token, loginOptions, null);
+  }
+
+  @Override
+  public WebAuthnTransactionResponse signInStart(String loginId, String origin, String token, LoginOptions loginOptions,
+      PasskeyOptions passkeyOptions) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -84,6 +103,7 @@ public class WebAuthnServiceImpl extends AuthenticationServiceImpl implements We
     if (loginOptions != null) {
       signInRequest.put("loginOptions", loginOptions);
     }
+    putPasskeyFields(signInRequest, passkeyOptions, null);
     return apiProxy.post(webAuthnSignInURL, signInRequest, WebAuthnTransactionResponse.class);
   }
 
@@ -102,21 +122,49 @@ public class WebAuthnServiceImpl extends AuthenticationServiceImpl implements We
 
   @Override
   public WebAuthnTransactionResponse signUpOrInStart(String loginId, String origin) throws DescopeException {
+    return signUpOrInStart(loginId, origin, null, null, null, null, null);
+  }
+
+  @Override
+  public WebAuthnTransactionResponse signUpOrInStart(String loginId, String origin, String token,
+      LoginOptions loginOptions, String ssoAppId, PasskeyOptions passkeyOptions, String displayName)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     if (StringUtils.isBlank(origin)) {
       throw ServerCommonException.invalidArgument("Origin");
     }
-    URI webAuthnSignUpOrInURL = getUri(WEBAUTHN_SIGN_UP_OR_IN_START);
+    ApiProxy apiProxy;
+    if (JwtUtils.isJWTRequired(loginOptions)) {
+      if (StringUtils.isBlank(token)) {
+        throw ServerCommonException.invalidArgument("Token");
+      }
+      apiProxy = getApiProxy(token);
+    } else {
+      apiProxy = getApiProxy();
+    }
     Map<String, Object> signUpOrInRequest = mapOf("loginId", loginId, "origin", origin);
-    ApiProxy apiProxy = getApiProxy();
+    if (loginOptions != null) {
+      signUpOrInRequest.put("loginOptions", loginOptions);
+    }
+    if (StringUtils.isNotBlank(ssoAppId)) {
+      signUpOrInRequest.put("ssoAppId", ssoAppId);
+    }
+    putPasskeyFields(signUpOrInRequest, passkeyOptions, displayName);
+    URI webAuthnSignUpOrInURL = getUri(WEBAUTHN_SIGN_UP_OR_IN_START);
     return apiProxy.post(webAuthnSignUpOrInURL, signUpOrInRequest, WebAuthnTransactionResponse.class);
   }
 
   @Override
   public WebAuthnTransactionResponse updateUserDeviceStart(String loginId, String origin, String token)
       throws DescopeException {
+    return updateUserDeviceStart(loginId, origin, token, false, null, null);
+  }
+
+  @Override
+  public WebAuthnTransactionResponse updateUserDeviceStart(String loginId, String origin, String token, boolean mfa,
+      PasskeyOptions passkeyOptions, String displayName) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -129,6 +177,10 @@ public class WebAuthnServiceImpl extends AuthenticationServiceImpl implements We
     validateSessionWithToken(token); // no need to send remote if the token is not valid
     URI webAuthnUpdateStartURL = getUri(WEBAUTHN_UPDATE_START);
     Map<String, Object> updateRequest = mapOf("loginId", loginId, "origin", origin);
+    if (mfa) {
+      updateRequest.put("mfa", true);
+    }
+    putPasskeyFields(updateRequest, passkeyOptions, displayName);
     ApiProxy apiProxy = getApiProxy(token);
     return apiProxy.post(webAuthnUpdateStartURL, updateRequest, WebAuthnTransactionResponse.class);
   }
@@ -143,5 +195,34 @@ public class WebAuthnServiceImpl extends AuthenticationServiceImpl implements We
     URI webAuthnUpdateFinishURL = getUri(WEBAUTHN_UPDATE_FINISH);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(webAuthnUpdateFinishURL, finishRequest, Void.class);
-  }  
+  }
+
+  @Override
+  public AuthenticationInfo updateUserDeviceFinishWithSession(WebAuthnFinishRequest finishRequest)
+      throws DescopeException {
+    if (finishRequest == null
+        || StringUtils.isBlank(finishRequest.getResponse())
+        || StringUtils.isBlank(finishRequest.getTransactionId())) {
+      throw ServerCommonException.invalidArgument("Finish Request");
+    }
+    URI webAuthnUpdateFinishURL = getUri(WEBAUTHN_UPDATE_FINISH);
+    ApiProxy apiProxy = getApiProxy();
+    WebAuthnUpdateFinishResponse response =
+        apiProxy.post(webAuthnUpdateFinishURL, finishRequest, WebAuthnUpdateFinishResponse.class);
+    // No session unless the update started with mfa
+    if (response == null || response.getJwt() == null || StringUtils.isBlank(response.getJwt().getSessionJwt())) {
+      return null;
+    }
+    return getAuthenticationInfo(response.getJwt());
+  }
+
+  private static void putPasskeyFields(Map<String, Object> request, PasskeyOptions passkeyOptions,
+      String displayName) {
+    if (passkeyOptions != null) {
+      request.put("passkeyOptions", passkeyOptions);
+    }
+    if (StringUtils.isNotBlank(displayName)) {
+      request.put("displayName", displayName);
+    }
+  }
 }
