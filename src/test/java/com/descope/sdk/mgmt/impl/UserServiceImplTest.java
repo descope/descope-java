@@ -862,6 +862,8 @@ public class UserServiceImplTest {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
       OTPTestUserResponse response = testUserService().generateOtpForTestUser("someLoginId", DeliveryMethod.EMAIL,
           testUserLoginOptions());
+      assertEquals("someLoginId", response.getLoginId());
+      assertEquals("123456", response.getCode());
       ClassicHttpRequest request = captor.getValue();
       assertEquals("POST", request.getMethod());
       assertTrue(request.getRequestUri().endsWith("/v1/mgmt/tests/generate/otp"));
@@ -872,8 +874,6 @@ public class UserServiceImplTest {
       assertEquals("someLoginId", body.get("loginId"));
       assertEquals("email", body.get("deliveryMethod"));
       assertTestUserLoginOptions((Map<?, ?>) body.get("loginOptions"));
-      assertEquals("someLoginId", response.getLoginId());
-      assertEquals("123456", response.getCode());
     }
   }
 
@@ -906,6 +906,8 @@ public class UserServiceImplTest {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
       MagicLinkTestUserResponse response = testUserService().generateMagicLinkForTestUser("someLoginId", mockUrl,
           DeliveryMethod.EMAIL, testUserLoginOptions());
+      assertEquals("someLoginId", response.getLoginId());
+      assertEquals("link", response.getLink());
       ClassicHttpRequest request = captor.getValue();
       assertEquals("POST", request.getMethod());
       assertTrue(request.getRequestUri().endsWith("/v1/mgmt/tests/generate/magiclink"));
@@ -918,8 +920,6 @@ public class UserServiceImplTest {
       assertEquals(mockUrl, body.get("redirectUrl"));
       assertFalse(body.containsKey("URI"));
       assertTestUserLoginOptions((Map<?, ?>) body.get("loginOptions"));
-      assertEquals("someLoginId", response.getLoginId());
-      assertEquals("link", response.getLink());
     }
   }
 
@@ -940,6 +940,9 @@ public class UserServiceImplTest {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
       EnchantedLinkTestUserResponse response = testUserService().generateEnchantedLinkForTestUser("someLoginId",
           mockUrl, testUserLoginOptions());
+      assertEquals("someLoginId", response.getLoginId());
+      assertEquals("link", response.getLink());
+      assertEquals("pref", response.getPendingRef());
       ClassicHttpRequest request = captor.getValue();
       assertEquals("POST", request.getMethod());
       assertTrue(request.getRequestUri().endsWith("/v1/mgmt/tests/generate/enchantedlink"));
@@ -951,9 +954,6 @@ public class UserServiceImplTest {
       assertEquals(mockUrl, body.get("redirectUrl"));
       assertFalse(body.containsKey("URI"));
       assertTestUserLoginOptions((Map<?, ?>) body.get("loginOptions"));
-      assertEquals("someLoginId", response.getLoginId());
-      assertEquals("link", response.getLink());
-      assertEquals("pref", response.getPendingRef());
     }
   }
 
