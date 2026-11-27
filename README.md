@@ -1394,6 +1394,24 @@ try {
     // Handle the error
 }
 
+// Export the flow and its screens based on the given id, in the format importFlowV2 accepts
+try {
+    ExportedFlow exported = fs.exportFlowV2("sign-up");
+    for (ExportedScreen s : exported.getScreens()) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Import the given flow and its screens as the given id. This overrides the existing flow and is irreversible.
+// Optionally pass skipRender and a changelog: fs.importFlowV2("sign-up", exported, true, "Imported by the SDK");
+try {
+    fs.importFlowV2("sign-up", exported);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Export the current theme of the project
 try {
     Theme t = fs.exportTheme();
