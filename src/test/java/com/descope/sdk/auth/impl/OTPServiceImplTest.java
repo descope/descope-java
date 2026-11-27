@@ -621,12 +621,12 @@ public class OTPServiceImplTest {
     ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
     AuthenticationInfo info = runCaptured(jwtResponse, header, uri, body,
         () -> otpService.verifyCode(DeliveryMethod.IM, MOCK_PHONE, "123456"));
+    assertNotNull(info.getToken());
     assertEquals("/v1/auth/otp/verify/im", uri.getValue().getPath());
     assertEquals("Bearer " + PROJECT_ID, header.get());
     AuthenticationVerifyRequestBody req = (AuthenticationVerifyRequestBody) body.getValue();
     assertEquals(MOCK_PHONE, req.getLoginId());
     assertEquals("123456", req.getCode());
-    assertNotNull(info.getToken());
     assertNotNull(info.getRefreshToken());
     assertEquals(600, info.getSessionExpiration());
     assertEquals("someExternalToken", info.getExternalToken());
