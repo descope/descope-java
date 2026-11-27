@@ -334,5 +334,12 @@ public class Routes {
     public static final String USER_REMOVE_PASSKEY_LINK = "/v1/mgmt/user/passkey/delete";
     public static final String USER_LIST_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/list";
     public static final String USER_REMOVE_TOTP_SEED_LINK = "/v1/mgmt/user/totp/delete";
+
+    // SCIM keys
+    public static final String MANAGEMENT_SCIM_KEY_LOAD_LINK = "/v1/mgmt/scim/key";
+    public static final String MANAGEMENT_SCIM_KEY_CREATE_LINK = "/v1/mgmt/scim/key/create";
+    public static final String MANAGEMENT_SCIM_KEY_ROTATE_LINK = "/v1/mgmt/scim/key/rotate";
+    public static final String MANAGEMENT_SCIM_KEY_REVOKE_LINK = "/v1/mgmt/scim/key/revoke";
+    public static final String MANAGEMENT_SCIM_KEY_ACTIVATE_LINK = "/v1/mgmt/scim/key/activate";
   }
 }

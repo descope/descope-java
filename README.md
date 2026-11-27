@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage SCIM Keys](#manage-scim-keys)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1991,6 +1992,74 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage SCIM Keys
+
+You can create, rotate, revoke, activate and load the SCIM access keys of a tenant. The bearer token for the
+identity provider's SCIM configuration is returned exactly once, when a key is created or rotated. Omitting `ssoId`
+targets the tenant's default SSO configuration, not every configuration.
+
+```java
+ScimService ss = descopeClient.getManagementServices().getScimService();
+
+// Create a SCIM key. Existing keys of the same SSO configuration stay valid.
+try {
+    ScimAccessKeyResponse resp = ss.createKey(CreateScimAccessKeyRequest.builder()
+        .tenantId("tenant-id")
+        .ssoId("sso-id")
+        .name("scim-key")
+        .description("SCIM key for the corporate IdP")
+        .build());
+    // Configure these in the identity provider
+    String bearerToken = resp.getCleartext();
+    String scimUrl = resp.getScimUrl();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load the tenant's SCIM keys (metadata only). Pass null as the ssoId for every SSO configuration.
+try {
+    LoadScimAccessKeysResponse resp = ss.loadKeys("tenant-id", "sso-id");
+    for (ScimAccessKey k : resp.getKeys()) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Rotate: create a new key and revoke the existing ones. Update the IdP with the new bearer token right away.
+try {
+    ScimAccessKeyResponse resp = ss.rotateKey(RotateScimAccessKeyRequest.builder()
+        .tenantId("tenant-id")
+        .ssoId("sso-id")
+        .revokeMode(ScimKeyRevokeMode.DEACTIVATE)
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Revoke every SCIM key of the SSO configuration. DEACTIVATE is reversible, DELETE (the default) is not.
+try {
+    RevokeScimAccessKeysResponse resp = ss.revokeKeys(RevokeScimAccessKeysRequest.builder()
+        .tenantId("tenant-id")
+        .ssoId("sso-id")
+        .revokeMode(ScimKeyRevokeMode.DEACTIVATE)
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Re-enable deactivated keys, named explicitly (up to 100)
+try {
+    ActivateScimAccessKeysResponse resp = ss.activateKeys(ActivateScimAccessKeysRequest.builder()
+        .tenantId("tenant-id")
+        .ssoId("sso-id")
+        .keyIds(Arrays.asList("key-id-1", "key-id-2"))
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Code Examples
