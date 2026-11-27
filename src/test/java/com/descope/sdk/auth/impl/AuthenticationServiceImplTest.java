@@ -13,15 +13,21 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.auth.LogoutOptions;
+import com.descope.model.auth.LogoutResponse;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
@@ -40,11 +46,17 @@ import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
@@ -115,6 +127,71 @@ public class AuthenticationServiceImplTest {
       assertEquals(ErrorCode.INVALID_TOKEN, thrown.getCode());
       assertEquals("Invalid Token", thrown.getMessage());
     }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testLogoutAllWithOptions() throws Exception {
+    Client client = Client.builder()
+        .uri("https://api.descope.com")
+        .projectId(TestUtils.PROJECT_ID)
+        .authManagementKey("some-auth-management-key")
+        .sdkInfo(SdkInfo.builder().name("java").build())
+        .build();
+    AuthenticationService service = AuthenticationServiceBuilder.buildServices(client).getAuthService();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new LogoutResponse("https://idp.example.com/slo")).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    LogoutResponse response;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        header.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      response = service.logoutAll("someRefreshJwt", LogoutOptions.builder()
+          .logoutType(Arrays.asList("someType"))
+          .ssoLogout(true)
+          .redirectUrl("https://app.example.com/signed-out")
+          .build());
+    }
+    assertEquals("https://idp.example.com/slo", response.getSsoLogoutUrl());
+    assertEquals("Bearer " + TestUtils.PROJECT_ID + ":someRefreshJwt:some-auth-management-key", header.get());
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy).post(uri.capture(), body.capture(), any());
+    assertEquals("https://api.descope.com/v1/auth/logoutall", uri.getValue().toString());
+    ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(Include.NON_NULL);
+    assertEquals(
+        "{\"logoutType\":[\"someType\"],\"ssoLogout\":true,\"redirectUrl\":\"https://app.example.com/signed-out\"}",
+        mapper.writeValueAsString(body.getValue()));
+  }
+
+  @Test
+  void testLogoutAllWithoutOptionsSendsEmptyBody() throws Exception {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new LogoutResponse()).when(apiProxy).post(any(), any(), any());
+    LogoutResponse response;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      response = authenticationService.logoutAll("someRefreshJwt", null);
+    }
+    assertNotNull(response);
+    ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy).post(any(), body.capture(), any());
+    ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(Include.NON_NULL);
+    assertEquals("{}", mapper.writeValueAsString(body.getValue()));
+  }
+
+  @Test
+  void testLogoutAllWithOptionsMissingRefreshToken() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      ServerCommonException thrown = assertThrows(ServerCommonException.class,
+          () -> authenticationService.logoutAll("", LogoutOptions.builder().ssoLogout(true).build()));
+      assertThat(thrown.getMessage()).contains("refresh token");
+    }
+    verify(apiProxy, never()).post(any(), any(), any());
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

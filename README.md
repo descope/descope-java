@@ -648,6 +648,24 @@ try {
 
 ```
 
+To also log the user out of their SSO identity provider, pass `LogoutOptions` with `ssoLogout`. When the session signed in
+through a SAML SSO configuration with single logout on, send the browser to the returned `ssoLogoutUrl`.
+
+```java
+try {
+    LogoutResponse res = as.logoutAll(refreshToken, LogoutOptions.builder()
+        .ssoLogout(true)
+        .redirectUrl("https://app.example.com/signed-out") // must be in the project's approved domains
+        .build());
+    if (StringUtils.isNotBlank(res.getSsoLogoutUrl())) {
+        // Redirect the browser to res.getSsoLogoutUrl()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 ## Management Functions
 
 It is very common for some form of management or automation to be required. These can be performed
