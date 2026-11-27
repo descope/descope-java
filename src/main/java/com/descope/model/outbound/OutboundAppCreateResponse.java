@@ -11,4 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OutboundAppCreateResponse {
   private String id;
+  private OutboundApp app;
+
+  public OutboundAppCreateResponse(String id) {
+    this.id = id;
+  }
 }
