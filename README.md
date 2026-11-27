@@ -96,7 +96,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+14. [Manage Policy Rules](#manage-policy-rules)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1920,6 +1921,92 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Policy Rules
+
+You can create, update, delete, load, reorder and search policy rules. Rules are evaluated first-match in their evaluation order:
+
+```java
+// Set up the policy rules service
+PolicyRulesService policyRulesService = descopeClient.getManagementServices().getPolicyRulesService();
+
+// Create a policy rule. The id is server-generated.
+try {
+    PolicyRule rule = policyRulesService.createPolicyRule(
+        PolicyRule.builder()
+            .name("rule-name") // required
+            .description("rule description")
+            .enabled(true)
+            .actionKinds(Arrays.asList("action-kind"))
+            .effect("effect")
+            .principalType("principal-type")
+            .principalSelector(Arrays.asList("principal-selector"))
+            .resourceTargets(Arrays.asList(
+                PolicyRuleResourceTarget.builder().type("resource-type").allOfType(true).build()))
+            // Up to 255 conditions, AND-ed
+            .conditions(Arrays.asList(
+                PolicyRuleCondition.builder()
+                    .key("attribute-key")
+                    .operator(PolicyRuleCondition.OPERATOR_IN)
+                    .value(Arrays.asList("value-1", "value-2"))
+                    .build()))
+            // Epoch seconds after which the rule is no longer evaluated; 0 means never
+            // .expireTime(1767225600)
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Replace an existing policy rule matched by id (overwrites all fields)
+try {
+    PolicyRule updated = policyRulesService.updatePolicyRule(
+        PolicyRule.builder()
+            .id("rule-id") // required
+            .name("rule-name") // required
+            .enabled(false)
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a policy rule by id
+try {
+    PolicyRule rule = policyRulesService.loadPolicyRule("rule-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Move a policy rule to a 1-based position in the evaluation order; rules in between shift accordingly
+try {
+    List<PolicyRule> rules = policyRulesService.reorderPolicyRule("rule-id", 1);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search policy rules
+// All fields are optional, use to filter results
+try {
+    PolicyRuleSearchResponse res = policyRulesService.searchPolicyRules(
+        PolicyRuleSearchRequest.builder()
+            // .text("search-text")
+            // .effect(Arrays.asList("effect"))
+            // .enabled(true)
+            // .sort(Arrays.asList(PolicyRuleSortField.builder().field("name").desc(true).build()))
+            // .batchSize(20)
+            // .page(0)
+            .build());
+    // res.getPolicyRules(), res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a policy rule by id. Idempotent.
+try {
+    policyRulesService.deletePolicyRule("rule-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Project
