@@ -71,7 +71,8 @@ class JwtTemplateServiceImplTest {
 
   @Test
   void testCreate() throws Exception {
-    JwtTemplate template = call("{\"template\":" + TEMPLATE_JSON + "}", () -> jwtTemplateService.create(fullTemplate()));
+    JwtTemplate template =
+        call("{\"template\":" + TEMPLATE_JSON + "}", () -> jwtTemplateService.create(fullTemplate()));
     Map<?, ?> body = sentBody("/v1/mgmt/jwt/templates/create");
     assertEquals(new ObjectMapper().readValue(TEMPLATE_JSON.replace(",\"unknownField\":1", ""), Map.class),
         body.get("template"));
@@ -95,10 +96,11 @@ class JwtTemplateServiceImplTest {
 
   @Test
   void testUpdate() throws Exception {
-    JwtTemplate template = call("{\"template\":" + TEMPLATE_JSON + "}", () -> jwtTemplateService.update(fullTemplate()));
+    JwtTemplate template =
+        call("{\"template\":" + TEMPLATE_JSON + "}", () -> jwtTemplateService.update(fullTemplate()));
     Map<?, ?> body = sentBody("/v1/mgmt/jwt/templates/update");
     assertEquals("T1", ((Map<?, ?>) body.get("template")).get("id"));
-        assertFullTemplate(template);
+    assertFullTemplate(template);
   }
 
   @Test
