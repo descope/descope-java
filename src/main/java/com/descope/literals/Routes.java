@@ -283,6 +283,14 @@ public class Routes {
     public static final String MANAGEMENT_INBOUND_DELETE_TENANT_CONSENT = "/v1/mgmt/thirdparty/consents/delete/tenant";
     public static final String MANAGEMENT_INBOUND_SEARCH_CONSENT = "/v1/mgmt/thirdparty/consents/search";
 
+    // Policy rules
+    public static final String MANAGEMENT_POLICY_RULE_CREATE = "/v1/mgmt/policies/rule/create";
+    public static final String MANAGEMENT_POLICY_RULE_UPDATE = "/v1/mgmt/policies/rule/update";
+    public static final String MANAGEMENT_POLICY_RULE_DELETE = "/v1/mgmt/policies/rule/delete";
+    public static final String MANAGEMENT_POLICY_RULE_LOAD = "/v1/mgmt/policies/rule/load";
+    public static final String MANAGEMENT_POLICY_RULE_REORDER = "/v1/mgmt/policies/rule/reorder";
+    public static final String MANAGEMENT_POLICY_RULE_SEARCH = "/v1/mgmt/policies/rule/search";
+
     // Tenant (parity)
     public static final String TENANT_UPDATE_DEFAULT_ROLES_LINK = "/v1/mgmt/tenant/updateDefaultRoles";
 

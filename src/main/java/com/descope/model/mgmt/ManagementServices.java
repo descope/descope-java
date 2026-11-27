@@ -12,6 +12,7 @@ import com.descope.sdk.mgmt.OutboundAppsByTokenService;
 import com.descope.sdk.mgmt.OutboundAppsService;
 import com.descope.sdk.mgmt.PasswordSettingsService;
 import com.descope.sdk.mgmt.PermissionService;
+import com.descope.sdk.mgmt.PolicyRulesService;
 import com.descope.sdk.mgmt.ProjectService;
 import com.descope.sdk.mgmt.RolesService;
 import com.descope.sdk.mgmt.SsoApplicationService;
@@ -44,4 +45,5 @@ public class ManagementServices {
   OutboundAppsByTokenService outboundAppsByTokenService;
   InboundAppsService inboundAppsService;
   UserCustomAttributesService userCustomAttributesService;
+  PolicyRulesService policyRulesService;
 }
