@@ -96,7 +96,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+14. [Manage Agentic Identities and Governance](#manage-agentic-identities-and-governance)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1920,6 +1921,127 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Agentic Identities and Governance
+
+You can search, revoke, block and unblock agentic identities, and manage Agentic Governance Suite access requests and settings:
+
+```java
+// Set up the agentic service
+AgenticService agenticService = descopeClient.getManagementServices().getAgenticService();
+
+// Search agentic identities (consents granted to agentic apps)
+// All fields are optional, use to filter results
+try {
+    AgenticIdentitySearchResponse res = agenticService.searchAgenticIdentities(
+        AgenticIdentitySearchOptions.builder()
+            // .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            // .page(0)
+            // .limit(10)
+            .build()
+    );
+    // res.getIdentities(), res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Revoke agentic identities and their consents
+// At least one field is required. Only a user ID revokes all of the user's agentic identities
+try {
+    int revoked = agenticService.revokeAgenticIdentities(
+        AgenticIdentitiesRevokeOptions.builder()
+            .userId("user-id")
+            // .clientId("client-id")
+            // .resourceId("resource-id")
+            // .consentId("consent-id")
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Block XAA (ID-JAG) agentic identities by consent ID (up to 100), and unblock them
+// A block or an unblock can take up to 5 minutes to apply
+try {
+    XaaAgenticIdentitiesResponse res = agenticService.blockXaaAgenticIdentities(Arrays.asList("consent-id"));
+    // res.getIdentities(), res.getSkippedConsentIds()
+    res = agenticService.unblockXaaAgenticIdentities(Arrays.asList("consent-id"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load and update the Agentic Governance Suite settings
+// Only the fields that are set are updated
+try {
+    AgenticGovernanceSettings settings = agenticService.loadGovernanceSettings();
+    settings = agenticService.updateGovernanceSettings(
+        AgenticGovernanceSettings.builder()
+            .autoApproval(true)
+            // .suiteDisabled(false)
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create an access request to provision an agent client for a console user
+try {
+    GovernanceAccessRequest request = agenticService.createGovernanceAccessRequest(
+        GovernanceAccessRequestCreateRequest.builder()
+            .requestorUserId("console-user-id") // required
+            .clientName("My Agent")
+            .clientType("agent-client-type")
+            .grantTypes(Arrays.asList(GovernanceGrantType.CLIENT_CREDENTIALS))
+            .targets(Arrays.asList(
+                GovernanceAccessRequestTarget.builder()
+                    .name("my-resource")
+                    .kind("resource") // or "connection"
+                    .scopes(Arrays.asList("read"))
+                    .build()))
+            .justification("Needed for the reporting agent")
+            .build()
+    );
+    // request.getStatus() is "pending", "approved" or "denied"
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load an access request by ID
+try {
+    GovernanceAccessRequest request = agenticService.loadGovernanceAccessRequest("request-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Approve or deny a pending access request, with an optional note
+try {
+    GovernanceAccessRequest request =
+        agenticService.resolveGovernanceAccessRequest("request-id", "approve", "Approved for Q3");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search access requests
+// All fields are optional, use to filter, sort and page results
+try {
+    GovernanceAccessRequestSearchResponse res = agenticService.searchGovernanceAccessRequests(
+        GovernanceAccessRequestSearchOptions.builder()
+            // .text("free text")
+            // .searchFields(Arrays.asList(
+            //     SearchField.builder().field("status").valArr(Arrays.asList("pending")).build()))
+            // .sort(Arrays.asList(SortField.builder().field("createdTime").desc(true).build()))
+            // .page(0)
+            // .limit(10)
+            .build()
+    );
+    // res.getRequests(), res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Project
