@@ -66,6 +66,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -77,6 +78,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Supplier;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -895,6 +897,87 @@ public class UserServiceImplTest {
       assertEquals(Arrays.asList("password", "totp"), captor.getValue().getLockReasons());
       assertEquals(Arrays.asList("recovery_codes"), captor.getValue().getTempLockReasons());
     }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testSearchAllTestUsersForSuccess() {
+    UserResponse userResponse = new UserResponse();
+    userResponse.setUserId("u1");
+    AllUsersResponseDetails allUsersResponse = new AllUsersResponseDetails(Arrays.asList(userResponse), 1);
+    UserSearchRequest userSearchRequest = UserSearchRequest.builder()
+        .limit(6)
+        .page(1)
+        .identifier("someLoginId")
+        .familyIds(Arrays.asList("family1"))
+        .dependent(false)
+        .build();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(allUsersResponse).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      AllUsersResponseDetails response = userService.searchAllTestUsers(userSearchRequest);
+      assertEquals(1, response.getTotal());
+      assertEquals("u1", response.getUsers().get(0).getUserId());
+
+      ArgumentCaptor<Supplier<String>> authCaptor =
+          ArgumentCaptor.forClass(Supplier.class);
+      mockedApiProxyBuilder.verify(() -> ApiProxyBuilder.buildProxy(authCaptor.capture(), any()));
+      assertThat(authCaptor.getValue().get()).startsWith("Bearer " + TestUtils.PROJECT_ID);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<UserSearchRequest> bodyCaptor = ArgumentCaptor.forClass(UserSearchRequest.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), any());
+      assertEquals("/v2/mgmt/user/search/test", uriCaptor.getValue().getPath());
+      UserSearchRequest sent = bodyCaptor.getValue();
+      assertTrue(sent.getWithTestUser());
+      assertTrue(sent.getTestUsersOnly());
+      assertEquals("someLoginId", sent.getIdentifier());
+      assertEquals(Arrays.asList("family1"), sent.getFamilyIds());
+      assertFalse(sent.getDependent());
+    }
+  }
+
+  @Test
+  void testSearchAllTestUsersWithNullRequest() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new AllUsersResponseDetails(Collections.emptyList(), 0)).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      userService.searchAllTestUsers(null);
+      ArgumentCaptor<UserSearchRequest> bodyCaptor = ArgumentCaptor.forClass(UserSearchRequest.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), any());
+      assertEquals(Integer.valueOf(0), bodyCaptor.getValue().getLimit());
+      assertEquals(Integer.valueOf(0), bodyCaptor.getValue().getPage());
+      assertTrue(bodyCaptor.getValue().getTestUsersOnly());
+    }
+  }
+
+  @Test
+  void testSearchAllTestUsersForInvalidLimit() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.searchAllTestUsers(UserSearchRequest.builder().limit(-1).build()));
+    assertNotNull(thrown);
+    assertEquals("The limit argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testSearchAllTestUsersForInvalidPage() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.searchAllTestUsers(UserSearchRequest.builder().page(-1).build()));
+    assertNotNull(thrown);
+    assertEquals("The page argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUserResponseDetailsDeserializesCreated() throws Exception {
+    UserResponseDetails details = new ObjectMapper().readValue(
+        "{\"user\":{\"userId\":\"u1\"},\"created\":true}", UserResponseDetails.class);
+    assertEquals("u1", details.getUser().getUserId());
+    assertTrue(details.getCreated());
+    UserResponseDetails none = new ObjectMapper().readValue("{\"user\":null}", UserResponseDetails.class);
+    assertNull(none.getUser());
+    assertNull(none.getCreated());
   }
 
   @Test

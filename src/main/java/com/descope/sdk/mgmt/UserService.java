@@ -241,6 +241,18 @@ public interface UserService {
   AllUsersResponseDetails searchAll(UserSearchRequest request) throws DescopeException;
 
   /**
+   * Search test users according to given filters. Always sets {@code withTestUser} and
+   * {@code testUsersOnly} to true on the request.
+   *
+   * @param request The options optional parameter allows to fine-tune the search filters and
+   *     results. Using null will result in a filter-less query with a set amount of results.
+   * @return {@link AllUsersResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  AllUsersResponseDetails searchAllTestUsers(UserSearchRequest request) throws DescopeException;
+
+  /**
    * Activate an existing user.
    *
    * @param loginId The loginID is required.

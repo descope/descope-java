@@ -9,4 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserResponseDetails {
   private UserResponse user;
+  private Boolean created;
+
+  // Keeps the previous constructor binary compatible
+  public UserResponseDetails(UserResponse user) {
+    this.user = user;
+  }
 }

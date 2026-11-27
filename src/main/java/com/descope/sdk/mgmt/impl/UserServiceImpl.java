@@ -34,6 +34,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_SSO_AP
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_TOTP_SEED_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_ALL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_SEARCH_TEST_USERS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ACTIVE_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_SET_ROLES_LINK;
@@ -412,6 +413,24 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI composeSearchAllUri = composeSearchAllUri();
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(composeSearchAllUri, request, AllUsersResponseDetails.class);
+  }
+
+  @Override
+  public AllUsersResponseDetails searchAllTestUsers(UserSearchRequest request) throws DescopeException {
+    if (request == null) {
+      request = UserSearchRequest.builder().limit(0).page(0).build();
+    }
+    if (request.getLimit() == null || request.getLimit() < 0) {
+      throw ServerCommonException.invalidArgument("limit");
+    }
+    if (request.getPage() == null || request.getPage() < 0) {
+      throw ServerCommonException.invalidArgument("page");
+    }
+    request.setWithTestUser(true);
+    request.setTestUsersOnly(true);
+    URI searchTestUsersUri = getUri(USER_SEARCH_TEST_USERS_LINK);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(searchTestUsersUri, request, AllUsersResponseDetails.class);
   }
 
   @Override
