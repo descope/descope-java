@@ -1,6 +1,6 @@
 package com.descope.model.sessionclassification;
 
-/** Values for {@link SessionClassification#getSessionTimeLimitRule()}. */
+/** Values for the {@code sessionTimeLimitRule} of a {@link SessionClassification}. */
 public final class SessionTimeLimitRule {
   /** The classification does not override the limit, like a user with no classification. */
   public static final String UNSPECIFIED = "SESSION_TIME_LIMIT_RULE_UNSPECIFIED";

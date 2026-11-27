@@ -64,7 +64,7 @@ class SessionClassificationServiceImplTest {
 
   @Test
   void testLoad() throws IOException {
-    SessionClassification res = service(CLASSIFICATION_JSON).load("admins");
+    final SessionClassification res = service(CLASSIFICATION_JSON).load("admins");
     assertEquals("GET", method.get());
     assertEquals("/v1/mgmt/sessionclassification", path.get());
     assertEquals("name=admins", query.get());
@@ -74,7 +74,7 @@ class SessionClassificationServiceImplTest {
 
   @Test
   void testSet() throws IOException {
-    SessionClassification res = service(CLASSIFICATION_JSON).set(SessionClassification.builder()
+    final SessionClassification res = service(CLASSIFICATION_JSON).set(SessionClassification.builder()
         .name("admins")
         .description("desc")
         .sessionTimeLimitRule(SessionTimeLimitRule.MIN_OF_TENANTS)
@@ -117,7 +117,7 @@ class SessionClassificationServiceImplTest {
 
   @Test
   void testLoadAll() throws IOException {
-    List<SessionClassification> res = service("{\"classifications\":[" + CLASSIFICATION_JSON + "]}").loadAll();
+    final List<SessionClassification> res = service("{\"classifications\":[" + CLASSIFICATION_JSON + "]}").loadAll();
     assertEquals("GET", method.get());
     assertEquals("/v1/mgmt/sessionclassification/all", path.get());
     assertNull(query.get());
