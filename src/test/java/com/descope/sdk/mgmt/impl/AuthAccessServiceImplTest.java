@@ -279,7 +279,7 @@ class AuthAccessServiceImplTest {
 
   @Test
   void testValidation() {
-    AuthAccessRule valid = AuthAccessRule.builder().effect(AuthAccessAction.ALLOW).build();
+    final AuthAccessRule valid = AuthAccessRule.builder().effect(AuthAccessAction.ALLOW).build();
     assertInvalid("id", () -> service.loadRule(""));
     assertInvalid("tenantId", () -> service.loadTenantRule("", "r1"));
     assertInvalid("id", () -> service.loadTenantRule("t1", null));
