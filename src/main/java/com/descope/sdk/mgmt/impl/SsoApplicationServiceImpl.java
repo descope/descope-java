@@ -187,7 +187,7 @@ class SsoApplicationServiceImpl extends ManagementsBase implements SsoApplicatio
   }
 
   @Override
-  public SSOApplicationAddSecretResponse addApplicationSecret(String id, String name, Integer expireTime)
+  public SSOApplicationAddSecretResponse addApplicationSecret(String id, String name, Long expireTime)
       throws DescopeException {
     if (StringUtils.isBlank(id)) {
       throw ServerCommonException.invalidArgument("id");

@@ -30,7 +30,7 @@ public class SSOApplication {
   /** Application roles this app has in its trusted apps, when client credentials are enabled. */
   private List<SSOAppServiceAccountRole> serviceAccountRoles;
   /** Epoch seconds. */
-  private Integer createdTime;
+  private Long createdTime;
   private String darkLogo;
   /** Project-level roles that grant access to this application. */
   private List<String> assignedRoleIds;

@@ -131,7 +131,7 @@ public interface SsoApplicationService {
    * @return {@link SSOApplicationAddSecretResponse} with the secret's metadata and its cleartext
    * @throws DescopeException If error, a subtype of this exception will be thrown
    */
-  SSOApplicationAddSecretResponse addApplicationSecret(String id, String name, Integer expireTime)
+  SSOApplicationAddSecretResponse addApplicationSecret(String id, String name, Long expireTime)
       throws DescopeException;
 
   /**

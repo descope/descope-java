@@ -14,7 +14,7 @@ public class SSOApplicationSecretMeta {
   private String name;
   private String status;
   /** Epoch seconds; 0 means it never expires. */
-  private Integer expireTime;
+  private Long expireTime;
   /** Epoch seconds. */
-  private Integer createdTime;
+  private Long createdTime;
 }

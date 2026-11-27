@@ -139,7 +139,7 @@ public class SsoApplicationServiceImplTest {
     String resp = "{\"meta\":{\"id\":\"sid\",\"name\":\"s1\",\"status\":\"active\",\"expireTime\":1700000000,"
         + "\"createdTime\":1600000000},\"cleartext\":\"secret\"}";
     SSOApplicationAddSecretResponse[] res = new SSOApplicationAddSecretResponse[1];
-    Sent sent = send(resp, () -> res[0] = service().addApplicationSecret("app1", "s1", 1700000000));
+    Sent sent = send(resp, () -> res[0] = service().addApplicationSecret("app1", "s1", 1700000000L));
     sent.assertPost("/v1/mgmt/sso/idp/app/secret/add");
     Map<?, ?> body = sent.body();
     assertEquals("app1", body.get("appId"));
@@ -150,8 +150,8 @@ public class SsoApplicationServiceImplTest {
     assertEquals("sid", meta.getId());
     assertEquals("s1", meta.getName());
     assertEquals("active", meta.getStatus());
-    assertEquals(1700000000, meta.getExpireTime());
-    assertEquals(1600000000, meta.getCreatedTime());
+    assertEquals(1700000000L, meta.getExpireTime());
+    assertEquals(1600000000L, meta.getCreatedTime());
 
     sent = send(resp, () -> service().addApplicationSecret("app1", "s1", null));
     assertFalse(sent.body().containsKey("expireTime"));
@@ -269,7 +269,7 @@ public class SsoApplicationServiceImplTest {
     assertEquals(Collections.singletonMap("tier", "gold"), app.getCustomAttributes());
     assertEquals("app2", app.getServiceAccountRoles().get(0).getTargetAppId());
     assertEquals(Collections.singletonList("r1"), app.getServiceAccountRoles().get(0).getRoleIds());
-    assertEquals(1600000000, app.getCreatedTime());
+    assertEquals(1600000000L, app.getCreatedTime());
     assertEquals("https://logo.com/dark.png", app.getDarkLogo());
     assertEquals(Collections.singletonList("r2"), app.getAssignedRoleIds());
 
