@@ -66,6 +66,7 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
       case SMS:
       case VOICE:
       case WHATSAPP:
+      case IM:
         String phone = user.getPhone();
         if (StringUtils.isBlank(phone)) {
           phone = loginId;
@@ -97,6 +98,8 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
         return MaskedPhoneRes.class;
       case EMAIL:
         return MaskedEmailRes.class;
+      case IM: // Only OTP sends by IM
+        throw ServerCommonException.invalidArgument("DeliveryMethod");
       default:
         throw new IllegalStateException("Unexpected value: " + deliveryMethod);
     }
@@ -144,9 +147,23 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
     if (StringUtils.isNotBlank(jwtResponse.getRefreshJwt())) {
       refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
     }
-    return new AuthenticationInfo(
+    AuthenticationInfo authenticationInfo = new AuthenticationInfo(
         sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
         jwtResponse.getIdpResponse(), jwtResponse.getSsoAuthenticationOnly());
+    authenticationInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
+    authenticationInfo.setExternalToken(jwtResponse.getExternalToken());
+    authenticationInfo.setClaims(jwtResponse.getClaims());
+    authenticationInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
+    authenticationInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    authenticationInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    authenticationInfo.setCookieName(jwtResponse.getCookieName());
+    authenticationInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
+    authenticationInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    authenticationInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    authenticationInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    authenticationInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    authenticationInfo.setExternalPasskey(jwtResponse.getExternalPasskey());
+    return authenticationInfo;
   }
 
   @SuppressWarnings("unchecked")

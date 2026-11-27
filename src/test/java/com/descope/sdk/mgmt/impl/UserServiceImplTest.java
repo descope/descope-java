@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.descope.enums.DeliveryMethod;
@@ -789,6 +790,21 @@ public class UserServiceImplTest {
         () -> userService.generateOtpForTestUser("", DeliveryMethod.EMAIL));
     assertNotNull(thrown);
     assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateForTestUserRejectsIM() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      ServerCommonException thrown = assertThrows(ServerCommonException.class,
+          () -> userService.generateOtpForTestUser("someLoginId", DeliveryMethod.IM));
+      assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+      thrown = assertThrows(ServerCommonException.class,
+          () -> userService.generateMagicLinkForTestUser("someLoginId", mockUrl, DeliveryMethod.IM));
+      assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+    }
+    verifyNoInteractions(apiProxy);
   }
 
   @Test
