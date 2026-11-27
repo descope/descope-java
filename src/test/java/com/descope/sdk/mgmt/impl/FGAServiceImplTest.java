@@ -425,7 +425,7 @@ class FGAServiceImplTest {
       when(apiProxy.post(any(), any(), eq(FGACheckResponse.class)))
           .thenReturn(fromJson(CHECK_RESPONSE_JSON, FGACheckResponse.class));
 
-      List<FGACheckResult> results = fgaService.check(relations, context,
+      final List<FGACheckResult> results = fgaService.check(relations, context,
           FGACheckOptions.builder().computePaths(true).listConditions(true).build());
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
@@ -491,7 +491,7 @@ class FGAServiceImplTest {
       when(apiProxy.post(any(), any(), eq(FGACheckResponse.class)))
           .thenReturn(fromJson(CHECK_RESPONSE_JSON, FGACheckResponse.class));
 
-      List<FGACheckResult> results = fgaService.checkTuples(
+      final List<FGACheckResult> results = fgaService.checkTuples(
           Arrays.asList(new FGACheckTuple(relation, tupleContext), new FGACheckTuple(relation, null)), context,
           FGACheckOptions.builder().listConditions(false).build());
 
@@ -557,7 +557,7 @@ class FGAServiceImplTest {
       when(apiProxy.post(any(), any(), eq(FGASearchMappableResourcesResponse.class)))
           .thenReturn(fromJson(MAPPABLE_SCHEMA_JSON, FGASearchMappableResourcesResponse.class));
 
-      List<FGAMappableResources> result = fgaService.searchMappableResources("t1", queries, 5L);
+      final List<FGAMappableResources> result = fgaService.searchMappableResources("t1", queries, 5L);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
       ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
@@ -582,7 +582,7 @@ class FGAServiceImplTest {
   void testSearchMappableResources_OptionalFieldsNotSent() throws Exception {
     try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
       mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
-      List<FGAMappableResources> result = fgaService.searchMappableResources("t1", null, null);
+      final List<FGAMappableResources> result = fgaService.searchMappableResources("t1", null, null);
       ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
       verify(apiProxy).post(any(), bodyCaptor.capture(), eq(FGASearchMappableResourcesResponse.class));
       assertFalse(bodyCaptor.getValue().containsKey("resourcesQueries"));
@@ -606,7 +606,7 @@ class FGAServiceImplTest {
       when(apiProxy.get(any(), eq(FGAMappableSchema.class)))
           .thenReturn(fromJson(MAPPABLE_SCHEMA_JSON, FGAMappableSchema.class));
 
-      FGAMappableSchema result = fgaService.loadMappableSchema("t1", 10L);
+      final FGAMappableSchema result = fgaService.loadMappableSchema("t1", 10L);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
       verify(apiProxy).get(uriCaptor.capture(), eq(FGAMappableSchema.class));
