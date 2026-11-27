@@ -5,12 +5,16 @@ import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_LIST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT_V2_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT_V2_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.flow.ExportedTheme;
+import com.descope.model.flow.ExportedThemeResponse;
 import com.descope.model.flow.Flow;
 import com.descope.model.flow.FlowResponse;
 import com.descope.model.flow.FlowsResponse;
@@ -81,5 +85,25 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
     Map<String, Object> request = mapOf("theme", theme);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(THEME_IMPORT_LINK), request, ThemeResponse.class).getTheme();
+  }
+
+  @Override
+  public ExportedTheme exportProjectTheme() throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    ExportedThemeResponse response = apiProxy.post(getUri(THEME_EXPORT_V2_LINK), null, ExportedThemeResponse.class);
+    return response == null ? null : response.getTheme();
+  }
+
+  @Override
+  public void importProjectTheme(ExportedTheme theme) throws DescopeException {
+    if (theme == null) {
+      throw ServerCommonException.invalidArgument("Theme");
+    }
+    if (theme.getStyles() == null) {
+      throw ServerCommonException.invalidArgument("Styles");
+    }
+    Map<String, Object> request = mapOf("theme", theme);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(THEME_IMPORT_V2_LINK), request, Void.class);
   }
 }
