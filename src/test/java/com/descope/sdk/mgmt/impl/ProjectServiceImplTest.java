@@ -134,7 +134,7 @@ public class ProjectServiceImplTest {
 
   @Test
   void testCloneWithEnvironmentAndTags() throws Exception {
-    NewProjectResponse resp = exchange("/v1/mgmt/project/clone",
+    final NewProjectResponse resp = exchange("/v1/mgmt/project/clone",
         "{\"projectId\":\"P2\",\"projectName\":\"name2\",\"tag\":\"production\","
             + "\"environment\":\"production\",\"tags\":[\"t1\",\"t2\"]}",
         () -> directProjectService().cloneProject("name2", ProjectEnvironment.Production, Arrays.asList("t1", "t2")));
@@ -198,7 +198,7 @@ public class ProjectServiceImplTest {
 
   @Test
   void testValidateSnapshot() throws Exception {
-    ValidateSnapshotResponse resp = exchange("/v1/mgmt/project/snapshot/validate",
+    final ValidateSnapshotResponse resp = exchange("/v1/mgmt/project/snapshot/validate",
         "{\"ok\":false,\"failures\":[\"foo\"],\"missingSecrets\":{"
             + "\"connectors\":[{\"id\":\"c1\",\"name\":\"conn\",\"type\":\"http\"}],"
             + "\"oauthProviders\":[{\"id\":\"o1\",\"name\":\"oauth\",\"type\":\"google\"}],"
