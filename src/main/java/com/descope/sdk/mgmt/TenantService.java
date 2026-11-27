@@ -3,8 +3,14 @@ package com.descope.sdk.mgmt;
 import com.descope.exception.DescopeException;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.TenantSettings;
+import com.descope.model.tenant.request.CreateTenantRequest;
 import com.descope.model.tenant.request.GenerateTenantLinkRequest;
+import com.descope.model.tenant.request.PatchTenantRequest;
 import com.descope.model.tenant.request.TenantSearchRequest;
+import com.descope.model.tenant.request.UpdateTenantRequest;
+import com.descope.model.tenant.response.CreateTenantsBatchResponse;
+import com.descope.model.tenant.response.DeleteTenantsBatchResponse;
+import com.descope.model.tenant.response.UpdateTenantsBatchResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +48,15 @@ public interface TenantService {
       throws DescopeException;
 
   /**
+   * Create a new tenant with all the settings in the request. The ID is generated when the request has none.
+   *
+   * @param request - The tenant to create. {@code name} is required and must be unique per project.
+   * @return The tenant ID.
+   * @throws DescopeException in case of errors
+   */
+  String create(CreateTenantRequest request) throws DescopeException;
+
+  /**
    * Create a new tenant with the given name and ID. selfProvisioningDomains is an
    * optional list of
    * domains that are associated with this tenant.
@@ -72,6 +87,18 @@ public interface TenantService {
   void createWithId(String id, String name, List<String> selfProvisioningDomains,
       Map<String, Object> customAttributes)
       throws DescopeException;
+
+  /**
+   * Create tenants in batch, at most 100 per call by default. A tenant that fails is returned in
+   * {@code failedTenants} while the others are created.
+   *
+   * @param tenants - The tenants to create, each with a {@code name}.
+   * @param strict  - When true, setting custom attributes the project does not declare fails that tenant.
+   *                Optional, null leaves it unset.
+   * @return {@link CreateTenantsBatchResponse} with the created and the failed tenants
+   * @throws DescopeException in case of errors
+   */
+  CreateTenantsBatchResponse createBatch(List<CreateTenantRequest> tenants, Boolean strict) throws DescopeException;
 
   /**
    * Update an existing tenant's name and domains. IMPORTANT: All parameters are
@@ -110,6 +137,37 @@ public interface TenantService {
       List<String> federatedAppIds, String roleInheritance) throws DescopeException;
 
   /**
+   * Update an existing tenant. IMPORTANT: A field left unset is cleared, except {@code approvedDomains}
+   * and an empty {@code authType}, which keep their current values. Use carefully.
+   *
+   * @param request - The tenant settings. {@code id} and {@code name} are required.
+   * @throws DescopeException in case of errors
+   */
+  void update(UpdateTenantRequest request) throws DescopeException;
+
+  /**
+   * Update tenants in batch, at most 100 per call by default. Each tenant is replaced as in
+   * {@link #update(UpdateTenantRequest)}. A tenant that fails is returned in {@code failedTenants}
+   * while the others are updated.
+   *
+   * @param tenants - The tenants to update, each with an {@code id} and a {@code name}.
+   * @param strict  - When true, setting custom attributes the project does not declare fails that tenant.
+   *                Optional, null leaves it unset.
+   * @return {@link UpdateTenantsBatchResponse} with the updated and the failed tenants
+   * @throws DescopeException in case of errors
+   */
+  UpdateTenantsBatchResponse updateBatch(List<UpdateTenantRequest> tenants, Boolean strict) throws DescopeException;
+
+  /**
+   * Patch an existing tenant. Only the fields set in the request are changed.
+   *
+   * @param id      - Tenant ID
+   * @param request - The fields to change
+   * @throws DescopeException in case of errors
+   */
+  void patch(String id, PatchTenantRequest request) throws DescopeException;
+
+  /**
    * Delete an existing tenant. IMPORTANT: This action is irreversible. Use
    * carefully.
    *
@@ -117,6 +175,27 @@ public interface TenantService {
    * @throws DescopeException in case of errors
    */
   void delete(String id) throws DescopeException;
+
+  /**
+   * Delete an existing tenant. IMPORTANT: This action is irreversible. Use
+   * carefully.
+   *
+   * @param id      - Tenant ID
+   * @param cascade - Whether to cascade the delete. Optional, null leaves it unset.
+   * @throws DescopeException in case of errors
+   */
+  void delete(String id, Boolean cascade) throws DescopeException;
+
+  /**
+   * Delete tenants in batch, at most 100 per call by default. IMPORTANT: This action is irreversible.
+   * A tenant that fails is returned in {@code failedTenants} while the others are deleted.
+   *
+   * @param ids     - The IDs of the tenants to delete
+   * @param cascade - Whether to cascade the delete. Optional, null leaves it unset.
+   * @return {@link DeleteTenantsBatchResponse} with the deleted and the failed tenants
+   * @throws DescopeException in case of errors
+   */
+  DeleteTenantsBatchResponse deleteBatch(List<String> ids, Boolean cascade) throws DescopeException;
 
   /**
    * Load the tenant with the given ID.
