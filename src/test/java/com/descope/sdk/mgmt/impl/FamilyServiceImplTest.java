@@ -267,7 +267,7 @@ public class FamilyServiceImplTest {
   @Test
   void testGetSettingsForSuccess() throws Exception {
     doAnswer(inv -> parse(SETTINGS_JSON, inv.getArgument(1))).when(apiProxy).get(any(), any());
-    FamilySettings settings = call(() -> familyService.getSettings());
+    final FamilySettings settings = call(() -> familyService.getSettings());
     ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
     verify(apiProxy).get(uri.capture(), any());
     assertThat(uri.getValue().getPath()).isEqualTo("/v1/mgmt/family/settings");
@@ -348,7 +348,7 @@ public class FamilyServiceImplTest {
     assertThat(family.getCustomAttributes()).containsEntry("a", "b");
     assertThat(family.getDisabled()).isTrue();
     assertThat(family.getPhoto()).isEqualTo("https://p");
-    assertThat(family.getCreatedTime()).isEqualTo(123);
+    assertThat(family.getCreatedTime()).isEqualTo(123L);
   }
 
   private static void assertSettings(FamilySettings settings) {

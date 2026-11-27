@@ -16,5 +16,5 @@ public class Family {
   private Map<String, Object> customAttributes;
   private Boolean disabled;
   private String photo;
-  private Integer createdTime;
+  private Long createdTime;
 }
