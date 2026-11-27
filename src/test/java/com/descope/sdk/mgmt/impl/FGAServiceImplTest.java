@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -15,26 +16,38 @@ import static org.mockito.Mockito.when;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.fga.FGAAuthzSchema;
 import com.descope.model.fga.FGACheckInfo;
+import com.descope.model.fga.FGACheckOptions;
+import com.descope.model.fga.FGACheckPathStep;
 import com.descope.model.fga.FGACheckResponse;
 import com.descope.model.fga.FGACheckResponse.FGACheckResponseTuple;
 import com.descope.model.fga.FGACheckResult;
+import com.descope.model.fga.FGACheckTuple;
 import com.descope.model.fga.FGACondition;
 import com.descope.model.fga.FGAConditionParam;
 import com.descope.model.fga.FGALoadSchemaResponse;
 import com.descope.model.fga.FGALoadSchemaResponse.FGALoadSchemaConditions;
+import com.descope.model.fga.FGAMappableResourceQuery;
+import com.descope.model.fga.FGAMappableResources;
+import com.descope.model.fga.FGAMappableSchema;
+import com.descope.model.fga.FGANode;
+import com.descope.model.fga.FGANodeExpression;
 import com.descope.model.fga.FGARelation;
 import com.descope.model.fga.FGAResourceDetails;
 import com.descope.model.fga.FGAResourceIdentifier;
 import com.descope.model.fga.FGASchema;
 import com.descope.model.fga.FGASchemaDryDeletes;
 import com.descope.model.fga.FGASchemaDryRunResponse;
+import com.descope.model.fga.FGASearchMappableResourcesResponse;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.proxy.ApiProxy;
 import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.mgmt.FGAService;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -43,6 +56,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -368,6 +382,275 @@ class FGAServiceImplTest {
 
       verify(apiProxy).post(any(), any(), eq(Void.class));
     }
+  }
+
+  private static final String CHECK_RESPONSE_JSON = "{\"tuples\":[{\"allowed\":true,"
+      + "\"tuple\":{\"resource\":\"doc1\",\"resourceType\":\"doc\",\"relation\":\"viewer\",\"target\":\"u1\","
+      + "\"targetType\":\"user\"},\"info\":{\"direct\":false,\"path\":{\"steps\":[{\"stepType\":\"RELATION\","
+      + "\"tuple\":{\"resource\":\"f1\",\"resourceType\":\"folder\",\"relation\":\"viewer\",\"target\":\"u1\","
+      + "\"targetType\":\"user\"},\"permission\":\"can_view\",\"subPaths\":[{\"steps\":[]}]}]},"
+      + "\"trueConditions\":[1,2],\"falseConditions\":[3]}}],\"schemaVersion\":\"v-abc-123\"}";
+
+  private static final String MAPPABLE_SCHEMA_JSON = "{\"schema\":{\"name\":\"s\",\"namespaces\":[{\"name\":\"doc\","
+      + "\"relationDefinitions\":[{\"name\":\"viewer\",\"complexDefinition\":{\"nType\":\"union\",\"children\":"
+      + "[{\"nType\":\"child\",\"expression\":{\"neType\":\"self\",\"relationDefinition\":\"owner\","
+      + "\"relationDefinitionNamespace\":\"doc\",\"targetRelationDefinition\":\"member\","
+      + "\"targetRelationDefinitionNamespace\":\"group\"}}]}}]}],\"conditions\":[{\"name\":\"IsAdmin\","
+      + "\"params\":[{\"name\":\"role\",\"type\":\"string\"}],\"expression\":\"role == 'admin'\",\"builtin\":true,"
+      + "\"checkedExpr\":\"AAEC\",\"id\":7}]},\"mappableResources\":[{\"type\":\"doc\",\"resources\":"
+      + "[{\"resource\":\"doc1\",\"displayName\":\"Doc 1\"}]}]}";
+
+  private static <T> T fromJson(String json, Class<T> clz) throws IOException {
+    return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .readValue(json, clz);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static String capturedAuthHeader(MockedStatic<ApiProxyBuilder> mockedStatic) {
+    ArgumentCaptor<Supplier<String>> captor = ArgumentCaptor.forClass(Supplier.class);
+    mockedStatic.verify(() -> ApiProxyBuilder.buildProxy(captor.capture(), any()));
+    return captor.getValue().get();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testCheck_WithOptions() throws Exception {
+    when(client.getUri()).thenReturn("https://api.descope.com");
+    List<FGARelation> relations = Arrays.asList(new FGARelation("doc1", "doc", "viewer", "u1", "user"));
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.post(any(), any(), eq(FGACheckResponse.class)))
+          .thenReturn(fromJson(CHECK_RESPONSE_JSON, FGACheckResponse.class));
+
+      List<FGACheckResult> results = fgaService.check(relations, context,
+          FGACheckOptions.builder().computePaths(true).listConditions(true).build());
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(FGACheckResponse.class));
+      assertEquals("https://api.descope.com/v1/mgmt/fga/check", uriCaptor.getValue().toString());
+      assertEquals("Bearer test-project:test-key", capturedAuthHeader(mockedStatic));
+      Map<String, Object> body = bodyCaptor.getValue();
+      assertEquals(relations, body.get("tuples"));
+      assertEquals(context, body.get("context"));
+      assertEquals(true, body.get("computePaths"));
+      assertEquals(true, body.get("listConditions"));
+      assertFalse(body.containsKey("checkTuples"));
+
+      assertEquals(1, results.size());
+      FGACheckResult result = results.get(0);
+      assertTrue(result.isAllowed());
+      assertEquals(relations.get(0), result.getRelation());
+      FGACheckInfo info = result.getInfo();
+      assertEquals("v-abc-123", info.getSchemaVersion());
+      assertEquals(Arrays.asList(1, 2), info.getTrueConditions());
+      assertEquals(Arrays.asList(3), info.getFalseConditions());
+      FGACheckPathStep step = info.getPath().getSteps().get(0);
+      assertEquals(FGACheckPathStep.STEP_TYPE_RELATION, step.getStepType());
+      assertEquals(new FGARelation("f1", "folder", "viewer", "u1", "user"), step.getTuple());
+      assertEquals("can_view", step.getPermission());
+      assertEquals(1, step.getSubPaths().size());
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testCheck_OptionsNotSentByDefault() throws Exception {
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      fgaService.check(Arrays.asList(new FGARelation("doc1", "doc", "viewer", "u1", "user")), null,
+          new FGACheckOptions());
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), eq(FGACheckResponse.class));
+      assertFalse(bodyCaptor.getValue().containsKey("computePaths"));
+      assertFalse(bodyCaptor.getValue().containsKey("listConditions"));
+    }
+  }
+
+  @Test
+  void testCheck_WithOptionsEmptyList() {
+    assertThrows(ServerCommonException.class,
+        () -> fgaService.check(Arrays.asList(), null, new FGACheckOptions()));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testCheckTuples_Success() throws Exception {
+    when(client.getUri()).thenReturn("https://api.descope.com");
+    FGARelation relation = new FGARelation("doc1", "doc", "viewer", "u1", "user");
+    Map<String, Object> tupleContext = new HashMap<>();
+    tupleContext.put("ip", "10.0.0.1");
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.post(any(), any(), eq(FGACheckResponse.class)))
+          .thenReturn(fromJson(CHECK_RESPONSE_JSON, FGACheckResponse.class));
+
+      List<FGACheckResult> results = fgaService.checkTuples(
+          Arrays.asList(new FGACheckTuple(relation, tupleContext), new FGACheckTuple(relation, null)), context,
+          FGACheckOptions.builder().listConditions(false).build());
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(FGACheckResponse.class));
+      assertEquals("https://api.descope.com/v1/mgmt/fga/check", uriCaptor.getValue().toString());
+      assertEquals("Bearer test-project:test-key", capturedAuthHeader(mockedStatic));
+      Map<String, Object> body = bodyCaptor.getValue();
+      assertFalse(body.containsKey("tuples"));
+      assertEquals(context, body.get("context"));
+      assertEquals(false, body.get("listConditions"));
+      assertFalse(body.containsKey("computePaths"));
+      List<Map<String, Object>> checkTuples = (List<Map<String, Object>>) body.get("checkTuples");
+      assertEquals(2, checkTuples.size());
+      assertEquals(relation, checkTuples.get(0).get("tuple"));
+      assertEquals(tupleContext, checkTuples.get(0).get("context"));
+      assertFalse(checkTuples.get(1).containsKey("context"));
+
+      assertTrue(results.get(0).isAllowed());
+      assertEquals("v-abc-123", results.get(0).getInfo().getSchemaVersion());
+    }
+  }
+
+  @Test
+  void testCheckTuples_EmptyList() {
+    assertThrows(ServerCommonException.class, () -> fgaService.checkTuples(Arrays.asList(), null, null));
+    assertThrows(ServerCommonException.class, () -> fgaService.checkTuples(null, null, null));
+  }
+
+  @Test
+  void testCheckTuples_MissingTuple() {
+    assertThrows(ServerCommonException.class,
+        () -> fgaService.checkTuples(Arrays.asList(new FGACheckTuple(null, null)), null, null));
+  }
+
+  @Test
+  void testDeleteAllRelations_Success() throws Exception {
+    when(client.getUri()).thenReturn("https://api.descope.com");
+    lenient().when(client.getFgaCacheUri()).thenReturn("https://cache.example.com");
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+
+      fgaService.deleteAllRelations();
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      verify(apiProxy).delete(uriCaptor.capture(), isNull(), eq(Void.class));
+      assertEquals("https://api.descope.com/v1/mgmt/fga/relations", uriCaptor.getValue().toString());
+      assertEquals("Bearer test-project:test-key", capturedAuthHeader(mockedStatic));
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testSearchMappableResources_Success() throws Exception {
+    when(client.getUri()).thenReturn("https://api.descope.com");
+    lenient().when(client.getFgaCacheUri()).thenReturn("https://cache.example.com");
+    List<FGAMappableResourceQuery> queries = Arrays.asList(
+        new FGAMappableResourceQuery("doc", Arrays.asList("Doc")));
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.post(any(), any(), eq(FGASearchMappableResourcesResponse.class)))
+          .thenReturn(fromJson(MAPPABLE_SCHEMA_JSON, FGASearchMappableResourcesResponse.class));
+
+      List<FGAMappableResources> result = fgaService.searchMappableResources("t1", queries, 5L);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(),
+          eq(FGASearchMappableResourcesResponse.class));
+      assertEquals("https://api.descope.com/v1/mgmt/fga/mappable/resources", uriCaptor.getValue().toString());
+      assertEquals("Bearer test-project:test-key", capturedAuthHeader(mockedStatic));
+      Map<String, Object> body = bodyCaptor.getValue();
+      assertEquals("t1", body.get("tenantId"));
+      assertEquals(queries, body.get("resourcesQueries"));
+      assertEquals("5", body.get("resourcesLimit"));
+
+      assertEquals(1, result.size());
+      assertEquals("doc", result.get(0).getType());
+      assertEquals("doc1", result.get(0).getResources().get(0).getResource());
+      assertEquals("Doc 1", result.get(0).getResources().get(0).getDisplayName());
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testSearchMappableResources_OptionalFieldsNotSent() throws Exception {
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      List<FGAMappableResources> result = fgaService.searchMappableResources("t1", null, null);
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), eq(FGASearchMappableResourcesResponse.class));
+      assertFalse(bodyCaptor.getValue().containsKey("resourcesQueries"));
+      assertFalse(bodyCaptor.getValue().containsKey("resourcesLimit"));
+      assertTrue(result.isEmpty());
+    }
+  }
+
+  @Test
+  void testSearchMappableResources_MissingTenantId() {
+    assertThrows(ServerCommonException.class, () -> fgaService.searchMappableResources("", null, null));
+  }
+
+  @Test
+  void testLoadMappableSchema_Success() throws Exception {
+    when(client.getUri()).thenReturn("https://api.descope.com");
+    lenient().when(client.getFgaCacheUri()).thenReturn("https://cache.example.com");
+
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      when(apiProxy.get(any(), eq(FGAMappableSchema.class)))
+          .thenReturn(fromJson(MAPPABLE_SCHEMA_JSON, FGAMappableSchema.class));
+
+      FGAMappableSchema result = fgaService.loadMappableSchema("t1", 10L);
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      verify(apiProxy).get(uriCaptor.capture(), eq(FGAMappableSchema.class));
+      assertEquals("/v1/mgmt/fga/mappable/schema", uriCaptor.getValue().getPath());
+      assertTrue(uriCaptor.getValue().toString().startsWith("https://api.descope.com/"));
+      assertTrue(Arrays.asList(uriCaptor.getValue().getQuery().split("&")).contains("tenantId=t1"));
+      assertTrue(Arrays.asList(uriCaptor.getValue().getQuery().split("&")).contains("resourcesLimit=10"));
+      assertEquals("Bearer test-project:test-key", capturedAuthHeader(mockedStatic));
+
+      FGAAuthzSchema schema = result.getSchema();
+      assertEquals("s", schema.getName());
+      FGANode node = schema.getNamespaces().get(0).getRelationDefinitions().get(0).getComplexDefinition();
+      assertEquals("union", node.getNType());
+      FGANodeExpression expression = node.getChildren().get(0).getExpression();
+      assertEquals("child", node.getChildren().get(0).getNType());
+      assertEquals("self", expression.getNeType());
+      assertEquals("owner", expression.getRelationDefinition());
+      assertEquals("doc", expression.getRelationDefinitionNamespace());
+      assertEquals("member", expression.getTargetRelationDefinition());
+      assertEquals("group", expression.getTargetRelationDefinitionNamespace());
+      FGACondition condition = schema.getConditions().get(0);
+      assertEquals("IsAdmin", condition.getName());
+      assertEquals("role", condition.getParams().get(0).getName());
+      assertTrue(condition.isBuiltin());
+      assertEquals("AAEC", condition.getCheckedExpr());
+      assertEquals(Integer.valueOf(7), condition.getId());
+      assertEquals("Doc 1", result.getMappableResources().get(0).getResources().get(0).getDisplayName());
+    }
+  }
+
+  @Test
+  void testLoadMappableSchema_LimitNotSentByDefault() throws Exception {
+    try (MockedStatic<ApiProxyBuilder> mockedStatic = Mockito.mockStatic(ApiProxyBuilder.class)) {
+      mockedStatic.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      fgaService.loadMappableSchema("t1", null);
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      verify(apiProxy).get(uriCaptor.capture(), eq(FGAMappableSchema.class));
+      assertEquals("tenantId=t1", uriCaptor.getValue().getQuery());
+    }
+  }
+
+  @Test
+  void testLoadMappableSchema_MissingTenantId() {
+    assertThrows(ServerCommonException.class, () -> fgaService.loadMappableSchema(null, null));
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)
