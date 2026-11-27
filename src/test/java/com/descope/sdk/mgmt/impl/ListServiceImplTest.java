@@ -258,7 +258,6 @@ class ListServiceImplTest {
 
   @Test
   void testInvalidArguments() {
-    List<String> values = Arrays.asList("a");
     ListRequest named = ListRequest.builder().name("n").build();
     assertInvalid("request", () -> listService.create(null));
     assertInvalid("request.name", () -> listService.create(ListRequest.builder().build()));
@@ -268,6 +267,7 @@ class ListServiceImplTest {
     assertInvalid("id", () -> listService.load(""));
     assertInvalid("name", () -> listService.loadByName(""));
     assertInvalid("id", () -> listService.clear(""));
+    List<String> values = Arrays.asList("a");
     assertInvalid("id", () -> listService.addIPs("", values));
     assertInvalid("ips", () -> listService.addIPs("listId", null));
     assertInvalid("ips", () -> listService.addIPs("listId", Collections.emptyList()));
