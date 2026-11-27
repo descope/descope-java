@@ -1351,6 +1351,22 @@ try {
     // Handle the error
 }
 
+// Each of the above also accepts an SSO configuration ID (ssoId) as a last argument, to only
+// return groups from that SSO configuration. Use "default_ssoid" for the tenant's default one.
+try {
+    List<Group> groups = gs.loadAllGroups("tenant-id", "sso-id");
+    groups = gs.loadAllGroupsForMembers("tenant-id",
+            Arrays.asList("user-id-1", "user-id-2"),
+            Arrays.asList("login-id-1", "login-id-2"),
+            "sso-id");
+    groups = gs.loadAllGroupMembers("tenant-id", "group-id", "sso-id");
+    for (Group g : groups) {
+        String ssoId = g.getSsoId(); // The SSO configuration the group came from
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 ### Manage Flows
