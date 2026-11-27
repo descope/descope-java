@@ -1266,6 +1266,16 @@ try {
     // Handle the error
 }
 
+// Create or update a role with its default and private flags, and get the role back
+try {
+    Role created = rs.create("Default Role", "", description, permissionNames, true, false);
+    Role updated = rs.update("Default Role", "", "Default Role", description, permissionNames, true, true);
+    // Or identify the role to update by its ID
+    updated = rs.updateWithId(created.getId(), "", "Default Role", description, permissionNames, true, true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Role deletion cannot be undone. Use carefully.
 try {
     rs.delete(newName);
@@ -1289,6 +1299,19 @@ try {
     for (Role r : resp.getRoles()) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search roles by free text or IDs, sorted, including project roles alongside the tenant's roles
+try {
+    RoleResponse resp = rs.search(RoleSearchOptions.builder()
+        .tenantIds(Arrays.asList(tid))
+        .includeProjectRoles(true)
+        .text("admin")
+        .roleIds(Arrays.asList("<role-id>"))
+        .sort(Arrays.asList(SortField.builder().field("createdTime").desc(true).build()))
+        .build());
 } catch (DescopeException de) {
     // Handle the error
 }
