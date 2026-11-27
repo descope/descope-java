@@ -19,6 +19,7 @@ import com.descope.model.roles.RoleSearchOptions;
 import com.descope.model.roles.RoleUpdateRequest;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.RolesService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
@@ -50,6 +51,18 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
   }
 
   @Override
+  public Role create(String name, String tenantId, String description, List<String> permissionNames,
+      Boolean defaultRole, Boolean privateRole) throws DescopeException {
+    if (StringUtils.isBlank(name)) {
+      throw ServerCommonException.invalidArgument("Name");
+    }
+    Map<String, Object> request = roleRequest(tenantId, description, permissionNames, defaultRole, privateRole);
+    request.put("name", name);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_ROLES_CREATE_LINK), request, Role.class);
+  }
+
+  @Override
   public RoleResponse createBatch(List<Role> roles) throws DescopeException {
     if (CollectionUtils.isEmpty(roles)) {
       throw ServerCommonException.invalidArgument("roles");
@@ -78,6 +91,53 @@ class RolesServiceImpl extends ManagementsBase implements RolesService {
         permissionNames, "tenantId", tenantId);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(MANAGEMENT_ROLES_UPDATE_LINK), request, Void.class);
+  }
+
+  @Override
+  public Role update(String name, String tenantId, String newName, String description, List<String> permissionNames,
+      Boolean defaultRole, Boolean privateRole) throws DescopeException {
+    if (StringUtils.isBlank(name)) {
+      throw ServerCommonException.invalidArgument("Name");
+    }
+    return updateRole("name", name, tenantId, newName, description, permissionNames, defaultRole, privateRole);
+  }
+
+  @Override
+  public Role updateWithId(String id, String tenantId, String newName, String description,
+      List<String> permissionNames, Boolean defaultRole, Boolean privateRole) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    return updateRole("id", id, tenantId, newName, description, permissionNames, defaultRole, privateRole);
+  }
+
+  private Role updateRole(String identifierKey, String identifier, String tenantId, String newName,
+      String description, List<String> permissionNames, Boolean defaultRole, Boolean privateRole) {
+    if (StringUtils.isBlank(newName)) {
+      throw ServerCommonException.invalidArgument("NewName");
+    }
+    Map<String, Object> request = roleRequest(tenantId, description, permissionNames, defaultRole, privateRole);
+    request.put(identifierKey, identifier);
+    request.put("newName", newName);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(MANAGEMENT_ROLES_UPDATE_LINK), request, Role.class);
+  }
+
+  private static Map<String, Object> roleRequest(String tenantId, String description, List<String> permissionNames,
+      Boolean defaultRole, Boolean privateRole) {
+    Map<String, Object> request = new HashMap<>();
+    putIfNotNull(request, "tenantId", tenantId);
+    putIfNotNull(request, "description", description);
+    putIfNotNull(request, "permissionNames", permissionNames);
+    putIfNotNull(request, "default", defaultRole);
+    putIfNotNull(request, "private", privateRole);
+    return request;
+  }
+
+  private static void putIfNotNull(Map<String, Object> request, String key, Object value) {
+    if (value != null) {
+      request.put(key, value);
+    }
   }
 
   @Override

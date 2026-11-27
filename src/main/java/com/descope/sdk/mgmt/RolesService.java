@@ -14,6 +14,20 @@ public interface RolesService {
   void create(String name, String tenantId, String description, List<String> permissionNames) throws DescopeException;
 
   /**
+   * Create a new role.
+   *
+   * @param name            - The role name (required)
+   * @param tenantId        - The tenant the role belongs to (optional)
+   * @param description     - The role description (optional)
+   * @param permissionNames - The permissions the role grants (optional)
+   * @param defaultRole     - Whether the role is a default role (optional)
+   * @param privateRole     - Whether the role is private (optional)
+   * @return {@link Role Role} the created role
+   */
+  Role create(String name, String tenantId, String description, List<String> permissionNames, Boolean defaultRole,
+      Boolean privateRole) throws DescopeException;
+
+  /**
    * Create multiple roles in a single batch.
    *
    * @param roles - The roles to create
@@ -25,6 +39,36 @@ public interface RolesService {
 
   void update(String name, String tenantId, String newName, String description, List<String> permissionNames)
       throws DescopeException;
+
+  /**
+   * Update an existing role identified by its name. All parameters override the role's current values.
+   *
+   * @param name            - The name of the role to update (required)
+   * @param tenantId        - The tenant the role belongs to (optional)
+   * @param newName         - The role's new name (required)
+   * @param description     - The role description (optional)
+   * @param permissionNames - The permissions the role grants (optional)
+   * @param defaultRole     - Whether the role is a default role (optional)
+   * @param privateRole     - Whether the role is private (optional)
+   * @return {@link Role Role} the updated role
+   */
+  Role update(String name, String tenantId, String newName, String description, List<String> permissionNames,
+      Boolean defaultRole, Boolean privateRole) throws DescopeException;
+
+  /**
+   * Update an existing role identified by its ID. All parameters override the role's current values.
+   *
+   * @param id              - The ID of the role to update (required)
+   * @param tenantId        - The tenant the role belongs to (optional)
+   * @param newName         - The role's new name (required)
+   * @param description     - The role description (optional)
+   * @param permissionNames - The permissions the role grants (optional)
+   * @param defaultRole     - Whether the role is a default role (optional)
+   * @param privateRole     - Whether the role is private (optional)
+   * @return {@link Role Role} the updated role
+   */
+  Role updateWithId(String id, String tenantId, String newName, String description, List<String> permissionNames,
+      Boolean defaultRole, Boolean privateRole) throws DescopeException;
 
   /**
    * Update multiple roles in a single batch.
