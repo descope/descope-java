@@ -64,8 +64,8 @@ class EngineServiceImplTest {
 
   @Test
   void testLoadAllEngines() {
-    Engine e1 = Engine.builder().id("eng1").name("first").secret("").createdTime(1700000000).build();
-    Engine e2 = Engine.builder().id("eng2").name("second").createdTime(1700000001).build();
+    Engine e1 = Engine.builder().id("eng1").name("first").secret("").createdTime(1700000000L).build();
+    Engine e2 = Engine.builder().id("eng2").name("second").createdTime(1700000001L).build();
     doReturn(new LoadAllEnginesResponse(Arrays.asList(e1, e2))).when(apiProxy).get(any(), any());
     List<Engine> engines;
     try (MockedStatic<ApiProxyBuilder> mocked = mockProxy()) {
@@ -77,10 +77,10 @@ class EngineServiceImplTest {
     assertEquals("eng1", engines.get(0).getId());
     assertEquals("first", engines.get(0).getName());
     assertEquals("", engines.get(0).getSecret());
-    assertEquals(1700000000, engines.get(0).getCreatedTime());
+    assertEquals(1700000000L, engines.get(0).getCreatedTime());
     assertEquals("eng2", engines.get(1).getId());
     assertEquals("second", engines.get(1).getName());
-    assertEquals(1700000001, engines.get(1).getCreatedTime());
+    assertEquals(1700000001L, engines.get(1).getCreatedTime());
   }
 
   @Test
@@ -109,7 +109,7 @@ class EngineServiceImplTest {
     assertEquals(2, res.getEngines().size());
     assertEquals("eng1", res.getEngines().get(0).getId());
     assertEquals("first", res.getEngines().get(0).getName());
-    assertEquals(1700000000, res.getEngines().get(0).getCreatedTime());
+    assertEquals(1700000000L, res.getEngines().get(0).getCreatedTime());
     assertEquals("eng2", res.getEngines().get(1).getId());
   }
 }

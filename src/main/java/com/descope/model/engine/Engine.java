@@ -15,5 +15,5 @@ public class Engine {
   // Always empty when loaded
   private String secret;
   // Epoch seconds
-  private Integer createdTime;
+  private Long createdTime;
 }
