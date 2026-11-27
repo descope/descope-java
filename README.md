@@ -1502,6 +1502,8 @@ try {
     String stepupJwt = jwtService.impersonateStepup("impersonator-id", "target-login-id", true, null, "tenant-id");
     // Return to the original user
     String originalJwt = jwtService.stopImpersonation(jwt, null, "tenant-id");
+    // Optionally set the refresh duration of the returned JWT
+    String originalJwtWithRefresh = jwtService.stopImpersonation(jwt, null, "tenant-id", 3600);
 } catch (DescopeException de) {
     // Handle the error
 }

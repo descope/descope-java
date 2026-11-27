@@ -9,6 +9,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP
 import static com.descope.literals.Routes.ManagementEndPoints.MANAGEMENT_SIGN_UP_OR_IN;
 import static com.descope.literals.Routes.ManagementEndPoints.STOP_IMPERSONATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_JWT_LINK;
+import static com.descope.utils.CollectionUtils.addIfNotNull;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.ClientFunctionalException;
@@ -225,6 +226,12 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   @Override
   public String stopImpersonation(String jwt, Map<String, Object> customClaims, String tenantId)
       throws DescopeException {
+    return stopImpersonation(jwt, customClaims, tenantId, null);
+  }
+
+  @Override
+  public String stopImpersonation(String jwt, Map<String, Object> customClaims, String tenantId,
+      Integer refreshDuration) throws DescopeException {
     if (StringUtils.isBlank(jwt)) {
       throw ServerCommonException.invalidArgument("jwt");
     }
@@ -232,6 +239,7 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
         "jwt", jwt,
         "customClaims", customClaims,
         "selectedTenant", tenantId);
+    addIfNotNull(request, "refreshDuration", refreshDuration);
     ApiProxy apiProxy = getApiProxy();
     UpdateJwtResponse jwtResponse = apiProxy.post(getUri(STOP_IMPERSONATION_LINK), request, UpdateJwtResponse.class);
     return jwtResponse.getJwt();
