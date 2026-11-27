@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Scope Claim Mapping](#manage-scope-claim-mapping)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1991,6 +1992,48 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Scope Claim Mapping
+
+You can manage the project-wide mapping of OIDC scopes to JWT claims. Each claim value may be a static string or a `{{...}}` template resolved at token-generation time.
+
+```java
+ScopeClaimMappingService scms = descopeClient.getManagementServices().getScopeClaimMappingService();
+
+// Replace the whole mapping. When two entries set the same claim, the later entry wins.
+try {
+    Map<String, String> claims = new HashMap<>();
+    claims.put("email", "{{user.email}}");
+    Map<String, ClaimTokenTargets> claimTargets = new HashMap<>();
+    // Write the email claim only to the ID token and user info (an empty list means every token)
+    claimTargets.put("email", ClaimTokenTargets.builder()
+        .tokens(Arrays.asList(ClaimTokenTargets.ID_TOKEN, ClaimTokenTargets.USER_INFO))
+        .build());
+    scms.setScopeClaimMapping(Arrays.asList(ScopeClaimMappingEntry.builder()
+        .scope("email")
+        .claims(claims)
+        .description("Email claims")
+        .claimTargets(claimTargets)
+        .addToNewApplications(true)
+        .build()));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load the mapping. Returns an empty list when no mapping is configured.
+try {
+    List<ScopeClaimMappingEntry> mappings = scms.getScopeClaimMapping();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete the mapping. This action is irreversible - use carefully.
+try {
+    scms.deleteScopeClaimMapping();
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Code Examples
