@@ -48,6 +48,12 @@ class SSOServiceProviderImpl extends AuthenticationServiceImpl implements SSOSer
   @Override
   public String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken,
       String ssoId, String loginHint, boolean forceAuthn) throws DescopeException {
+    return start(tenant, redirectUrl, prompt, loginOptions, refreshToken, ssoId, loginHint, forceAuthn, null);
+  }
+
+  @Override
+  public String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken,
+      String ssoId, String loginHint, boolean forceAuthn, String initiatedEmail) throws DescopeException {
     if (StringUtils.isBlank(tenant)) {
       throw ServerCommonException.invalidArgument("Tenant");
     }
@@ -66,6 +72,9 @@ class SSOServiceProviderImpl extends AuthenticationServiceImpl implements SSOSer
     }
     if (forceAuthn) {
       request.put("forceAuthn", "true");
+    }
+    if (StringUtils.isNotBlank(initiatedEmail)) {
+      request.put("initiatedEmail", initiatedEmail);
     }
     ApiProxy apiProxy;
     if (JwtUtils.isJWTRequired(loginOptions)) {

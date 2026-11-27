@@ -82,6 +82,26 @@ public interface SSOServiceProvider {
       String ssoId, String loginHint, boolean forceAuthn) throws DescopeException;
 
   /**
+   * Start an SSO login flow with an optional SSO connection, login hint, refresh token, forced
+   * re-authentication, and the email that initiated the login.
+   *
+   * @param tenant - tenant
+   * @param redirectUrl - URL to redirect user to overriding configuration
+   * @param prompt - prompt to the user overriding configuration
+   * @param loginOptions - {@link LoginOptions loginOptions}
+   * @param refreshToken - existing refresh token for step-up or MFA
+   * @param ssoId - optional SSO connection ID
+   * @param loginHint - optional login hint for the identity provider
+   * @param forceAuthn - for SAML connections, require the identity provider to authenticate the user again
+   *                     even if they have an active session (sets ForceAuthn on the AuthnRequest)
+   * @param initiatedEmail - optional email of the user who initiated the login
+   * @return the redirect URL that needs to return to client
+   * @throws DescopeException - error upon failure
+   */
+  String start(String tenant, String redirectUrl, String prompt, LoginOptions loginOptions, String refreshToken,
+      String ssoId, String loginHint, boolean forceAuthn, String initiatedEmail) throws DescopeException;
+
+  /**
    * ExchangeToken - Finalize SAML/OIDC SSO authentication.
    *
    * @param code - Code to be validated
