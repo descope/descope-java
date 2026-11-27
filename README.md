@@ -1043,6 +1043,10 @@ try {
 // Load a specific SSO configuration by ssoId (multi-SSO tenants)
 try {
     SSOTenantSettingsResponse resp = ss.loadSettings("tenant-id", "sso-config-id");
+    String ssoId = resp.getSsoId();
+    String name = resp.getName(); // empty for the tenant's default SSO configuration
+    Boolean authenticationOnly = resp.getAuthenticationOnly(); // verify identity only, no user sign-in
+    Boolean jitDisabled = resp.getJitDisabled(); // sign in only existing users
 } catch (DescopeException de) {
     // Handle the error
 }
