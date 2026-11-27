@@ -50,7 +50,7 @@ public interface AuthenticationService {
     * @param tenantId     - Tenant ID to select
     * @param refreshToken - Refresh token
     * @return {@link AuthenticationInfo} the full authentication info including new
-    *         tokens
+    *         tokens and the response details (session expiration, claims, cookie names and more)
     * @throws DescopeException - error upon failure
     */
   AuthenticationInfo selectTenant(String tenantId, String refreshToken) throws DescopeException;

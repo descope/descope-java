@@ -10,14 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
@@ -40,11 +43,15 @@ import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
@@ -115,6 +122,67 @@ public class AuthenticationServiceImplTest {
       assertEquals(ErrorCode.INVALID_TOKEN, thrown.getCode());
       assertEquals("Invalid Token", thrown.getMessage());
     }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testSelectTenant() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    Map<String, Object> claims = mapOf("tenantClaim", "tenantValue");
+    JWTResponse response = new JWTResponse("someSessionJwt", "someRefreshJwt", null, null, null, null,
+        new UserResponse(), true, null, null, 600, "someExternalToken", claims, "someTenantSsoId",
+        "someTrustedDeviceJwt", 300, "someCookieName", "someSessionCookieName", "someSessionCookieDomain", true,
+        "someKnownDeviceJwt", true, true);
+    doReturn(response).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      AuthenticationInfo authInfo = authenticationService.selectTenant("someTenant", "someRefreshJwt");
+
+      ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+      verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(JWTResponse.class));
+      assertEquals("/v1/auth/tenant/select", uriCaptor.getValue().getPath());
+      assertEquals(mapOf("tenant", "someTenant"), bodyCaptor.getValue());
+      assertEquals("Bearer " + TestUtils.PROJECT_ID + ":someRefreshJwt", authHeader.get());
+
+      assertEquals(MOCK_TOKEN, authInfo.getToken());
+      assertEquals(MOCK_TOKEN, authInfo.getRefreshToken());
+      assertNotNull(authInfo.getUser());
+      assertTrue(authInfo.getFirstSeen());
+      assertEquals(600, authInfo.getSessionExpiration());
+      assertEquals("someExternalToken", authInfo.getExternalToken());
+      assertEquals(claims, authInfo.getClaims());
+      assertEquals("someTenantSsoId", authInfo.getTenantSSOID());
+      assertEquals("someTrustedDeviceJwt", authInfo.getTrustedDeviceJwt());
+      assertEquals(300, authInfo.getNextRefreshSeconds());
+      assertEquals("someCookieName", authInfo.getCookieName());
+      assertEquals("someSessionCookieName", authInfo.getSessionCookieName());
+      assertEquals("someSessionCookieDomain", authInfo.getSessionCookieDomain());
+      assertTrue(authInfo.getUnsavedSSO());
+      assertEquals("someKnownDeviceJwt", authInfo.getKnownDeviceJwt());
+      assertTrue(authInfo.getUserCreationDeferred());
+      assertTrue(authInfo.getExternalPasskey());
+    }
+  }
+
+  @Test
+  void testSelectTenantMissingTenantId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authenticationService.selectTenant("", "someRefreshJwt"));
+    assertEquals(ErrorCode.ERR_MISSING_ARGUMENTS, thrown.getCode());
+  }
+
+  @Test
+  void testSelectTenantMissingRefreshToken() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authenticationService.selectTenant("someTenant", ""));
+    assertEquals(ErrorCode.ERR_MISSING_ARGUMENTS, thrown.getCode());
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

@@ -554,6 +554,8 @@ try {
     String tenantId = "t1";
     AuthenticationInfo jwtResponse = as.selectTenant(tenantId, refreshToken);
     // Use jwtResponse.getToken().getJwt() and jwtResponse.getRefreshToken().getJwt()
+    // The response details are also available, e.g. jwtResponse.getSessionExpiration(),
+    // jwtResponse.getNextRefreshSeconds(), jwtResponse.getTenantSSOID() and jwtResponse.getClaims()
 } catch (DescopeException de) {
     // Handle the error
 }
