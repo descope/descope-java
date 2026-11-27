@@ -856,6 +856,34 @@ try {
     }
 }
 
+// Search users with additional filters and sorting
+try {
+    AllUsersResponseDetails resp = us.searchAll(UserSearchRequest.builder()
+            .verifiedEmail(true)
+            .familyIds(Arrays.asList("family-ID1"))
+            .dependent(false)
+            .fromLastLoginTime(Instant.now().minus(Duration.ofDays(30)))
+            .sort(Arrays.asList(SortField.builder().field("createdTime").desc(true).build()))
+            .build());
+    for (UserResponse u : resp.getUsers()) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search test users only, with the same filters as searchAll
+try {
+    AllUsersResponseDetails resp = us.searchAllTestUsers(UserSearchRequest.builder()
+            .limit(10)
+            .build());
+    for (UserResponse u : resp.getUsers()) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Delete multiple users at once by their user IDs
 try {
     us.deleteBatch(Arrays.asList("<user-id-1>", "<user-id-2>"));
