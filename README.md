@@ -96,7 +96,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+14. [Manage Engines](#manage-engines)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1920,6 +1921,26 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Engines
+
+You can load all of the project's engines:
+
+```java
+// Set up the engine service
+EngineService engineService = descopeClient.getManagementServices().getEngineService();
+
+// Load all engines. Their secrets are never returned here.
+try {
+    List<Engine> engines = engineService.loadAllEngines();
+    for (Engine engine : engines) {
+        String engineId = engine.getId();
+        String name = engine.getName();
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Project
