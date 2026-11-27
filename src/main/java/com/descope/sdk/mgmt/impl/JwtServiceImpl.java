@@ -185,18 +185,15 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   @Override
   public String impersonate(String impersonatorId, String loginId, boolean validateConsent,
       Map<String, Object> customClaims, String tenantId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("loginId");
-    }
-    if (StringUtils.isBlank(impersonatorId)) {
-      throw ServerCommonException.invalidArgument("impersonatorId");
-    }
-    Map<String, Object> request = mapOf(
-        "loginId", loginId,
-        "impersonatorId", impersonatorId,
-        "validateConsent", validateConsent,
-        "customClaims", customClaims,
-        "selectedTenant", tenantId);
+    return impersonate(impersonatorId, loginId, validateConsent, customClaims, tenantId, null, null);
+  }
+
+  @Override
+  public String impersonate(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId, Integer refreshDuration, String sessionCookieName)
+      throws DescopeException {
+    Map<String, Object> request = impersonateRequest(impersonatorId, loginId, validateConsent, customClaims,
+        tenantId, refreshDuration, sessionCookieName);
     ApiProxy apiProxy = getApiProxy();
     UpdateJwtResponse jwtResponse = apiProxy.post(getUri(IMPERSONATE_LINK), request, UpdateJwtResponse.class);
     return jwtResponse.getJwt();
@@ -205,18 +202,15 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
   @Override
   public String impersonateStepup(String impersonatorId, String loginId, boolean validateConsent,
       Map<String, Object> customClaims, String tenantId) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
-      throw ServerCommonException.invalidArgument("loginId");
-    }
-    if (StringUtils.isBlank(impersonatorId)) {
-      throw ServerCommonException.invalidArgument("impersonatorId");
-    }
-    Map<String, Object> request = mapOf(
-        "loginId", loginId,
-        "impersonatorId", impersonatorId,
-        "validateConsent", validateConsent,
-        "customClaims", customClaims,
-        "selectedTenant", tenantId);
+    return impersonateStepup(impersonatorId, loginId, validateConsent, customClaims, tenantId, null, null);
+  }
+
+  @Override
+  public String impersonateStepup(String impersonatorId, String loginId, boolean validateConsent,
+      Map<String, Object> customClaims, String tenantId, Integer refreshDuration, String sessionCookieName)
+      throws DescopeException {
+    Map<String, Object> request = impersonateRequest(impersonatorId, loginId, validateConsent, customClaims,
+        tenantId, refreshDuration, sessionCookieName);
     ApiProxy apiProxy = getApiProxy();
     UpdateJwtResponse jwtResponse = apiProxy.post(getUri(IMPERSONATE_STEPUP_LINK), request, UpdateJwtResponse.class);
     return jwtResponse.getJwt();
@@ -235,5 +229,29 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     ApiProxy apiProxy = getApiProxy();
     UpdateJwtResponse jwtResponse = apiProxy.post(getUri(STOP_IMPERSONATION_LINK), request, UpdateJwtResponse.class);
     return jwtResponse.getJwt();
+  }
+
+  private static Map<String, Object> impersonateRequest(String impersonatorId, String loginId,
+      boolean validateConsent, Map<String, Object> customClaims, String tenantId, Integer refreshDuration,
+      String sessionCookieName) {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("loginId");
+    }
+    if (StringUtils.isBlank(impersonatorId)) {
+      throw ServerCommonException.invalidArgument("impersonatorId");
+    }
+    Map<String, Object> request = mapOf(
+        "loginId", loginId,
+        "impersonatorId", impersonatorId,
+        "validateConsent", validateConsent,
+        "customClaims", customClaims,
+        "selectedTenant", tenantId);
+    if (refreshDuration != null) {
+      request.put("refreshDuration", refreshDuration);
+    }
+    if (StringUtils.isNotBlank(sessionCookieName)) {
+      request.put("sessionCookieName", sessionCookieName);
+    }
+    return request;
   }
 }

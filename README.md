@@ -1500,6 +1500,11 @@ try {
             new HashMap<String, Object>() {{ put("custom-key1", "custom-value1"); }}, "tenant-id");
     // Step-up impersonation (requires an existing session)
     String stepupJwt = jwtService.impersonateStepup("impersonator-id", "target-login-id", true, null, "tenant-id");
+    // Optionally set the refresh token duration (seconds) and the session cookie name
+    String customJwt = jwtService.impersonate("impersonator-id", "target-login-id", true, null, "tenant-id",
+            3600, "my-session-cookie");
+    String customStepupJwt = jwtService.impersonateStepup("impersonator-id", "target-login-id", true, null,
+            "tenant-id", 3600, "my-session-cookie");
     // Return to the original user
     String originalJwt = jwtService.stopImpersonation(jwt, null, "tenant-id");
 } catch (DescopeException de) {
