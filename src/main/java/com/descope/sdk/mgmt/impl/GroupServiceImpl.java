@@ -23,10 +23,18 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
 
   @Override
   public List<Group> loadAllGroups(String tenantID) throws DescopeException {
+    return loadAllGroups(tenantID, null);
+  }
+
+  @Override
+  public List<Group> loadAllGroups(String tenantID, String ssoId) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
     Map<String, String> request = mapOf("tenantId", tenantID);
+    if (StringUtils.isNotBlank(ssoId)) {
+      request.put("ssoId", ssoId);
+    }
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.postAndGetArray(
         getUri(GROUP_LOAD_ALL_LINK), request, new TypeReference<List<Group>>() {});
@@ -35,6 +43,12 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
   @Override
   public List<Group> loadAllGroupsForMembers(
       String tenantID, List<String> userIDs, List<String> loginIDs) throws DescopeException {
+    return loadAllGroupsForMembers(tenantID, userIDs, loginIDs, null);
+  }
+
+  @Override
+  public List<Group> loadAllGroupsForMembers(
+      String tenantID, List<String> userIDs, List<String> loginIDs, String ssoId) throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
@@ -43,6 +57,9 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
     }
     Map<String, Object> request =
         mapOf("tenantId", tenantID, "loginIds", loginIDs, "userIds", userIDs);
+    if (StringUtils.isNotBlank(ssoId)) {
+      request.put("ssoId", ssoId);
+    }
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.postAndGetArray(
         getUri(LOAD_ALL_FOR_GROUP_MEMBERS_LINK), request, new TypeReference<List<Group>>() {});
@@ -50,6 +67,12 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
 
   @Override
   public List<Group> loadAllGroupMembers(String tenantID, String groupID) throws DescopeException {
+    return loadAllGroupMembers(tenantID, groupID, null);
+  }
+
+  @Override
+  public List<Group> loadAllGroupMembers(String tenantID, String groupID, String ssoId)
+      throws DescopeException {
     if (StringUtils.isBlank(tenantID)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
@@ -57,6 +80,9 @@ class GroupServiceImpl extends ManagementsBase implements GroupService {
       throw ServerCommonException.invalidArgument("GroupID");
     }
     Map<String, String> request = mapOf("tenantId", tenantID, "groupId", groupID);
+    if (StringUtils.isNotBlank(ssoId)) {
+      request.put("ssoId", ssoId);
+    }
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.postAndGetArray(
         getUri(LOAD_ALL_GROUP_MEMBERS_LINK), request, new TypeReference<List<Group>>() {});
