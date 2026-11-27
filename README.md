@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Lists](#manage-lists)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1987,6 +1988,85 @@ try {
 
     // Update the current project's settings to mirror those in the exported data
     ps.importProject(files);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+### Manage Lists
+
+You can create, update, delete or load lists of texts, IPs or JSON data, and check whether a value is in a list.
+
+```java
+ListService ls = descopeClient.getManagementServices().getListService();
+
+// Create a list. The name is required.
+try {
+    DescopeList list = ls.create(ListRequest.builder()
+        .name("Blocked IPs")
+        .description("IPs blocked from signing in")
+        .type(ListType.IPS)
+        .data(Arrays.asList("1.1.1.1", "10.0.0.0/8"))
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update a list. Fields left null are not sent.
+try {
+    DescopeList list = ls.update("list-id", ListRequest.builder()
+        .name("Blocked IPs")
+        .description("Updated description")
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a list by ID or by name, or load all lists
+try {
+    DescopeList byId = ls.load("list-id");
+    DescopeList byName = ls.loadByName("Blocked IPs");
+    List<DescopeList> lists = ls.loadAll();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Import lists. Each list requires a name.
+try {
+    ls.importLists(Arrays.asList(DescopeList.builder()
+        .name("Allowed domains")
+        .type(ListType.TEXTS)
+        .data(Arrays.asList("example.com"))
+        .build()));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Add, remove and check IPs in an IPs list
+try {
+    ls.addIPs("list-id", Arrays.asList("1.1.1.1", "10.0.0.0/8"));
+    ls.removeIPs("list-id", Arrays.asList("1.1.1.1"));
+    boolean exists = ls.checkIP("list-id", "10.0.0.1");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Add, remove and check texts in a texts list
+try {
+    ls.addTexts("list-id", Arrays.asList("example.com", "example.org"));
+    ls.removeTexts("list-id", Arrays.asList("example.org"));
+    boolean exists = ls.checkText("list-id", "example.com");
+    // Check up to 100 texts: matchAll true requires every text to be in the list, false any of them
+    boolean allExist = ls.checkTexts("list-id", Arrays.asList("example.com", "example.net"), true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Remove all the values from a list, or delete it
+try {
+    ls.clear("list-id");
+    ls.delete("list-id");
 } catch (DescopeException de) {
     // Handle the error
 }

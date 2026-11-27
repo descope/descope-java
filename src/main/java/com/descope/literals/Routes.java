@@ -334,5 +334,21 @@ public class Routes {
     public static final String USER_REMOVE_PASSKEY_LINK = "/v1/mgmt/user/passkey/delete";
     public static final String USER_LIST_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/list";
     public static final String USER_REMOVE_TOTP_SEED_LINK = "/v1/mgmt/user/totp/delete";
+
+    // List
+    public static final String MANAGEMENT_LIST_CREATE_LINK = "/v1/mgmt/list";
+    public static final String MANAGEMENT_LIST_UPDATE_LINK = "/v1/mgmt/list/update";
+    public static final String MANAGEMENT_LIST_DELETE_LINK = "/v1/mgmt/list/delete";
+    public static final String MANAGEMENT_LIST_LOAD_LINK = "/v1/mgmt/list";
+    public static final String MANAGEMENT_LIST_LOAD_BY_NAME_LINK = "/v1/mgmt/list/name";
+    public static final String MANAGEMENT_LIST_LOAD_ALL_LINK = "/v1/mgmt/list/all";
+    public static final String MANAGEMENT_LIST_IMPORT_LINK = "/v1/mgmt/list/import";
+    public static final String MANAGEMENT_LIST_CLEAR_LINK = "/v1/mgmt/list/clear";
+    public static final String MANAGEMENT_LIST_IP_ADD_LINK = "/v1/mgmt/list/ip/add";
+    public static final String MANAGEMENT_LIST_IP_REMOVE_LINK = "/v1/mgmt/list/ip/remove";
+    public static final String MANAGEMENT_LIST_IP_CHECK_LINK = "/v1/mgmt/list/ip/check";
+    public static final String MANAGEMENT_LIST_TEXT_ADD_LINK = "/v1/mgmt/list/text/add";
+    public static final String MANAGEMENT_LIST_TEXT_REMOVE_LINK = "/v1/mgmt/list/text/remove";
+    public static final String MANAGEMENT_LIST_TEXT_CHECK_LINK = "/v1/mgmt/list/text/check";
   }
 }
