@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Resources](#manage-resources)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1991,6 +1992,64 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Resources
+
+You can create, update, and load dynamic registration templates, which hold client defaults for MCP resources:
+
+```java
+// Set up the resource service
+ResourceService resourceService = descopeClient.getManagementServices().getResourceService();
+
+// Create a dynamic registration template
+try {
+    DynamicRegistrationTemplate template = resourceService.createDynamicRegistrationTemplate(
+        DynamicRegistrationTemplateRequest.builder()
+            .name("My Template") // required
+            .description("Template for MCP clients")
+            .loginPageURL("https://example.com/login")
+            .sessionSettings(
+                ThirdPartyApplicationSessionSettings.builder()
+                    .enabled(true)
+                    .refreshTokenExpiration(5)
+                    .refreshTokenExpirationUnit(ThirdPartyApplicationSessionSettings.TIME_UNIT_DAYS)
+                    .build())
+            .skipConsentScreen(true)
+            .forceAddAllAuthorizationInfo(true)
+            .tags(Arrays.asList("t1", "t2"))
+            .fallbackClientLogo("https://example.com/logo.png")
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update a dynamic registration template. All fields are overridden.
+try {
+    DynamicRegistrationTemplate updated = resourceService.updateDynamicRegistrationTemplate(
+        DynamicRegistrationTemplate.builder()
+            .id("template-id") // required
+            .name("My Template") // required
+            .loginPageURL("https://example.com/login")
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a dynamic registration template by ID
+try {
+    DynamicRegistrationTemplate template = resourceService.loadDynamicRegistrationTemplate("template-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load all dynamic registration templates
+try {
+    LoadAllDynamicRegistrationTemplatesResponse res = resourceService.loadAllDynamicRegistrationTemplates();
+    List<DynamicRegistrationTemplate> templates = res.getTemplates();
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Code Examples
