@@ -14,4 +14,10 @@ public class ProviderTokenResponse {
   String accessToken;
   Long expiration;
   List<String> scopes;
+  String refreshToken;
+
+  public ProviderTokenResponse(String provider, String providerUserId, String accessToken, Long expiration,
+      List<String> scopes) {
+    this(provider, providerUserId, accessToken, expiration, scopes, null);
+  }
 }

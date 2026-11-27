@@ -25,6 +25,7 @@ import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
 import com.descope.exception.ServerCommonException;
 import com.descope.exception.UserConflictException;
+import com.descope.model.auth.AssociatedFamily;
 import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
@@ -37,6 +38,7 @@ import com.descope.model.user.request.BatchUserPasswordHashed;
 import com.descope.model.user.request.BatchUserPasswordPbkdf2;
 import com.descope.model.user.request.BatchUserPasswordSha;
 import com.descope.model.user.request.BatchUserRequest;
+import com.descope.model.user.request.PatchUserBatchRequest;
 import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.RolesList;
 import com.descope.model.user.request.UserRequest;
@@ -44,10 +46,12 @@ import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
+import com.descope.model.user.response.ImportUsersResponse;
 import com.descope.model.user.response.LogoutSessionRange;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
+import com.descope.model.user.response.TrustedDevice;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
 import com.descope.model.user.response.UserResponseDetails;
@@ -1601,6 +1605,406 @@ public class UserServiceImplTest {
       assertEquals("404", thrown.getCode());
       assertEquals("Logout session range not found", thrown.getMessage());
     }
+  }
+
+  private static final String USER_JSON = "{\"user\":{\"userId\":\"U1\",\"loginIds\":[\"u1\"]},\"created\":true}";
+
+  private UserService keyedUserService() {
+    Client client = TestUtils.getClient();
+    client.setManagementKey("test-key");
+    return ManagementServiceBuilder.buildServices(client).getUserService();
+  }
+
+  private void assertRequest(ClassicHttpRequest request, String method, String path) {
+    assertEquals(method, request.getMethod());
+    assertTrue(request.getRequestUri().startsWith(path), request.getRequestUri());
+    assertEquals("Bearer " + TestUtils.PROJECT_ID + ":test-key", request.getFirstHeader("Authorization").getValue());
+  }
+
+  @Test
+  void testLoadReadsCreated() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, USER_JSON);
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      UserResponseDetails res = keyedUserService().load("u1");
+      assertRequest(captor.getValue(), "GET", "/v1/mgmt/user?loginId=u1");
+      assertEquals("U1", res.getUser().getUserId());
+      assertTrue(res.getCreated());
+    }
+  }
+
+  @Test
+  void testCreateBatchWithStrict() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"createdUsers\":[{\"userId\":\"U1\"}],\"failedUsers\":[{\"failure\":\"f\",\"user\":{\"userId\":\"U2\"}}],"
+            + "\"additionalErrors\":{\"a\":\"b\"}}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      UsersBatchResponse res = keyedUserService().createBatch(
+          Arrays.asList(BatchUserRequest.builder().loginId("u1").build()), true);
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/create/batch");
+      Map<?, ?> body = requestBody(captor.getValue());
+      assertEquals(true, body.get("strict"));
+      assertEquals(false, body.get("invite"));
+      assertFalse(body.containsKey("locale"));
+      assertEquals("U1", res.getCreatedUsers().get(0).getUserId());
+      assertEquals("f", res.getFailedUsers().get(0).getFailure());
+      assertEquals("b", res.getAdditionalErrors().get("a"));
+    }
+  }
+
+  @Test
+  void testCreateBatchWithoutStrict() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      keyedUserService().createBatch(Arrays.asList(BatchUserRequest.builder().loginId("u1").build()));
+      assertFalse(requestBody(captor.getValue()).containsKey("strict"));
+    }
+  }
+
+  @Test
+  void testInviteBatchWithLocaleAndStrict() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"createdUsers\":[{\"userId\":\"U1\"}]}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      UsersBatchResponse res = keyedUserService().inviteBatch(
+          Arrays.asList(BatchUserRequest.builder().loginId("u1").build()),
+          InviteOptions.builder().inviteUrl(mockUrl).locale("en").build(), true);
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/create/batch");
+      Map<?, ?> body = requestBody(captor.getValue());
+      assertEquals("en", body.get("locale"));
+      assertEquals(true, body.get("strict"));
+      assertEquals(true, body.get("invite"));
+      assertEquals(mockUrl, body.get("inviteUrl"));
+      assertEquals("U1", res.getCreatedUsers().get(0).getUserId());
+    }
+  }
+
+  @Test
+  void testInviteWithLocale() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, USER_JSON);
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      keyedUserService().invite("u1", null, InviteOptions.builder().locale("en").build());
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/create");
+      assertEquals("en", requestBody(captor.getValue()).get("locale"));
+    }
+  }
+
+  @Test
+  void testInviteBatchForEmptyUsers() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.inviteBatch(null, null, true));
+    assertEquals("The Users argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testPatchBatchForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"patchedUsers\":[{\"userId\":\"U1\"}],\"failedUsers\":[{\"failure\":\"f\",\"user\":{\"userId\":\"U2\"}}],"
+            + "\"additionalErrors\":{\"a\":\"b\"}}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      UsersBatchResponse res = keyedUserService().patchBatch(Arrays.asList(PatchUserBatchRequest.builder()
+          .loginId("u1").name("n").ssoAppIds(Arrays.asList("app")).build()), true);
+      assertRequest(captor.getValue(), "PATCH", "/v1/mgmt/user/patch/batch");
+      Map<?, ?> body = requestBody(captor.getValue());
+      assertEquals(true, body.get("strict"));
+      assertEquals(Collections.singletonList(mapOf("identifier", "u1", "name", "n", "ssoAppIds",
+          Arrays.asList("app"))), body.get("users"));
+      assertEquals("U1", res.getPatchedUsers().get(0).getUserId());
+      assertEquals("U2", res.getFailedUsers().get(0).getUser().getUserId());
+      assertEquals("b", res.getAdditionalErrors().get("a"));
+    }
+  }
+
+  @Test
+  void testPatchBatchWithoutStrict() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      keyedUserService().patchBatch(Arrays.asList(PatchUserBatchRequest.builder().loginId("u1").build()));
+      assertEquals(mapOf("users", Collections.singletonList(mapOf("identifier", "u1"))),
+          requestBody(captor.getValue()));
+    }
+  }
+
+  @Test
+  void testPatchBatchForEmptyUsers() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.patchBatch(Collections.emptyList()));
+    assertEquals("The Users argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testPatchBatchForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.patchBatch(Arrays.asList(PatchUserBatchRequest.builder().name("n").build())));
+    assertEquals("The Login ID or User ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLogoutUsersForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"notFoundIdentifiers\":[\"u2\"]}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      List<String> notFound = keyedUserService().logoutUsers(Arrays.asList("u1", "u2"), Arrays.asList("web"));
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/logout/batch");
+      assertEquals(mapOf("identifiers", Arrays.asList("u1", "u2"), "sessionTypes", Arrays.asList("web")),
+          requestBody(captor.getValue()));
+      assertEquals(Arrays.asList("u2"), notFound);
+    }
+  }
+
+  @Test
+  void testLogoutUsersWithoutSessionTypes() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      List<String> notFound = keyedUserService().logoutUsers(Arrays.asList("u1"), null);
+      assertEquals(mapOf("identifiers", Arrays.asList("u1")), requestBody(captor.getValue()));
+      assertTrue(notFound.isEmpty());
+    }
+  }
+
+  @Test
+  void testLogoutUsersForEmptyIdentifiers() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.logoutUsers(Collections.emptyList(), null));
+    assertEquals("The Login IDs or User IDs argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLogoutUserSessionForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"alreadyRevoked\":true}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      assertTrue(keyedUserService().logoutUserSession("u1", "s1"));
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/logout/session");
+      assertEquals(mapOf("identifier", "u1", "sessionId", "s1"), requestBody(captor.getValue()));
+    }
+  }
+
+  @Test
+  void testLogoutUserSessionByUserIdForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"alreadyRevoked\":false}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      assertFalse(keyedUserService().logoutUserSessionByUserId("U1", "s1"));
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/logout/session");
+      assertEquals(mapOf("userId", "U1", "sessionId", "s1"), requestBody(captor.getValue()));
+    }
+  }
+
+  @Test
+  void testLogoutUserSessionForEmptyArguments() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.logoutUserSession("", "s1"));
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.logoutUserSessionByUserId("", "s1"));
+    assertEquals("The User ID argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.logoutUserSession("u1", ""));
+    assertEquals("The Session ID argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.logoutUserSessionByUserId("U1", null));
+    assertEquals("The Session ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testUpdateCustomAttributesWithStrict() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, USER_JSON);
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      UserResponseDetails res = keyedUserService().updateCustomAttributes("u1", "k", "v", true);
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/update/customAttribute");
+      assertEquals(mapOf("loginId", "u1", "attributeKey", "k", "attributeValue", "v", "strict", true),
+          requestBody(captor.getValue()));
+      assertEquals("U1", res.getUser().getUserId());
+      assertTrue(res.getCreated());
+    }
+  }
+
+  @Test
+  void testUpdateCustomAttributesWithoutStrict() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, USER_JSON);
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      keyedUserService().updateCustomAttributes("u1", "k", "v");
+      assertFalse(requestBody(captor.getValue()).containsKey("strict"));
+    }
+  }
+
+  @Test
+  void testGetProviderTokenWithOptions() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"provider\":\"google\",\"providerUserId\":\"p1\",\"accessToken\":\"at\",\"expiration\":123,"
+            + "\"scopes\":[\"s\"],\"refreshToken\":\"rt\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      ProviderTokenResponse res = keyedUserService().getProviderToken("u1", "google", true, false);
+      assertRequest(captor.getValue(), "GET", "/v1/mgmt/user/provider/token");
+      String uri = captor.getValue().getRequestUri();
+      assertTrue(uri.contains("loginId=u1"), uri);
+      assertTrue(uri.contains("provider=google"), uri);
+      assertTrue(uri.contains("withRefreshToken=true"), uri);
+      assertTrue(uri.contains("forceRefresh=false"), uri);
+      assertEquals(new ProviderTokenResponse("google", "p1", "at", 123L, Arrays.asList("s"), "rt"), res);
+    }
+  }
+
+  @Test
+  void testGetProviderTokenWithoutOptions() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"provider\":\"google\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      keyedUserService().getProviderToken("u1", "google", null, null);
+      String uri = captor.getValue().getRequestUri();
+      assertFalse(uri.contains("withRefreshToken"), uri);
+      assertFalse(uri.contains("forceRefresh"), uri);
+    }
+  }
+
+  @Test
+  void testGetProviderTokenWithOptionsForEmptyArguments() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.getProviderToken("", "google", true, true));
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.getProviderToken("u1", "", true, true));
+    assertEquals("The Provider argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testListTrustedDevicesForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"devices\":[{\"id\":\"d1\",\"name\":\"n\",\"deviceType\":\"t\",\"userId\":\"U1\","
+            + "\"lastLoginTime\":\"1700000000\",\"expirationTime\":1800000000,\"lastLocation\":\"l\","
+            + "\"isCurrentDevice\":true}]}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      List<TrustedDevice> devices = keyedUserService().listTrustedDevices(Arrays.asList("u1"));
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/trusteddevices/list");
+      assertEquals(mapOf("identifiers", Arrays.asList("u1")), requestBody(captor.getValue()));
+      assertEquals(Arrays.asList(new TrustedDevice("d1", "n", "t", "U1", 1700000000L, 1800000000L, "l", true)),
+          devices);
+    }
+  }
+
+  @Test
+  void testListTrustedDevicesForEmptyIdentifiers() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.listTrustedDevices(null));
+    assertEquals("The Login IDs or User IDs argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testAddFamiliesForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, USER_JSON);
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      UserResponseDetails res = keyedUserService().addFamilies("u1", Arrays.asList(AssociatedFamily.builder()
+          .familyId("f1").roleNames(Arrays.asList("r")).familyScopedAttributes(mapOf("k", "v")).build(),
+          AssociatedFamily.builder().familyId("f2").build()));
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/update/family/add");
+      assertEquals(mapOf("identifier", "u1", "familyAssociations", Arrays.asList(
+          mapOf("familyId", "f1", "roleNames", Arrays.asList("r"), "familyScopedAttributes", mapOf("k", "v")),
+          mapOf("familyId", "f2"))), requestBody(captor.getValue()));
+      assertEquals("U1", res.getUser().getUserId());
+      assertTrue(res.getCreated());
+    }
+  }
+
+  @Test
+  void testAddFamiliesForInvalidArguments() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.addFamilies("", Arrays.asList(AssociatedFamily.builder().familyId("f1").build())));
+    assertEquals("The Login ID or User ID argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.addFamilies("u1", Collections.emptyList()));
+    assertEquals("The Families argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.addFamilies("u1", Arrays.asList(AssociatedFamily.builder().build())));
+    assertEquals("The Family ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testRemoveFamiliesForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, USER_JSON);
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      UserResponseDetails res = keyedUserService().removeFamilies("u1", Arrays.asList("f1"));
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/update/family/remove");
+      assertEquals(mapOf("identifier", "u1", "familyIds", Arrays.asList("f1")), requestBody(captor.getValue()));
+      assertEquals("U1", res.getUser().getUserId());
+      assertTrue(res.getCreated());
+    }
+  }
+
+  @Test
+  void testRemoveFamiliesForInvalidArguments() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.removeFamilies(null, Arrays.asList("f1")));
+    assertEquals("The Login ID or User ID argument is invalid", thrown.getMessage());
+    thrown = assertThrows(ServerCommonException.class,
+        () -> userService.removeFamilies("u1", null));
+    assertEquals("The Family IDs argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testImportUsersForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"users\":[{\"userId\":\"U1\"}],\"failures\":[{\"user\":\"u2\",\"reason\":\"bad\"}]}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      ImportUsersResponse res = keyedUserService().importUsers("auth0",
+          "abc".getBytes(StandardCharsets.UTF_8), "def".getBytes(StandardCharsets.UTF_8), true);
+      assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/import");
+      assertEquals(mapOf("source", "auth0", "dryrun", true, "users", "YWJj", "hashes", "ZGVm"),
+          requestBody(captor.getValue()));
+      assertEquals("U1", res.getUsers().get(0).getUserId());
+      assertEquals("u2", res.getFailures().get(0).getUser());
+      assertEquals("bad", res.getFailures().get(0).getReason());
+    }
+  }
+
+  @Test
+  void testImportUsersWithoutFiles() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      keyedUserService().importUsers("auth0", null, new byte[0], false);
+      assertEquals(mapOf("source", "auth0", "dryrun", false), requestBody(captor.getValue()));
+    }
+  }
+
+  @Test
+  void testImportUsersForEmptySource() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.importUsers("", null, null, false));
+    assertEquals("The Source argument is invalid", thrown.getMessage());
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})

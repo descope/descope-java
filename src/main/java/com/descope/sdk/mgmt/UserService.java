@@ -2,19 +2,23 @@ package com.descope.sdk.mgmt;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
+import com.descope.model.auth.AssociatedFamily;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.user.User;
 import com.descope.model.user.request.BatchUserRequest;
+import com.descope.model.user.request.PatchUserBatchRequest;
 import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
+import com.descope.model.user.response.ImportUsersResponse;
 import com.descope.model.user.response.LogoutSessionRange;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
+import com.descope.model.user.response.TrustedDevice;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserPasskey;
 import com.descope.model.user.response.UserResponseDetails;
@@ -47,6 +51,17 @@ public interface UserService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   UsersBatchResponse createBatch(List<BatchUserRequest> users) throws DescopeException;
+
+  /**
+   * Create users in batch.
+   *
+   * @param users the {@link List} of users
+   * @param strict Optional (nullable). When true, a user that sets custom attributes the project does not
+   *     declare fails, and the other users are saved. When false or null, those attributes are ignored.
+   * @return {@link UsersBatchResponse} with successfully created users and failed users
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  UsersBatchResponse createBatch(List<BatchUserRequest> users, Boolean strict) throws DescopeException;
 
   /**
    * Create a new test user. You can later generate OTP, Magic link and enchanted link to use in the
@@ -92,6 +107,19 @@ public interface UserService {
   UsersBatchResponse inviteBatch(List<BatchUserRequest> users, InviteOptions options) throws DescopeException;
 
   /**
+   * Create users in batch and invite them via an email / text message.
+   *
+   * @param users the {@link List} of users
+   * @param options Additional options for the invitation, such as invite URL.
+   * @param strict Optional (nullable). When true, a user that sets custom attributes the project does not
+   *     declare fails, and the other users are saved. When false or null, those attributes are ignored.
+   * @return {@link UsersBatchResponse} with successfully created users and failed users
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  UsersBatchResponse inviteBatch(List<BatchUserRequest> users, InviteOptions options, Boolean strict)
+      throws DescopeException;
+
+  /**
    * Update an existing user.
    *
    * <p>IMPORTANT: All parameters will override whatever values are currently set in the existing
@@ -120,6 +148,26 @@ public interface UserService {
   UserResponseDetails patch(String loginIdOrUserId, PatchUserRequest request) throws DescopeException;
 
   /**
+   * Patches existing users in batch. Only the fields that are set on each user are updated.
+   *
+   * @param users the {@link List} of users to patch, each identified by its login ID or user ID.
+   * @return {@link UsersBatchResponse} with the patched users and failed users
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  UsersBatchResponse patchBatch(List<PatchUserBatchRequest> users) throws DescopeException;
+
+  /**
+   * Patches existing users in batch. Only the fields that are set on each user are updated.
+   *
+   * @param users the {@link List} of users to patch, each identified by its login ID or user ID.
+   * @param strict Optional (nullable). When true, a user that sets custom attributes the project does not
+   *     declare fails, and the other users are saved. When false or null, those attributes are ignored.
+   * @return {@link UsersBatchResponse} with the patched users and failed users
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  UsersBatchResponse patchBatch(List<PatchUserBatchRequest> users, Boolean strict) throws DescopeException;
+
+  /**
    * Logout user from all devices.
    *
    *
@@ -140,6 +188,38 @@ public interface UserService {
    *                          
    */
   void logoutUserByUserId(String userId, String... sessionTypes) throws DescopeException;
+
+  /**
+   * Logout multiple users from all their devices.
+   *
+   * @param loginIdsOrUserIds The users' login IDs or user IDs, at least one and at most 100.
+   * @param sessionTypes Optional list of session types to log out, null or empty for all session types
+   * @return The identifiers that matched no user, and were therefore not logged out.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<String> logoutUsers(List<String> loginIdsOrUserIds, List<String> sessionTypes) throws DescopeException;
+
+  /**
+   * Logout a single session of a user, leaving the user's other sessions working.
+   *
+   * @param loginId The loginID is required.
+   * @param sessionId The session to log out is required: the fti claim of the session's session JWT or
+   *     refresh JWT, or the refresh JWT's jti when it has no fti.
+   * @return true when the session was already logged out before this call
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  boolean logoutUserSession(String loginId, String sessionId) throws DescopeException;
+
+  /**
+   * Logout a single session of a user by user ID, leaving the user's other sessions working.
+   *
+   * @param userId The userID is required.
+   * @param sessionId The session to log out is required: the fti claim of the session's session JWT or
+   *     refresh JWT, or the refresh JWT's jti when it has no fti.
+   * @return true when the session was already logged out before this call
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  boolean logoutUserSessionByUserId(String userId, String sessionId) throws DescopeException;
 
   /**
    * Logs out sessions created in the given time range (optionally only the given session types).
@@ -371,6 +451,22 @@ public interface UserService {
       throws DescopeException;
 
   /**
+   * Update an existing user's custom attribute.
+   *
+   * @param loginId The loginID is required.
+   * @param key key should be a custom attribute that was already declared in the Descope console
+   *     app.
+   * @param value value should match the type of the declared attribute
+   * @param strict Optional (nullable). When true, a key the project does not declare fails the request.
+   *     When false or null, it is ignored.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails updateCustomAttributes(String loginId, String key, Object value, Boolean strict)
+      throws DescopeException;
+
+  /**
    * Update the email address for an existing user.
    *
    * @param loginId The loginID is required.
@@ -572,6 +668,22 @@ public interface UserService {
   ProviderTokenResponse getProviderToken(String loginId, String provider)
       throws DescopeException;
 
+  /**
+   * Get the provider token for the given login ID.
+   * Only users that sign-in using social providers will have token.
+   * Note: The 'Manage tokens from provider' setting must be enabled.
+   *
+   * @param loginId The loginId we are retrieving token for and is required
+   * @param provider The provider for whom we retrieve the token from the list of providers under AppConstants or custom
+   * @param withRefreshToken Optional (nullable), true to also return the provider's refresh token
+   * @param forceRefresh Optional (nullable), true to refresh the token with the provider before returning it
+   * @return The token details
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  ProviderTokenResponse getProviderToken(String loginId, String provider, Boolean withRefreshToken,
+      Boolean forceRefresh) throws DescopeException;
+
 
   /**
    * Generate OTP for the given login ID of a test user. This is useful when running tests and don't
@@ -749,5 +861,53 @@ public interface UserService {
    *     thrown.
    */
   UserResponseDetails updateRecoveryPhone(String loginId, String phone, Boolean verified)
+      throws DescopeException;
+
+  /**
+   * List the trusted devices of one or more users.
+   *
+   * @param loginIdsOrUserIds The users' login IDs or user IDs, at least one and at most 100.
+   * @return {{@link List} of {@link TrustedDevice}} of the users' trusted devices.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  List<TrustedDevice> listTrustedDevices(List<String> loginIdsOrUserIds) throws DescopeException;
+
+  /**
+   * Add a user to one or more families. Each family may also set the user's roles and family-scoped
+   * attributes in that family; leaving them null on a family the user already belongs to keeps them.
+   *
+   * @param loginIdOrUserId The loginID or userID is required.
+   * @param families The families to add the user to, at least one.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails addFamilies(String loginIdOrUserId, List<AssociatedFamily> families)
+      throws DescopeException;
+
+  /**
+   * Remove a user from one or more families.
+   *
+   * @param loginIdOrUserId The loginID or userID is required.
+   * @param familyIds The IDs of the families to remove the user from, at least one.
+   * @return {@link UserResponseDetails UserResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  UserResponseDetails removeFamilies(String loginIdOrUserId, List<String> familyIds) throws DescopeException;
+
+  /**
+   * Import users from another identity provider.
+   *
+   * @param source The source the users are exported from is required.
+   * @param users Optional (nullable), the exported users file.
+   * @param hashes Optional (nullable), the exported password hashes file.
+   * @param dryRun true to validate the import without saving any users.
+   * @return {@link ImportUsersResponse} with the imported users and the failures
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  ImportUsersResponse importUsers(String source, byte[] users, byte[] hashes, boolean dryRun)
       throws DescopeException;
 }
