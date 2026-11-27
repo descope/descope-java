@@ -388,7 +388,7 @@ public class PasswordServiceImplTest {
         .customClaims(mapOf("k", "v"))
         .templateOptions(mapOf("t", "o"))
         .build();
-    AuthenticationInfo info = runCaptured(fullJwtResponse(), authHeader, uri, body,
+    final AuthenticationInfo info = runCaptured(fullJwtResponse(), authHeader, uri, body,
         s -> s.signUp(MOCK_EMAIL, MOCK_USER, MOCK_PWD, options));
     assertEquals("Bearer " + PROJECT_ID + ":" + AUTH_MGMT_KEY, authHeader.get());
     assertEquals("/v1/auth/password/signup", uri.getValue().getPath());
@@ -418,7 +418,7 @@ public class PasswordServiceImplTest {
         .customClaims(mapOf("k", "v"))
         .revokeOtherSessions(true)
         .build();
-    AuthenticationInfo info = runCaptured(fullJwtResponse(), authHeader, uri, body,
+    final AuthenticationInfo info = runCaptured(fullJwtResponse(), authHeader, uri, body,
         s -> s.signIn(MOCK_EMAIL, MOCK_PWD, "ssoAppId", loginOptions, null));
     assertEquals("Bearer " + PROJECT_ID + ":" + AUTH_MGMT_KEY, authHeader.get());
     assertEquals("/v1/auth/password/signin", uri.getValue().getPath());
@@ -471,7 +471,7 @@ public class PasswordServiceImplTest {
         .locale("en")
         .useRecovery(true)
         .build();
-    PasswordResetResponse response = runCaptured(expected, authHeader, uri, body,
+    final PasswordResetResponse response = runCaptured(expected, authHeader, uri, body,
         s -> s.sendPasswordReset(MOCK_EMAIL, MOCK_URL, mapOf("t", "o"), options));
     assertEquals("Bearer " + PROJECT_ID + ":" + AUTH_MGMT_KEY, authHeader.get());
     assertEquals("/v1/auth/password/reset", uri.getValue().getPath());
@@ -508,7 +508,7 @@ public class PasswordServiceImplTest {
     AtomicReference<String> authHeader = new AtomicReference<>();
     ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
     ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
-    AuthenticationInfo info = runCaptured(fullJwtResponse(), authHeader, uri, body,
+    final AuthenticationInfo info = runCaptured(fullJwtResponse(), authHeader, uri, body,
         s -> s.replaceUserPassword(MOCK_EMAIL, MOCK_PWD, "newPassword1!", true, new String[] {"web"}));
     assertEquals("Bearer " + PROJECT_ID + ":" + AUTH_MGMT_KEY, authHeader.get());
     assertEquals("/v1/auth/password/replace", uri.getValue().getPath());
