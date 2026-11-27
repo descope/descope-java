@@ -361,6 +361,46 @@ class SsoServiceImplTest {
     }
   }
 
+  @Test
+  void testLoadSettingsConfigurationFields() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor,
+        "{\"tenant\":{\"id\":\"t1\"},\"saml\":{\"idpEntityId\":\"e1\"},\"oidc\":{\"name\":\"oidc1\"},"
+            + "\"ssoId\":\"sso1\",\"name\":\"Okta\",\"authenticationOnly\":true,\"jitDisabled\":true}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      // Mocked custom() returns null, so the license handshake stays off the network
+      SsoService service = ManagementServiceBuilder.buildServices(Client.builder()
+          .uri("https://api.descope.com")
+          .projectId(TestUtils.PROJECT_ID)
+          .managementKey("test-key")
+          .build()).getSsoService();
+      SSOTenantSettingsResponse resp = service.loadSettings("t1", "sso1");
+      assertEquals("t1", resp.getTenant().getId());
+      assertEquals("e1", resp.getSaml().getIdpEntityId());
+      assertEquals("oidc1", resp.getOidc().getName());
+      assertEquals("sso1", resp.getSsoId());
+      assertEquals("Okta", resp.getName());
+      assertEquals(Boolean.TRUE, resp.getAuthenticationOnly());
+      assertEquals(Boolean.TRUE, resp.getJitDisabled());
+      ClassicHttpRequest req = captor.getValue();
+      assertEquals("GET", req.getMethod());
+      assertEquals("/v2/mgmt/sso/settings", req.getUri().getPath());
+      assertTrue(req.getUri().getQuery().contains("tenantId=t1"));
+      assertTrue(req.getUri().getQuery().contains("ssoId=sso1"));
+      assertEquals("Bearer " + TestUtils.PROJECT_ID + ":test-key", req.getFirstHeader("Authorization").getValue());
+
+      httpClient = mockHttpClient(captor, "{\"tenant\":{\"id\":\"t1\"},\"ssoId\":null,\"extra\":1}");
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      resp = service.loadSettings("t1");
+      assertFalse(captor.getValue().getUri().getQuery().contains("ssoId"));
+      assertNull(resp.getSsoId());
+      assertNull(resp.getName());
+      assertNull(resp.getAuthenticationOnly());
+      assertNull(resp.getJitDisabled());
+    }
+  }
+
   private static SSOSAMLSettings.SSOSAMLSettingsBuilder samlSettings() {
     return SSOSAMLSettings.builder().idpUrl("https://idp.com").entityId("entityId").idpCert("idpCert");
   }
