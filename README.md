@@ -236,6 +236,24 @@ try {
 
 ```
 
+Overloads of `signIn`, `signUp` and `signUpOrIn` (and their `WithPhone` variants) also take an
+optional messaging provider ID and message template ID. The `signIn` and `signUpOrIn` overloads
+additionally take an optional SSO application ID and a `useRecovery` flag. Pass `null` to leave any
+of them unset.
+
+```java
+try {
+    String uri = "http://myapp.com/verify-enchanted-link";
+    EnchantedLinkResponse res = els.signIn(loginId, uri, null, null, "my-provider-id", "my-template-id",
+        "my-sso-app-id", false);
+    EnchantedLinkResponse res2 = els.signUpOrIn(loginId, uri, "my-provider-id", "my-template-id", null, null);
+    EnchantedLinkResponse res3 = els.signUp(loginId, uri, user, null, "my-provider-id", "my-template-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 After sending the link, you must poll to receive a valid session using the `PendingRef` from
 the previous step. A valid session will be returned only after the user clicks the right link.
 
@@ -244,6 +262,7 @@ the previous step. A valid session will be returned only after the user clicks t
 for (int i = retriesCount; i > 0; i--) {
     try {
         AuthenticationInfo info = els.getSession(res.getPendingRef());
+        // info also carries response fields such as getTenantSsoId() and getSessionExpiration()
     } catch (DescopeException de) {
         if (i > 1) {
             // Poll again after X seconds
@@ -265,8 +284,26 @@ To verify an enchanted link, your redirect page must call the validation functio
 
 try {
     els.verify(token);
+    // Or, with a PKCE verifier (sent base64 encoded)
+    els.verify(token, pkceVerifierBytes);
 } catch (DescopeException de) {
     // Token is invalid, handle the error
+}
+
+```
+
+To update a user's email or phone with an enchanted link, use `updateUserEmail` or `updateUserPhone`
+with the user's refresh token. Overloads also take an optional provider ID, template ID, locale and
+`failOnConflict` flag.
+
+```java
+try {
+    EnchantedLinkResponse res = els.updateUserEmail(loginId, "new@example.com", uri, refreshToken,
+        new UpdateOptions(true, false), null, "my-provider-id", "my-template-id", "en", true);
+    PhoneEnchantedLinkResponse phoneRes = els.updateUserPhone(loginId, "+12025550123", uri, refreshToken,
+        null, null, "my-provider-id", "my-template-id", "en", true);
+} catch (DescopeException de) {
+    // Handle the error
 }
 
 ```

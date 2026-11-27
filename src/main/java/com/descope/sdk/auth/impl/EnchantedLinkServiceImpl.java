@@ -47,24 +47,40 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public EnchantedLinkResponse signIn(String loginId, String uri, String token, LoginOptions loginOptions)
       throws DescopeException {
-    return signInByDeliveryMethod(EMAIL, loginId, uri, token, loginOptions, EnchantedLinkResponse.class);
+    return signIn(loginId, uri, token, loginOptions, null, null, null, null);
+  }
+
+  @Override
+  public EnchantedLinkResponse signIn(String loginId, String uri, String token, LoginOptions loginOptions,
+      String providerId, String templateId, String ssoAppId, Boolean useRecovery) throws DescopeException {
+    SignInRequest signInRequest =
+        new SignInRequest(uri, loginId, loginOptions, providerId, templateId, ssoAppId, useRecovery);
+    return signInByDeliveryMethod(EMAIL, token, signInRequest, EnchantedLinkResponse.class);
   }
 
   @Override
   public PhoneEnchantedLinkResponse signInWithPhone(String loginId, String uri, String token,
       LoginOptions loginOptions) throws DescopeException {
-    return signInByDeliveryMethod(SMS, loginId, uri, token, loginOptions, PhoneEnchantedLinkResponse.class);
+    return signInWithPhone(loginId, uri, token, loginOptions, null, null, null, null);
   }
 
-  private <R> R signInByDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, String uri, String token,
-      LoginOptions loginOptions, Class<R> responseClass) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
+  @Override
+  public PhoneEnchantedLinkResponse signInWithPhone(String loginId, String uri, String token,
+      LoginOptions loginOptions, String providerId, String templateId, String ssoAppId, Boolean useRecovery)
+      throws DescopeException {
+    SignInRequest signInRequest =
+        new SignInRequest(uri, loginId, loginOptions, providerId, templateId, ssoAppId, useRecovery);
+    return signInByDeliveryMethod(SMS, token, signInRequest, PhoneEnchantedLinkResponse.class);
+  }
+
+  private <R> R signInByDeliveryMethod(DeliveryMethod deliveryMethod, String token, SignInRequest signInRequest,
+      Class<R> responseClass) throws DescopeException {
+    if (StringUtils.isBlank(signInRequest.getLoginId())) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI enchantedLink = composeEnchantedLinkSignInURL(deliveryMethod);
-    SignInRequest signInRequest = new SignInRequest(uri, loginId, loginOptions);
     ApiProxy apiProxy;
-    if (JwtUtils.isJWTRequired(loginOptions)) {
+    if (JwtUtils.isJWTRequired(signInRequest.getLoginOptions())) {
       if (StringUtils.isBlank(token)) {
         throw ServerCommonException.invalidArgument("token");
       }
@@ -84,7 +100,14 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public EnchantedLinkResponse signUp(String loginId, String uri, User user, SignUpOptions signupOptions)
       throws DescopeException {
-    return signUpByDeliveryMethod(EMAIL, loginId, uri, user, signupOptions, EnchantedLinkResponse.class);
+    return signUp(loginId, uri, user, signupOptions, null, null);
+  }
+
+  @Override
+  public EnchantedLinkResponse signUp(String loginId, String uri, User user, SignUpOptions signupOptions,
+      String providerId, String templateId) throws DescopeException {
+    return signUpByDeliveryMethod(EMAIL, loginId, uri, user, signupOptions, providerId, templateId,
+        EnchantedLinkResponse.class);
   }
 
   @Override
@@ -96,17 +119,25 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public PhoneEnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user,
       SignUpOptions signupOptions) throws DescopeException {
-    return signUpByDeliveryMethod(SMS, loginId, uri, user, signupOptions, PhoneEnchantedLinkResponse.class);
+    return signUpWithPhone(loginId, uri, user, signupOptions, null, null);
+  }
+
+  @Override
+  public PhoneEnchantedLinkResponse signUpWithPhone(String loginId, String uri, User user,
+      SignUpOptions signupOptions, String providerId, String templateId) throws DescopeException {
+    return signUpByDeliveryMethod(SMS, loginId, uri, user, signupOptions, providerId, templateId,
+        PhoneEnchantedLinkResponse.class);
   }
 
   private <R> R signUpByDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
-      SignUpOptions signupOptions, Class<R> responseClass) throws DescopeException {
+      SignUpOptions signupOptions, String providerId, String templateId, Class<R> responseClass)
+      throws DescopeException {
     if (user == null) {
       user = new User();
     }
     URI enchantedLinkSignUpURL = composeEnchantedLinkSignUpURL(deliveryMethod);
     SignUpRequest.SignUpRequestBuilder signUpRequestBuilder =
-        SignUpRequest.builder().loginId(loginId).uri(uri);
+        SignUpRequest.builder().loginId(loginId).uri(uri).providerId(providerId).templateId(templateId);
     if (deliveryMethod == SMS) {
       signUpRequestBuilder.phone(loginId);
       if (StringUtils.isBlank(user.getPhone())) {
@@ -128,21 +159,36 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
 
   @Override
   public EnchantedLinkResponse signUpOrIn(String loginId, String uri) throws DescopeException {
-    return signUpOrInByDeliveryMethod(EMAIL, loginId, uri, EnchantedLinkResponse.class);
+    return signUpOrIn(loginId, uri, null, null, null, null);
+  }
+
+  @Override
+  public EnchantedLinkResponse signUpOrIn(String loginId, String uri, String providerId, String templateId,
+      String ssoAppId, Boolean useRecovery) throws DescopeException {
+    SignInRequest signInRequest =
+        new SignInRequest(uri, loginId, null, providerId, templateId, ssoAppId, useRecovery);
+    return signUpOrInByDeliveryMethod(EMAIL, signInRequest, EnchantedLinkResponse.class);
   }
 
   @Override
   public PhoneEnchantedLinkResponse signUpOrInWithPhone(String loginId, String uri) throws DescopeException {
-    return signUpOrInByDeliveryMethod(SMS, loginId, uri, PhoneEnchantedLinkResponse.class);
+    return signUpOrInWithPhone(loginId, uri, null, null, null, null);
   }
 
-  private <R> R signUpOrInByDeliveryMethod(DeliveryMethod deliveryMethod, String loginId, String uri,
+  @Override
+  public PhoneEnchantedLinkResponse signUpOrInWithPhone(String loginId, String uri, String providerId,
+      String templateId, String ssoAppId, Boolean useRecovery) throws DescopeException {
+    SignInRequest signInRequest =
+        new SignInRequest(uri, loginId, null, providerId, templateId, ssoAppId, useRecovery);
+    return signUpOrInByDeliveryMethod(SMS, signInRequest, PhoneEnchantedLinkResponse.class);
+  }
+
+  private <R> R signUpOrInByDeliveryMethod(DeliveryMethod deliveryMethod, SignInRequest signInRequest,
       Class<R> responseClass) throws DescopeException {
-    if (StringUtils.isBlank(loginId)) {
+    if (StringUtils.isBlank(signInRequest.getLoginId())) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     URI enchantedLinkSignUpOrInURL = composeEnchantedLinkSignUpOrInURL(deliveryMethod);
-    SignInRequest signInRequest = new SignInRequest(uri, loginId, null);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(enchantedLinkSignUpOrInURL, signInRequest, responseClass);
   }
@@ -161,8 +207,13 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
 
   @Override
   public void verify(String token) throws DescopeException {
+    verify(token, null);
+  }
+
+  @Override
+  public void verify(String token, byte[] pkceVerifier) throws DescopeException {
     URI verifyEnchantedLinkURL = composeVerifyEnchantedLinkURL();
-    VerifyRequest verifyRequest = new VerifyRequest(token);
+    VerifyRequest verifyRequest = new VerifyRequest(token, pkceVerifier);
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(verifyEnchantedLinkURL, verifyRequest, EmptyResponse.class);
   }
@@ -176,6 +227,14 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
       UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException {
+    return updateUserEmail(loginId, email, uri, refreshToken, updateOptions, templateOptions, null, null, null,
+        null);
+  }
+
+  @Override
+  public EnchantedLinkResponse updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, String providerId, String templateId,
+      String locale, Boolean failOnConflict) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -198,6 +257,10 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
             .addToLoginIds(updateOptions.isAddToLoginIds())
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
             .templateOptions(templateOptions)
+            .providerId(providerId)
+            .templateId(templateId)
+            .locale(locale)
+            .failOnConflict(failOnConflict)
             .build();
 
     ApiProxy apiProxy = getApiProxy(refreshToken);
@@ -213,6 +276,14 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
   @Override
   public PhoneEnchantedLinkResponse updateUserPhone(String loginId, String phone, String uri, String refreshToken,
       UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException {
+    return updateUserPhone(loginId, phone, uri, refreshToken, updateOptions, templateOptions, null, null, null,
+        null);
+  }
+
+  @Override
+  public PhoneEnchantedLinkResponse updateUserPhone(String loginId, String phone, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, String providerId, String templateId,
+      String locale, Boolean failOnConflict) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -235,6 +306,10 @@ class EnchantedLinkServiceImpl extends AuthenticationServiceImpl implements Ench
             .addToLoginIds(updateOptions.isAddToLoginIds())
             .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
             .templateOptions(templateOptions)
+            .providerId(providerId)
+            .templateId(templateId)
+            .locale(locale)
+            .failOnConflict(failOnConflict)
             .build();
 
     ApiProxy apiProxy = getApiProxy(refreshToken);
