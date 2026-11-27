@@ -154,7 +154,7 @@ class FlowServiceImplTest {
             + "\"tenantAttributes\":[\"ta1\"]},\"unknown\":true}}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
-      ExportedTheme theme = keyedFlowService().exportProjectTheme();
+      final ExportedTheme theme = keyedFlowService().exportProjectTheme();
       ClassicHttpRequest request = captor.getValue();
       assertEquals("POST", request.getMethod());
       assertTrue(request.getRequestUri().endsWith("/v2/mgmt/theme/export"));
