@@ -2,6 +2,7 @@ package com.descope.sdk.mgmt;
 
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.jwt.MgmtLoginOptions;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.AnonymousUserRequest;
@@ -31,6 +32,17 @@ public interface JwtService {
           throws DescopeException;
 
   AuthenticationInfo signIn(String loginId, LoginOptions loginOptions) throws DescopeException;
+
+  /**
+   * Generate a JWT for a user, simulating a sign-in request.
+   *
+   * @param loginId          - The login ID of the user, required
+   * @param loginOptions     - Sign-in options (optional)
+   * @param mgmtLoginOptions - SSO app, refresh duration, selected tenant and SSO enforcement options (optional)
+   * @return - The authentication info with the session and refresh tokens
+   */
+  AuthenticationInfo signIn(String loginId, LoginOptions loginOptions, MgmtLoginOptions mgmtLoginOptions)
+      throws DescopeException;
 
   AuthenticationInfo anonymous(AnonymousUserRequest request) throws DescopeException;
 

@@ -14,8 +14,10 @@ import static com.descope.utils.CollectionUtils.mapOf;
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AssociatedTenant;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.client.Client;
+import com.descope.model.jwt.MgmtLoginOptions;
 import com.descope.model.jwt.MgmtSignUpUser;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.request.AnonymousUserRequest;
@@ -30,6 +32,7 @@ import com.descope.model.magiclink.LoginOptions;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.JwtService;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -70,6 +73,12 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
 
   @Override
   public AuthenticationInfo signIn(String loginId, LoginOptions loginOptions) throws DescopeException {
+    return signIn(loginId, loginOptions, null);
+  }
+
+  @Override
+  public AuthenticationInfo signIn(String loginId, LoginOptions loginOptions, MgmtLoginOptions mgmtLoginOptions)
+      throws DescopeException {
     // validate input
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("loginId");
@@ -89,6 +98,12 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
             loginOptions.getRevokeOtherSessionsTypes(),
             loginOptions.getCustomClaims(),
             loginOptions.getJwt());
+    if (mgmtLoginOptions != null) {
+      request.setSsoAppId(mgmtLoginOptions.getSsoAppId());
+      request.setRefreshDuration(mgmtLoginOptions.getRefreshDuration());
+      request.setSelectedTenantId(mgmtLoginOptions.getSelectedTenantId());
+      request.setIgnoreEnforceSSO(mgmtLoginOptions.getIgnoreEnforceSSO());
+    }
 
     // Make the API call
     URI signInUri = getUri(MANAGEMENT_SIGN_IN);
@@ -126,7 +141,11 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
             signUpUserDetails.isVerifiedEmail(),
             signUpUserDetails.isVerifiedPhone(),
             signUpUserDetails.getSsoAppId(),
-            signUpUserDetails.getCustomClaims()
+            signUpUserDetails.getCustomClaims(),
+            signUpUserDetails.getRefreshDuration(),
+            signUpUserDetails.getSelectedTenantId(),
+            toRequestTenants(signUpUserDetails.getUserTenants()),
+            signUpUserDetails.getIgnoreEnforceSSO()
     );
     // Make the API call
     URI uri = getUri(path);
@@ -142,8 +161,35 @@ class JwtServiceImpl extends ManagementsBase implements JwtService {
     }
     Token sessionToken = validateAndCreateToken(jwtResponse.getSessionJwt());
     Token refreshToken = validateAndCreateToken(jwtResponse.getRefreshJwt());
-    return new AuthenticationInfo(sessionToken, refreshToken, jwtResponse.getUser(), jwtResponse.getFirstSeen(),
-        jwtResponse.getIdpResponse());
+    AuthenticationInfo authInfo = new AuthenticationInfo(sessionToken, refreshToken, jwtResponse.getUser(),
+        jwtResponse.getFirstSeen(), jwtResponse.getIdpResponse());
+    authInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
+    authInfo.setExternalToken(jwtResponse.getExternalToken());
+    authInfo.setClaims(jwtResponse.getClaims());
+    authInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
+    authInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    authInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    authInfo.setCookieName(jwtResponse.getCookieName());
+    authInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
+    authInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    authInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    authInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    authInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    authInfo.setExternalPasskey(jwtResponse.getExternalPasskey());
+    return authInfo;
+  }
+
+  // The request takes only tenantId and roleNames
+  private static List<AssociatedTenant> toRequestTenants(List<AssociatedTenant> userTenants) {
+    if (userTenants == null) {
+      return null;
+    }
+    List<AssociatedTenant> tenants = new ArrayList<>(userTenants.size());
+    for (AssociatedTenant t : userTenants) {
+      tenants.add(t == null ? null : AssociatedTenant.builder().tenantId(t.getTenantId())
+          .roleNames(t.getRoleNames()).build());
+    }
+    return tenants;
   }
 
   private URI composeUpdateJwtUri() {
