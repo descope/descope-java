@@ -337,6 +337,25 @@ try {
 
 ```
 
+Optional authorization parameters go in an overload. `SAMLLoginOptions` extends `LoginOptions` with the SSO application ID, PKCE challenge and tenant ID. The refresh JWT is required only when the login options set `stepup` or `mfa`:
+
+```java
+SAMLLoginOptions samlOptions = new SAMLLoginOptions();
+samlOptions.setSsoAppId("my-sso-app-id");
+samlOptions.setTenantId("my-tenant-ID");
+
+try {
+    String url = ss.start("my-tenant-ID", "https://my-app.com/handle-saml", samlOptions,
+        null, // refresh JWT, for stepup or mfa
+        Arrays.asList(PromptType.LOGIN), // prompt
+        true, // forceAuthn
+        "user@example.com", // loginHint
+        "user@example.com"); // initiatedEmail
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 The user will authenticate with the authentication provider configured for that tenant, and will be redirected back to the redirect URL, with an appended `code` HTTP URL parameter. Exchange it to validate the user:
 
 ```java
@@ -353,6 +372,14 @@ try {
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
 When `info.getSsoAuthenticationOnly()` is true (login through an authentication-only SSO configuration), no session was issued and `info.getToken()` is null: do not treat the result as a login.
+
+The result also carries the rest of the exchange response, when the server sets it, for example:
+
+```java
+String tenantSSOID = info.getTenantSSOID(); // the tenant SSO configuration that authenticated the user
+String cookieName = info.getCookieName();
+Integer nextRefreshSeconds = info.getNextRefreshSeconds();
+```
 
 ### TOTP Authentication
 

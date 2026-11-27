@@ -12,9 +12,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
+import com.descope.enums.PromptType;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.auth.IDPResponse;
+import com.descope.model.auth.SAMLLoginOptions;
 import com.descope.model.auth.SAMLResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
@@ -27,10 +33,16 @@ import com.descope.proxy.impl.ApiProxyBuilder;
 import com.descope.sdk.TestUtils;
 import com.descope.sdk.auth.SAMLService;
 import com.descope.utils.JwtUtils;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.util.Arrays;
+import java.util.function.Supplier;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class SamlLinkServiceImplTest {
@@ -174,5 +186,115 @@ public class SamlLinkServiceImplTest {
     Assertions.assertThat(authenticationInfo.getRefreshToken()).isNull();
     Assertions.assertThat(authenticationInfo.getUser()).isNotNull();
     Assertions.assertThat(authenticationInfo.getSsoAuthenticationOnly()).isTrue();
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testStartWithAuthorizeOptions() throws Exception {
+    SAMLLoginOptions options = new SAMLLoginOptions();
+    options.setStepup(true);
+    options.setSsoAppId("sso-app-id");
+    options.setPkceChallenge("Y2hhbGxlbmdl");
+    options.setTenantId("tenant-id");
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new SAMLResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
+    ArgumentCaptor<Supplier<String>> header = ArgumentCaptor.forClass(Supplier.class);
+    String url;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(header.capture(), any())).thenReturn(apiProxy);
+      url = samlService.start("tenant", "https://app.example/cb", options, "refresh-jwt",
+          Arrays.asList(PromptType.LOGIN, PromptType.SELECT_ACCOUNT), true, "user@example.com",
+          "init@example.com");
+    }
+    Assertions.assertThat(url).isEqualTo(MOCK_URL);
+    Assertions.assertThat(header.getValue().get()).isEqualTo("Bearer " + PROJECT_ID + ":refresh-jwt");
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+    verify(apiProxy).post(uri.capture(), body.capture(), eq(SAMLResponse.class));
+    Assertions.assertThat(uri.getValue().getPath()).isEqualTo("/v1/auth/saml/authorize");
+    Assertions.assertThat(uri.getValue().getRawQuery()).isEqualTo("tenant=tenant"
+        + "&redirectUrl=https%3A%2F%2Fapp.example%2Fcb&forceAuthn=true&loginHint=user%40example.com"
+        + "&initiatedEmail=init%40example.com&prompt=login&prompt=select_account");
+    String json = new ObjectMapper().setSerializationInclusion(Include.NON_NULL)
+        .writeValueAsString(body.getValue());
+    Assertions.assertThat(json).contains("\"stepup\":true", "\"ssoAppId\":\"sso-app-id\"",
+        "\"pkceChallenge\":\"Y2hhbGxlbmdl\"", "\"tenantId\":\"tenant-id\"").doesNotContain("jwtrequired");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testStartWithAuthorizeOptionsOmitsUnset() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new SAMLResponse(MOCK_URL)).when(apiProxy).post(any(), any(), any());
+    ArgumentCaptor<Supplier<String>> header = ArgumentCaptor.forClass(Supplier.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(header.capture(), any())).thenReturn(apiProxy);
+      samlService.start("tenant", null, null, null, null, false, " ", null);
+    }
+    Assertions.assertThat(header.getValue().get()).isEqualTo("Bearer " + PROJECT_ID);
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    verify(apiProxy).post(uri.capture(), eq(null), eq(SAMLResponse.class));
+    Assertions.assertThat(uri.getValue().getRawQuery()).isEqualTo("tenant=tenant");
+  }
+
+  @Test
+  void testStartWithAuthorizeOptionsStepupRequiresRefreshToken() {
+    LoginOptions options = LoginOptions.builder().mfa(true).build();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      Assertions.assertThatThrownBy(
+          () -> samlService.start("tenant", null, options, null, null, false, null, null))
+          .isInstanceOf(ServerCommonException.class)
+          .hasMessageContaining("refreshToken");
+    }
+    verifyNoInteractions(apiProxy);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testExchangeTokenReturnsResponseFields() throws Exception {
+    JWTResponse jwtResponse = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .readValue("{\"sessionJwt\":\"s\",\"refreshJwt\":\"r\",\"sessionExpiration\":100,"
+            + "\"externalToken\":\"ext\",\"claims\":{\"k\":\"v\"},\"tenantSSOID\":\"sso-id\","
+            + "\"trustedDeviceJwt\":\"tdj\",\"nextRefreshSeconds\":30,\"cookieName\":\"DSR\","
+            + "\"sessionCookieName\":\"DS\",\"sessionCookieDomain\":\"example.com\",\"unsavedSSO\":true,"
+            + "\"knownDeviceJwt\":\"kdj\",\"userCreationDeferred\":true,\"externalPasskey\":true,"
+            + "\"newField\":1}", JWTResponse.class);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(jwtResponse).when(apiProxy).post(any(), any(), any());
+    ArgumentCaptor<Supplier<String>> header = ArgumentCaptor.forClass(Supplier.class);
+    AuthenticationInfo info;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+          () -> ApiProxyBuilder.buildProxy(header.capture(), any())).thenReturn(apiProxy);
+      try (MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+        mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+        info = samlService.exchangeToken("somecode");
+      }
+    }
+    Assertions.assertThat(header.getValue().get()).isEqualTo("Bearer " + PROJECT_ID);
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<ExchangeTokenRequest> body = ArgumentCaptor.forClass(ExchangeTokenRequest.class);
+    verify(apiProxy).post(uri.capture(), body.capture(), eq(JWTResponse.class));
+    Assertions.assertThat(uri.getValue().getPath()).isEqualTo("/v1/auth/saml/exchange");
+    Assertions.assertThat(body.getValue().getCode()).isEqualTo("somecode");
+    Assertions.assertThat(info.getSessionExpiration()).isEqualTo(100);
+    Assertions.assertThat(info.getExternalToken()).isEqualTo("ext");
+    Assertions.assertThat(info.getClaims()).containsEntry("k", "v");
+    Assertions.assertThat(info.getTenantSSOID()).isEqualTo("sso-id");
+    Assertions.assertThat(info.getTrustedDeviceJwt()).isEqualTo("tdj");
+    Assertions.assertThat(info.getNextRefreshSeconds()).isEqualTo(30);
+    Assertions.assertThat(info.getCookieName()).isEqualTo("DSR");
+    Assertions.assertThat(info.getSessionCookieName()).isEqualTo("DS");
+    Assertions.assertThat(info.getSessionCookieDomain()).isEqualTo("example.com");
+    Assertions.assertThat(info.getUnsavedSSO()).isTrue();
+    Assertions.assertThat(info.getKnownDeviceJwt()).isEqualTo("kdj");
+    Assertions.assertThat(info.getUserCreationDeferred()).isTrue();
+    Assertions.assertThat(info.getExternalPasskey()).isTrue();
   }
 }
