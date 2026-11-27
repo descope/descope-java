@@ -588,6 +588,20 @@ public interface UserService {
       throws DescopeException;
 
   /**
+   * Generate OTP for the given login ID of a test user, with login options. This is useful when
+   * running tests and don't want to use 3rd party messaging services.
+   *
+   * @param loginId The loginID is required.
+   * @param deliveryMethod Choose the selected delivery method for verification.
+   * @param loginOptions Optional login options (step-up, MFA, custom claims, template, tenant and so on).
+   * @return It returns the code for the login (exactly as it sent via Email or SMS)
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  OTPTestUserResponse generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod,
+      LoginOptions loginOptions) throws DescopeException;
+
+  /**
    * Generate Magic Link for the given login ID of a test user. This is useful when running tests
    * and don't want to use 3rd party messaging services. The redirect URI is optional. If provided
    * however, it will be used instead of any global configuration.
@@ -603,6 +617,21 @@ public interface UserService {
       String loginId, String uri, DeliveryMethod deliveryMethod) throws DescopeException;
 
   /**
+   * Generate Magic Link for the given login ID of a test user, with login options. This is useful
+   * when running tests and don't want to use 3rd party messaging services.
+   *
+   * @param loginId The loginID is required.
+   * @param redirectUrl An optional redirect URL which will be used instead of any global configuration.
+   * @param deliveryMethod Choose the selected delivery method for verification.
+   * @param loginOptions Optional login options (step-up, MFA, custom claims, template, tenant and so on).
+   * @return It returns the link for the login (exactly as it sent via Email)
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  MagicLinkTestUserResponse generateMagicLinkForTestUser(String loginId, String redirectUrl,
+      DeliveryMethod deliveryMethod, LoginOptions loginOptions) throws DescopeException;
+
+  /**
    * Generate Enchanted Link for the given login ID of a test user. This is useful when running
    * tests and don't want to use 3rd party messaging services The redirect URI is optional. If
    * provided however, it will be used instead of any global configuration.
@@ -616,6 +645,21 @@ public interface UserService {
    */
   EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(String loginId, String uri)
         throws DescopeException;
+
+  /**
+   * Generate Enchanted Link for the given login ID of a test user, with login options. This is
+   * useful when running tests and don't want to use 3rd party messaging services.
+   *
+   * @param loginId The loginID is required.
+   * @param redirectUrl An optional redirect URL which will be used instead of any global configuration.
+   * @param loginOptions Optional login options (step-up, MFA, custom claims, template, tenant and so on).
+   * @return It returns the link for the login (exactly as it sent via Email) and pendingRef which
+   *     is used to poll for a valid session
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(String loginId, String redirectUrl,
+      LoginOptions loginOptions) throws DescopeException;
 
   /**
    * Generate an embedded link token, later can be used to authenticate via magiclink verify method

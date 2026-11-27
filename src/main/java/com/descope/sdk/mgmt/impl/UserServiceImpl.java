@@ -733,6 +733,18 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public OTPTestUserResponse generateOtpForTestUser(String loginId, DeliveryMethod deliveryMethod,
+      LoginOptions loginOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI otpForTestUserUri = composeOTPForTestUserUri();
+    OTPTestUserRequest request = new OTPTestUserRequest(loginId, deliveryMethod.getValue(), loginOptions);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(otpForTestUserUri, request, OTPTestUserResponse.class);
+  }
+
+  @Override
   public MagicLinkTestUserResponse generateMagicLinkForTestUser(String loginId, String uri,
       DeliveryMethod deliveryMethod) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
@@ -745,6 +757,23 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public MagicLinkTestUserResponse generateMagicLinkForTestUser(String loginId, String redirectUrl,
+      DeliveryMethod deliveryMethod, LoginOptions loginOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI magicLinkForTestUserUri = composeMaginLinkForTestUserUri();
+    MagicLinkTestUserRequest request = MagicLinkTestUserRequest.builder()
+        .loginId(loginId)
+        .deliveryMethod(deliveryMethod.getValue())
+        .redirectUrl(redirectUrl)
+        .loginOptions(loginOptions)
+        .build();
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(magicLinkForTestUserUri, request, MagicLinkTestUserResponse.class);
+  }
+
+  @Override
   public EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(String loginId, String uri)
       throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
@@ -752,6 +781,22 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     URI enchantedLinkForTestUserUri = composeEnchantedLinkForTestUserUri();
     EnchantedLinkTestUserRequest request = new EnchantedLinkTestUserRequest(loginId, uri);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(enchantedLinkForTestUserUri, request, EnchantedLinkTestUserResponse.class);
+  }
+
+  @Override
+  public EnchantedLinkTestUserResponse generateEnchantedLinkForTestUser(String loginId, String redirectUrl,
+      LoginOptions loginOptions) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    URI enchantedLinkForTestUserUri = composeEnchantedLinkForTestUserUri();
+    EnchantedLinkTestUserRequest request = EnchantedLinkTestUserRequest.builder()
+        .loginId(loginId)
+        .redirectUrl(redirectUrl)
+        .loginOptions(loginOptions)
+        .build();
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(enchantedLinkForTestUserUri, request, EnchantedLinkTestUserResponse.class);
   }
