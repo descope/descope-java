@@ -3,6 +3,7 @@ package com.descope.model.mgmt;
 import com.descope.sdk.mgmt.AccessKeyService;
 import com.descope.sdk.mgmt.AuditService;
 import com.descope.sdk.mgmt.AuthzService;
+import com.descope.sdk.mgmt.DescoperService;
 import com.descope.sdk.mgmt.FGAService;
 import com.descope.sdk.mgmt.FlowService;
 import com.descope.sdk.mgmt.GroupService;
@@ -44,4 +45,5 @@ public class ManagementServices {
   OutboundAppsByTokenService outboundAppsByTokenService;
   InboundAppsService inboundAppsService;
   UserCustomAttributesService userCustomAttributesService;
+  DescoperService descoperService;
 }

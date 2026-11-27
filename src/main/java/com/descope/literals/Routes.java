@@ -247,6 +247,10 @@ public class Routes {
     public static final String MANAGEMENT_CREATE_USER_CUSTOM_ATTRIBUTES = "/v1/mgmt/user/customattribute/create";
     public static final String MANAGEMENT_DELETE_USER_CUSTOM_ATTRIBUTES = "/v1/mgmt/user/customattribute/delete";
 
+    // Descopers
+    public static final String MANAGEMENT_DESCOPER_LINK = "/v1/mgmt/descoper";
+    public static final String MANAGEMENT_DESCOPER_LIST_LINK = "/v1/mgmt/descoper/list";
+
     // Outbound
     public static final String MANAGEMENT_FETCH_OUTBOUND_APP_USER_TOKEN = "/v1/mgmt/outbound/app/user/token";
     public static final String MANAGEMENT_DELETE_OUTBOUND_APP_USER_TOKEN_BY_ID = "/v1/mgmt/outbound/token";

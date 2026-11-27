@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Descopers](#manage-descopers)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1991,6 +1992,51 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Descopers
+
+You can load, update, delete and list descopers, the members of your company console.
+
+```java
+DescoperService ds = descopeClient.getManagementServices().getDescoperService();
+
+// Load a descoper by ID
+try {
+    Descoper descoper = ds.load("descoper-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update a descoper's attributes and roles. Pass null to leave either unchanged.
+try {
+    Descoper descoper = ds.update(
+        "descoper-id",
+        DescoperAttributes.builder().displayName("Name").build(),
+        DescoperRBAC.builder()
+            .projects(Arrays.asList(DescoperProjectRole.builder()
+                .projectIds(Arrays.asList("project-id"))
+                .role(DescoperRole.DEVELOPER)
+                .build()))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a descoper
+try {
+    ds.delete("descoper-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// List all descopers
+try {
+    DescoperListResponse res = ds.list();
+    // res.getDescopers(), res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Code Examples
