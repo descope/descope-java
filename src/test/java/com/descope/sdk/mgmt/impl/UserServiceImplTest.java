@@ -896,7 +896,7 @@ public class UserServiceImplTest {
             + "\"total\":1}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
-      AllUsersResponseDetails res = service.loadUsers(Arrays.asList("u1", "u2"), true);
+      final AllUsersResponseDetails res = service.loadUsers(Arrays.asList("u1", "u2"), true);
       ClassicHttpRequest req = captor.getValue();
       assertEquals("POST", req.getMethod());
       assertTrue(req.getRequestUri().endsWith("/v1/mgmt/users/load"));
