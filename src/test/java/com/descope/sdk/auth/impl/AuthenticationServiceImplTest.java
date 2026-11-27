@@ -157,9 +157,6 @@ public class AuthenticationServiceImplTest {
       mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
       AuthenticationInfo info =
           authenticationService.refreshSessionWithTokenAuthenticationInfo("someRefreshJwt", "externalTokenIn");
-      assertEquals("/v1/auth/refresh", uri.getValue().getPath());
-      assertEquals("Bearer " + PROJECT_ID + ":someRefreshJwt", authHeader.get());
-      assertEquals(new RefreshSessionRequest("externalTokenIn"), body.getValue());
       assertEquals(MOCK_TOKEN, info.getToken());
       assertEquals(MOCK_TOKEN, info.getRefreshToken());
       assertEquals(MOCK_USER_RESPONSE, info.getUser());
@@ -177,6 +174,9 @@ public class AuthenticationServiceImplTest {
       assertEquals("knownDevice", info.getKnownDeviceJwt());
       assertTrue(info.getUserCreationDeferred());
       assertTrue(info.getExternalPasskey());
+      assertEquals("/v1/auth/refresh", uri.getValue().getPath());
+      assertEquals("Bearer " + PROJECT_ID + ":someRefreshJwt", authHeader.get());
+      assertEquals(new RefreshSessionRequest("externalTokenIn"), body.getValue());
 
       // Without an external token the body is still sent, empty
       assertEquals(MOCK_TOKEN, authenticationService.refreshSessionWithToken("someRefreshJwt", null));
