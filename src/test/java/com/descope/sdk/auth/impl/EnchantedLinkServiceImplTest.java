@@ -394,7 +394,7 @@ public class EnchantedLinkServiceImplTest {
       ApiProxy apiProxy = mockProxy(builder, new EnchantedLinkResponse("ref", "12", MOCK_MASKED_EMAIL), authHeader);
       LoginOptions loginOptions = LoginOptions.builder().templateId("nested-template").build();
 
-      EnchantedLinkResponse response = enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null, loginOptions,
+      final EnchantedLinkResponse response = enchantedLinkService.signIn(MOCK_EMAIL, MOCK_DOMAIN, null, loginOptions,
           PROVIDER_ID, TEMPLATE_ID, SSO_APP_ID, true);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
@@ -418,7 +418,7 @@ public class EnchantedLinkServiceImplTest {
           authHeader);
       LoginOptions loginOptions = LoginOptions.builder().stepup(true).build();
 
-      PhoneEnchantedLinkResponse response = enchantedLinkService.signInWithPhone(MOCK_PHONE, MOCK_DOMAIN,
+      final PhoneEnchantedLinkResponse response = enchantedLinkService.signInWithPhone(MOCK_PHONE, MOCK_DOMAIN,
           MOCK_REFRESH_TOKEN, loginOptions, PROVIDER_ID, TEMPLATE_ID, SSO_APP_ID, true);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
@@ -450,7 +450,7 @@ public class EnchantedLinkServiceImplTest {
     try (MockedStatic<ApiProxyBuilder> builder = mockStatic(ApiProxyBuilder.class)) {
       ApiProxy apiProxy = mockProxy(builder, new EnchantedLinkResponse("ref", "12", MOCK_MASKED_EMAIL), authHeader);
 
-      EnchantedLinkResponse response = enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN, PROVIDER_ID,
+      final EnchantedLinkResponse response = enchantedLinkService.signUpOrIn(MOCK_EMAIL, MOCK_DOMAIN, PROVIDER_ID,
           TEMPLATE_ID, SSO_APP_ID, true);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
@@ -467,7 +467,7 @@ public class EnchantedLinkServiceImplTest {
       ApiProxy apiProxy = mockProxy(builder, new PhoneEnchantedLinkResponse("ref", "12", MOCK_MASKED_PHONE),
           authHeader);
 
-      PhoneEnchantedLinkResponse response = enchantedLinkService.signUpOrInWithPhone(MOCK_PHONE, MOCK_DOMAIN,
+      final PhoneEnchantedLinkResponse response = enchantedLinkService.signUpOrInWithPhone(MOCK_PHONE, MOCK_DOMAIN,
           PROVIDER_ID, TEMPLATE_ID, SSO_APP_ID, true);
 
       ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
