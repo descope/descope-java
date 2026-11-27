@@ -11,4 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoadAllApplicationsResponse {
   private InboundApp[] apps;
+  private Integer total;
+
+  public LoadAllApplicationsResponse(InboundApp[] apps) {
+    this.apps = apps;
+  }
 }

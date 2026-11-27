@@ -1777,6 +1777,40 @@ try {
             //         // .values(new String[] { "value1", "value2" }) // if supported
             //         .build()
             // })
+            // .clientType(InboundAppRequest.CLIENT_TYPE_CONFIDENTIAL)
+            // .defaultAudience(InboundAppRequest.DEFAULT_AUDIENCE_CLIENT_ID)
+            // .forcePkce(true)
+            // .forceDpop(true)
+            // .customAttributes(Collections.singletonMap("team", "blue"))
+            // .sessionSettings(InboundAppSessionSettings.builder()
+            //     .enabled(true)
+            //     .refreshTokenExpiration(4)
+            //     .refreshTokenExpirationUnit(InboundAppSessionSettings.UNIT_WEEKS) // required
+            //     .sessionTokenExpiration(10)
+            //     .sessionTokenExpirationUnit(InboundAppSessionSettings.UNIT_MINUTES) // required
+            //     .keySessionTokenExpirationUnit(InboundAppSessionSettings.UNIT_HOURS) // required
+            //     .build())
+            // .scopeClaimMapping(new InboundAppScopeClaimMapping[] {
+            //     InboundAppScopeClaimMapping.builder()
+            //         .scope("email")
+            //         .claims(Collections.singletonMap("email", "{{user.email}}"))
+            //         .mandatory(true)
+            //         .build()
+            // })
+            // .clientAuthMethod(InboundAppRequest.CLIENT_AUTH_METHOD_PRIVATE_KEY_JWT)
+            // .clientAssertions(new InboundAppClientAssertion[] {
+            //     InboundAppClientAssertion.builder()
+            //         .keySource(InboundAppClientAssertion.KEY_SOURCE_JWKS) // required
+            //         .jwksUri("https://example.com/jwks")
+            //         .build()
+            // })
+            // .tags(new String[] { "tag1" })
+            // .noScopeBehavior(InboundAppRequest.NO_SCOPE_BEHAVIOR_GRANT_DEFAULT_SCOPES)
+            // .defaultScopes(new String[] { "email" })
+            // .agentic(true) // make the app an Agentic Identity Hub client
+            // .createdBy("user-id-or-login-id") // the owner, needs the users read role
+            // Create only: .consentFlowId("flow-id"), .nonConfidentialClient(true), .clientId("id"),
+            // .clientSecret("secret"). Update and patch reject them.
             .build()
     );
     String appId = response.getId();
@@ -1812,6 +1846,8 @@ try {
     inboundAppsService.patchApplication(
         InboundAppRequest.builder()
             .id("app-id") // required
+            // .agentic(false) // remove the app from the Agentic Identity Hub
+            // .createdBy("") // clear the owner
             // .name("Patched Name")
             // .description("optional-description")
             // .logo("optional-logo")
@@ -1832,6 +1868,13 @@ try {
 // Delete an inbound application by ID
 try {
     inboundAppsService.deleteApplication("app-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete inbound applications by ID
+try {
+    inboundAppsService.deleteApplications(Arrays.asList("app-id-1", "app-id-2"));
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1857,6 +1900,29 @@ try {
     // Handle the error
 }
 
+// Get one of the application's named secrets
+try {
+    String secret = inboundAppsService.getApplicationSecret("app-id", "secret-name");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Add a named secret to the application (expireTime in epoch seconds; null never expires)
+try {
+    InboundAppAddSecretResponse res = inboundAppsService.addApplicationSecret("app-id", "secret-name", null);
+    String secret = res.getSecret(); // the cleartext is returned only here and when revealed
+    InboundAppSecretMeta meta = res.getMeta();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Revoke a named secret (returns the remaining secrets)
+try {
+    InboundAppSecretMeta[] remaining = inboundAppsService.revokeApplicationSecret("app-id", "secret-name");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Rotate the application's secret (returns new secret)
 try {
     String newSecret = inboundAppsService.rotateApplicationSecret("app-id"); 
@@ -1870,6 +1936,36 @@ try {
     for (InboundApp app : apps) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load inbound applications a page at a time, with optional filters
+try {
+    LoadAllApplicationsResponse res = inboundAppsService.loadAllApplications(
+        InboundAppLoadAllOptions.builder()
+            .page(0)
+            .limit(20)
+            // .createdBy("Owner Name") // the owner's display name, ignoring case
+            // .agentic(true) // only Agentic Identity Hub clients (true) or only other apps (false)
+            .build()
+    );
+    // res.getApps(), res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create a consent for a user to an inbound app
+try {
+    InboundAppConsent consent = inboundAppsService.createConsent(
+        InboundAppConsentCreateRequest.builder()
+            .appId("app-id") // required
+            .userId("user-id") // required
+            .scopes(new String[] { "openid" }) // must include the app's mandatory scopes
+            // .tenantId("tenant-id") // the user must be a member of this tenant
+            // .expireTime(1900000000L) // epoch seconds, 0 never expires
+            .build()
+    );
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -1913,6 +2009,7 @@ try {
             // .consentId("consent-id") 
             // .tenantId("tenant-id") 
             // .page("page-token") 
+            // .limit(10)
             .build()
     );
     // res.getConsents(), res.getTotal()
