@@ -334,5 +334,9 @@ public class Routes {
     public static final String USER_REMOVE_PASSKEY_LINK = "/v1/mgmt/user/passkey/delete";
     public static final String USER_LIST_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/list";
     public static final String USER_REMOVE_TOTP_SEED_LINK = "/v1/mgmt/user/totp/delete";
+
+    // Session Classification
+    public static final String MANAGEMENT_SESSION_CLASSIFICATION_LINK = "/v1/mgmt/sessionclassification";
+    public static final String MANAGEMENT_SESSION_CLASSIFICATION_LOAD_ALL_LINK = "/v1/mgmt/sessionclassification/all";
   }
 }
