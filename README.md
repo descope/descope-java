@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Session Classifications](#manage-session-classifications)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1987,6 +1988,51 @@ try {
 
     // Update the current project's settings to mirror those in the exported data
     ps.importProject(files);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+### Manage Session Classifications
+
+You can create, update, delete, and load session classifications. A session classification is a named set of session rules applied to the users assigned to it; its name is its id.
+
+```java
+SessionClassificationService scs = descopeClient.getManagementServices().getSessionClassificationService();
+
+// Create or update a session classification by name.
+// On a new name the defaults are applied; on an existing one, fields left out keep their stored value.
+try {
+    SessionClassification sc = scs.set(SessionClassification.builder()
+        .name("admins") // required
+        .description("Administrators")
+        .sessionTimeLimitRule(SessionTimeLimitRule.MIN_OF_TENANTS)
+        .accessAllTenants(true)
+        .maxConcurrentSessions(3) // 0 means unlimited
+        // .version(4) // optional, reject the update if the classification changed since it was read
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a session classification by name
+try {
+    SessionClassification sc = scs.load("admins");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load all session classifications
+try {
+    List<SessionClassification> classifications = scs.loadAll();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a session classification by name. Users assigned to it are left without a classification.
+try {
+    scs.delete("admins");
 } catch (DescopeException de) {
     // Handle the error
 }
