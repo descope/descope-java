@@ -96,7 +96,8 @@ These sections show how to use the SDK to perform API management functions. Befo
 11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+14. [Manage Engines](#manage-engines)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1920,6 +1921,52 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Engines
+
+You can create, update, delete, and load engines, as well as rotate their secrets:
+
+```java
+// Set up the engine service
+EngineService engineService = descopeClient.getManagementServices().getEngineService();
+
+// Create a new engine. The returned secret cannot be retrieved again.
+try {
+    Engine engine = engineService.createEngine("my-engine");
+    String engineId = engine.getId();
+    String secret = engine.getSecret();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update an engine's name
+try {
+    Engine engine = engineService.updateEngine("engine-id", "my-engine");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load an engine by ID. The secret is never returned here.
+try {
+    Engine engine = engineService.loadEngine("engine-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Rotate an engine's secret. The previous secret is immediately invalidated.
+try {
+    String newSecret = engineService.rotateEngineSecret("engine-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete an engine
+try {
+    engineService.deleteEngine("engine-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ### Manage Project
