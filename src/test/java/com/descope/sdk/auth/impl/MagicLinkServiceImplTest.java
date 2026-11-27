@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.RateLimitExceededException;
@@ -146,6 +147,28 @@ class MagicLinkServiceImplTest {
           magicLinkService.signUpOrIn(DeliveryMethod.EMAIL, MOCK_EMAIL, MOCK_DOMAIN);
       assertThat(signUpOrIn).isNotBlank().contains("*");
     }
+  }
+
+  @Test
+  void testIMDeliveryMethodRejected() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      ServerCommonException thrown = assertThrows(ServerCommonException.class,
+          () -> magicLinkService.signIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_DOMAIN, null, null));
+      assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+      thrown = assertThrows(ServerCommonException.class,
+          () -> magicLinkService.signUp(DeliveryMethod.IM, MOCK_PHONE, MOCK_DOMAIN, new User()));
+      assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+      thrown = assertThrows(ServerCommonException.class,
+          () -> magicLinkService.signUpOrIn(DeliveryMethod.IM, MOCK_PHONE, MOCK_DOMAIN));
+      assertEquals("The DeliveryMethod argument is invalid", thrown.getMessage());
+      thrown = assertThrows(ServerCommonException.class,
+          () -> magicLinkService.updateUserPhone(DeliveryMethod.IM, MOCK_EMAIL, MOCK_PHONE, MOCK_DOMAIN,
+              MOCK_REFRESH_TOKEN, null));
+      assertEquals("The Method argument is invalid", thrown.getMessage());
+    }
+    verifyNoInteractions(apiProxy);
   }
 
   @Test

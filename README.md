@@ -143,6 +143,51 @@ try {
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
 
+`DeliveryMethod.IM` sends the code by instant message to a phone number. It is supported by OTP only.
+
+To pick the messaging provider or template, sign in to an SSO app, or use the user's recovery method, pass OTP options. These overloads return an `OTPResponse` with the masked address and the number of verification attempts:
+
+```java
+OTPSignInOptions signInOptions = OTPSignInOptions.builder()
+    .providerId("my-provider")
+    .templateId("my-template")
+    .ssoAppId("my-sso-app")
+    .useRecovery(false)
+    .build();
+try {
+  OTPResponse res = otps.signIn(DeliveryMethod.SMS, loginId, null, null, signInOptions);
+  String maskedPhone = res.getMaskedPhone();
+  Integer attempts = res.getVerificationAttempts();
+  res = otps.signUpOrIn(DeliveryMethod.EMAIL, loginId, signInOptions);
+  String maskedEmail = res.getMaskedEmail();
+  OTPSignUpOptions signUpOptions = OTPSignUpOptions.builder().providerId("my-provider").templateId("my-template").build();
+  res = otps.signUp(DeliveryMethod.IM, "+12125551234", user, null, signUpOptions);
+} catch (DescopeException de) {
+  // Handle the error
+}
+```
+
+Updating a user's email or phone takes OTP update options the same way. `mfa` keeps the authentication methods already on the refresh token and adds the updated one:
+
+```java
+OTPUpdateOptions updateOptions = OTPUpdateOptions.builder()
+    .providerId("my-provider")
+    .templateId("my-template")
+    .locale("en")
+    .failOnConflict(true)
+    .mfa(true)
+    .build();
+try {
+  OTPResponse res = otps.updateUserEmail(loginId, "new@descope.com", refreshToken, null, null, updateOptions);
+  res = otps.updateUserPhone(DeliveryMethod.WHATSAPP, loginId, "+12125551234", refreshToken, null, null,
+      updateOptions);
+} catch (DescopeException de) {
+  // Handle the error
+}
+```
+
+`AuthenticationInfo` also carries the rest of the verify response, such as `getTenantSSOID()`, `getSessionExpiration()`, `getNextRefreshSeconds()`, `getTrustedDeviceJwt()` and `getUserCreationDeferred()`.
+
 ### Magic Link
 
 Send a user a Magic Link using your preferred delivery method (_email / SMS / WhatsApp_).
