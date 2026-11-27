@@ -270,6 +270,13 @@ public class Routes {
     // License
     public static final String MANAGEMENT_LICENSE_LINK = "/v1/mgmt/license";
 
+    // Project secrets
+    public static final String MANAGEMENT_SECRET_CREATE_LINK = "/v1/mgmt/secret";
+    public static final String MANAGEMENT_SECRET_UPDATE_LINK = "/v1/mgmt/secret/update";
+    public static final String MANAGEMENT_SECRET_DELETE_LINK = "/v1/mgmt/secret/delete";
+    public static final String MANAGEMENT_SECRET_LOAD_LINK = "/v1/mgmt/secret/";
+    public static final String MANAGEMENT_SECRET_LOAD_ALL_LINK = "/v1/mgmt/secret/all";
+
     // Inbound
     public static final String MANAGEMENT_INBOUND_CREATE_APP = "/v1/mgmt/thirdparty/app/create";
     public static final String MANAGEMENT_INBOUND_UPDATE_APP = "/v1/mgmt/thirdparty/app/update";

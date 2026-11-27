@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Project Secrets](#manage-project-secrets)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1987,6 +1988,53 @@ try {
 
     // Update the current project's settings to mirror those in the exported data
     ps.importProject(files);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+### Manage Project Secrets
+
+You can create, update, delete or load project secrets. A secret value is encrypted at rest and can be referenced from
+connectors and scripts, but is never returned by any API.
+
+```java
+// Set up the project secret service
+ProjectSecretService projectSecretService = descopeClient.getManagementServices().getProjectSecretService();
+
+// Create a secret. The name cannot be changed later, and the description is optional.
+try {
+    ProjectSecret secret = projectSecretService.createSecret("MySecret", "secret-value", "My secret description");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update a secret's description, and optionally rotate its value (pass null to keep the stored value).
+// The ID is the lowercased secret name.
+try {
+    ProjectSecret secret = projectSecretService.updateSecret("mysecret", "Updated description", "new-secret-value");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a secret by ID. Secret values are never returned.
+try {
+    ProjectSecret secret = projectSecretService.loadSecret("mysecret");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load all secrets
+try {
+    List<ProjectSecret> secrets = projectSecretService.loadAllSecrets();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a secret. Fails while a connector still references it.
+try {
+    projectSecretService.deleteSecret("mysecret");
 } catch (DescopeException de) {
     // Handle the error
 }
