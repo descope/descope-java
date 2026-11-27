@@ -108,6 +108,14 @@ public interface AuthzService {
   void deleteRelationsForResources(List<String> resources) throws DescopeException;
 
   /**
+   * Delete all relations in which the given resources are the resource.
+   *
+   * @param resources {@link List} of resources whose relations to delete.
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  void deleteResourceRelationsForResources(List<String> resources) throws DescopeException;
+
+  /**
    * Query relations to see what relations exists.
    *
    * @param relationQueries {@link List} of {@link RelationQuery} to check.
@@ -142,6 +150,21 @@ public interface AuthzService {
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
   List<String> whoCanAccess(String resource, String relationDefinition, String namespace,
+      Map<String, Object> context) throws DescopeException;
+
+  /**
+   * List the targets that have the given relation definition to the given resource, evaluating
+   * schema conditions against the given context, optionally only targets of the given type.
+   *
+   * @param resource The resource we are checking
+   * @param relationDefinition The relation definition we are querying
+   * @param namespace The namespace for the relation definition
+   * @param targetType Only return targets of this type (namespace), may be null or empty for all targets
+   * @param context Extra context for condition evaluation, may be null or empty
+   * @return {@link List} of targets who have the given relation definition
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<String> whoCanAccess(String resource, String relationDefinition, String namespace, String targetType,
       Map<String, Object> context) throws DescopeException;
 
   /**
@@ -197,6 +220,25 @@ public interface AuthzService {
    */
   List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace)
       throws DescopeException;
+
+  /**
+   * Return the list of all resources for the given target and a given relation definition
+   * including derived resources from the schema tree, evaluating schema conditions against the given context.
+   *
+   * <p>Resources reachable only through a condition-gated relation are returned only when the context
+   * satisfies the condition.
+   *
+   * @param target The target to check relations for
+   * @param relationDefinition relation definition to filter the results
+   * @param namespace namespace of the relation definition
+   * @param parentTarget optional parent target, may be null or empty
+   * @param parentRelationDefinition optional parent relation definition, may be null or empty
+   * @param context Extra context for condition evaluation, may be null or empty
+   * @return {@link List} of {@link Relation} that exist for the given target
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
+   */
+  List<Relation> whatCanTargetAccessWithRelation(String target, String relationDefinition, String namespace,
+      String parentTarget, String parentRelationDefinition, Map<String, Object> context) throws DescopeException;
 
   /**
    * Return list of targets and resources changed since the given date.

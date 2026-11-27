@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -39,9 +40,12 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.Period;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
@@ -49,6 +53,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class AuthzServiceImplTest {
+  private static final String MANAGEMENT_KEY = "some-management-key";
   private AuthzService authzService;
 
   @BeforeEach
@@ -293,6 +298,46 @@ public class AuthzServiceImplTest {
   }
 
   @Test
+  void testDeleteResourceRelationsForResourcesForNoResources() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.deleteResourceRelationsForResources(null));
+    assertNotNull(thrown);
+    assertEquals("The resources argument is invalid", thrown.getMessage());
+    thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.deleteResourceRelationsForResources(Collections.emptyList()));
+    assertNotNull(thrown);
+    assertEquals("The resources argument is invalid", thrown.getMessage());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testDeleteResourceRelationsForResourcesForSuccess() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(null).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      keyedAuthzService().deleteResourceRelationsForResources(Arrays.asList("r1", "r2"));
+    }
+    assertEquals("Bearer " + TestUtils.PROJECT_ID + ":" + MANAGEMENT_KEY, authHeader.get());
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+    verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(Void.class));
+    assertEquals("https://api.descope.com/v1/mgmt/authz/re/deleteresourcesrelations",
+        uriCaptor.getValue().toString());
+    Map<String, Object> expected = new HashMap<>();
+    expected.put("resources", Arrays.asList("r1", "r2"));
+    assertEquals(expected, bodyCaptor.getValue());
+  }
+
+  @Test
   void testHasRelationsForNoQueries() {
     ServerCommonException thrown =
         assertThrows(
@@ -376,6 +421,76 @@ public class AuthzServiceImplTest {
 
       ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
       verify(apiProxy).post(any(), bodyCaptor.capture(), any());
+      assertFalse(bodyCaptor.getValue().containsKey("context"));
+    }
+  }
+
+  @Test
+  void testWhoCanAccessWithTargetTypeForInvalidInputs() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whoCanAccess(null, "kuku", "kaka", "user", null));
+    assertNotNull(thrown);
+    assertEquals("The resource argument is invalid", thrown.getMessage());
+    thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whoCanAccess("kiki", null, "kaka", "user", null));
+    assertNotNull(thrown);
+    assertEquals("The relationDefinition argument is invalid", thrown.getMessage());
+    thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whoCanAccess("kiki", "kuku", null, "user", null));
+    assertNotNull(thrown);
+    assertEquals("The namespace argument is invalid", thrown.getMessage());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhoCanAccessWithTargetType() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new WhoCanAccessResponse(Arrays.asList("u1", "u2"))).when(apiProxy).post(any(), any(), any());
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    List<String> targets;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      targets = keyedAuthzService().whoCanAccess("kiki", "kuku", "kaka", "user", context);
+    }
+    assertEquals(Arrays.asList("u1", "u2"), targets);
+    assertEquals("Bearer " + TestUtils.PROJECT_ID + ":" + MANAGEMENT_KEY, authHeader.get());
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+    verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(WhoCanAccessResponse.class));
+    assertEquals("https://api.descope.com/v1/mgmt/authz/re/who", uriCaptor.getValue().toString());
+    Map<String, Object> expected = new HashMap<>();
+    expected.put("resource", "kiki");
+    expected.put("relationDefinition", "kuku");
+    expected.put("namespace", "kaka");
+    expected.put("targetType", "user");
+    expected.put("context", context);
+    assertEquals(expected, bodyCaptor.getValue());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhoCanAccessWithEmptyTargetType() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new WhoCanAccessResponse(Arrays.asList("kuku"))).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      authzService.whoCanAccess("kiki", "kuku", "kaka", "", null);
+
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), any());
+      assertFalse(bodyCaptor.getValue().containsKey("targetType"));
       assertFalse(bodyCaptor.getValue().containsKey("context"));
     }
   }
@@ -517,6 +632,80 @@ public class AuthzServiceImplTest {
   }
 
   @Test
+  void testWhatCanTargetAccessWithRelationAndParentForInvalidInputs() {
+    ServerCommonException thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whatCanTargetAccessWithRelation(null, "rd", "ns", "pt", "prd", null));
+    assertNotNull(thrown);
+    assertEquals("The target argument is invalid", thrown.getMessage());
+    thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whatCanTargetAccessWithRelation("t", null, "ns", "pt", "prd", null));
+    assertNotNull(thrown);
+    assertEquals("The relationDefinition argument is invalid", thrown.getMessage());
+    thrown =
+        assertThrows(
+            ServerCommonException.class,
+            () -> authzService.whatCanTargetAccessWithRelation("t", "rd", null, "pt", "prd", null));
+    assertNotNull(thrown);
+    assertEquals("The namespace argument is invalid", thrown.getMessage());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhatCanTargetAccessWithRelationAndParent() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new ResourcesResponse(Arrays.asList("r1", "r2"))).when(apiProxy).post(any(), any(), any());
+    Map<String, Object> context = new HashMap<>();
+    context.put("role", "admin");
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    List<Relation> relations;
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      relations = keyedAuthzService().whatCanTargetAccessWithRelation("kiki", "rd", "ns", "pt", "prd", context);
+    }
+    assertEquals("Bearer " + TestUtils.PROJECT_ID + ":" + MANAGEMENT_KEY, authHeader.get());
+    ArgumentCaptor<URI> uriCaptor = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+    verify(apiProxy).post(uriCaptor.capture(), bodyCaptor.capture(), eq(ResourcesResponse.class));
+    assertEquals("https://api.descope.com/v1/mgmt/authz/re/targetwithrelation", uriCaptor.getValue().toString());
+    Map<String, Object> expected = new HashMap<>();
+    expected.put("target", "kiki");
+    expected.put("relationDefinition", "rd");
+    expected.put("namespace", "ns");
+    expected.put("ParentTarget", "pt");
+    expected.put("ParentRelationDefinition", "prd");
+    expected.put("context", context);
+    assertEquals(expected, bodyCaptor.getValue());
+    assertEquals(2, relations.size());
+    assertEquals(Relation.builder().resource("r1").target("kiki").relationDefinition("rd").namespace("ns").build(),
+        relations.get(0));
+    assertEquals(Relation.builder().resource("r2").target("kiki").relationDefinition("rd").namespace("ns").build(),
+        relations.get(1));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testWhatCanTargetAccessWithRelationOmitsUnsetParent() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new ResourcesResponse(Arrays.asList("r1"))).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(
+        () -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      authzService.whatCanTargetAccessWithRelation("kiki", "rd", "ns", "", null, new HashMap<>());
+
+      ArgumentCaptor<Map<String, Object>> bodyCaptor = ArgumentCaptor.forClass(Map.class);
+      verify(apiProxy).post(any(), bodyCaptor.capture(), any());
+      assertEquals(3, bodyCaptor.getValue().size());
+    }
+  }
+
+  @Test
   void testGetModifiedForWrongSince() {
     ServerCommonException thrown =
         assertThrows(
@@ -584,5 +773,11 @@ public class AuthzServiceImplTest {
     assertThat(respWhat).size().isEqualTo(7);
     respWhat = authzService.whatCanTargetAccessWithRelation("u1", "viewer", "doc");
     assertThat(respWhat).size().isEqualTo(1);
+  }
+
+  private static AuthzService keyedAuthzService() {
+    Client client = Client.builder().uri("https://api.descope.com").projectId(TestUtils.PROJECT_ID)
+        .managementKey(MANAGEMENT_KEY).build();
+    return ManagementServiceBuilder.buildServices(client).getAuthzService();
   }
 }

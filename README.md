@@ -1645,6 +1645,20 @@ AuthzService authz = descopeClient.getManagementServices().getAuthzService();
 List<String> targets = authz.whoCanAccess("doc1", "viewer", "document", context);
 List<Relation> relationsForTarget = authz.whatCanTargetAccess("user123", context);
 
+// Only return targets of the given type (namespace); pass null for all targets
+List<String> users = authz.whoCanAccess("doc1", "viewer", "document", "user", context);
+
+// Resources the target has the given relation to, optionally from a parent target and relation definition
+List<Relation> viewable = authz.whatCanTargetAccessWithRelation("user123", "viewer", "document",
+    "folder1", "parent", context);
+
+// Delete all relations in which the given resources are the resource
+try {
+    authz.deleteResourceRelationsForResources(Arrays.asList("doc1", "doc2"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Delete relations
 try {
     fs.deleteRelations(relations);

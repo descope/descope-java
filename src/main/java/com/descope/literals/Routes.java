@@ -221,6 +221,8 @@ public class Routes {
     public static final String MANAGEMENT_AUTHZ_RE_CREATE = "/v1/mgmt/authz/re/create";
     public static final String MANAGEMENT_AUTHZ_RE_DELETE = "/v1/mgmt/authz/re/delete";
     public static final String MANAGEMENT_AUTHZ_RE_DELETE_RESOURCES = "/v1/mgmt/authz/re/deleteresources";
+    public static final String MANAGEMENT_AUTHZ_RE_DELETE_RESOURCES_RELATIONS =
+        "/v1/mgmt/authz/re/deleteresourcesrelations";
     public static final String MANAGEMENT_AUTHZ_RE_HAS_RELATIONS = "/v1/mgmt/authz/re/has";
     public static final String MANAGEMENT_AUTHZ_RE_WHO = "/v1/mgmt/authz/re/who";
     public static final String MANAGEMENT_AUTHZ_RE_RESOURCE = "/v1/mgmt/authz/re/resource";
