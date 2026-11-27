@@ -220,7 +220,7 @@ class ProjectSecretServiceImplTest {
     assertEquals("mysecret", secret.getId());
     assertEquals("MySecret", secret.getName());
     assertEquals("desc", secret.getDescription());
-    assertEquals(Integer.valueOf(1700000000), secret.getCreatedTime());
-    assertEquals(Integer.valueOf(1700000100), secret.getModifiedTime());
+    assertEquals(Long.valueOf(1700000000L), secret.getCreatedTime());
+    assertEquals(Long.valueOf(1700000100L), secret.getModifiedTime());
   }
 }

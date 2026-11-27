@@ -14,7 +14,7 @@ public class ProjectSecret {
   private String name;
   private String description;
   /** Epoch seconds. */
-  private Integer createdTime;
+  private Long createdTime;
   /** Epoch seconds. */
-  private Integer modifiedTime;
+  private Long modifiedTime;
 }
