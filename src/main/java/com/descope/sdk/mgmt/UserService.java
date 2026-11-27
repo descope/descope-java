@@ -241,6 +241,19 @@ public interface UserService {
   AllUsersResponseDetails searchAll(UserSearchRequest request) throws DescopeException;
 
   /**
+   * Load multiple users by their user IDs.
+   *
+   * @param userIds List of user IDs to load. The list must not be empty. The maximum list length is
+   *     validated by the server.
+   * @param includeInvalidUsers Whether to include invalid users, such as expired or disabled ones.
+   * @return {@link AllUsersResponseDetails}
+   * @throws DescopeException If there occurs any exception, a subtype of this exception will be
+   *     thrown.
+   */
+  AllUsersResponseDetails loadUsers(List<String> userIds, boolean includeInvalidUsers)
+      throws DescopeException;
+
+  /**
    * Activate an existing user.
    *
    * @param loginId The loginID is required.

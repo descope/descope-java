@@ -328,6 +328,7 @@ public class Routes {
 
     // User (parity)
     public static final String USER_DELETE_BATCH_LINK = "/v1/mgmt/user/delete/batch";
+    public static final String USERS_LOAD_LINK = "/v1/mgmt/users/load";
     public static final String USER_UPDATE_RECOVERY_EMAIL_LINK = "/v1/mgmt/user/update/recovery/email";
     public static final String USER_UPDATE_RECOVERY_PHONE_LINK = "/v1/mgmt/user/update/recovery/phone";
     public static final String USER_REMOVE_ALL_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/delete";

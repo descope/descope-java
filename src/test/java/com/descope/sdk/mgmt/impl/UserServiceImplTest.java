@@ -30,6 +30,7 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.User;
@@ -861,6 +862,70 @@ public class UserServiceImplTest {
       mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
       String response = userService.generateEmbeddedLink("someLoginId", null, 0);
       Assertions.assertThat(response).isEqualTo("someToken");
+    }
+  }
+
+  @Test
+  void testLoadUsersForEmptyUserIds() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.loadUsers(Collections.emptyList(), false));
+    assertNotNull(thrown);
+    assertEquals("The User IDs argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLoadUsersForNullUserIds() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.loadUsers(null, true));
+    assertNotNull(thrown);
+    assertEquals("The User IDs argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testLoadUsersForSuccess() throws Exception {
+    UserService service = ManagementServiceBuilder.buildServices(Client.builder()
+        .uri("https://api.descope.com")
+        .projectId("test-project")
+        .managementKey("some-management-key")
+        .sdkInfo(SdkInfo.builder().name("java").build())
+        .build()).getUserService();
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"users\":[{\"userId\":\"u1\",\"loginIds\":[\"desmond@descope.com\"],"
+            + "\"email\":\"desmond@descope.com\",\"status\":\"disabled\",\"unknownField\":1}],"
+            + "\"total\":1}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      AllUsersResponseDetails res = service.loadUsers(Arrays.asList("u1", "u2"), true);
+      ClassicHttpRequest req = captor.getValue();
+      assertEquals("POST", req.getMethod());
+      assertTrue(req.getRequestUri().endsWith("/v1/mgmt/users/load"));
+      assertEquals("Bearer test-project:some-management-key",
+          req.getFirstHeader("Authorization").getValue());
+      Map<?, ?> body = requestBody(req);
+      assertEquals(2, body.size());
+      assertEquals(Arrays.asList("u1", "u2"), body.get("userIds"));
+      assertEquals(true, body.get("includeInvalidUsers"));
+      assertEquals(1, res.getTotal());
+      assertEquals(1, res.getUsers().size());
+      UserResponse u = res.getUsers().get(0);
+      assertEquals("u1", u.getUserId());
+      assertEquals(Arrays.asList("desmond@descope.com"), u.getLoginIds());
+      assertEquals("desmond@descope.com", u.getEmail());
+      assertEquals("disabled", u.getStatus());
+    }
+  }
+
+  @Test
+  void testLoadUsersSendsIncludeInvalidUsersFalse() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"users\":[],\"total\":0}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      AllUsersResponseDetails res = userService.loadUsers(Arrays.asList("u1"), false);
+      Map<?, ?> body = requestBody(captor.getValue());
+      assertEquals(false, body.get("includeInvalidUsers"));
+      assertEquals(0, res.getTotal());
     }
   }
 

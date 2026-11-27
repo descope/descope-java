@@ -19,6 +19,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_PICTURE_LIN
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LOGIN_ID_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_NAME_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USERS_LOAD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
@@ -412,6 +413,19 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI composeSearchAllUri = composeSearchAllUri();
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(composeSearchAllUri, request, AllUsersResponseDetails.class);
+  }
+
+  @Override
+  public AllUsersResponseDetails loadUsers(List<String> userIds, boolean includeInvalidUsers)
+      throws DescopeException {
+    if (CollectionUtils.isEmpty(userIds)) {
+      throw ServerCommonException.invalidArgument("User IDs");
+    }
+    Map<String, Object> request = new HashMap<>();
+    request.put("userIds", userIds);
+    request.put("includeInvalidUsers", includeInvalidUsers);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USERS_LOAD_LINK), request, AllUsersResponseDetails.class);
   }
 
   @Override

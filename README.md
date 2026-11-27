@@ -842,6 +842,16 @@ try {
     // Handle the error
 }
 
+// Load multiple users by their IDs, optionally including invalid (e.g. expired or disabled) users
+try {
+    AllUsersResponseDetails res = us.loadUsers(Arrays.asList("<user-id-1>", "<user-id-2>"), false);
+    for (UserResponse u : res.getUsers()) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Search all users, optionally according to tenant and/or role filter
 // Results can be paginated using the limit and page parameters
 try {
