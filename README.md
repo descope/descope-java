@@ -87,16 +87,17 @@ These sections show how to use the SDK to perform API management functions. Befo
 2. [Manage Users](#manage-users)
 3. [Manage Access Keys](#manage-access-keys)
 4. [Manage SSO Setting](#manage-sso-setting)
-5. [Manage Permissions](#manage-permissions)
-6. [Manage Roles](#manage-roles)
-7. [Query SSO Groups](#query-sso-groups)
-8. [Manage Flows](#manage-flows)
-9. [Manage JWTs](#manage-jwts)
-10. [Audit](#audit)
-11. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
-12. [Manage Outbound Applications](#manage-outbound-applications)
-13. [Manage Inbound Applications](#manage-inbound-applications)
-14. [Manage Project](#manage-project)
+5. [Manage SSO Applications](#manage-sso-applications)
+6. [Manage Permissions](#manage-permissions)
+7. [Manage Roles](#manage-roles)
+8. [Query SSO Groups](#query-sso-groups)
+9. [Manage Flows](#manage-flows)
+10. [Manage JWTs](#manage-jwts)
+11. [Audit](#audit)
+12. [FGA (Fine-Grained Authorization)](#fga-fine-grained-authorization)
+13. [Manage Outbound Applications](#manage-outbound-applications)
+14. [Manage Inbound Applications](#manage-inbound-applications)
+15. [Manage Project](#manage-project)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1152,6 +1153,163 @@ try {
 // Recalculate the role/attribute mappings for a tenant's SSO configuration
 try {
     ss.recalculateSSOMappings(tenantId, "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+A tenant can have several SSO configurations, each with its own ID. The configure and delete methods above take an
+optional SSO configuration ID as their last argument; without it they apply to the default configuration.
+
+```java
+// Create a new SSO configuration for a tenant. The SSO configuration ID is optional.
+try {
+    SSOTenantSettingsResponse resp = ss.newSettings(tenantId, "sso-config-id", "My SSO");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Configure a specific SSO configuration
+try {
+    ss.configureSAMLSettings(tenantId, manualSettings, redirectUrl, domains, "sso-config-id");
+    ss.configureSAMLSettingsByMetadata(tenantId, metadataSettings, redirectUrl, domains, "sso-config-id");
+    ss.configureOIDCSettings(tenantId, oidcSettings, domains, "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Set the authentication type of an SSO configuration. NONE disables it, keeping its stored settings.
+try {
+    ss.configureAuthType(tenantId, TenantAuthType.NONE, "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a specific SSO configuration
+try {
+    ss.deleteSettings(tenantId, "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+You can also manage the Cross-App Access (XAA, ID-JAG) settings of an SSO configuration. The SSO configuration ID is
+optional; without it they apply to the default configuration.
+
+```java
+XAASettings xaaSettings = XAASettings.builder()
+    .enabled(true)
+    .settings(JWTBearerSettings.builder()
+        .issuers(Collections.singletonMap("https://issuer.com", IssuerSettings.builder()
+            .jwksUri("https://issuer.com/jwks")
+            .signAlgorithm(IssuerSettings.SIGN_ALGORITHM_RS256)
+            .build()))
+        .build())
+    .roleMappings(Arrays.asList(new RoleMapping(Arrays.asList("Groups"), "Tenant Role")))
+    .build();
+try {
+    ss.configureXAASettings(tenantId, xaaSettings, "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load the Cross-App Access settings of one SSO configuration, or of all of them
+try {
+    XAASettingsResponse xaa = ss.loadXAASettings(tenantId, "sso-config-id");
+    List<XAASettingsResponse> all = ss.loadAllXAASettings(tenantId).getXaaSettings();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete the Cross-App Access settings of an SSO configuration
+try {
+    ss.deleteXAASettings(tenantId, "sso-config-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+### Manage SSO Applications
+
+You can create, update, delete or load SSO applications, which use Descope as their identity provider:
+
+```java
+SsoApplicationService sas = descopeClient.getManagementServices().getSsoApplicationService();
+
+// Create an OIDC application
+try {
+    String appId = sas.createOIDCApplication(OIDCApplicationRequest.builder()
+        .name("My OIDC App")
+        .loginPageUrl("https://my-app.com/login")
+        .clientType(OIDCApplicationRequest.CLIENT_TYPE_CONFIDENTIAL)
+        .approvedRedirectUrls(Arrays.asList("https://my-app.com/callback"))
+        .logoutPropagation(OIDCApplicationRequest.LOGOUT_PROPAGATION_ALL_APPS)
+        .assignedRoleIds(Arrays.asList("role-id"))
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create a SAML application
+try {
+    String appId = sas.createSAMLApplication(SAMLApplicationRequest.builder()
+        .name("My SAML App")
+        .loginPageUrl("https://my-app.com/login")
+        .useMetadataInfo(true)
+        .metadataUrl("https://sp.com/metadata")
+        .singleLogoutEnabled(true)
+        .spSingleLogoutBinding(SAMLApplicationRequest.SLO_BINDING_POST)
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create a WS-Federation application
+try {
+    String appId = sas.createWSFedApplication(WSFedApplicationRequest.builder()
+        .name("My WS-Fed App")
+        .loginPageUrl("https://my-app.com/login")
+        .realm("urn:my-app")
+        .replyUrl("https://my-app.com/wsfed")
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update an application. All fields are overridden, so pass the full application.
+try {
+    sas.updateWSFedApplication(WSFedApplicationRequest.builder()
+        .id("app-id")
+        .name("My WS-Fed App")
+        .realm("urn:my-app")
+        .replyUrl("https://my-app.com/wsfed")
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load an application
+try {
+    SSOApplication app = sas.load("app-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Manage the named secrets of an application
+try {
+    SSOApplicationAddSecretResponse added = sas.addApplicationSecret("app-id", "my-secret", null); // never expires
+    String cleartext = sas.getApplicationSecret("app-id", "my-secret");
+    List<SSOApplicationSecretMeta> remaining = sas.revokeApplicationSecret("app-id", "my-secret");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Manage the custom attributes of SSO applications
+try {
+    sas.createCustomAttributes(new CreateCustomAttributesRequest(Arrays.asList(
+        CustomAttribute.builder().name("tier").type(1).displayName("Tier").build())));
+    SSOApplicationCustomAttributesResponse attrs = sas.getCustomAttributes();
+    sas.deleteCustomAttributes(new DeleteCustomAttributesRequest(Arrays.asList("tier")));
 } catch (DescopeException de) {
     // Handle the error
 }
