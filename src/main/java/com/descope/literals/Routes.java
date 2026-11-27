@@ -45,6 +45,9 @@ public class Routes {
     public static final String UPDATE_USER_TOTP_LINK = "/v1/auth/totp/update";
     public static final String VERIFY_TOTP_LINK = "/v1/auth/totp/verify";
 
+    // Email Verification
+    public static final String EMAIL_VERIFICATION_START_LINK = "/v1/auth/emailverification/start";
+
     // OAuth
     public static final String COMPOSE_OAUTH_LINK = "/v1/auth/oauth/authorize";
     public static final String COMPOSE_OAUTH_LINK_SIGN_IN = "/v1/auth/oauth/authorize/signin";
