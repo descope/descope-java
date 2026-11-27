@@ -2145,6 +2145,18 @@ try {
     // Handle the error
 }
 
+// Each of the above also accepts login options, and the links a redirect URL, for example:
+try {
+    LoginOptions loginOptions = LoginOptions.builder().mfa(true).tenantId("T1").build();
+    OTPTestUserResponse otpRes = us.generateOtpForTestUser("desmond@descope.com", DeliveryMethod.EMAIL, loginOptions);
+    MagicLinkTestUserResponse mlRes = us.generateMagicLinkForTestUser("desmond@descope.com",
+        "https://example.com/verify", DeliveryMethod.EMAIL, loginOptions);
+    EnchantedLinkTestUserResponse elRes = us.generateEnchantedLinkForTestUser("desmond@descope.com",
+        "https://example.com/verify", loginOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Note 1: The generate code/link methods, work only for test users, will not work for regular users.
 // Note 2: In case of testing sign-in / sign-up methods with test users, need to make sure to generate the code prior calling the sign-in / sign-up methods
 

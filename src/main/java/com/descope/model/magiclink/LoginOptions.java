@@ -20,6 +20,18 @@ public class LoginOptions {
   private String jwt;
   private String locale;
   private String templateId;
+  private String tenantId;
+  private String ssoAppId;
+  // Base64-encoded, used only by enchanted links
+  private String pkceChallenge;
+
+  public LoginOptions(boolean stepup, boolean mfa, Map<String, Object> customClaims,
+                      Map<String, String> templateOptions, boolean revokeOtherSessions,
+                      String[] revokeOtherSessionsTypes, String jwt, String locale, String templateId) {
+    this(stepup, mfa, customClaims, templateOptions, revokeOtherSessions, revokeOtherSessionsTypes, jwt);
+    this.locale = locale;
+    this.templateId = templateId;
+  }
 
   public LoginOptions(boolean stepup, boolean mfa, Map<String, Object> customClaims,
                       Map<String, String> templateOptions) {

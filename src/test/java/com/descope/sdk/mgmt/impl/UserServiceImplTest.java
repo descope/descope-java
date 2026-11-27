@@ -30,6 +30,7 @@ import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
 import com.descope.model.magiclink.LoginOptions;
 import com.descope.model.mgmt.ManagementServices;
 import com.descope.model.user.User;
@@ -95,6 +96,7 @@ import org.mockito.MockedStatic;
 public class UserServiceImplTest {
 
   private final List<String> mockRoles = Arrays.asList("role1", "role2");
+  private static final String TEST_USER_MANAGEMENT_KEY = "some-management-key";
   private final String mockUrl = "http://localhost.com";
   private UserService userService;
   private TenantService tenantService;
@@ -842,6 +844,159 @@ public class UserServiceImplTest {
       EnchantedLinkTestUserResponse response = userService.generateEnchantedLinkForTestUser("someLoginId", mockUrl);
       Assertions.assertThat(response.getLink()).isEqualTo("link");
     }
+  }
+
+  @Test
+  void testGenerateOtpForTestUserWithLoginOptionsForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateOtpForTestUser("", DeliveryMethod.EMAIL, testUserLoginOptions()));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateOtpForTestUserWithLoginOptionsForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"loginId\":\"someLoginId\",\"code\":\"123456\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      OTPTestUserResponse response = testUserService().generateOtpForTestUser("someLoginId", DeliveryMethod.EMAIL,
+          testUserLoginOptions());
+      ClassicHttpRequest request = captor.getValue();
+      assertEquals("POST", request.getMethod());
+      assertTrue(request.getRequestUri().endsWith("/v1/mgmt/tests/generate/otp"));
+      assertEquals("Bearer " + TestUtils.PROJECT_ID + ":" + TEST_USER_MANAGEMENT_KEY,
+          request.getFirstHeader("Authorization").getValue());
+      Map<?, ?> body = requestBody(request);
+      assertEquals(3, body.size());
+      assertEquals("someLoginId", body.get("loginId"));
+      assertEquals("email", body.get("deliveryMethod"));
+      assertTestUserLoginOptions((Map<?, ?>) body.get("loginOptions"));
+      assertEquals("someLoginId", response.getLoginId());
+      assertEquals("123456", response.getCode());
+    }
+  }
+
+  @Test
+  void testGenerateOtpForTestUserWithoutLoginOptionsOmitsThem() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"loginId\":\"someLoginId\",\"code\":\"123456\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      testUserService().generateOtpForTestUser("someLoginId", DeliveryMethod.EMAIL, null);
+      Map<?, ?> body = requestBody(captor.getValue());
+      assertEquals(2, body.size());
+      assertFalse(body.containsKey("loginOptions"));
+    }
+  }
+
+  @Test
+  void testGenerateMagicLinkForTestUserWithLoginOptionsForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateMagicLinkForTestUser("", mockUrl, DeliveryMethod.EMAIL, testUserLoginOptions()));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateMagicLinkForTestUserWithLoginOptionsForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200, "{\"loginId\":\"someLoginId\",\"link\":\"link\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      MagicLinkTestUserResponse response = testUserService().generateMagicLinkForTestUser("someLoginId", mockUrl,
+          DeliveryMethod.EMAIL, testUserLoginOptions());
+      ClassicHttpRequest request = captor.getValue();
+      assertEquals("POST", request.getMethod());
+      assertTrue(request.getRequestUri().endsWith("/v1/mgmt/tests/generate/magiclink"));
+      assertEquals("Bearer " + TestUtils.PROJECT_ID + ":" + TEST_USER_MANAGEMENT_KEY,
+          request.getFirstHeader("Authorization").getValue());
+      Map<?, ?> body = requestBody(request);
+      assertEquals(4, body.size());
+      assertEquals("someLoginId", body.get("loginId"));
+      assertEquals("email", body.get("deliveryMethod"));
+      assertEquals(mockUrl, body.get("redirectUrl"));
+      assertFalse(body.containsKey("URI"));
+      assertTestUserLoginOptions((Map<?, ?>) body.get("loginOptions"));
+      assertEquals("someLoginId", response.getLoginId());
+      assertEquals("link", response.getLink());
+    }
+  }
+
+  @Test
+  void testGenerateEnchantedLinkForTestUserWithLoginOptionsForEmptyLoginId() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> userService.generateEnchantedLinkForTestUser("", mockUrl, testUserLoginOptions()));
+    assertNotNull(thrown);
+    assertEquals("The Login ID argument is invalid", thrown.getMessage());
+  }
+
+  @Test
+  void testGenerateEnchantedLinkForTestUserWithLoginOptionsForSuccess() throws Exception {
+    ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+    CloseableHttpClient httpClient = mockHttpClient(captor, 200,
+        "{\"loginId\":\"someLoginId\",\"link\":\"link\",\"pendingRef\":\"pref\"}");
+    try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
+      mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      EnchantedLinkTestUserResponse response = testUserService().generateEnchantedLinkForTestUser("someLoginId",
+          mockUrl, testUserLoginOptions());
+      ClassicHttpRequest request = captor.getValue();
+      assertEquals("POST", request.getMethod());
+      assertTrue(request.getRequestUri().endsWith("/v1/mgmt/tests/generate/enchantedlink"));
+      assertEquals("Bearer " + TestUtils.PROJECT_ID + ":" + TEST_USER_MANAGEMENT_KEY,
+          request.getFirstHeader("Authorization").getValue());
+      Map<?, ?> body = requestBody(request);
+      assertEquals(3, body.size());
+      assertEquals("someLoginId", body.get("loginId"));
+      assertEquals(mockUrl, body.get("redirectUrl"));
+      assertFalse(body.containsKey("URI"));
+      assertTestUserLoginOptions((Map<?, ?>) body.get("loginOptions"));
+      assertEquals("someLoginId", response.getLoginId());
+      assertEquals("link", response.getLink());
+      assertEquals("pref", response.getPendingRef());
+    }
+  }
+
+  private UserService testUserService() {
+    Client client = Client.builder()
+        .uri("https://api.descope.com")
+        .projectId(TestUtils.PROJECT_ID)
+        .managementKey(TEST_USER_MANAGEMENT_KEY)
+        .sdkInfo(SdkInfo.builder().name("java").build())
+        .build();
+    return ManagementServiceBuilder.buildServices(client).getUserService();
+  }
+
+  private static LoginOptions testUserLoginOptions() {
+    return LoginOptions.builder()
+        .stepup(true)
+        .mfa(true)
+        .customClaims(mapOf("k1", "v1"))
+        .templateOptions(mapOf("t1", "v2"))
+        .revokeOtherSessions(true)
+        .revokeOtherSessionsTypes(new String[] {"web"})
+        .locale("en")
+        .templateId("tmpl")
+        .tenantId("T1")
+        .ssoAppId("app1")
+        .pkceChallenge("Y2hhbGxlbmdl")
+        .jwt("some-jwt")
+        .build();
+  }
+
+  private static void assertTestUserLoginOptions(Map<?, ?> loginOptions) {
+    assertEquals(11, loginOptions.size());
+    assertEquals(true, loginOptions.get("stepup"));
+    assertEquals(true, loginOptions.get("mfa"));
+    assertEquals(mapOf("k1", "v1"), loginOptions.get("customClaims"));
+    assertEquals(mapOf("t1", "v2"), loginOptions.get("templateOptions"));
+    assertEquals(true, loginOptions.get("revokeOtherSessions"));
+    assertEquals(Arrays.asList("web"), loginOptions.get("revokeOtherSessionsTypes"));
+    assertEquals("en", loginOptions.get("locale"));
+    assertEquals("tmpl", loginOptions.get("templateId"));
+    assertEquals("T1", loginOptions.get("tenantId"));
+    assertEquals("app1", loginOptions.get("ssoAppId"));
+    assertEquals("Y2hhbGxlbmdl", loginOptions.get("pkceChallenge"));
   }
 
   @Test
