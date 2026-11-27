@@ -242,6 +242,17 @@ public class Routes {
     // Password settings
     public static final String MANAGEMENT_PASSWORD_SETTINGS = "/v1/mgmt/password/settings";
 
+    // Auth access policy
+    public static final String MANAGEMENT_AUTH_ACCESS_RULE_LINK = "/v1/mgmt/authaccess/rule";
+    public static final String MANAGEMENT_AUTH_ACCESS_RULE_TENANT_LINK = "/v1/mgmt/authaccess/rule/tenant";
+    public static final String MANAGEMENT_AUTH_ACCESS_RULE_ALL_LINK = "/v1/mgmt/authaccess/rule/all";
+    public static final String MANAGEMENT_AUTH_ACCESS_RULE_ALL_TENANT_LINK = "/v1/mgmt/authaccess/rule/all/tenant";
+    public static final String MANAGEMENT_AUTH_ACCESS_RULE_REORDER_LINK = "/v1/mgmt/authaccess/rule/reorder";
+    public static final String MANAGEMENT_AUTH_ACCESS_RULE_REORDER_TENANT_LINK =
+        "/v1/mgmt/authaccess/rule/reorder/tenant";
+    public static final String MANAGEMENT_AUTH_ACCESS_SETTINGS_LINK = "/v1/mgmt/authaccess/settings";
+    public static final String MANAGEMENT_AUTH_ACCESS_SETTINGS_TENANT_LINK = "/v1/mgmt/authaccess/settings/tenant";
+
     // custom attributes
     public static final String MANAGEMENT_GET_USER_CUSTOM_ATTRIBUTES = "/v1/mgmt/user/customattributes";
     public static final String MANAGEMENT_CREATE_USER_CUSTOM_ATTRIBUTES = "/v1/mgmt/user/customattribute/create";

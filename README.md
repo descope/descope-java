@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Auth Access Policy](#manage-auth-access-policy)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1991,6 +1992,80 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Auth Access Policy
+
+You can manage auth access policy rules, which allow or block authentication by the request and user attributes, for
+the project or for a specific tenant. Rules are evaluated first-match in their evaluation order, and the default action
+decides when no rule matches.
+
+```java
+AuthAccessService aas = descopeClient.getManagementServices().getAuthAccessService();
+
+// Create a rule. It is appended at the end of the evaluation order.
+Map<String, Object> condition = new HashMap<>();
+condition.put("key", "request.country");
+condition.put("operator", "in");
+condition.put("values", Arrays.asList("US", "IL"));
+try {
+    AuthAccessRule rule = aas.createRule(AuthAccessRule.builder()
+        .name("Block countries")
+        .description("Block sign-ins from some countries")
+        .effect(AuthAccessAction.BLOCK)
+        .conditions(Collections.singletonList(condition))
+        .build());
+    // Tenant-level rules work the same way
+    AuthAccessRule tenantRule = aas.createTenantRule("my-tenant-id", AuthAccessRule.builder()
+        .name("Allow company")
+        .effect(AuthAccessAction.ALLOW)
+        .conditions(Collections.singletonList(condition))
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a rule, or all rules in evaluation order
+try {
+    AuthAccessRule rule = aas.loadRule("rule-id");
+    List<AuthAccessRule> rules = aas.loadAllRules();
+    AuthAccessRule tenantRule = aas.loadTenantRule("my-tenant-id", "rule-id");
+    List<AuthAccessRule> tenantRules = aas.loadAllTenantRules("my-tenant-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Move a rule to a 1-based position in the evaluation order. Returns all rules in their new order.
+try {
+    List<AuthAccessRule> rules = aas.reorderRule("rule-id", 1);
+    List<AuthAccessRule> tenantRules = aas.reorderTenantRule("my-tenant-id", "rule-id", 1);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a rule
+try {
+    aas.deleteRule("rule-id");
+    aas.deleteTenantRule("my-tenant-id", "rule-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Get and configure the settings: the default action and the full evaluation order.
+// ruleIds must list every rule exactly once. Fields left null keep their stored values.
+try {
+    AuthAccessSettings settings = aas.getSettings();
+    AuthAccessSettings tenantSettings = aas.getTenantSettings("my-tenant-id");
+    aas.configureSettings(AuthAccessSettings.builder()
+        .defaultAction(AuthAccessAction.ALLOW)
+        .ruleIds(Arrays.asList("rule-id-1", "rule-id-2"))
+        .build());
+    aas.configureTenantSettings("my-tenant-id", AuthAccessSettings.builder()
+        .defaultAction(AuthAccessAction.BLOCK)
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Code Examples
