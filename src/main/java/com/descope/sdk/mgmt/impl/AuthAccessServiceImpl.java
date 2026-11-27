@@ -139,7 +139,8 @@ class AuthAccessServiceImpl extends ManagementsBase implements AuthAccessService
   }
 
   private static void validateTenantId(String tenantId) {
-    if (StringUtils.isBlank(tenantId)) {
+    // Dot segments would resolve to the project-level route
+    if (StringUtils.isBlank(tenantId) || ".".equals(tenantId) || "..".equals(tenantId)) {
       throw ServerCommonException.invalidArgument("tenantId");
     }
   }

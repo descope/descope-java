@@ -298,6 +298,9 @@ class AuthAccessServiceImplTest {
     assertInvalid("tenantId", () -> service.getTenantSettings(""));
     assertInvalid("settings", () -> service.configureSettings(null));
     assertInvalid("tenantId", () -> service.configureTenantSettings("", settings));
+    assertInvalid("tenantId", () -> service.configureTenantSettings("..", settings));
+    assertInvalid("tenantId", () -> service.createTenantRule(".", valid));
+    assertInvalid("tenantId", () -> service.deleteTenantRule("..", "r1"));
     assertInvalid("settings", () -> service.configureTenantSettings("t1", null));
     assertNull(bearer.get());
   }
