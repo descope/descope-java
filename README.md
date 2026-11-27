@@ -964,6 +964,16 @@ try {
     // Handle the error
 }
 
+// Create an access key with custom attributes
+try {
+    AccessKeyResponse resp = aks.create(AccessKeyRequest.builder()
+            .name("access-key-1")
+            .customAttributes(Collections.singletonMap("attr1", "value1"))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Load specific user
 try {
     AccessKeyResponse resp = aks.load("access-key-1");
@@ -981,9 +991,34 @@ try {
     // Handle the error
 }
 
+// Search access keys by text, bound user, creating user and custom attributes, with sorting
+try {
+    AccessKeyResponseList resp = aks.search(AccessKeySearchRequest.builder()
+            .tenantIds(Arrays.asList("Tenant IDs"))
+            .text("some text")
+            .sort(Arrays.asList(new AccessKeySearchSort("name", true)))
+            .boundUserId("user-id")
+            .creatingUser("creating-user-id")
+            .customAttributes(Collections.singletonMap("attr1", "value1"))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Update will override all fields as is. Use carefully.
 try {
     AccessKeyResponse resp = aks.update("access-key-1", "updated-name");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update an access key's custom attributes
+try {
+    AccessKeyResponse resp = aks.update(AccessKeyUpdateRequest.builder()
+            .id("access-key-1")
+            .name("updated-name")
+            .customAttributes(Collections.singletonMap("attr1", "value1"))
+            .build());
 } catch (DescopeException de) {
     // Handle the error
 }

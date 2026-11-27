@@ -16,4 +16,5 @@ public class AccessKeyRequest {
   private String userId;
   private Map<String, Object> customClaims;
   private List<String> permittedIps;
+  private Map<String, Object> customAttributes;
 }
