@@ -94,7 +94,7 @@ public interface FGAService {
    * @param relations list of relations to check
    * @param context extra context for condition evaluation, may be null or empty
    * @param options optional flags, may be null: {@code computePaths} sets each result's
-   *     {@link com.descope.model.fga.FGACheckInfo#getPath() path}, {@code listConditions} sets its
+   *     {@code path}, {@code listConditions} sets its
    *     {@code trueConditions} and {@code falseConditions}
    * @return list of check results indicating whether each relation is allowed
    * @throws DescopeException if the operation fails
