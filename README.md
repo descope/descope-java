@@ -1922,6 +1922,97 @@ try {
 
 ```
 
+The v2 methods manage the same applications with `scopeClaimMapping` instead of attributes scopes. Update and patch
+with v2 clear an application's legacy attributes scopes.
+
+```java
+// Create a new inbound application (v2)
+try {
+    InboundAppCreateResponse response = inboundAppsService.createApplicationV2(
+        InboundAppV2Request.builder()
+            .name("My Inbound App") // required
+            // .description("optional-description")
+            // .loginPageUrl("https://example.com/login")
+            // .approvedCallbackUrls(new String[] { "https://example.com/callback" })
+            // .permissionsScopes(new InboundAppScope[] {
+            //     InboundAppScope.builder().name("scope-name").description("optional description").build()
+            // })
+            // .scopeClaimMapping(new InboundAppScopeClaimMapping[] {
+            //     InboundAppScopeClaimMapping.builder()
+            //         .scope("email")
+            //         .claims(Collections.singletonMap("email", "{{user.email}}"))
+            //         .mandatory(true)
+            //         .build()
+            // })
+            // .clientType(InboundAppV2Request.CLIENT_TYPE_CONFIDENTIAL)
+            // .defaultAudience(InboundAppV2Request.DEFAULT_AUDIENCE_CLIENT_ID)
+            // .forcePkce(true)
+            // .agentic(true)
+            // .createdBy("owner-user-id-or-login-id")
+            .build()
+    );
+    String appId = response.getId();
+    String clientId = response.getClientId();
+    String secret = response.getSecret();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update an existing inbound application (v2, overwrites all fields)
+try {
+    inboundAppsService.updateApplicationV2(
+        InboundAppV2Request.builder()
+            .id("app-id") // required
+            .name("Updated Name") // required
+            .loginPageUrl("https://example.com/login") // required
+            // .clientType(InboundAppV2Request.CLIENT_TYPE_CONFIDENTIAL) // pass the current client type
+            // .scopeClaimMapping(new InboundAppScopeClaimMapping[] {
+            //     InboundAppScopeClaimMapping.builder().scope("email").useProjectMapping(true).build()
+            // })
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Patch an inbound application (v2, updates only provided fields)
+try {
+    inboundAppsService.patchApplicationV2(
+        InboundAppV2Request.builder()
+            .id("app-id") // required
+            // .description("optional-description")
+            // .agentic(false) // removes the app from the Agentic Identity Hub
+            // .createdBy("") // clears the owner
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load an inbound application by ID or by client ID (v2)
+try {
+    InboundAppV2 app = inboundAppsService.loadApplicationV2("app-id");
+    InboundAppV2 sameApp = inboundAppsService.loadApplicationByClientIdV2("client-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load inbound applications a page at a time (v2), all options are optional
+try {
+    LoadAllApplicationsV2Response res = inboundAppsService.loadAllApplicationsV2(
+        InboundAppLoadAllOptions.builder()
+            // .page(0)
+            // .limit(20)
+            // .createdBy("Owner Name")
+            // .agentic(true)
+            .build()
+    );
+    // res.getApps(), res.getTotal()
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### Manage Project
 
 You can change the project name, as well as to clone the current project to a new one.

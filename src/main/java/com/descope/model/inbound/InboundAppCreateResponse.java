@@ -14,5 +14,11 @@ public class InboundAppCreateResponse {
   private String id;
   @JsonProperty("cleartext")
   private String secret;
+  private String clientId;
+
+  public InboundAppCreateResponse(String id, String secret) {
+    this.id = id;
+    this.secret = secret;
+  }
 }
 
