@@ -76,7 +76,7 @@ class ScimServiceImplTest {
 
   @Test
   void testLoadKeys() throws Exception {
-    LoadScimAccessKeysResponse resp = call("{\"keys\":[{\"key\":" + KEY_JSON + ",\"ssoId\":\"sso1\"}]}",
+    final LoadScimAccessKeysResponse resp = call("{\"keys\":[{\"key\":" + KEY_JSON + ",\"ssoId\":\"sso1\"}]}",
         () -> scimService.loadKeys("t1", "sso1"));
     ClassicHttpRequest req = sent("GET", "/v1/mgmt/scim/key");
     Map<String, String> query = query(req.getUri());
@@ -105,7 +105,7 @@ class ScimServiceImplTest {
 
   @Test
   void testCreateKey() throws Exception {
-    ScimAccessKeyResponse resp = call(KEY_RESPONSE_JSON, () -> scimService.createKey(
+    final ScimAccessKeyResponse resp = call(KEY_RESPONSE_JSON, () -> scimService.createKey(
         CreateScimAccessKeyRequest.builder().tenantId("t1").ssoId("sso1").name("scim").description("desc")
             .expireTime(1800000000L).build()));
     Map<?, ?> body = body(sent("POST", "/v1/mgmt/scim/key/create"));
@@ -136,7 +136,7 @@ class ScimServiceImplTest {
 
   @Test
   void testRotateKey() throws Exception {
-    ScimAccessKeyResponse resp = call(KEY_RESPONSE_JSON, () -> scimService.rotateKey(
+    final ScimAccessKeyResponse resp = call(KEY_RESPONSE_JSON, () -> scimService.rotateKey(
         RotateScimAccessKeyRequest.builder().tenantId("t1").ssoId("sso1").name("scim").description("desc")
             .expireTime(1800000000L).revokeMode(ScimKeyRevokeMode.DEACTIVATE).build()));
     Map<?, ?> body = body(sent("POST", "/v1/mgmt/scim/key/rotate"));
@@ -160,7 +160,7 @@ class ScimServiceImplTest {
 
   @Test
   void testRevokeKeys() throws Exception {
-    RevokeScimAccessKeysResponse resp = call("{\"revokedKeyIds\":[\"k1\",\"k2\"]}", () -> scimService.revokeKeys(
+    final RevokeScimAccessKeysResponse resp = call("{\"revokedKeyIds\":[\"k1\",\"k2\"]}", () -> scimService.revokeKeys(
         RevokeScimAccessKeysRequest.builder().tenantId("t1").ssoId("sso1").revokeMode(ScimKeyRevokeMode.DELETE)
             .build()));
     Map<?, ?> body = body(sent("POST", "/v1/mgmt/scim/key/revoke"));
@@ -181,7 +181,7 @@ class ScimServiceImplTest {
 
   @Test
   void testActivateKeys() throws Exception {
-    ActivateScimAccessKeysResponse resp = call("{\"activatedKeyIds\":[\"k1\"]}", () -> scimService.activateKeys(
+    final ActivateScimAccessKeysResponse resp = call("{\"activatedKeyIds\":[\"k1\"]}", () -> scimService.activateKeys(
         ActivateScimAccessKeysRequest.builder().tenantId("t1").ssoId("sso1").keyIds(Arrays.asList("k1")).build()));
     Map<?, ?> body = body(sent("POST", "/v1/mgmt/scim/key/activate"));
     assertEquals("t1", body.get("tenantId"));
