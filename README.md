@@ -377,6 +377,8 @@ TOTPService ts = descopeClient.getAuthenticationServices().getTOTPService();
 
 try {
     TOTPResponse resp = ts.signUp(loginId, user);
+    // Optionally pass the SSO application ID
+    // TOTPResponse resp = ts.signUp(loginId, user, "my-sso-app-id");
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -397,6 +399,11 @@ the app produces.
 // Otherwise they're available via authInfo
 try {
     AuthenticationInfo info = ts.signInCode(loginId, code, loginOptions);
+    // Additional response details, when the server sets them
+    // info.getSessionExpiration(), info.getNextRefreshSeconds(), info.getClaims(), info.getTenantSSOID(),
+    // info.getCookieName(), info.getSessionCookieName(), info.getSessionCookieDomain(),
+    // info.getTrustedDeviceJwt(), info.getKnownDeviceJwt(), info.getExternalToken(),
+    // info.getUnsavedSSO(), info.getUserCreationDeferred(), info.getExternalPasskey()
 } catch (DescopeException de) {
     // Handle the error
 }
