@@ -174,11 +174,45 @@ try {
 
 ```
 
+Sign in, sign up or in, sign up and update calls also take optional settings, such as the messaging provider and template to send the link with:
+
+```java
+try {
+    String uri = "http://myapp.com/verify-magic-link";
+    MagicLinkSignInOptions signInOptions = MagicLinkSignInOptions.builder()
+        .providerId("my-provider")
+        .templateId("my-template")
+        .ssoAppId("my-sso-app")
+        .useRecovery(false)
+        .build();
+    String maskedAddress = mls.signIn(DeliveryMethod.EMAIL, loginId, uri, null, null, signInOptions);
+    maskedAddress = mls.signUpOrIn(DeliveryMethod.SMS, "+15555555555", uri, signInOptions);
+    maskedAddress = mls.signUp(DeliveryMethod.EMAIL, loginId, uri, user, null,
+        MagicLinkSignUpOptions.builder().providerId("my-provider").templateId("my-template").build());
+
+    MagicLinkUpdateOptions updateOptions = MagicLinkUpdateOptions.builder()
+        .providerId("my-provider")
+        .templateId("my-template")
+        .locale("en")
+        .failOnConflict(true)
+        .build();
+    maskedAddress = mls.updateUserEmail(loginId, "new@example.com", uri, refreshToken, null, null, updateOptions);
+    maskedAddress = mls.updateUserPhone(DeliveryMethod.WHATSAPP, loginId, "+15555555555", uri, refreshToken,
+        null, null, updateOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
 To verify a magic link, your redirect page must call the validation function on the token (`t`) parameter (`https://your-redirect-address.com/verify?t=<token>`):
 
 ```java
 try {
     AuthenticationInfo info = mls.verify(token);
+    // Optional response details, null when the server leaves them out
+    String tenantSSOID = info.getTenantSSOID();
+    Integer nextRefreshSeconds = info.getNextRefreshSeconds();
 } catch (DescopeException de) {
     // Handle the error
 }

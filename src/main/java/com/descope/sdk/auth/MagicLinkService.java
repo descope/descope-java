@@ -5,6 +5,9 @@ import com.descope.exception.DescopeException;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.UpdateOptions;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.MagicLinkSignInOptions;
+import com.descope.model.magiclink.MagicLinkSignUpOptions;
+import com.descope.model.magiclink.MagicLinkUpdateOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.user.User;
 import java.util.Map;
@@ -31,6 +34,30 @@ public interface MagicLinkService {
       String uri,
       String token,
       LoginOptions loginOptions)
+      throws DescopeException;
+
+  /**
+   * SignIn - Use to login a user based on a magic link that will be sent either email, sms or
+   * whatsapp and choose the selected delivery method for verification (see auth/DeliveryMethod).
+   * returns the masked address where the link was sent (email, sms or whatsapp) or an error upon
+   * failure.
+   *
+   * @param deliveryMethod - {@link DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param uri - Redirect URL, sent as {@code redirectUrl}
+   * @param token - when doing step-up or mfa then we need current session token
+   * @param loginOptions - {@link LoginOptions LoginOptions}
+   * @param signInOptions - optional provider, template, SSO app and recovery settings
+   * @return masked address where the link was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signIn(
+      DeliveryMethod deliveryMethod,
+      String loginId,
+      String uri,
+      String token,
+      LoginOptions loginOptions,
+      MagicLinkSignInOptions signInOptions)
       throws DescopeException;
 
   /**
@@ -63,6 +90,22 @@ public interface MagicLinkService {
       throws DescopeException;
 
   /**
+   * Use to create a new user based on the given loginID either email, sms or whatsapp. Choose the
+   * selected delivery method for verification.
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param uri - Redirect URL, sent as {@code redirectUrl}
+   * @param user - {@link User User}
+   * @param signupOptions - optional claims and template strings
+   * @param magicLinkSignUpOptions - optional provider and template settings
+   * @return masked address where the link was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user, SignUpOptions signupOptions,
+      MagicLinkSignUpOptions magicLinkSignUpOptions) throws DescopeException;
+
+  /**
    * Verify - Use to verify a SignIn/SignUp request, based on the magic link token generated. if the
    * link was generated with crossDevice, the authentication info will be nil, and should returned
    * with GetSession.
@@ -84,6 +127,20 @@ public interface MagicLinkService {
    * @throws DescopeException - error upon failure
    */
   String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri)
+      throws DescopeException;
+
+  /**
+   * Use to login in using loginID, if user does not exist, a new user will be created with the
+   * given loginID. Choose the selected delivery method for verification
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param uri - Redirect URL, sent as {@code redirectUrl}
+   * @param signInOptions - optional provider, template, SSO app and recovery settings
+   * @return masked address where the link was sent (email, whatsapp or phone)
+   * @throws DescopeException - error upon failure
+   */
+  String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri, MagicLinkSignInOptions signInOptions)
       throws DescopeException;
 
   /**
@@ -114,6 +171,23 @@ public interface MagicLinkService {
    */
   String updateUserEmail(String loginId, String email, String uri, String refreshToken, UpdateOptions updateOptions,
         Map<String, String> templateOptions)
+      throws DescopeException;
+
+  /**
+   * Use to update email and validate via magiclink.
+   *
+   * @param loginId - User login ID
+   * @param email - User email
+   * @param uri - Redirect URL, sent as {@code redirectUrl}
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @param templateOptions - optional parameters for template
+   * @param magicLinkUpdateOptions - optional provider, template, locale and conflict settings
+   * @return masked address where the link was sent (email)
+   * @throws DescopeException - error upon failure
+   */
+  String updateUserEmail(String loginId, String email, String uri, String refreshToken, UpdateOptions updateOptions,
+        Map<String, String> templateOptions, MagicLinkUpdateOptions magicLinkUpdateOptions)
       throws DescopeException;
 
   /**
@@ -150,4 +224,24 @@ public interface MagicLinkService {
   String updateUserPhone(
       DeliveryMethod deliveryMethod, String loginId, String phone, String uri, String refreshToken,
       UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException;
+
+  /**
+   * Use to update phone and validate via magiclink. Allowed methods are phone based methods -
+   * whatsapp and SMS
+   *
+   * @param deliveryMethod - {@link com.descope.enums.DeliveryMethod DeliveryMethod}
+   * @param loginId - User login ID
+   * @param phone - User phone
+   * @param uri - Redirect URL, sent as {@code redirectUrl}
+   * @param refreshToken - refresh token to perform the update
+   * @param updateOptions - update options for the update
+   * @param templateOptions - optional parameters for template
+   * @param magicLinkUpdateOptions - optional provider, template, locale and conflict settings
+   * @return masked address where the link was sent (whatsapp or sms)
+   * @throws DescopeException - error upon failure
+   */
+  String updateUserPhone(
+      DeliveryMethod deliveryMethod, String loginId, String phone, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, MagicLinkUpdateOptions magicLinkUpdateOptions)
+      throws DescopeException;
 }

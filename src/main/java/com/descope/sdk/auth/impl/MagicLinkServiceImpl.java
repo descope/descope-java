@@ -19,10 +19,15 @@ import com.descope.model.auth.UpdateOptions;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.magiclink.LoginOptions;
+import com.descope.model.magiclink.MagicLinkSignInOptions;
+import com.descope.model.magiclink.MagicLinkSignUpOptions;
+import com.descope.model.magiclink.MagicLinkUpdateOptions;
 import com.descope.model.magiclink.SignUpOptions;
 import com.descope.model.magiclink.request.SignInRequest;
 import com.descope.model.magiclink.request.SignUpRequest;
+import com.descope.model.magiclink.request.UpdateEmailMagicLinkRequest;
 import com.descope.model.magiclink.request.UpdateEmailRequest;
+import com.descope.model.magiclink.request.UpdatePhoneMagicLinkRequest;
 import com.descope.model.magiclink.request.UpdatePhoneRequest;
 import com.descope.model.magiclink.request.VerifyRequest;
 import com.descope.model.magiclink.response.Masked;
@@ -48,6 +53,18 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
       String token,
       LoginOptions loginOptions)
       throws DescopeException {
+    return signIn(deliveryMethod, loginId, uri, token, loginOptions, null);
+  }
+
+  @Override
+  public String signIn(
+      DeliveryMethod deliveryMethod,
+      String loginId,
+      String uri,
+      String token,
+      LoginOptions loginOptions,
+      MagicLinkSignInOptions signInOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -55,7 +72,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     ApiProxy apiProxy;
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignInURL = composeMagicLinkSignInURI(deliveryMethod);
-    SignInRequest signInRequest = new SignInRequest(uri, loginId, loginOptions);
+    SignInRequest signInRequest = buildSignInRequest(uri, loginId, loginOptions, signInOptions);
     if (JwtUtils.isJWTRequired(loginOptions)) {
       if (StringUtils.isBlank(token)) {
         throw ServerCommonException.invalidArgument("token");
@@ -76,13 +93,19 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
   @Override
   public String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
       SignUpOptions signupOptions) throws DescopeException {
+    return signUp(deliveryMethod, loginId, uri, user, signupOptions, null);
+  }
+
+  @Override
+  public String signUp(DeliveryMethod deliveryMethod, String loginId, String uri, User user,
+      SignUpOptions signupOptions, MagicLinkSignUpOptions magicLinkSignUpOptions) throws DescopeException {
     if (user == null) {
       user = new User();
     }
 
     verifyDeliveryMethod(deliveryMethod, loginId, user);
-    Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
-    URI magicLinkSignUpURL = composeMagicLinkSignUpURI(deliveryMethod);
+    final Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
+    final URI magicLinkSignUpURL = composeMagicLinkSignUpURI(deliveryMethod);
 
     SignUpRequest.SignUpRequestBuilder signUpRequestBuilder = SignUpRequest.builder().loginId(loginId).uri(uri);
     if (EMAIL.equals(deliveryMethod)) {
@@ -90,6 +113,12 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     }
     if (signupOptions != null) {
       signUpRequestBuilder.loginOptions(signupOptions);
+    }
+    // With options the body uses the spec's redirectUrl key
+    if (magicLinkSignUpOptions != null) {
+      signUpRequestBuilder.uri(null).redirectUrl(uri)
+          .providerId(magicLinkSignUpOptions.getProviderId())
+          .templateId(magicLinkSignUpOptions.getTemplateId());
     }
     SignUpRequest signUpRequest = signUpRequestBuilder.user(user).build();
     ApiProxy apiProxy = getApiProxy();
@@ -110,6 +139,12 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
   @Override
   public String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri)
       throws DescopeException {
+    return signUpOrIn(deliveryMethod, loginId, uri, null);
+  }
+
+  @Override
+  public String signUpOrIn(DeliveryMethod deliveryMethod, String loginId, String uri,
+      MagicLinkSignInOptions signInOptions) throws DescopeException {
 
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -117,7 +152,7 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
 
     Class<? extends Masked> maskedClass = getMaskedValue(deliveryMethod);
     URI magicLinkSignUpOrInURL = composeMagicLinkSignUpOrInURI(deliveryMethod);
-    SignInRequest signInRequest = new SignInRequest(uri, loginId, null);
+    SignInRequest signInRequest = buildSignInRequest(uri, loginId, null, signInOptions);
 
     ApiProxy apiProxy = getApiProxy();
     Masked masked = apiProxy.post(magicLinkSignUpOrInURL, signInRequest, maskedClass);
@@ -133,6 +168,13 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
   @Override
   public String updateUserEmail(String loginId, String email, String uri, String refreshToken,
       UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException {
+    return updateUserEmail(loginId, email, uri, refreshToken, updateOptions, templateOptions, null);
+  }
+
+  @Override
+  public String updateUserEmail(String loginId, String email, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, MagicLinkUpdateOptions magicLinkUpdateOptions)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -147,16 +189,33 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
-    UpdateEmailRequest updateEmailRequest =
-        UpdateEmailRequest.builder()
-            .email(email)
-            .uri(uri)
-            .loginId(loginId)
-            .crossDevice(false)
-            .addToLoginIds(updateOptions.isAddToLoginIds())
-            .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
-            .templateOptions(templateOptions)
-            .build();
+    Object updateEmailRequest;
+    if (magicLinkUpdateOptions == null) {
+      updateEmailRequest =
+          UpdateEmailRequest.builder()
+              .email(email)
+              .uri(uri)
+              .loginId(loginId)
+              .crossDevice(false)
+              .addToLoginIds(updateOptions.isAddToLoginIds())
+              .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+              .templateOptions(templateOptions)
+              .build();
+    } else {
+      updateEmailRequest =
+          UpdateEmailMagicLinkRequest.builder()
+              .email(email)
+              .redirectUrl(uri)
+              .loginId(loginId)
+              .addToLoginIds(updateOptions.isAddToLoginIds())
+              .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+              .templateOptions(templateOptions)
+              .providerId(magicLinkUpdateOptions.getProviderId())
+              .templateId(magicLinkUpdateOptions.getTemplateId())
+              .locale(magicLinkUpdateOptions.getLocale())
+              .failOnConflict(magicLinkUpdateOptions.getFailOnConflict())
+              .build();
+    }
 
     ApiProxy apiProxy = getApiProxy(refreshToken);
     Masked masked = apiProxy.post(magicLinkUpdateUserEmail, updateEmailRequest, maskedClass);
@@ -174,6 +233,14 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
   public String updateUserPhone(
       DeliveryMethod deliveryMethod, String loginId, String phone, String uri, String refreshToken,
       UpdateOptions updateOptions, Map<String, String> templateOptions) throws DescopeException {
+    return updateUserPhone(deliveryMethod, loginId, phone, uri, refreshToken, updateOptions, templateOptions, null);
+  }
+
+  @Override
+  public String updateUserPhone(
+      DeliveryMethod deliveryMethod, String loginId, String phone, String uri, String refreshToken,
+      UpdateOptions updateOptions, Map<String, String> templateOptions, MagicLinkUpdateOptions magicLinkUpdateOptions)
+      throws DescopeException {
 
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -192,20 +259,54 @@ class MagicLinkServiceImpl extends AuthenticationServiceImpl implements MagicLin
     if (updateOptions == null) {
       updateOptions = new UpdateOptions();
     }
-    UpdatePhoneRequest updatePhoneRequest =
-        UpdatePhoneRequest.builder()
-            .phone(phone)
-            .uri(uri)
-            .loginId(loginId)
-            .crossDevice(false)
-            .addToLoginIds(updateOptions.isAddToLoginIds())
-            .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
-            .templateOptions(templateOptions)
-            .build();
+    Object updatePhoneRequest;
+    if (magicLinkUpdateOptions == null) {
+      updatePhoneRequest =
+          UpdatePhoneRequest.builder()
+              .phone(phone)
+              .uri(uri)
+              .loginId(loginId)
+              .crossDevice(false)
+              .addToLoginIds(updateOptions.isAddToLoginIds())
+              .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+              .templateOptions(templateOptions)
+              .build();
+    } else {
+      updatePhoneRequest =
+          UpdatePhoneMagicLinkRequest.builder()
+              .phone(phone)
+              .redirectUrl(uri)
+              .loginId(loginId)
+              .addToLoginIds(updateOptions.isAddToLoginIds())
+              .onMergeUseExisting(updateOptions.isOnMergeUseExisting())
+              .templateOptions(templateOptions)
+              .providerId(magicLinkUpdateOptions.getProviderId())
+              .templateId(magicLinkUpdateOptions.getTemplateId())
+              .locale(magicLinkUpdateOptions.getLocale())
+              .failOnConflict(magicLinkUpdateOptions.getFailOnConflict())
+              .build();
+    }
 
     ApiProxy apiProxy = getApiProxy(refreshToken);
     Masked masked = apiProxy.post(magicLinkUpdateUserPhone, updatePhoneRequest, maskedClass);
     return masked.getMasked();
+  }
+
+  // Without options the body keeps its original URI key
+  private static SignInRequest buildSignInRequest(String uri, String loginId, LoginOptions loginOptions,
+      MagicLinkSignInOptions signInOptions) {
+    if (signInOptions == null) {
+      return new SignInRequest(uri, loginId, loginOptions);
+    }
+    return SignInRequest.builder()
+        .loginId(loginId)
+        .loginOptions(loginOptions)
+        .redirectUrl(uri)
+        .providerId(signInOptions.getProviderId())
+        .templateId(signInOptions.getTemplateId())
+        .ssoAppId(signInOptions.getSsoAppId())
+        .useRecovery(signInOptions.getUseRecovery())
+        .build();
   }
 
   private URI composeMagicLinkSignInURI(DeliveryMethod deliveryMethod) {
