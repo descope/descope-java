@@ -9,4 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VerifyRequest {
   private String token;
+  private byte[] pkceVerifier;
+
+  public VerifyRequest(String token) {
+    this(token, null);
+  }
 }

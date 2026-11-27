@@ -21,4 +21,13 @@ public class UpdateEmailRequest {
   private boolean addToLoginIds;
   private boolean onMergeUseExisting;
   private Map<String, String> templateOptions;
+  private String providerId;
+  private String templateId;
+  private String locale;
+  private Boolean failOnConflict;
+
+  public UpdateEmailRequest(String email, String loginId, String uri, boolean crossDevice, boolean addToLoginIds,
+      boolean onMergeUseExisting, Map<String, String> templateOptions) {
+    this(email, loginId, uri, crossDevice, addToLoginIds, onMergeUseExisting, templateOptions, null, null, null, null);
+  }
 }
