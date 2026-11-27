@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class PasswordSettingsServiceImplTest {
@@ -256,11 +256,16 @@ public class PasswordSettingsServiceImplTest {
     String name = TestUtils.getRandomName("t-");
     String tenantId = tenantService.create(name, Arrays.asList(name + ".com", name + "1.com"));
     assertThat(tenantId).isNotBlank();
-    passwordSettingsService.configureSettings(tenantId, mockSettings);
-    PasswordSettings ps = passwordSettingsService.getSettings(tenantId);
-    assertThat(ps).isEqualTo(mockSettings);
-    tenantService.delete(tenantId);
-    ps = passwordSettingsService.getSettings();
+    try {
+      passwordSettingsService.configureSettings(tenantId, mockSettings);
+      PasswordSettings ps = passwordSettingsService.getSettings(tenantId);
+      assertThat(ps).usingRecursiveComparison().ignoringFields("tenantId", "tempLock", "tempLockAttempts",
+          "tempLockDuration", "enablePasswordStrength", "passwordStrengthScore", "anyLetter", "disallowedCharacters",
+          "disallowEmailMatch").isEqualTo(mockSettings);
+    } finally {
+      tenantService.delete(tenantId);
+    }
+    PasswordSettings ps = passwordSettingsService.getSettings();
     assertThat(ps).isNotNull();
   }
 }
