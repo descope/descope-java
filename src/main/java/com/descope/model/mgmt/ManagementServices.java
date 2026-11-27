@@ -1,6 +1,7 @@
 package com.descope.model.mgmt;
 
 import com.descope.sdk.mgmt.AccessKeyService;
+import com.descope.sdk.mgmt.AnalyticsService;
 import com.descope.sdk.mgmt.AuditService;
 import com.descope.sdk.mgmt.AuthzService;
 import com.descope.sdk.mgmt.FGAService;
@@ -36,6 +37,7 @@ public class ManagementServices {
   FlowService flowService;
   GroupService groupService;
   AuditService auditService;
+  AnalyticsService analyticsService;
   AuthzService authzService;
   FGAService fgaService;
   ProjectService projectService;
