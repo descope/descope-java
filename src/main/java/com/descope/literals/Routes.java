@@ -169,6 +169,8 @@ public class Routes {
     public static final String FLOW_IMPORT_LINK = "/v1/mgmt/flow/import";
     public static final String THEME_EXPORT_LINK = "/v1/mgmt/theme/export";
     public static final String THEME_IMPORT_LINK = "/v1/mgmt/theme/import";
+    public static final String FLOW_EXPORT_V2_LINK = "/v2/mgmt/flow/export";
+    public static final String FLOW_IMPORT_V2_LINK = "/v2/mgmt/flow/import";
 
     // JWT
     public static final String UPDATE_JWT_LINK = "/v1/mgmt/jwt/update";

@@ -2,15 +2,20 @@ package com.descope.sdk.mgmt.impl;
 
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT_V2_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_V2_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_LIST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT_LINK;
+import static com.descope.utils.CollectionUtils.addIfNotNull;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
+import com.descope.model.flow.ExportFlowResponse;
+import com.descope.model.flow.ExportedFlow;
 import com.descope.model.flow.Flow;
 import com.descope.model.flow.FlowResponse;
 import com.descope.model.flow.FlowsResponse;
@@ -19,6 +24,7 @@ import com.descope.model.flow.Theme;
 import com.descope.model.flow.ThemeResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.FlowService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
@@ -65,6 +71,40 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
     Map<String, Object> request = mapOf("flowId", flowID, "flow", flow, "screens", screens);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_IMPORT_LINK), request, FlowResponse.class);
+  }
+
+  @Override
+  public ExportedFlow exportFlowV2(String flowID) throws DescopeException {
+    if (StringUtils.isBlank(flowID)) {
+      throw ServerCommonException.invalidArgument("FlowID");
+    }
+    Map<String, String> request = mapOf("flowId", flowID);
+    ApiProxy apiProxy = getApiProxy();
+    ExportFlowResponse response = apiProxy.post(getUri(FLOW_EXPORT_V2_LINK), request, ExportFlowResponse.class);
+    return response != null ? response.getFlow() : null;
+  }
+
+  @Override
+  public void importFlowV2(String flowID, ExportedFlow flow) throws DescopeException {
+    importFlowV2(flowID, flow, null, null);
+  }
+
+  @Override
+  public void importFlowV2(String flowID, ExportedFlow flow, Boolean skipRender, String changelog)
+      throws DescopeException {
+    if (StringUtils.isBlank(flowID)) {
+      throw ServerCommonException.invalidArgument("FlowID");
+    }
+    if (flow == null) {
+      throw ServerCommonException.invalidArgument("Flow");
+    }
+    Map<String, Object> request = new HashMap<>();
+    // copy so the caller's flow keeps its ID
+    request.put("flow", flow.toBuilder().flowId(flowID).build());
+    addIfNotNull(request, "skipRender", skipRender);
+    addIfNotNull(request, "changelog", changelog);
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(FLOW_IMPORT_V2_LINK), request, Void.class);
   }
 
   @Override
