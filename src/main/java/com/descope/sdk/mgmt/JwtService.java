@@ -91,4 +91,17 @@ public interface JwtService {
    */
   String stopImpersonation(String jwt, Map<String, Object> customClaims, String tenantId)
       throws DescopeException;
+
+  /**
+   * Stop an active impersonation given the impersonated user's JWT. A new JWT for the original
+   * (impersonator) user will be returned.
+   *
+   * @param jwt             - The impersonated user's JWT
+   * @param customClaims    - Custom claims to add to the returned JWT (optional)
+   * @param tenantId        - The tenant to select for the returned JWT (optional)
+   * @param refreshDuration - Refresh duration for the returned JWT (optional)
+   * @return - New JWT for the original impersonator user
+   */
+  String stopImpersonation(String jwt, Map<String, Object> customClaims, String tenantId,
+      Integer refreshDuration) throws DescopeException;
 }
