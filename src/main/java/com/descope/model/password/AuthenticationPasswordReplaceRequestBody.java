@@ -13,4 +13,10 @@ public class AuthenticationPasswordReplaceRequestBody {
   private String loginId;
   private String oldPassword;
   private String newPassword;
+  private Boolean revokeOtherSessions;
+  private String[] revokeOtherSessionsTypes;
+
+  public AuthenticationPasswordReplaceRequestBody(String loginId, String oldPassword, String newPassword) {
+    this(loginId, oldPassword, newPassword, null, null);
+  }
 }
