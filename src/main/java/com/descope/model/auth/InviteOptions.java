@@ -16,4 +16,10 @@ public class InviteOptions {
   private Map<String, String> templateOptions;
   private Boolean sendEmail;
   private Boolean sendSMS;
+  private String locale;
+
+  public InviteOptions(String inviteUrl, String templateId, Map<String, String> templateOptions, Boolean sendEmail,
+      Boolean sendSMS) {
+    this(inviteUrl, templateId, templateOptions, sendEmail, sendSMS, null);
+  }
 }

@@ -13,4 +13,10 @@ public class UsersBatchResponse {
   private List<UserResponse> createdUsers;
   private List<UserFailedResponse> failedUsers;
   private Map<String, String> additionalErrors;
+  private List<UserResponse> patchedUsers;
+
+  public UsersBatchResponse(List<UserResponse> createdUsers, List<UserFailedResponse> failedUsers,
+      Map<String, String> additionalErrors) {
+    this(createdUsers, failedUsers, additionalErrors, null);
+  }
 }

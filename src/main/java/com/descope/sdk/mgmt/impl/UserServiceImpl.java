@@ -19,6 +19,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_PICTURE_LIN
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_LOGIN_ID_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_USER_NAME_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_FAMILIES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_SSO_APPS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_ADD_TENANT_LINK;
@@ -26,8 +27,14 @@ import static com.descope.literals.Routes.ManagementEndPoints.USER_CREATE_EMBEDD
 import static com.descope.literals.Routes.ManagementEndPoints.USER_DELETE_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_EXPIRE_PASSWORD_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_HISTORY_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_IMPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_LIST_PASSKEYS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_LIST_TRUSTED_DEVICES_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_LOGOUT_BATCH_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_LOGOUT_SESSION_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_PATCH_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ALL_PASSKEYS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_FAMILIES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_PASSKEY_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_ROLES_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.USER_REMOVE_SSO_APPS_LINK;
@@ -52,6 +59,7 @@ import static com.descope.utils.CollectionUtils.mapOf;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
+import com.descope.model.auth.AssociatedFamily;
 import com.descope.model.auth.InviteOptions;
 import com.descope.model.client.Client;
 import com.descope.model.magiclink.LoginOptions;
@@ -62,23 +70,29 @@ import com.descope.model.user.request.GenerateEmbeddedLinkRequest;
 import com.descope.model.user.request.GenerateSignUpEmbeddedLinkRequest;
 import com.descope.model.user.request.MagicLinkTestUserRequest;
 import com.descope.model.user.request.OTPTestUserRequest;
+import com.descope.model.user.request.PatchUserBatchRequest;
 import com.descope.model.user.request.PatchUserRequest;
 import com.descope.model.user.request.UserRequest;
 import com.descope.model.user.request.UserSearchRequest;
 import com.descope.model.user.response.AllUsersResponseDetails;
 import com.descope.model.user.response.EnchantedLinkTestUserResponse;
 import com.descope.model.user.response.GenerateEmbeddedLinkResponse;
+import com.descope.model.user.response.ImportUsersResponse;
 import com.descope.model.user.response.LogoutSessionRange;
 import com.descope.model.user.response.LogoutSessionRangeResponse;
 import com.descope.model.user.response.LogoutSessionRangesResponse;
 import com.descope.model.user.response.MagicLinkTestUserResponse;
 import com.descope.model.user.response.OTPTestUserResponse;
 import com.descope.model.user.response.ProviderTokenResponse;
+import com.descope.model.user.response.TrustedDevice;
+import com.descope.model.user.response.TrustedDevicesResponse;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserPasskey;
 import com.descope.model.user.response.UserPasskeysResponse;
 import com.descope.model.user.response.UserResponseDetails;
+import com.descope.model.user.response.UserSessionLogoutResponse;
 import com.descope.model.user.response.UsersBatchResponse;
+import com.descope.model.user.response.UsersLogoutResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -115,6 +129,11 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   public UsersBatchResponse createBatch(List<BatchUserRequest> users) throws DescopeException {
+    return createBatch(users, null);
+  }
+
+  @Override
+  public UsersBatchResponse createBatch(List<BatchUserRequest> users, Boolean strict) throws DescopeException {
     if (users == null || users.isEmpty()) {
       throw ServerCommonException.invalidArgument("Users");
     }
@@ -124,6 +143,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI createUsersUri = composeCreateBatchUsersUri();
     ApiProxy apiProxy = getApiProxy();
     Map<String, Object> req = mapOf("users", users, "invite", false);
+    addIfNotNull(req, "strict", strict);
     return apiProxy.post(createUsersUri, req, UsersBatchResponse.class);
   }
 
@@ -154,6 +174,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       addIfNotNull(req, "sendMail", options.getSendEmail());
       addIfNotNull(req, "templateId", options.getTemplateId());
       addIfNotNull(req, "templateOptions", options.getTemplateOptions());
+      addIfNotBlank(req, "locale", options.getLocale());
     }
     req.putAll(request.toMap());
     URI createUserUri = composeCreateUserUri();
@@ -163,6 +184,12 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   public UsersBatchResponse inviteBatch(List<BatchUserRequest> users, InviteOptions options) throws DescopeException {
+    return inviteBatch(users, options, null);
+  }
+
+  @Override
+  public UsersBatchResponse inviteBatch(List<BatchUserRequest> users, InviteOptions options, Boolean strict)
+      throws DescopeException {
     if (users == null || users.isEmpty()) {
       throw ServerCommonException.invalidArgument("Users");
     }
@@ -176,7 +203,9 @@ class UserServiceImpl extends ManagementsBase implements UserService {
       addIfNotNull(req, "sendMail", options.getSendEmail());
       addIfNotNull(req, "templateId", options.getTemplateId());
       addIfNotNull(req, "templateOptions", options.getTemplateOptions());
+      addIfNotBlank(req, "locale", options.getLocale());
     }
+    addIfNotNull(req, "strict", strict);
     URI createUsersUri = composeCreateBatchUsersUri();
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(createUsersUri, req, UsersBatchResponse.class);
@@ -195,6 +224,33 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI patchUserUri = composePatchUserUri();
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.patch(patchUserUri, req, UserResponseDetails.class);
+  }
+
+  @Override
+  public UsersBatchResponse patchBatch(List<PatchUserBatchRequest> users) throws DescopeException {
+    return patchBatch(users, null);
+  }
+
+  @Override
+  public UsersBatchResponse patchBatch(List<PatchUserBatchRequest> users, Boolean strict) throws DescopeException {
+    if (CollectionUtils.isEmpty(users)) {
+      throw ServerCommonException.invalidArgument("Users");
+    }
+    List<Map<String, Object>> items = new ArrayList<>();
+    for (PatchUserBatchRequest u : users) {
+      if (u == null || StringUtils.isBlank(u.getLoginId())) {
+        throw ServerCommonException.invalidArgument("Login ID or User ID");
+      }
+      Map<String, Object> item = mapOf("identifier", u.getLoginId());
+      item.putAll(u.toMap());
+      // The batch item names it ssoAppIds
+      addIfNotNull(item, "ssoAppIds", item.remove("ssoAppIDs"));
+      items.add(item);
+    }
+    Map<String, Object> req = mapOf("users", items);
+    addIfNotNull(req, "strict", strict);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.patch(getUri(USER_PATCH_BATCH_LINK), req, UsersBatchResponse.class);
   }
 
   @Override
@@ -307,6 +363,67 @@ class UserServiceImpl extends ManagementsBase implements UserService {
   }
 
   @Override
+  public List<TrustedDevice> listTrustedDevices(List<String> loginIdsOrUserIds) throws DescopeException {
+    if (CollectionUtils.isEmpty(loginIdsOrUserIds)) {
+      throw ServerCommonException.invalidArgument("Login IDs or User IDs");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    TrustedDevicesResponse response = apiProxy.post(getUri(USER_LIST_TRUSTED_DEVICES_LINK),
+        mapOf("identifiers", loginIdsOrUserIds), TrustedDevicesResponse.class);
+    return response == null || response.getDevices() == null ? Collections.emptyList() : response.getDevices();
+  }
+
+  @Override
+  public UserResponseDetails addFamilies(String loginIdOrUserId, List<AssociatedFamily> families)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginIdOrUserId)) {
+      throw ServerCommonException.invalidArgument("Login ID or User ID");
+    }
+    if (CollectionUtils.isEmpty(families)) {
+      throw ServerCommonException.invalidArgument("Families");
+    }
+    for (AssociatedFamily f : families) {
+      if (f == null || StringUtils.isBlank(f.getFamilyId())) {
+        throw ServerCommonException.invalidArgument("Family ID");
+      }
+    }
+    Map<String, Object> request = mapOf("identifier", loginIdOrUserId, "familyAssociations", families);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USER_ADD_FAMILIES_LINK), request, UserResponseDetails.class);
+  }
+
+  @Override
+  public UserResponseDetails removeFamilies(String loginIdOrUserId, List<String> familyIds)
+      throws DescopeException {
+    if (StringUtils.isBlank(loginIdOrUserId)) {
+      throw ServerCommonException.invalidArgument("Login ID or User ID");
+    }
+    if (CollectionUtils.isEmpty(familyIds)) {
+      throw ServerCommonException.invalidArgument("Family IDs");
+    }
+    Map<String, Object> request = mapOf("identifier", loginIdOrUserId, "familyIds", familyIds);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USER_REMOVE_FAMILIES_LINK), request, UserResponseDetails.class);
+  }
+
+  @Override
+  public ImportUsersResponse importUsers(String source, byte[] users, byte[] hashes, boolean dryRun)
+      throws DescopeException {
+    if (StringUtils.isBlank(source)) {
+      throw ServerCommonException.invalidArgument("Source");
+    }
+    Map<String, Object> request = mapOf("source", source, "dryrun", dryRun);
+    if (users != null && users.length > 0) {
+      request.put("users", users);
+    }
+    if (hashes != null && hashes.length > 0) {
+      request.put("hashes", hashes);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(USER_IMPORT_LINK), request, ImportUsersResponse.class);
+  }
+
+  @Override
   public void logoutUser(String loginId, String... sessionTypes) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
@@ -324,6 +441,48 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     URI logoutUserUri = composeLogoutUserUri();
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(logoutUserUri, mapOf("userId", userId, "sessionTypes", sessionTypes), Void.class);
+  }
+
+  @Override
+  public List<String> logoutUsers(List<String> loginIdsOrUserIds, List<String> sessionTypes)
+      throws DescopeException {
+    if (CollectionUtils.isEmpty(loginIdsOrUserIds)) {
+      throw ServerCommonException.invalidArgument("Login IDs or User IDs");
+    }
+    Map<String, Object> request = mapOf("identifiers", loginIdsOrUserIds);
+    addIfNotNull(request, "sessionTypes", sessionTypes);
+    ApiProxy apiProxy = getApiProxy();
+    UsersLogoutResponse response =
+        apiProxy.post(getUri(USER_LOGOUT_BATCH_LINK), request, UsersLogoutResponse.class);
+    return response == null || response.getNotFoundIdentifiers() == null
+        ? Collections.emptyList() : response.getNotFoundIdentifiers();
+  }
+
+  @Override
+  public boolean logoutUserSession(String loginId, String sessionId) throws DescopeException {
+    if (StringUtils.isBlank(loginId)) {
+      throw ServerCommonException.invalidArgument("Login ID");
+    }
+    return logoutSession(mapOf("identifier", loginId), sessionId);
+  }
+
+  @Override
+  public boolean logoutUserSessionByUserId(String userId, String sessionId) throws DescopeException {
+    if (StringUtils.isBlank(userId)) {
+      throw ServerCommonException.invalidArgument("User ID");
+    }
+    return logoutSession(mapOf("userId", userId), sessionId);
+  }
+
+  private boolean logoutSession(Map<String, Object> request, String sessionId) throws DescopeException {
+    if (StringUtils.isBlank(sessionId)) {
+      throw ServerCommonException.invalidArgument("Session ID");
+    }
+    request.put("sessionId", sessionId);
+    ApiProxy apiProxy = getApiProxy();
+    UserSessionLogoutResponse response =
+        apiProxy.post(getUri(USER_LOGOUT_SESSION_LINK), request, UserSessionLogoutResponse.class);
+    return response != null && Boolean.TRUE.equals(response.getAlreadyRevoked());
   }
 
   @Override
@@ -509,6 +668,12 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   public UserResponseDetails updateCustomAttributes(String loginId, String key, Object value) throws DescopeException {
+    return updateCustomAttributes(loginId, key, value, null);
+  }
+
+  @Override
+  public UserResponseDetails updateCustomAttributes(String loginId, String key, Object value, Boolean strict)
+      throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
@@ -517,6 +682,7 @@ class UserServiceImpl extends ManagementsBase implements UserService {
     }
     URI updateAttributesUri = composeUpdateAttributesUri();
     Map<String, Object> request = mapOf("loginId", loginId, "attributeKey", key, "attributeValue", value);
+    addIfNotNull(request, "strict", strict);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(updateAttributesUri, request, UserResponseDetails.class);
   }
@@ -709,13 +875,26 @@ class UserServiceImpl extends ManagementsBase implements UserService {
 
   @Override
   public ProviderTokenResponse getProviderToken(String loginId, String provider) throws DescopeException {
+    return getProviderToken(loginId, provider, null, null);
+  }
+
+  @Override
+  public ProviderTokenResponse getProviderToken(String loginId, String provider, Boolean withRefreshToken,
+      Boolean forceRefresh) throws DescopeException {
     if (StringUtils.isBlank(loginId)) {
       throw ServerCommonException.invalidArgument("Login ID");
     }
     if (StringUtils.isBlank(provider)) {
       throw ServerCommonException.invalidArgument("Provider");
     }
-    URI getProviderTokenUri = composeGetProviderTokenUri(mapOf("loginId", loginId, "provider", provider));
+    Map<String, String> params = mapOf("loginId", loginId, "provider", provider);
+    if (withRefreshToken != null) {
+      params.put("withRefreshToken", withRefreshToken.toString());
+    }
+    if (forceRefresh != null) {
+      params.put("forceRefresh", forceRefresh.toString());
+    }
+    URI getProviderTokenUri = composeGetProviderTokenUri(params);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.get(getProviderTokenUri, ProviderTokenResponse.class);
   }

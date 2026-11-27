@@ -902,6 +902,85 @@ try {
     // Handle the error
 }
 
+// Log out multiple users from all their devices; returns the identifiers that matched no user
+try {
+    List<String> notFound = us.logoutUsers(Arrays.asList("desmond@descope.com", "<user-id>"), null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Log out a single session of a user, by login ID or user ID. The session ID is the fti claim
+// of the session's session JWT or refresh JWT. Returns true when it was already logged out.
+try {
+    boolean alreadyRevoked = us.logoutUserSession("desmond@descope.com", "<session-id>");
+    us.logoutUserSessionByUserId("<user-id>", "<session-id>");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create users in batch. Pass strict as true to fail a user that sets undeclared custom attributes.
+try {
+    UsersBatchResponse res = us.createBatch(Arrays.asList(
+        BatchUserRequest.builder().loginId("desmond@descope.com").email("desmond@descope.com").build()), true);
+    // Or create and invite them, optionally in a given locale
+    us.inviteBatch(Arrays.asList(
+        BatchUserRequest.builder().loginId("desmond@descope.com").email("desmond@descope.com").build()),
+        InviteOptions.builder().inviteUrl("https://my-app.com/invite").locale("en").build(), true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Patch users in batch, by login ID or user ID
+try {
+    UsersBatchResponse res = us.patchBatch(Arrays.asList(
+        PatchUserBatchRequest.builder().loginId("desmond@descope.com").name("Desmond Copeland").build()));
+    List<UserResponse> patched = res.getPatchedUsers();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update a custom attribute, failing if the project does not declare it
+try {
+    us.updateCustomAttributes("desmond@descope.com", "my-attribute", "value", true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Add a user to families, optionally with roles and family-scoped attributes, or remove them
+try {
+    us.addFamilies("desmond@descope.com", Arrays.asList(
+        AssociatedFamily.builder()
+            .familyId("family-ID1")
+            .roleNames(Arrays.asList("role-name1"))
+            .familyScopedAttributes(mapOf("my-attribute", "value")).build()));
+    us.removeFamilies("desmond@descope.com", Arrays.asList("family-ID1"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// List the trusted devices of users
+try {
+    List<TrustedDevice> devices = us.listTrustedDevices(Arrays.asList("desmond@descope.com"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Get a user's provider token, optionally with the provider's refresh token and forcing a refresh
+try {
+    ProviderTokenResponse token = us.getProviderToken("desmond@descope.com", "google", true, false);
+    String refreshToken = token.getRefreshToken();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Import users exported from another identity provider. Set dryRun to validate without saving.
+try {
+    ImportUsersResponse res = us.importUsers("<source>", usersFileBytes, hashesFileBytes, false);
+    List<ImportUsersFailure> failures = res.getFailures();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 #### Set or Expire User Password

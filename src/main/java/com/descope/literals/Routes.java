@@ -334,5 +334,12 @@ public class Routes {
     public static final String USER_REMOVE_PASSKEY_LINK = "/v1/mgmt/user/passkey/delete";
     public static final String USER_LIST_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/list";
     public static final String USER_REMOVE_TOTP_SEED_LINK = "/v1/mgmt/user/totp/delete";
+    public static final String USER_IMPORT_LINK = "/v1/mgmt/user/import";
+    public static final String USER_LOGOUT_BATCH_LINK = "/v1/mgmt/user/logout/batch";
+    public static final String USER_LOGOUT_SESSION_LINK = "/v1/mgmt/user/logout/session";
+    public static final String USER_PATCH_BATCH_LINK = "/v1/mgmt/user/patch/batch";
+    public static final String USER_LIST_TRUSTED_DEVICES_LINK = "/v1/mgmt/user/trusteddevices/list";
+    public static final String USER_ADD_FAMILIES_LINK = "/v1/mgmt/user/update/family/add";
+    public static final String USER_REMOVE_FAMILIES_LINK = "/v1/mgmt/user/update/family/remove";
   }
 }
