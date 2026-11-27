@@ -7,6 +7,7 @@ import static com.descope.literals.Routes.AuthEndPoints.HISTORY_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_ALL_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.LOG_OUT_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.ME_LINK;
+import static com.descope.literals.Routes.AuthEndPoints.ME_TENANTS_LINK;
 import static com.descope.literals.Routes.AuthEndPoints.TENANT_SELECT_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
@@ -15,6 +16,8 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.ExchangeTokenRequest;
+import com.descope.model.auth.MeTenantsRequest;
+import com.descope.model.auth.MeTenantsResponse;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -247,6 +250,20 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     ApiProxy apiProxy = getApiProxy(refreshToken);
     return apiProxy.getArray(getUri(HISTORY_LINK), new TypeReference<List<UserHistoryResponse>>() {
     });
+  }
+
+  @Override
+  public MeTenantsResponse myTenants(String refreshToken, boolean dct, List<String> tenantIds)
+      throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+    if (dct && CollectionUtils.isNotEmpty(tenantIds)) {
+      throw ServerCommonException.invalidArgument("tenantIds");
+    }
+    validateJWT(refreshToken); // Will make sure token is still valid
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    return apiProxy.post(getUri(ME_TENANTS_LINK), new MeTenantsRequest(dct, tenantIds), MeTenantsResponse.class);
   }
 
   @Override

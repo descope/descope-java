@@ -3,6 +3,7 @@ package com.descope.sdk.auth;
 import com.descope.exception.DescopeException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.MeTenantsResponse;
 import com.descope.model.jwt.Token;
 import com.descope.model.user.response.UserHistoryResponse;
 import com.descope.model.user.response.UserResponse;
@@ -275,4 +276,16 @@ public interface AuthenticationService {
    * @throws DescopeException if there is an error or token is not valid
    */
   List<UserHistoryResponse> history(String refreshToken) throws DescopeException;
+
+  /**
+   * Use to retrieve the tenants of the current session user. The request requires a valid refresh token.
+   *
+   * @param refreshToken a valid refresh token
+   * @param dct when true, returns only the tenant currently selected on the refresh token
+   * @param tenantIds optional tenant IDs to return, can be null or empty for all of the user's tenants. Only one
+   *     of dct or tenantIds should be provided.
+   * @return {@link MeTenantsResponse} returns the user's tenants.
+   * @throws DescopeException if there is an error or token is not valid
+   */
+  MeTenantsResponse myTenants(String refreshToken, boolean dct, List<String> tenantIds) throws DescopeException;
 }

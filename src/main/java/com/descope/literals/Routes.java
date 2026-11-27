@@ -14,6 +14,7 @@ public class Routes {
     // My details
     public static final String ME_LINK = "/v1/auth/me";
     public static final String HISTORY_LINK = "/v1/auth/me/history";
+    public static final String ME_TENANTS_LINK = "/v1/auth/me/tenants";
 
     // MagicLink
     public static final String SIGN_IN_MAGIC_LINK = "/v1/auth/magiclink/signin";
