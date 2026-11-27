@@ -1,0 +1,14 @@
+package com.descope.model.family.response;
+
+import com.descope.model.family.Family;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoadAllFamiliesResponse {
+  private List<Family> families;
+}

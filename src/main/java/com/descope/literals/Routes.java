@@ -334,5 +334,16 @@ public class Routes {
     public static final String USER_REMOVE_PASSKEY_LINK = "/v1/mgmt/user/passkey/delete";
     public static final String USER_LIST_PASSKEYS_LINK = "/v1/mgmt/user/passkeys/list";
     public static final String USER_REMOVE_TOTP_SEED_LINK = "/v1/mgmt/user/totp/delete";
+
+    // Family
+    public static final String MANAGEMENT_FAMILY_CREATE_LINK = "/v1/mgmt/family/create";
+    public static final String MANAGEMENT_FAMILY_UPDATE_LINK = "/v1/mgmt/family/update";
+    public static final String MANAGEMENT_FAMILY_DELETE_LINK = "/v1/mgmt/family/delete";
+    public static final String MANAGEMENT_FAMILY_SEARCH_LINK = "/v1/mgmt/family/search";
+    public static final String MANAGEMENT_FAMILY_DEPENDENT_CREATE_LINK = "/v1/mgmt/family/dependent/create";
+    public static final String MANAGEMENT_FAMILY_DEPENDENT_DELETE_LINK = "/v1/mgmt/family/dependent/delete";
+    public static final String MANAGEMENT_FAMILY_IMPERSONATE_LINK = "/v1/mgmt/family/impersonate";
+    public static final String MANAGEMENT_FAMILY_STOP_IMPERSONATION_LINK = "/v1/mgmt/family/impersonate/stop";
+    public static final String MANAGEMENT_FAMILY_SETTINGS_LINK = "/v1/mgmt/family/settings";
   }
 }

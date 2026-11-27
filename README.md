@@ -97,6 +97,7 @@ These sections show how to use the SDK to perform API management functions. Befo
 12. [Manage Outbound Applications](#manage-outbound-applications)
 13. [Manage Inbound Applications](#manage-inbound-applications)
 14. [Manage Project](#manage-project)
+15. [Manage Families](#manage-families)
 
 If you wish to run any of our code samples and play with them, check out our [Code Examples](#code-examples) section.
 
@@ -1991,6 +1992,101 @@ try {
     // Handle the error
 }
 
+```
+
+### Manage Families
+
+You can create, update, delete or search families, manage their dependents and the project's family settings:
+
+```java
+FamilyService fs = descopeClient.getManagementServices().getFamilyService();
+
+// Create a family. Custom attributes, photo and disabled are optional
+try {
+    Family family = fs.create("My Family", new HashMap<String, Object>() {{
+                put("custom-attribute-1", "custom-value1");
+            }}, "https://example.com/photo.png", false);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// You can optionally set your own ID when creating a family
+try {
+    Family family = fs.createWithId("my-family-id", "My Family", null, null, null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update only changes the fields that are not null.
+// Custom attributes, when given, replace all of the family's custom attributes.
+try {
+    Family family = fs.update("my-family-id", "New Name", null, null, true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Family deletion cannot be undone. Use carefully.
+try {
+    fs.delete("my-family-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search families. Empty options return all families
+try {
+    List<Family> families = fs.searchAll(FamilySearchRequest.builder()
+        .ids(Arrays.asList("my-family-id"))
+        .names(Arrays.asList("My Family"))
+        .text("Fam")
+        .page(0)
+        .size(100)
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create a dependent in a family. When the login ID is empty it is derived from the name
+try {
+    FamilyDependent dependent = fs.createDependent("my-family-id", FamilyDependentRequest.builder()
+        .loginId("kid@example.com")
+        .name("Kid")
+        .familyScopedAttributes(new HashMap<String, Object>() {{
+                put("family-attribute", "value");
+            }})
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a dependent. The family is inferred from the dependent
+try {
+    fs.deleteDependent("dependent-user-id");
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Impersonate a dependent: the impersonator must be a member of the dependent's family
+// and have the permission to impersonate dependents. The selected family is optional
+try {
+    String jwt = fs.impersonateDependent("parent@example.com", "kid@example.com", "my-family-id");
+    // Stop the impersonation and get a new JWT for the impersonator.
+    // Custom claims and refresh duration are optional
+    String impersonatorJwt = fs.stopImpersonation(jwt, null, null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load and configure the project's family settings. Settings left null keep their current value
+try {
+    FamilySettings settings = fs.getSettings();
+    settings = fs.configureSettings(FamilySettings.builder()
+        .enabled(true)
+        .maxFamilyMembers(6)
+        .allowMultipleFamiliesUsers(false)
+        .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
 ```
 
 ## Code Examples
