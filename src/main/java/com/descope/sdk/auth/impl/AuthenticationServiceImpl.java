@@ -262,7 +262,21 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     Map<String, String> body = Collections.singletonMap("tenant", tenantId);
     JWTResponse jwtResponse = apiProxy.post(composeSelectTenantURL(), body, JWTResponse.class);
 
-    return getAuthenticationInfo(jwtResponse);
+    AuthenticationInfo authInfo = getAuthenticationInfo(jwtResponse);
+    authInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
+    authInfo.setExternalToken(jwtResponse.getExternalToken());
+    authInfo.setClaims(jwtResponse.getClaims());
+    authInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
+    authInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    authInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    authInfo.setCookieName(jwtResponse.getCookieName());
+    authInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
+    authInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    authInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    authInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    authInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    authInfo.setExternalPasskey(jwtResponse.getExternalPasskey());
+    return authInfo;
   }
 
   AuthenticationInfo exchangeToken(String code, URI url) {
