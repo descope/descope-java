@@ -10,18 +10,26 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.auth.MeTenant;
+import com.descope.model.auth.MeTenantsRequest;
+import com.descope.model.auth.MeTenantsResponse;
 import com.descope.model.client.Client;
+import com.descope.model.client.SdkInfo;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
 import com.descope.model.mgmt.AccessKeyResponse;
@@ -40,11 +48,16 @@ import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
+import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
@@ -114,6 +127,80 @@ public class AuthenticationServiceImplTest {
       // The session check's error, despite the authentication-only flag
       assertEquals(ErrorCode.INVALID_TOKEN, thrown.getCode());
       assertEquals("Invalid Token", thrown.getMessage());
+    }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testMyTenants() {
+    Client client = Client.builder()
+        .uri("https://api.descope.com")
+        .projectId("test-project")
+        .sdkInfo(SdkInfo.builder().name("java").build())
+        .build();
+    AuthenticationService auth = AuthenticationServiceBuilder.buildServices(client).getAuthService();
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    MeTenantsResponse expected = new MeTenantsResponse(Arrays.asList(
+        new MeTenant("t1", "Tenant 1", mapOf("k", "v"))));
+    doReturn(expected).when(apiProxy).post(any(), any(), any());
+    AtomicReference<String> header = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        header.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      final MeTenantsResponse response = auth.myTenants("someRefreshJwt", false, Arrays.asList("t1"));
+
+      ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+      ArgumentCaptor<MeTenantsRequest> body = ArgumentCaptor.forClass(MeTenantsRequest.class);
+      verify(apiProxy).post(uri.capture(), body.capture(), eq(MeTenantsResponse.class));
+      assertEquals("/v1/auth/me/tenants", uri.getValue().getPath());
+      assertEquals("Bearer test-project:someRefreshJwt", header.get());
+      assertFalse(body.getValue().isDct());
+      assertEquals(Arrays.asList("t1"), body.getValue().getIds());
+      assertEquals(1, response.getTenants().size());
+      MeTenant tenant = response.getTenants().get(0);
+      assertEquals("t1", tenant.getId());
+      assertEquals("Tenant 1", tenant.getName());
+      assertEquals(mapOf("k", "v"), tenant.getCustomAttributes());
+    }
+  }
+
+  @Test
+  void testMyTenantsDct() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    doReturn(new MeTenantsResponse()).when(apiProxy).post(any(), any(), any());
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      authenticationService.myTenants("someRefreshJwt", true, null);
+
+      ArgumentCaptor<MeTenantsRequest> body = ArgumentCaptor.forClass(MeTenantsRequest.class);
+      verify(apiProxy).post(any(), body.capture(), eq(MeTenantsResponse.class));
+      assertTrue(body.getValue().isDct());
+      assertEquals(null, body.getValue().getIds());
+    }
+  }
+
+  @Test
+  void testMyTenantsForEmptyRefreshToken() {
+    ServerCommonException thrown = assertThrows(ServerCommonException.class,
+        () -> authenticationService.myTenants("", false, null));
+    assertEquals("refresh token", thrown.getMessage());
+  }
+
+  @Test
+  void testMyTenantsForDctAndTenantIds() {
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenReturn(apiProxy);
+      ServerCommonException thrown = assertThrows(ServerCommonException.class,
+          () -> authenticationService.myTenants("someRefreshJwt", true, Collections.singletonList("t1")));
+      assertEquals("The tenantIds argument is invalid", thrown.getMessage());
+      verify(apiProxy, never()).post(any(), any(), any());
     }
   }
 
