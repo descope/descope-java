@@ -275,10 +275,14 @@ public class Routes {
     public static final String MANAGEMENT_INBOUND_UPDATE_APP = "/v1/mgmt/thirdparty/app/update";
     public static final String MANAGEMENT_INBOUND_PATCH_APP = "/v1/mgmt/thirdparty/app/patch";
     public static final String MANAGEMENT_INBOUND_DELETE_APP = "/v1/mgmt/thirdparty/app/delete";
+    public static final String MANAGEMENT_INBOUND_DELETE_APPS = "/v1/mgmt/thirdparty/app/delete/batch";
     public static final String MANAGEMENT_INBOUND_LOAD_APP = "/v1/mgmt/thirdparty/app/load";
     public static final String MANAGEMENT_INBOUND_LOAD_APPS = "/v1/mgmt/thirdparty/apps/load";
     public static final String MANAGEMENT_INBOUND_GET_SECRET = "/v1/mgmt/thirdparty/app/secret";
     public static final String MANAGEMENT_INBOUND_ROTATE_SECRET = "/v1/mgmt/thirdparty/app/rotate";
+    public static final String MANAGEMENT_INBOUND_ADD_SECRET = "/v1/mgmt/thirdparty/app/secret/add";
+    public static final String MANAGEMENT_INBOUND_REVOKE_SECRET = "/v1/mgmt/thirdparty/app/secret/revoke";
+    public static final String MANAGEMENT_INBOUND_CREATE_CONSENT = "/v1/mgmt/thirdparty/consents/create";
     public static final String MANAGEMENT_INBOUND_DELETE_CONSENT = "/v1/mgmt/thirdparty/consents/delete";
     public static final String MANAGEMENT_INBOUND_DELETE_TENANT_CONSENT = "/v1/mgmt/thirdparty/consents/delete/tenant";
     public static final String MANAGEMENT_INBOUND_SEARCH_CONSENT = "/v1/mgmt/thirdparty/consents/search";

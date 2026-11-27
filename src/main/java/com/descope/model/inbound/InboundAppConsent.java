@@ -1,5 +1,7 @@
 package com.descope.model.inbound;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,5 +19,25 @@ public class InboundAppConsent {
   private String grantedBy;
   private long createdTime;
   private String tenantId;
+  /** Epoch seconds; 0 means the consent never expires. */
+  @JsonProperty("ExpireTime")
+  @JsonAlias("expireTime")
+  private Integer expireTime;
+  private Integer modifiedTime;
+  /** Empty for an explicit consent, "idJag" for an identity recorded by a Cross-App Access exchange. */
+  private String authMethod;
+  /** True when an admin blocked this "idJag" identity. */
+  private Boolean blocked;
+
+  public InboundAppConsent(String id, String appId, String userId, String[] scopes, String grantedBy,
+      long createdTime, String tenantId) {
+    this.id = id;
+    this.appId = appId;
+    this.userId = userId;
+    this.scopes = scopes;
+    this.grantedBy = grantedBy;
+    this.createdTime = createdTime;
+    this.tenantId = tenantId;
+  }
 }
 
