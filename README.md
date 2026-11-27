@@ -1410,6 +1410,22 @@ try {
     // Handle the error
 }
 
+// Export the project theme, with its styles and the project entities they reference
+try {
+    ExportedTheme exported = fs.exportProjectTheme();
+    Map<String, Object> styles = exported.getStyles();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Import a theme to the project. Its styles are created or overwritten,
+// other styles in the project are left as they are
+try {
+    fs.importProjectTheme(exported);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Delete flows by their IDs
 try {
     fs.deleteFlows(Arrays.asList("sign-up", "sign-in"));
