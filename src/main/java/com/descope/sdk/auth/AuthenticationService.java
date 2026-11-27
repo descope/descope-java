@@ -31,6 +31,17 @@ public interface AuthenticationService {
   Token refreshSessionWithToken(String refreshToken) throws DescopeException;
 
   /**
+   * Use to refresh the given session using a refresh token, optionally passing an external token.
+   * Returns the new session token.
+   *
+   * @param refreshToken - Refresh Token
+   * @param externalToken - optional external token to send with the refresh, or null
+   * @return {@link Token Token}
+   * @throws DescopeException - error upon failure
+   */
+  Token refreshSessionWithToken(String refreshToken, String externalToken) throws DescopeException;
+
+  /**
    * Use to refresh the given session using a refresh token. Returns the new authentication info with tokens.
    * Should be used when jwt rotation is enabled in the project configuration to retrieve the new refresh token.
    * Alternatively use ValidateAndRefreshSessionWithTokensAuthenticationInfo
@@ -41,6 +52,19 @@ public interface AuthenticationService {
    * @throws DescopeException - error upon failure
    */
   AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException;
+
+  /**
+   * Use to refresh the given session using a refresh token, optionally passing an external token.
+   * Returns the new authentication info with tokens, along with the additional fields of the refresh
+   * response (such as session expiration, claims, external token and cookie names).
+   *
+   * @param refreshToken - Refresh Token
+   * @param externalToken - optional external token to send with the refresh, or null
+   * @return {@link AuthenticationInfo the full authentication info including refresh token and user}
+   * @throws DescopeException - error upon failure
+   */
+  AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken, String externalToken)
+      throws DescopeException;
 
   /**
     * For a user with access to multiple tenants, set a specific tenant as the
