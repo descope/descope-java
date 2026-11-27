@@ -883,12 +883,6 @@ public class UserServiceImplTest {
 
   @Test
   void testLoadUsersForSuccess() throws Exception {
-    UserService service = ManagementServiceBuilder.buildServices(Client.builder()
-        .uri("https://api.descope.com")
-        .projectId("test-project")
-        .managementKey("some-management-key")
-        .sdkInfo(SdkInfo.builder().name("java").build())
-        .build()).getUserService();
     ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
     CloseableHttpClient httpClient = mockHttpClient(captor, 200,
         "{\"users\":[{\"userId\":\"u1\",\"loginIds\":[\"desmond@descope.com\"],"
@@ -896,6 +890,13 @@ public class UserServiceImplTest {
             + "\"total\":1}");
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
+      // Built under the mock so the license handshake stays offline
+      UserService service = ManagementServiceBuilder.buildServices(Client.builder()
+          .uri("https://api.descope.com")
+          .projectId("test-project")
+          .managementKey("some-management-key")
+          .sdkInfo(SdkInfo.builder().name("java").build())
+          .build()).getUserService();
       final AllUsersResponseDetails res = service.loadUsers(Arrays.asList("u1", "u2"), true);
       ClassicHttpRequest req = captor.getValue();
       assertEquals("POST", req.getMethod());
