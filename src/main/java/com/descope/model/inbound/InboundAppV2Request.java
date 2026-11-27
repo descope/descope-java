@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @Builder
@@ -42,6 +43,7 @@ public class InboundAppV2Request {
   /** Create only. */
   private String clientId;
   /** Create only. */
+  @ToString.Exclude
   private String clientSecret;
   private Boolean forceAddAllAuthorizationInfo;
   private InboundAppScope[] connectionsScopes;
