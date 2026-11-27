@@ -12,4 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FlowsResponse {
   private List<FlowMetadata> flows;
+  private int total;
+
+  public FlowsResponse(List<FlowMetadata> flows) {
+    this(flows, 0);
+  }
 }

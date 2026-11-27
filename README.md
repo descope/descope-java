@@ -1355,7 +1355,7 @@ try {
 
 ### Manage Flows
 
-You can list, import and export flows and screens, or the project theme:
+You can list, import and export flows and screens, or the project theme, and run management flows:
 
 ```java
 FlowService fs = descopeClient.getManagementServices().getFlowService();
@@ -1413,6 +1413,39 @@ try {
 // Delete flows by their IDs
 try {
     fs.deleteFlows(Arrays.asList("sign-up", "sign-in"));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// List only the flows with the given IDs, with their total count
+try {
+    FlowsResponse resp = fs.listFlows(Arrays.asList("sign-up", "sign-in"));
+    int total = resp.getTotal();
+    for (FlowMetadata f : resp.getFlows()) {
+        // Do something
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Run a management flow and get its output
+ManagementFlowOptions options = ManagementFlowOptions.builder()
+    .input(Collections.singletonMap("email", "test@example.com"))
+    .preview(true)
+    .tenant("t1")
+    .build();
+try {
+    ManagementFlowResponse resp = fs.runManagementFlow("management-flow", options);
+    Map<String, Object> output = resp.getOutput();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Start a management flow without waiting, and fetch its output later
+try {
+    String executionId = fs.runManagementFlowAsync("management-flow", options);
+    ManagementFlowResponse resp = fs.getManagementFlowAsyncResult(executionId);
+    Map<String, Object> output = resp.getOutput();
 } catch (DescopeException de) {
     // Handle the error
 }
