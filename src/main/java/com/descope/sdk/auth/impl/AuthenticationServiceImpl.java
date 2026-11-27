@@ -14,6 +14,7 @@ import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.ExchangeAccessKeyResponse;
 import com.descope.model.auth.ExchangeTokenRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
@@ -28,6 +29,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -113,6 +116,17 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   @Override
   public Token exchangeAccessKey(String accessKey, AccessKeyLoginOptions loginOptions) throws DescopeException {
+    return exchangeAccessKeyWithResponse(accessKey, loginOptions).getToken();
+  }
+
+  @Override
+  public ExchangeAccessKeyResponse exchangeAccessKeyWithResponse(String accessKey) throws DescopeException {
+    return exchangeAccessKeyWithResponse(accessKey, null);
+  }
+
+  @Override
+  public ExchangeAccessKeyResponse exchangeAccessKeyWithResponse(String accessKey,
+      AccessKeyLoginOptions loginOptions) throws DescopeException {
     if (StringUtils.isBlank(accessKey)) {
       throw ServerCommonException.invalidArgument("accessKey");
     }
@@ -120,10 +134,10 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
     ApiProxy apiProxy = getApiProxy(accessKey, false);
     URI exchangeAccessKeyLinkURL = composeExchangeAccessKeyLinkURL();
 
-    JWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL,
-        mapOf("loginOptions", loginOptions), JWTResponse.class);
+    ExchangeAccessKeyJWTResponse jwtResponse = apiProxy.post(exchangeAccessKeyLinkURL,
+        mapOf("loginOptions", loginOptions), ExchangeAccessKeyJWTResponse.class);
     AuthenticationInfo authenticationInfo = getAuthenticationInfo(jwtResponse);
-    return authenticationInfo.getToken();
+    return new ExchangeAccessKeyResponse(authenticationInfo.getToken(), jwtResponse.getKeyId());
   }
 
   @Override
@@ -289,5 +303,11 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
 
   private URI composeLogOutAllLinkURL() {
     return getUri(LOG_OUT_ALL_LINK);
+  }
+
+  @Getter
+  @Setter
+  static class ExchangeAccessKeyJWTResponse extends JWTResponse {
+    private String keyId;
   }
 }

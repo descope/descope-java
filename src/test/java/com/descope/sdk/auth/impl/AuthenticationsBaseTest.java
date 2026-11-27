@@ -76,6 +76,10 @@ class AuthenticationsBaseTest {
       catchThrowable(() -> auth.exchangeAccessKey(ACCESS_KEY, new AccessKeyLoginOptions(mapOf("k", "v"))));
       return null;
     })).isEqualTo("Bearer " + PROJECT_ID + ":" + ACCESS_KEY);
+    assertThat(authHeader(client, base -> {
+      catchThrowable(() -> auth.exchangeAccessKeyWithResponse(ACCESS_KEY));
+      return null;
+    })).isEqualTo("Bearer " + PROJECT_ID + ":" + ACCESS_KEY);
   }
 
   private static Client client(String managementKey, String authManagementKey) {
