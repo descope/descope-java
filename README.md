@@ -71,13 +71,14 @@ These sections show how to use the SDK to perform various authentication/authori
 1. [OTP Authentication](#otp-authentication)
 2. [Magic Link](#magic-link)
 3. [Enchanted Link](#enchanted-link)
-4. [OAuth](#oauth)
-5. [SSO/SAML](#ssosaml)
-6. [TOTP Authentication](#totp-authentication)
-7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+4. [NOTP (WhatsApp)](#notp-whatsapp)
+5. [OAuth](#oauth)
+6. [SSO/SAML](#ssosaml)
+7. [TOTP Authentication](#totp-authentication)
+8. [Passwords](#passwords)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -272,6 +273,65 @@ try {
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### NOTP (WhatsApp)
+
+Using NOTP, users authenticate by sending a message from their own phone through a messaging provider
+(currently WhatsApp) instead of receiving a code. Start the process with `sign up`, `sign in` or
+`sign up or in`, then show the user the returned `redirectUrl` (a link to the provider app) or the QR code
+`image`. The login ID is optional for `sign in` and `sign up or in`, since it can be taken from the message.
+
+```java
+NOTPService ns = descopeClient.getAuthenticationServices().getNotpService();
+NOTPResponse res = null;
+try {
+    res = ns.signUpOrIn(NOTPProvider.WHATSAPP, "+12025550123");
+    // Or: ns.signUp(NOTPProvider.WHATSAPP, "+12025550123", user)
+    // Or: ns.signIn(NOTPProvider.WHATSAPP, "+12025550123", loginOptions)
+    String redirectUrl = res.getRedirectUrl();
+    String qrCodeImage = res.getImage();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+Then poll for a valid session using the `pendingRef`. A session is returned only after the user sent the message.
+
+```java
+// Poll for a certain number of tries / time frame
+for (int i = retriesCount; i > 0; i--) {
+    try {
+        AuthenticationInfo info = ns.getSession(res.getPendingRef());
+        break;
+    } catch (DescopeException de) {
+        if (i > 1) {
+            // Poll again after X seconds
+            TimeUnit.SECONDS.sleep(retryInterval);
+            continue;
+        }
+        else {
+            // Handle the error
+            break;
+        }
+    }
+}
+
+```
+
+A signed-in user can update their phone the same way, using their refresh token.
+
+```java
+try {
+    UpdateOptions updateOptions = new UpdateOptions(true, false); // add to login IDs, don't merge
+    NOTPResponse res = ns.updateUserPhone(NOTPProvider.WHATSAPP, loginId, "+12025550123", refreshToken,
+        updateOptions);
+    // Show res.getRedirectUrl() or res.getImage(), then poll ns.getSession(res.getPendingRef())
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
 
 ### OAuth
 
