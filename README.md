@@ -74,10 +74,11 @@ These sections show how to use the SDK to perform various authentication/authori
 4. [OAuth](#oauth)
 5. [SSO/SAML](#ssosaml)
 6. [TOTP Authentication](#totp-authentication)
-7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+7. [Recovery Codes](#recovery-codes)
+8. [Passwords](#passwords)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -404,6 +405,24 @@ try {
 ```
 
 The session and refresh JWTs should be returned to the caller, and passed with every request in the session. Read more on [session validation](#session-validation)
+
+### Recovery Codes
+
+A signed-in user can generate a new set of recovery codes, to be shown to them once and kept somewhere safe.
+
+```java
+RecoveryCodesService rcs = descopeClient.getAuthenticationServices().getRecoveryCodesService();
+
+try {
+    // The refresh token of the signed-in user is required
+    RecoveryCodesResponse resp = rcs.generate("desmond@descope.com", refreshToken);
+    for (RecoveryCode code : resp.getCodes()) {
+        // code.getCode()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
 
 ### Passwords
 
