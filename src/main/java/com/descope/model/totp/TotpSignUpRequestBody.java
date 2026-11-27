@@ -13,4 +13,9 @@ import lombok.NoArgsConstructor;
 public class TotpSignUpRequestBody {
   private String loginId;
   private User user;
+  private String ssoAppId;
+
+  public TotpSignUpRequestBody(String loginId, User user) {
+    this(loginId, user, null);
+  }
 }

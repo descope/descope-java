@@ -22,6 +22,21 @@ public interface TOTPService {
       throws DescopeException;
 
   /**
+   * Create a new user, and create a seed for it.
+   *
+   * @param loginId  - User login ID
+   * @param user     - {@link User User}
+   * @param ssoAppId - optional SSO application ID
+   * @return value will allow to connect it to an authenticator app
+   * @throws DescopeException - error upon failure
+   */
+  TOTPResponse signUp(
+      String loginId,
+      User user,
+      String ssoAppId)
+      throws DescopeException;
+
+  /**
    * Use to verify a SignIn/SignUp based on the given loginID.
    *
    * @param loginId      - User login ID
