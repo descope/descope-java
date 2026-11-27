@@ -1,9 +1,12 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_ASYNC_RESULT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_ASYNC_RUN_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_DELETE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_LIST_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.FLOW_RUN_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
@@ -14,11 +17,15 @@ import com.descope.model.client.Client;
 import com.descope.model.flow.Flow;
 import com.descope.model.flow.FlowResponse;
 import com.descope.model.flow.FlowsResponse;
+import com.descope.model.flow.ManagementFlowAsyncResponse;
+import com.descope.model.flow.ManagementFlowOptions;
+import com.descope.model.flow.ManagementFlowResponse;
 import com.descope.model.flow.Screen;
 import com.descope.model.flow.Theme;
 import com.descope.model.flow.ThemeResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.FlowService;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
@@ -34,6 +41,51 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
   public FlowsResponse listFlows() throws DescopeException {
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(FLOW_LIST_LINK), null, FlowsResponse.class);
+  }
+
+  @Override
+  public FlowsResponse listFlows(List<String> ids) throws DescopeException {
+    Map<String, Object> request = new HashMap<>();
+    if (ids != null) {
+      request.put("ids", ids);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(FLOW_LIST_LINK), request, FlowsResponse.class);
+  }
+
+  @Override
+  public ManagementFlowResponse runManagementFlow(String flowId, ManagementFlowOptions options)
+      throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(FLOW_RUN_LINK), runFlowRequest(flowId, options), ManagementFlowResponse.class);
+  }
+
+  @Override
+  public String runManagementFlowAsync(String flowId, ManagementFlowOptions options) throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(FLOW_ASYNC_RUN_LINK), runFlowRequest(flowId, options),
+        ManagementFlowAsyncResponse.class).getExecutionId();
+  }
+
+  @Override
+  public ManagementFlowResponse getManagementFlowAsyncResult(String executionId) throws DescopeException {
+    if (StringUtils.isBlank(executionId)) {
+      throw ServerCommonException.invalidArgument("ExecutionID");
+    }
+    Map<String, Object> request = mapOf("executionId", executionId);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(FLOW_ASYNC_RESULT_LINK), request, ManagementFlowResponse.class);
+  }
+
+  private static Map<String, Object> runFlowRequest(String flowId, ManagementFlowOptions options) {
+    if (StringUtils.isBlank(flowId)) {
+      throw ServerCommonException.invalidArgument("FlowID");
+    }
+    Map<String, Object> request = mapOf("flowId", flowId);
+    if (options != null) {
+      request.put("options", options);
+    }
+    return request;
   }
 
   @Override
