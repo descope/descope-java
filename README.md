@@ -525,7 +525,7 @@ try {
     WebAuthnTransactionResponse signIn = ws.signInStart(loginId, origin, null, loginOptions, passkeyOptions);
     info = ws.signInFinish(new WebAuthnFinishRequest(signIn.getTransactionId(), browserResponse));
 
-    // Sign up or in: call signUpFinish when getCreate() is true, signInFinish otherwise
+    // Sign up or in: call signUpFinish when isCreate() is true, signInFinish otherwise
     WebAuthnTransactionResponse signUpOrIn = ws.signUpOrInStart(loginId, origin, null, loginOptions, ssoAppId,
         passkeyOptions, "My laptop");
 } catch (DescopeException de) {
