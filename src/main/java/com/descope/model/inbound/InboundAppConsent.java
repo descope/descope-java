@@ -22,8 +22,8 @@ public class InboundAppConsent {
   /** Epoch seconds; 0 means the consent never expires. */
   @JsonProperty("ExpireTime")
   @JsonAlias("expireTime")
-  private Integer expireTime;
-  private Integer modifiedTime;
+  private Long expireTime;
+  private Long modifiedTime;
   /** Empty for an explicit consent, "idJag" for an identity recorded by a Cross-App Access exchange. */
   private String authMethod;
   /** True when an admin blocked this "idJag" identity. */

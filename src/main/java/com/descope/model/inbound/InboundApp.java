@@ -44,7 +44,7 @@ public class InboundApp {
   private InboundAppScopeClaimMapping[] scopeClaimMapping;
   private InboundAppMtlsClientAuthMethods mtlsClientAuthMethods;
   /** Epoch seconds. */
-  private Integer createdTime;
+  private Long createdTime;
   private Boolean forceDpop;
   private InboundAppRarSettings rarSettings;
   private Map<String, InboundAppIdJagTargetClient> idJagTargetClients;

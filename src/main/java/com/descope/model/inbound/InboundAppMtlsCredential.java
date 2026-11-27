@@ -17,5 +17,5 @@ public class InboundAppMtlsCredential {
   private String subjectDn;
   private String pem;
   private String thumbprint;
-  private Integer createdAt;
+  private Long createdAt;
 }

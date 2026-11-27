@@ -16,7 +16,7 @@ public class InboundAppSecretMeta {
   /** "active", "disabled" or "expired". */
   private String status;
   /** Epoch seconds; 0 means the secret never expires. */
-  private Integer expireTime;
+  private Long expireTime;
   /** Epoch seconds. */
-  private Integer createdTime;
+  private Long createdTime;
 }

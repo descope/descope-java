@@ -454,7 +454,8 @@ class InboundAppsServiceImplTest {
         + "\"workloadClientAssertions\":[{\"federationType\":\"oidc\",\"issuer\":\"i\"}],\"forcePar\":true,"
         + "\"forceMtls\":true,\"authorizationCodeDisabled\":true,\"clientCredentialsDisabled\":true,"
         + "\"refreshTokenDisabled\":true,\"jwtBearerDisabled\":true,\"deviceCodeDisabled\":true,"
-        + "\"tokenExchangeDisabled\":true,\"cibaEnabled\":true,\"tags\":[\"tag\"],\"noScopeBehavior\":\"grantAllScopes\","
+        + "\"tokenExchangeDisabled\":true,\"cibaEnabled\":true,\"tags\":[\"tag\"],"
+        + "\"noScopeBehavior\":\"grantAllScopes\","
         + "\"defaultScopes\":[\"ds\"],\"agentic\":true,\"createdBy\":\"Owner\",\"unknownField\":1}";
     InboundApp[] app = new InboundApp[1];
     ClassicHttpRequest sent = send(response, () -> app[0] = keyedService.loadApplication("a"));
@@ -482,8 +483,8 @@ class InboundAppsServiceImplTest {
     assertTrue(a.getForcePkce());
     assertTrue(a.getAllowPartialScopes());
     assertEquals("idToken", a.getScopeClaimMapping()[0].getClaimTargets().get("c").getTokens()[0]);
-    assertEquals(7, a.getMtlsClientAuthMethods().getSelfSignedTlsClientAuth().getCredentials()[0].getCreatedAt());
-    assertEquals(1700000000, a.getCreatedTime());
+    assertEquals(7L, a.getMtlsClientAuthMethods().getSelfSignedTlsClientAuth().getCredentials()[0].getCreatedAt());
+    assertEquals(1700000000L, a.getCreatedTime());
     assertTrue(a.getForceDpop());
     assertEquals("r", a.getRarSettings().getSchemas()[0].getType());
     assertEquals("y", a.getIdJagTargetClients().get("x").getTargetClientId());
@@ -529,7 +530,7 @@ class InboundAppsServiceImplTest {
     InboundAppAddSecretResponse[] res = new InboundAppAddSecretResponse[1];
     ClassicHttpRequest sent = send("{\"meta\":{\"id\":\"sid\",\"name\":\"n\",\"status\":\"active\","
         + "\"expireTime\":100,\"createdTime\":50},\"cleartext\":\"clear\"}",
-        () -> res[0] = keyedService.addApplicationSecret("a", "n", 100));
+        () -> res[0] = keyedService.addApplicationSecret("a", "n", 100L));
     assertRequest(sent, "POST", "/v1/mgmt/thirdparty/app/secret/add");
     Map<?, ?> body = body(sent);
     assertEquals("a", body.get("id"));
@@ -540,8 +541,8 @@ class InboundAppsServiceImplTest {
     assertEquals("sid", meta.getId());
     assertEquals("n", meta.getName());
     assertEquals("active", meta.getStatus());
-    assertEquals(100, meta.getExpireTime());
-    assertEquals(50, meta.getCreatedTime());
+    assertEquals(100L, meta.getExpireTime());
+    assertEquals(50L, meta.getCreatedTime());
 
     sent = send("{}", () -> keyedService.addApplicationSecret("a", "n", null));
     assertFalse(body(sent).containsKey("expireTime"));
@@ -567,8 +568,8 @@ class InboundAppsServiceImplTest {
     assertEquals("s2", res[0][0].getId());
     assertEquals("other", res[0][0].getName());
     assertEquals("active", res[0][0].getStatus());
-    assertEquals(0, res[0][0].getExpireTime());
-    assertEquals(5, res[0][0].getCreatedTime());
+    assertEquals(0L, res[0][0].getExpireTime());
+    assertEquals(5L, res[0][0].getCreatedTime());
 
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> inboundAppsService.revokeApplicationSecret("", "n"));
@@ -612,7 +613,7 @@ class InboundAppsServiceImplTest {
         + "\"scopes\":[\"s\"],\"grantedBy\":\"g\",\"createdTime\":10,\"tenantId\":\"t\",\"ExpireTime\":20,"
         + "\"modifiedTime\":30,\"authMethod\":\"idJag\",\"blocked\":true}}",
         () -> res[0] = keyedService.createConsent(InboundAppConsentCreateRequest.builder().appId("a").userId("u")
-            .scopes(new String[] {"s"}).tenantId("t").expireTime(20).build()));
+            .scopes(new String[] {"s"}).tenantId("t").expireTime(20L).build()));
     assertRequest(sent, "POST", "/v1/mgmt/thirdparty/consents/create");
     Map<?, ?> body = body(sent);
     assertEquals("a", body.get("appId"));
@@ -628,14 +629,14 @@ class InboundAppsServiceImplTest {
     assertEquals("g", c.getGrantedBy());
     assertEquals(10, c.getCreatedTime());
     assertEquals("t", c.getTenantId());
-    assertEquals(20, c.getExpireTime());
-    assertEquals(30, c.getModifiedTime());
+    assertEquals(20L, c.getExpireTime());
+    assertEquals(30L, c.getModifiedTime());
     assertEquals("idJag", c.getAuthMethod());
     assertTrue(c.getBlocked());
 
     send("{\"consent\":{\"expireTime\":40}}", () -> res[0] = keyedService.createConsent(
         InboundAppConsentCreateRequest.builder().appId("a").userId("u").build()));
-    assertEquals(40, res[0].getExpireTime());
+    assertEquals(40L, res[0].getExpireTime());
 
     ServerCommonException thrown = assertThrows(ServerCommonException.class,
         () -> inboundAppsService.createConsent(null));

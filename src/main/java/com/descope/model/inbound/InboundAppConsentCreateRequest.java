@@ -19,5 +19,5 @@ public class InboundAppConsentCreateRequest {
   /** The user must be a member of this tenant. */
   private String tenantId;
   /** Epoch seconds; 0 or unset means the consent never expires. */
-  private Integer expireTime;
+  private Long expireTime;
 }

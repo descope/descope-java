@@ -1963,7 +1963,7 @@ try {
             .userId("user-id") // required
             .scopes(new String[] { "openid" }) // must include the app's mandatory scopes
             // .tenantId("tenant-id") // the user must be a member of this tenant
-            // .expireTime(1900000000) // epoch seconds, 0 never expires
+            // .expireTime(1900000000L) // epoch seconds, 0 never expires
             .build()
     );
 } catch (DescopeException de) {

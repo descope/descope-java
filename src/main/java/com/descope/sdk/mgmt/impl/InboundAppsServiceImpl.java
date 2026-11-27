@@ -162,7 +162,7 @@ public class InboundAppsServiceImpl extends ManagementsBase implements InboundAp
   }
 
   @Override
-  public InboundAppAddSecretResponse addApplicationSecret(String id, String name, Integer expireTime)
+  public InboundAppAddSecretResponse addApplicationSecret(String id, String name, Long expireTime)
       throws DescopeException {
     if (StringUtils.isBlank(id)) {
       throw ServerCommonException.invalidArgument("id");

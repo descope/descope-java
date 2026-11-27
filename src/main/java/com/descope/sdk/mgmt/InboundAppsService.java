@@ -59,7 +59,7 @@ public interface InboundAppsService {
    * @return The secret's metadata and its cleartext value, which is returned only here and when revealed.
    * @throws DescopeException If there occurs any exception, a subtype of this exception will be thrown.
    */
-  InboundAppAddSecretResponse addApplicationSecret(String id, String name, Integer expireTime)
+  InboundAppAddSecretResponse addApplicationSecret(String id, String name, Long expireTime)
       throws DescopeException;
 
   /**
