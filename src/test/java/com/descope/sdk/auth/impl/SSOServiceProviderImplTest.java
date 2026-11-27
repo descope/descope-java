@@ -1,8 +1,8 @@
 package com.descope.sdk.auth.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static com.descope.sdk.TestUtils.MOCK_SIGNING_KEY;
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
