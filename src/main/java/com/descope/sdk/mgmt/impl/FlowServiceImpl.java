@@ -6,6 +6,7 @@ import static com.descope.literals.Routes.ManagementEndPoints.FLOW_IMPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.FLOW_LIST_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_EXPORT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.THEME_IMPORT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.THEME_TENANT_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
 import com.descope.exception.DescopeException;
@@ -15,13 +16,18 @@ import com.descope.model.flow.Flow;
 import com.descope.model.flow.FlowResponse;
 import com.descope.model.flow.FlowsResponse;
 import com.descope.model.flow.Screen;
+import com.descope.model.flow.TenantTheme;
 import com.descope.model.flow.Theme;
 import com.descope.model.flow.ThemeResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.FlowService;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 class FlowServiceImpl extends ManagementsBase implements FlowService {
@@ -81,5 +87,36 @@ class FlowServiceImpl extends ManagementsBase implements FlowService {
     Map<String, Object> request = mapOf("theme", theme);
     ApiProxy apiProxy = getApiProxy();
     return apiProxy.post(getUri(THEME_IMPORT_LINK), request, ThemeResponse.class).getTheme();
+  }
+
+  @Override
+  public TenantTheme getTenantTheme(String tenantId) throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(getTenantThemeUri(tenantId), TenantTheme.class);
+  }
+
+  @Override
+  public TenantTheme setTenantTheme(String tenantId, TenantTheme theme) throws DescopeException {
+    URI uri = getTenantThemeUri(tenantId);
+    if (theme == null || MapUtils.isEmpty(theme.getStyles())) {
+      throw ServerCommonException.invalidArgument("Styles");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(uri, theme, TenantTheme.class);
+  }
+
+  @Override
+  public void deleteTenantTheme(String tenantId) throws DescopeException {
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.delete(getTenantThemeUri(tenantId), null, Void.class);
+  }
+
+  @SneakyThrows
+  private URI getTenantThemeUri(String tenantId) {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantID");
+    }
+    // Encode as a single path segment
+    return getUri(THEME_TENANT_LINK + URLEncoder.encode(tenantId, "UTF-8").replace("+", "%20"));
   }
 }

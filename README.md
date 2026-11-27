@@ -1355,7 +1355,7 @@ try {
 
 ### Manage Flows
 
-You can list, import and export flows and screens, or the project theme:
+You can list, import and export flows and screens, or the project theme, and manage a tenant's own theme:
 
 ```java
 FlowService fs = descopeClient.getManagementServices().getFlowService();
@@ -1406,6 +1406,32 @@ try {
 try {
     Theme theme = fs.importTheme(t);
     System.out.println(theme.getId());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Get the styles a tenant overrides the project theme with (not found when the tenant has none)
+try {
+    TenantTheme tt = fs.getTenantTheme("my-tenant-id");
+    Map<String, Map<String, Object>> styles = tt.getStyles();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create or replace a tenant's styles, keyed by flavor ("light", "dark", "<styleId>-light", ...).
+// A logo must be given as a base64 data URI.
+try {
+    Map<String, Map<String, Object>> styles = new HashMap<>();
+    styles.put("light", lightStyle);
+    styles.put("dark", darkStyle);
+    TenantTheme stored = fs.setTenantTheme("my-tenant-id", TenantTheme.builder().styles(styles).build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete a tenant's theme, so its flows use the project theme again
+try {
+    fs.deleteTenantTheme("my-tenant-id");
 } catch (DescopeException de) {
     // Handle the error
 }
