@@ -16,4 +16,13 @@ public class AuthenticationPasswordResetRequestBody {
   @JsonProperty("redirectUrl")
   private String redirectURL;
   private Map<String, String> templateOptions;
+  private String providerId;
+  private String templateId;
+  private String locale;
+  private Boolean useRecovery;
+
+  public AuthenticationPasswordResetRequestBody(String loginId, String redirectURL,
+      Map<String, String> templateOptions) {
+    this(loginId, redirectURL, templateOptions, null, null, null, null);
+  }
 }

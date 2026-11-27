@@ -430,6 +430,16 @@ try {
     // Handle the error
 }
 
+// Optionally pass custom claims and template options
+SignUpOptions signUpOptions = SignUpOptions.builder()
+    .customClaims(Collections.singletonMap("claim", "value"))
+    .build();
+try {
+    AuthenticationInfo info = ps.signUp(loginId, user, password, signUpOptions);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 The user can later sign in using the same loginID and password.
@@ -437,6 +447,14 @@ The user can later sign in using the same loginID and password.
 ```java
 try {
     AuthenticationInfo info = ps.signIn(loginId, password);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Optionally pass an SSO app ID and login options. Step-up and MFA also require the user's refresh token
+LoginOptions loginOptions = LoginOptions.builder().stepup(true).build();
+try {
+    AuthenticationInfo info = ps.signIn(loginId, password, null, loginOptions, refreshToken);
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -466,6 +484,18 @@ try {
     // Handle the error
 }
 
+// Optionally pass reset options and read details of the prompt that was sent
+PasswordResetOptions options = PasswordResetOptions.builder()
+    .templateId("my-template-id")
+    .locale("en")
+    .build();
+try {
+    PasswordResetResponse res = ps.sendPasswordReset(loginId, redirectUrl, null, options);
+    String maskedEmail = res.getMaskedEmail();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 ```
 
 The magic link, in this case, must then be verified like any other magic link (see the [magic link section](#magic-link) for more details).
@@ -489,6 +519,27 @@ Alternatively, it is also possible to replace an existing active password with a
 // Replaces the user's current password with a new one
 try {
     AuthenticationInfo info = ps.replaceUserPassword(loginId, oldPassword, newPassword);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Optionally revoke the user's other sessions
+try {
+    AuthenticationInfo info = ps.replaceUserPassword(loginId, oldPassword, newPassword, true, null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+```
+
+The password policy configured in the Descope console can be fetched for client-side validation.
+
+```java
+try {
+    PasswordPolicy policy = ps.getPasswordPolicy();
+    if (Boolean.TRUE.equals(policy.getStrengthScoreEnabled())) {
+        Integer minStrengthScore = policy.getStrengthScore();
+    }
 } catch (DescopeException de) {
     // Handle the error
 }
