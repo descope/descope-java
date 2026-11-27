@@ -1,5 +1,6 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_AUTH_TYPE_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_MAPPING_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_METADATA_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_CONFIGURE_OIDC_SETTINGS_LINK;
@@ -10,10 +11,14 @@ import static com.descope.literals.Routes.ManagementEndPoints.SSO_DELETE_SETTING
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_ALL_SETTINGS_V2_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_GET_SETTINGS_V2_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_NEW_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_RECALCULATE_MAPPINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.SSO_REDIRECT_URL_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_XAA_ALL_SETTINGS_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.SSO_XAA_SETTINGS_LINK;
 import static com.descope.utils.CollectionUtils.mapOf;
 
+import com.descope.enums.TenantAuthType;
 import com.descope.exception.DescopeException;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
@@ -25,6 +30,9 @@ import com.descope.model.sso.SSOSAMLSettings;
 import com.descope.model.sso.SSOSAMLSettingsByMetadata;
 import com.descope.model.sso.SSOSettingsResponse;
 import com.descope.model.sso.SSOTenantSettingsResponse;
+import com.descope.model.sso.XAAAllSettingsResponse;
+import com.descope.model.sso.XAASettings;
+import com.descope.model.sso.XAASettingsResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.SsoService;
 import java.util.HashMap;
@@ -69,6 +77,12 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
   @Override
   public void configureSAMLSettings(String tenantId, SSOSAMLSettings settings, String redirectUrl, List<String> domains)
       throws DescopeException {
+    configureSAMLSettings(tenantId, settings, redirectUrl, domains, null);
+  }
+
+  @Override
+  public void configureSAMLSettings(String tenantId, SSOSAMLSettings settings, String redirectUrl, List<String> domains,
+      String ssoId) throws DescopeException {
     if (StringUtils.isBlank(tenantId)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
@@ -86,6 +100,9 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
     }
     Map<String, Object> req = mapOf("tenantId", tenantId, "redirectUrl", redirectUrl, "domains", domains,
         "settings", settings);
+    if (StringUtils.isNotBlank(ssoId)) {
+      req.put("ssoId", ssoId);
+    }
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_SAML_SETTINGS_LINK), req, Void.class);
   }
@@ -93,6 +110,12 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
   @Override
   public void configureSAMLSettingsByMetadata(String tenantId, SSOSAMLSettingsByMetadata settings, String redirectUrl,
       List<String> domains) throws DescopeException {
+    configureSAMLSettingsByMetadata(tenantId, settings, redirectUrl, domains, null);
+  }
+
+  @Override
+  public void configureSAMLSettingsByMetadata(String tenantId, SSOSAMLSettingsByMetadata settings, String redirectUrl,
+      List<String> domains, String ssoId) throws DescopeException {
     if (StringUtils.isBlank(tenantId)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
@@ -104,12 +127,21 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
     }
     Map<String, Object> req = mapOf("tenantId", tenantId, "redirectUrl", redirectUrl, "domains", domains,
         "settings", settings);
+    if (StringUtils.isNotBlank(ssoId)) {
+      req.put("ssoId", ssoId);
+    }
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_SAML_SETTINGS_BY_MD_LINK), req, Void.class);    
   }
 
   @Override
   public void configureOIDCSettings(String tenantId, SSOOIDCSettings settings, List<String> domains)
+      throws DescopeException {
+    configureOIDCSettings(tenantId, settings, domains, null);
+  }
+
+  @Override
+  public void configureOIDCSettings(String tenantId, SSOOIDCSettings settings, List<String> domains, String ssoId)
       throws DescopeException {
     if (StringUtils.isBlank(tenantId)) {
       throw ServerCommonException.invalidArgument("TenantId");
@@ -118,18 +150,132 @@ class SsoServiceImpl extends ManagementsBase implements SsoService {
       throw ServerCommonException.invalidArgument("settings");
     }
     Map<String, Object> req = mapOf("tenantId", tenantId, "domains", domains, "settings", settings);
+    if (StringUtils.isNotBlank(ssoId)) {
+      req.put("ssoId", ssoId);
+    }
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(getUri(SSO_CONFIGURE_OIDC_SETTINGS_LINK), req, Void.class);        
   }
 
   @Override
   public void deleteSettings(String tenantId) throws DescopeException {
+    deleteSettings(tenantId, null);
+  }
+
+  @Override
+  public void deleteSettings(String tenantId, String ssoId) throws DescopeException {
     if (StringUtils.isBlank(tenantId)) {
       throw ServerCommonException.invalidArgument("TenantId");
     }
     Map<String, String> request = mapOf("tenantId", tenantId);
+    if (StringUtils.isNotBlank(ssoId)) {
+      request.put("ssoId", ssoId);
+    }
     ApiProxy apiProxy = getApiProxy();
     apiProxy.delete(getQueryParamUri(SSO_DELETE_SETTINGS_LINK, request), null, Void.class);
+  }
+
+  @Override
+  public void configureAuthType(String tenantId, TenantAuthType authType, String ssoId) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    if (authType == null) {
+      throw ServerCommonException.invalidArgument("AuthType");
+    }
+    Map<String, Object> req = mapOf("tenantId", tenantId, "authType", authType.getValue());
+    if (StringUtils.isNotBlank(ssoId)) {
+      req.put("ssoId", ssoId);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(SSO_CONFIGURE_AUTH_TYPE_LINK), req, Void.class);
+  }
+
+  @Override
+  public SSOTenantSettingsResponse newSettings(String tenantId, String ssoId, String displayName)
+      throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    if (StringUtils.isBlank(displayName)) {
+      throw ServerCommonException.invalidArgument("DisplayName");
+    }
+    Map<String, Object> req = mapOf("tenantId", tenantId, "displayName", displayName);
+    if (StringUtils.isNotBlank(ssoId)) {
+      req.put("ssoId", ssoId);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(SSO_NEW_SETTINGS_LINK), req, SSOTenantSettingsResponse.class);
+  }
+
+  @Override
+  public XAASettingsResponse loadXAASettings(String tenantId, String ssoId) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    Map<String, String> params = mapOf("tenantId", tenantId);
+    if (StringUtils.isNotBlank(ssoId)) {
+      params.put("ssoId", ssoId);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(getQueryParamUri(SSO_XAA_SETTINGS_LINK, params), XAASettingsResponse.class);
+  }
+
+  @Override
+  public XAAAllSettingsResponse loadAllXAASettings(String tenantId) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    Map<String, String> params = mapOf("tenantId", tenantId);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.get(getQueryParamUri(SSO_XAA_ALL_SETTINGS_LINK, params), XAAAllSettingsResponse.class);
+  }
+
+  @Override
+  public void configureXAASettings(String tenantId, XAASettings settings, String ssoId) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    if (settings == null) {
+      throw ServerCommonException.invalidArgument("settings");
+    }
+    Map<String, Object> req = mapOf("tenantId", tenantId);
+    if (StringUtils.isNotBlank(ssoId)) {
+      req.put("ssoId", ssoId);
+    }
+    putIfNotNull(req, "enabled", settings.getEnabled());
+    putIfNotNull(req, "settings", settings.getSettings());
+    putIfNotNull(req, "roleMappings", settings.getRoleMappings());
+    putIfNotNull(req, "defaultSSORoles", settings.getDefaultSSORoles());
+    putIfNotNull(req, "fgaMappings", settings.getFgaMappings());
+    putIfNotNull(req, "groupsPriority", settings.getGroupsPriority());
+    putIfNotNull(req, "groupPriorityEnabled", settings.getGroupPriorityEnabled());
+    putIfNotNull(req, "allowOverrideRoles", settings.getAllowOverrideRoles());
+    putIfNotNull(req, "providerID", settings.getProviderID());
+    putIfNotNull(req, "authenticationOnly", settings.getAuthenticationOnly());
+    putIfNotNull(req, "defaultFgaRelations", settings.getDefaultFgaRelations());
+    putIfNotNull(req, "replaceDefaultFgaRelations", settings.getReplaceDefaultFgaRelations());
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(getUri(SSO_XAA_SETTINGS_LINK), req, Void.class);
+  }
+
+  @Override
+  public void deleteXAASettings(String tenantId, String ssoId) throws DescopeException {
+    if (StringUtils.isBlank(tenantId)) {
+      throw ServerCommonException.invalidArgument("TenantId");
+    }
+    Map<String, String> params = mapOf("tenantId", tenantId);
+    if (StringUtils.isNotBlank(ssoId)) {
+      params.put("ssoId", ssoId);
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.delete(getQueryParamUri(SSO_XAA_SETTINGS_LINK, params), null, Void.class);
+  }
+
+  private static void putIfNotNull(Map<String, Object> req, String key, Object value) {
+    if (value != null) {
+      req.put(key, value);
+    }
   }
 
   @Override

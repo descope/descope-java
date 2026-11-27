@@ -1,6 +1,7 @@
 package com.descope.model.ssoapp;
 
 import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +12,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SAMLApplicationRequest {
+  public static final String SIGNATURE_ALGORITHM_SHA256 = "sha256";
+  public static final String SLO_BINDING_REDIRECT = "redirect";
+  public static final String SLO_BINDING_POST = "post";
+  public static final String SLO_BINDING_SOAP = "soap";
+  public static final String SLO_PROPAGATION_NONE = "none";
+  public static final String SLO_PROPAGATION_ALL_APPS = "allApps";
+  public static final String SLO_SCOPE_SESSION = "session";
+  public static final String SLO_SCOPE_ALL_SESSIONS = "allSessions";
+
   /**
    * Optional sso application ID. Will be auto-generated if not given. Must be unique per project.
    */
@@ -91,4 +101,62 @@ public class SAMLApplicationRequest {
    * Optional Target URL to which the user will be redirected upon logout completion.
    */
   private String logoutRedirectURL;
+  /**
+   * Optional URL to redirect to on error.
+   */
+  private String errorRedirectUrl;
+  /**
+   * Optional signature algorithm for IdP-initiated flows: {@link #SIGNATURE_ALGORITHM_SHA256}, or empty for the
+   * default SHA-1.
+   */
+  private String defaultSignatureAlgorithm;
+  /**
+   * Optional custom attribute values of the app, keyed by attribute name.
+   */
+  private Map<String, Object> customAttributes;
+  /**
+   * Optional sso application logo for dark mode.
+   */
+  private String darkLogo;
+  /**
+   * Optional project-level roles that grant access to this application, in addition to users assigned directly or
+   * through their tenant. Tenant scoped roles are rejected.
+   */
+  private List<String> assignedRoleIds;
+  /**
+   * Optional SAML Single Logout (SLO). Off by default; an update without it turns it off.
+   */
+  private Boolean singleLogoutEnabled;
+  /**
+   * Optional SP SingleLogoutService URL. Required when single logout is on and the app is configured manually; empty
+   * takes it from the SP metadata.
+   */
+  private String spSingleLogoutUrl;
+  /**
+   * Optional binding of spSingleLogoutUrl, one of the {@code SLO_BINDING_*} values.
+   */
+  private String spSingleLogoutBinding;
+  /**
+   * Optional reach of a logout the app's SP starts, one of the {@code SLO_PROPAGATION_*} values. Default: none.
+   */
+  private String singleLogoutPropagation;
+  /**
+   * Optional sessions a logout the app's SP starts ends, one of the {@code SLO_SCOPE_*} values. Default: session.
+   */
+  private String singleLogoutScope;
+  /**
+   * Optional: a Force Logout of the user sends the app a LogoutRequest. Needs single logout with the soap binding.
+   */
+  private Boolean notifyOnForceLogout;
+
+  public SAMLApplicationRequest(String id, String name, String description, Boolean enabled, String logo,
+      String loginPageUrl, Boolean useMetadataInfo, String metadataUrl, String entityId, String acsUrl,
+      String certificate, List<SAMLIDPAttributeMappingInfo> attributeMapping,
+      List<SAMLIDPGroupsMappingInfo> groupsMapping, List<String> acsAllowedCallbacks, String subjectNameIdType,
+      String subjectNameIdFormat, String defaultRelayState, Boolean forceAuthentication, String logoutRedirectURL) {
+    this(id, name, description, enabled, logo, loginPageUrl, useMetadataInfo, metadataUrl, entityId, acsUrl,
+        certificate, attributeMapping, groupsMapping, acsAllowedCallbacks, subjectNameIdType, subjectNameIdFormat,
+        defaultRelayState, forceAuthentication, logoutRedirectURL, null, null, null, null, null, null, null, null, null,
+        null, null);
+  }
 }

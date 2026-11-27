@@ -289,10 +289,23 @@ public class Routes {
     // SSO Application (parity)
     public static final String SSO_APPLICATION_SECRET_LINK = "/v1/mgmt/sso/idp/app/secret";
     public static final String SSO_APPLICATION_ROTATE_LINK = "/v1/mgmt/sso/idp/app/rotate";
+    public static final String SSO_APPLICATION_SECRET_ADD_LINK = "/v1/mgmt/sso/idp/app/secret/add";
+    public static final String SSO_APPLICATION_SECRET_REVOKE_LINK = "/v1/mgmt/sso/idp/app/secret/revoke";
+    public static final String SSO_APPLICATION_WSFED_CREATE_LINK = "/v1/mgmt/sso/idp/app/wsfed/create";
+    public static final String SSO_APPLICATION_WSFED_UPDATE_LINK = "/v1/mgmt/sso/idp/app/wsfed/update";
+    public static final String SSO_APPLICATION_CUSTOM_ATTRIBUTES_LINK = "/v1/mgmt/sso/idp/app/customattributes";
+    public static final String SSO_APPLICATION_CREATE_CUSTOM_ATTRIBUTES_LINK =
+        "/v1/mgmt/sso/idp/app/customattribute/create";
+    public static final String SSO_APPLICATION_DELETE_CUSTOM_ATTRIBUTES_LINK =
+        "/v1/mgmt/sso/idp/app/customattribute/delete";
 
     // SSO settings (parity)
     public static final String SSO_REDIRECT_URL_LINK = "/v1/mgmt/sso/redirect";
     public static final String SSO_RECALCULATE_MAPPINGS_LINK = "/v1/mgmt/sso/recalculate-mappings";
+    public static final String SSO_CONFIGURE_AUTH_TYPE_LINK = "/v1/mgmt/sso/settings/authtype";
+    public static final String SSO_NEW_SETTINGS_LINK = "/v1/mgmt/sso/settings/new";
+    public static final String SSO_XAA_SETTINGS_LINK = "/v1/mgmt/sso/xaa/settings";
+    public static final String SSO_XAA_ALL_SETTINGS_LINK = "/v1/mgmt/sso/xaa/settings/all";
 
     // JWT impersonation (parity)
     public static final String IMPERSONATE_LINK = "/v1/mgmt/impersonate";
