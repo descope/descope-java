@@ -354,6 +354,24 @@ The session and refresh JWTs should be returned to the caller, and passed with e
 
 When `info.getSsoAuthenticationOnly()` is true (login through an authentication-only SSO configuration), no session was issued and `info.getToken()` is null: do not treat the result as a login.
 
+The SSO service provider can also pass the email that initiated the login, and login options such as an SSO application ID and tenant ID:
+
+```java
+SSOServiceProvider sp = descopeClient.getAuthenticationServices().getSsoServiceProvider();
+
+try {
+    LoginOptions loginOptions = LoginOptions.builder().ssoAppId("sso-app-id").tenantId("my-tenant-ID").build();
+    String url = sp.start("my-tenant-ID", "https://my-app.com/handle-sso", null, loginOptions, null, null,
+        "user@example.com", false, "user@example.com");
+    // After the redirect back with a code
+    AuthenticationInfo info = sp.exchangeToken(code);
+    // ID of the tenant SSO configuration that performed the authentication
+    String tenantSSOID = info.getTenantSSOID();
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
 ### TOTP Authentication
 
 The user can authenticate using an authenticator app, such as Google Authenticator.
