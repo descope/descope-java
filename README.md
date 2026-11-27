@@ -1698,7 +1698,7 @@ var descopeClient = new DescopeClient(Config.builder()
 
 ### Manage Outbound Applications
 
-You can fetch, delete, and manage outbound application tokens:
+You can create outbound applications, fetch, upload and delete their tokens, and manage their SCIM configuration:
 
 ```java
 // Set up the outbound apps service
@@ -1739,6 +1739,134 @@ try {
             .userId("user-id") // required
             .build()
     );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create an outbound application
+try {
+    OutboundAppCreateResponse res = outboundAppsService.createApplication(
+        OutboundAppRequest.builder()
+            .name("My Outbound App") // required
+            // .id("optional-custom-id")
+            // .description("optional-description")
+            // .clientId("client-id")
+            // .clientSecret("client-secret")
+            // .discoveryUrl("https://provider.com/.well-known/openid-configuration")
+            // .authorizationUrl("https://provider.com/authorize")
+            // .authorizationUrlParams(Arrays.asList(OutboundAppURLParam.builder().key("k").value("v").build()))
+            // .tokenUrl("https://provider.com/token")
+            // .defaultScopes(Arrays.asList("read"))
+            // .pkce(true)
+            // .accessType(OutboundAppConstants.ACCESS_TYPE_OFFLINE)
+            // .prompt(Arrays.asList(OutboundAppConstants.PROMPT_CONSENT))
+            // .appType(OutboundAppConstants.APP_TYPE_OAUTH)
+            // .tokenEndpointAuthMethod(OutboundAppConstants.TOKEN_ENDPOINT_AUTH_METHOD_PRIVATE_KEY_JWT)
+            // .tokenEndpointAuthSigningAlg(OutboundAppConstants.TOKEN_ENDPOINT_AUTH_SIGNING_ALG_RS256)
+            // .useNonce(true)
+            .build()
+    );
+    OutboundApp app = res.getApp();
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create an outbound application from a template
+try {
+    OutboundApp app = outboundAppsService.createApplicationByTemplate(
+        CreateOutboundAppByTemplateRequest.builder()
+            .templateId("template-id") // required
+            // .clientId("client-id")
+            // .clientSecret("client-secret")
+            // .overrides(OutboundAppTemplateOverrides.builder().name("My App").build())
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// List the IDs of the apps for which a user has a valid token (tenant ID is optional)
+try {
+    List<String> appIds = outboundAppsService.listAppsWithUserToken("user-id", null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Upload a static API key for a user or a tenant on an apikey-type app
+try {
+    outboundAppsService.uploadUserAPIKey(
+        UploadOutboundAppUserAPIKeyRequest.builder()
+            .appId("app-id") // required
+            .userId("user-id") // required
+            .apiKey("api-key") // required
+            // .tenantId("tenant-id")
+            // .externalIdentifier("key-1") // store several keys per user
+            .build()
+    );
+    outboundAppsService.uploadTenantAPIKey(
+        UploadOutboundAppTenantAPIKeyRequest.builder()
+            .appId("app-id") // required
+            .tenantId("tenant-id") // required
+            .apiKey("api-key") // required
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Upload (migrate) an existing OAuth token for a user or a tenant
+try {
+    outboundAppsService.uploadUserToken(
+        UploadOutboundAppUserTokenRequest.builder()
+            .appId("app-id") // required
+            .userId("user-id") // required
+            .refreshToken("refresh-token")
+            .accessToken("access-token")
+            .accessTokenExpiry(1767225600) // epoch seconds
+            .scopes(Arrays.asList("read"))
+            // .verifyRefresh(true) // verify the refresh token with the provider before saving
+            .build()
+    );
+    outboundAppsService.uploadTenantToken(
+        UploadOutboundAppTenantTokenRequest.builder()
+            .appId("app-id") // required
+            .tenantId("tenant-id") // required
+            .refreshToken("refresh-token")
+            .build()
+    );
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Batch upload OAuth tokens (up to 500). All-or-nothing: if failures are returned, nothing was saved
+try {
+    List<OutboundAppTokenUploadFailure> failures = outboundAppsService.batchUploadUserTokens(Arrays.asList(
+        OutboundAppUserTokenUploadItem.builder().appId("app-id").userId("user-id").refreshToken("rt").build()));
+    failures = outboundAppsService.batchUploadTenantTokens(Arrays.asList(
+        OutboundAppTenantTokenUploadItem.builder().appId("app-id").tenantId("tenant-id").refreshToken("rt").build()));
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Manage the outbound SCIM configuration of an app
+try {
+    Map<String, Object> configuration = new HashMap<>();
+    configuration.put("baseUrl", "https://provider.com/scim/v2");
+    OutboundSCIMConfiguration scim = outboundAppsService.createSCIMConfiguration(
+        CreateOutboundSCIMConfigurationRequest.builder()
+            .appId("app-id") // required
+            .configuration(configuration) // required
+            .build()
+    );
+    scim = outboundAppsService.updateSCIMConfiguration(
+        UpdateOutboundSCIMConfigurationRequest.builder()
+            .appId("app-id") // required
+            .configuration(configuration)
+            .version(scim.getVersion()) // optional
+            .build()
+    );
+    scim = outboundAppsService.setSCIMEnabled("app-id", true);
+    scim = outboundAppsService.loadSCIMConfiguration("app-id");
 } catch (DescopeException de) {
     // Handle the error
 }

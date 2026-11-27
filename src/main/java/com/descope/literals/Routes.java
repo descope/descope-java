@@ -266,6 +266,30 @@ public class Routes {
         "/v1/mgmt/outbound/app/tenant/token";
     public static final String MANAGEMENT_FETCH_OUTBOUND_APP_TENANT_TOKEN_LATEST =
         "/v1/mgmt/outbound/app/tenant/token/latest";
+    public static final String MANAGEMENT_OUTBOUND_APP_CREATE_BY_TEMPLATE_LINK =
+        "/v1/mgmt/outbound/app/create/bytemplate";
+    public static final String MANAGEMENT_OUTBOUND_APP_LIST_WITH_USER_TOKEN_LINK =
+        "/v1/mgmt/outbound/apps-with-user-token";
+
+    // Outbound App token upload
+    public static final String MANAGEMENT_OUTBOUND_APP_UPLOAD_USER_API_KEY =
+        "/v1/mgmt/outbound/app/user/apikey/upload";
+    public static final String MANAGEMENT_OUTBOUND_APP_UPLOAD_TENANT_API_KEY =
+        "/v1/mgmt/outbound/app/tenant/apikey/upload";
+    public static final String MANAGEMENT_OUTBOUND_APP_UPLOAD_USER_TOKEN =
+        "/v1/mgmt/outbound/app/user/oauthtoken/upload";
+    public static final String MANAGEMENT_OUTBOUND_APP_UPLOAD_TENANT_TOKEN =
+        "/v1/mgmt/outbound/app/tenant/oauthtoken/upload";
+    public static final String MANAGEMENT_OUTBOUND_APP_BATCH_UPLOAD_USER_TOKENS =
+        "/v1/mgmt/outbound/app/user/oauthtoken/batch/upload";
+    public static final String MANAGEMENT_OUTBOUND_APP_BATCH_UPLOAD_TENANT_TOKENS =
+        "/v1/mgmt/outbound/app/tenant/oauthtoken/batch/upload";
+
+    // Outbound SCIM
+    public static final String MANAGEMENT_OUTBOUND_SCIM_CREATE = "/v1/mgmt/outbound/scim/create";
+    public static final String MANAGEMENT_OUTBOUND_SCIM_UPDATE = "/v1/mgmt/outbound/scim/update";
+    public static final String MANAGEMENT_OUTBOUND_SCIM_SET_ENABLED = "/v1/mgmt/outbound/scim/enabled/set";
+    public static final String MANAGEMENT_OUTBOUND_SCIM_LOAD = "/v1/mgmt/outbound/scim/";
 
     // License
     public static final String MANAGEMENT_LICENSE_LINK = "/v1/mgmt/license";
