@@ -21,4 +21,14 @@ public class TenantSearchRequest {
   @JsonProperty("tenantSelfProvisioningDomains")
   List<String> selfProvisioningDomains;
   String authType;
+  @JsonProperty("tenantSSODomains")
+  List<String> ssoDomains;
+  String parentTenantId;
+  Boolean topLevelOnly;
+
+  // Keeps the pre-existing all-args constructor binary compatible
+  public TenantSearchRequest(List<String> ids, List<String> names, Map<String, Object> customAttributes,
+      List<String> selfProvisioningDomains, String authType) {
+    this(ids, names, customAttributes, selfProvisioningDomains, authType, null, null, null);
+  }
 }

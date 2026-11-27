@@ -1,14 +1,18 @@
 package com.descope.sdk.mgmt.impl;
 
+import static com.descope.literals.Routes.ManagementEndPoints.CREATE_TENANTS_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.CREATE_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.DELETE_TENANTS_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.DELETE_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.GENERATE_SSO_CONFIGURATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.GET_TENANT_SETTINGS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_ALL_TENANTS_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.LOAD_TENANT_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.PATCH_TENANT_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.REVOKE_SSO_CONFIGURATION_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.TENANT_SEARCH_ALL_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.TENANT_UPDATE_DEFAULT_ROLES_LINK;
+import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANTS_BATCH_LINK;
 import static com.descope.literals.Routes.ManagementEndPoints.UPDATE_TENANT_LINK;
 import static com.descope.utils.CollectionUtils.addIfNotNull;
 import static com.descope.utils.CollectionUtils.mapOf;
@@ -18,15 +22,23 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.client.Client;
 import com.descope.model.tenant.Tenant;
 import com.descope.model.tenant.TenantSettings;
+import com.descope.model.tenant.request.CreateTenantRequest;
 import com.descope.model.tenant.request.GenerateTenantLinkRequest;
+import com.descope.model.tenant.request.PatchTenantRequest;
 import com.descope.model.tenant.request.TenantSearchRequest;
+import com.descope.model.tenant.request.UpdateTenantRequest;
+import com.descope.model.tenant.response.CreateTenantResponse;
+import com.descope.model.tenant.response.CreateTenantsBatchResponse;
+import com.descope.model.tenant.response.DeleteTenantsBatchResponse;
 import com.descope.model.tenant.response.GenerateTenantLinkResponse;
 import com.descope.model.tenant.response.GetAllTenantsResponse;
+import com.descope.model.tenant.response.UpdateTenantsBatchResponse;
 import com.descope.proxy.ApiProxy;
 import com.descope.sdk.mgmt.TenantService;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 @SuppressWarnings("checkstyle:OverloadMethodsDeclarationOrder")
@@ -81,6 +93,28 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
         .build());
   }
 
+  @Override
+  public String create(CreateTenantRequest request) throws DescopeException {
+    if (request == null || StringUtils.isBlank(request.getName())) {
+      throw ServerCommonException.invalidArgument("name");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    CreateTenantResponse response = apiProxy.post(composeCreateTenantUri(), request, CreateTenantResponse.class);
+    return response.getId();
+  }
+
+  @Override
+  public CreateTenantsBatchResponse createBatch(List<CreateTenantRequest> tenants, Boolean strict)
+      throws DescopeException {
+    if (CollectionUtils.isEmpty(tenants)) {
+      throw ServerCommonException.invalidArgument("tenants");
+    }
+    Map<String, Object> req = mapOf("tenants", tenants);
+    addIfNotNull(req, "strict", strict);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(CREATE_TENANTS_BATCH_LINK), req, CreateTenantsBatchResponse.class);
+  }
+
   private String create(Tenant tenant) {
     URI createTenantUri = composeCreateTenantUri();
     ApiProxy apiProxy = getApiProxy();
@@ -118,14 +152,67 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
   }
 
   @Override
+  public void update(UpdateTenantRequest request) throws DescopeException {
+    if (request == null || StringUtils.isAnyBlank(request.getId(), request.getName())) {
+      throw ServerCommonException.invalidArgument("id or name");
+    }
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.post(composeUpdateTenantUri(), request, Void.class);
+  }
+
+  @Override
+  public UpdateTenantsBatchResponse updateBatch(List<UpdateTenantRequest> tenants, Boolean strict)
+      throws DescopeException {
+    if (CollectionUtils.isEmpty(tenants)) {
+      throw ServerCommonException.invalidArgument("tenants");
+    }
+    Map<String, Object> req = mapOf("tenants", tenants);
+    addIfNotNull(req, "strict", strict);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(UPDATE_TENANTS_BATCH_LINK), req, UpdateTenantsBatchResponse.class);
+  }
+
+  @Override
+  public void patch(String id, PatchTenantRequest request) throws DescopeException {
+    if (StringUtils.isBlank(id)) {
+      throw ServerCommonException.invalidArgument("id");
+    }
+    if (request == null) {
+      request = new PatchTenantRequest();
+    }
+    Map<String, Object> req = mapOf("id", id);
+    req.putAll(request.toMap());
+    ApiProxy apiProxy = getApiProxy();
+    apiProxy.patch(getUri(PATCH_TENANT_LINK), req, Void.class);
+  }
+
+  @Override
   public void delete(String id) throws DescopeException {
+    delete(id, null);
+  }
+
+  @Override
+  public void delete(String id, Boolean cascade) throws DescopeException {
     if (StringUtils.isBlank(id)) {
       throw ServerCommonException.invalidArgument("id");
     }
 
     URI deleteTenantUri = composeDeleteTenantUri();
     ApiProxy apiProxy = getApiProxy();
-    apiProxy.post(deleteTenantUri, mapOf("id", id), Void.class);
+    Map<String, Object> req = mapOf("id", id);
+    addIfNotNull(req, "cascade", cascade);
+    apiProxy.post(deleteTenantUri, req, Void.class);
+  }
+
+  @Override
+  public DeleteTenantsBatchResponse deleteBatch(List<String> ids, Boolean cascade) throws DescopeException {
+    if (CollectionUtils.isEmpty(ids)) {
+      throw ServerCommonException.invalidArgument("ids");
+    }
+    Map<String, Object> req = mapOf("ids", ids);
+    addIfNotNull(req, "cascade", cascade);
+    ApiProxy apiProxy = getApiProxy();
+    return apiProxy.post(getUri(DELETE_TENANTS_BATCH_LINK), req, DeleteTenantsBatchResponse.class);
   }
 
   @Override
@@ -191,6 +278,9 @@ class TenantServiceImpl extends ManagementsBase implements TenantService {
     addIfNotNull(req, "domains", settings.getDomains());
     addIfNotNull(req, "JITDisabled", settings.getJitDisabled());
     addIfNotNull(req, "authType", settings.getAuthType());
+    addIfNotNull(req, "stepupTokenExpiration", settings.getStepupTokenExpiration());
+    addIfNotNull(req, "stepupTokenExpirationUnit", settings.getStepupTokenExpirationUnit());
+    addIfNotNull(req, "ssoSetupSuiteSettings", settings.getSsoSetupSuiteSettings());
     ApiProxy apiProxy = getApiProxy();
     apiProxy.post(configureSettingsUri(), req, Void.class);
   }

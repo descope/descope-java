@@ -712,9 +712,86 @@ try {
     // Handle the error
 }
 
+// Create a tenant with all its settings, as a sub-tenant of "parent-tenant-id"
+try {
+    String tenantId = ts.create(CreateTenantRequest.builder()
+            .name("My Tenant")
+            .parent("parent-tenant-id")
+            .selfProvisioningDomains(Arrays.asList("domain.com"))
+            .approvedDomains(Arrays.asList("vanity.example.com"))
+            .enforceSSOExclusionPermissions(Arrays.asList("SSO Exempt"))
+            .permittedIps(Arrays.asList("10.0.0.0/8"))
+            .roleInheritance(TenantRoleInheritance.USER_ONLY.getValue())
+            .strict(true) // fail on custom attributes the project does not declare
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Create up to 100 tenants in one call; failed tenants are returned without failing the others
+try {
+    CreateTenantsBatchResponse res = ts.createBatch(Arrays.asList(
+            CreateTenantRequest.builder().name("Tenant A").build(),
+            CreateTenantRequest.builder().name("Tenant B").build()), null);
+    for (CreateTenantBatchFailureResponse failed : res.getFailedTenants()) {
+        // failed.getFailure(), failed.getTenant()
+    }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update replaces the tenant's settings: unset fields are cleared, except approvedDomains
+try {
+    ts.update(UpdateTenantRequest.builder()
+            .id("my-custom-id")
+            .name("My Tenant")
+            .approvedDomains(Arrays.asList("vanity.example.com"))
+            .enforceSSOExclusionPermissions(Arrays.asList("SSO Exempt"))
+            .permittedIps(Arrays.asList("10.0.0.0/8"))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Update up to 100 tenants in one call
+try {
+    UpdateTenantsBatchResponse res = ts.updateBatch(Arrays.asList(
+            UpdateTenantRequest.builder().id("tenant-a").name("Tenant A").build(),
+            UpdateTenantRequest.builder().id("tenant-b").name("Tenant B").build()), null);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Patch changes only the fields that are set
+try {
+    ts.patch("my-custom-id", PatchTenantRequest.builder()
+            .disabled(true)
+            .permittedIps(Arrays.asList("10.0.0.1"))
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
 // Tenant deletion cannot be undone. Use carefully.
 try {
     ts.delete("my-custom-id");
+    // Or cascade the deletion
+    ts.delete("my-custom-id", true);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Delete up to 100 tenants in one call
+try {
+    DeleteTenantsBatchResponse res = ts.deleteBatch(Arrays.asList("tenant-a", "tenant-b"), false);
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load a tenant
+try {
+    Tenant tenant = ts.load("my-custom-id");
+    // tenant.getParent(), tenant.getSuccessors(), tenant.getApprovedDomains(), tenant.getPermittedIps()...
 } catch (DescopeException de) {
     // Handle the error
 }
@@ -739,6 +816,33 @@ try {
     for (Tenant t : tenants) {
         // Do something
     }
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Search the top level tenants, the sub-tenants of a parent, or by SSO domains
+try {
+    List<Tenant> tenants = ts.searchAll(TenantSearchRequest.builder()
+            .ssoDomains(Arrays.asList("sso.domain.com"))
+            .parentTenantId("parent-tenant-id")
+            .topLevelOnly(false)
+            .build());
+} catch (DescopeException de) {
+    // Handle the error
+}
+
+// Load and configure the tenant settings, including step-up token expiration and the SSO Setup Suite
+try {
+    TenantSettings current = ts.getSettings("my-custom-id");
+    // Only the settings that are set are sent
+    ts.configureSettings("my-custom-id", TenantSettings.builder()
+            .stepupTokenExpiration(10)
+            .stepupTokenExpirationUnit("minutes")
+            .ssoSetupSuiteSettings(SSOSetupSuiteSettings.builder()
+                    .enabled(true)
+                    .disabledFeatures(SSOSetupSuiteSettingsDisabledFeatures.builder().scim(true).build())
+                    .build())
+            .build());
 } catch (DescopeException de) {
     // Handle the error
 }
