@@ -151,7 +151,7 @@ public class AuthenticationServiceImplTest {
         return apiProxy;
       });
       mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
-      MeTenantsResponse response = auth.myTenants("someRefreshJwt", false, Arrays.asList("t1"));
+      final MeTenantsResponse response = auth.myTenants("someRefreshJwt", false, Arrays.asList("t1"));
 
       ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
       ArgumentCaptor<MeTenantsRequest> body = ArgumentCaptor.forClass(MeTenantsRequest.class);
