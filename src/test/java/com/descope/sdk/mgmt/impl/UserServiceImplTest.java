@@ -1644,14 +1644,14 @@ public class UserServiceImplTest {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
       UsersBatchResponse res = keyedUserService().createBatch(
           Arrays.asList(BatchUserRequest.builder().loginId("u1").build()), true);
+      assertEquals("U1", res.getCreatedUsers().get(0).getUserId());
+      assertEquals("f", res.getFailedUsers().get(0).getFailure());
+      assertEquals("b", res.getAdditionalErrors().get("a"));
       assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/create/batch");
       Map<?, ?> body = requestBody(captor.getValue());
       assertEquals(true, body.get("strict"));
       assertEquals(false, body.get("invite"));
       assertFalse(body.containsKey("locale"));
-      assertEquals("U1", res.getCreatedUsers().get(0).getUserId());
-      assertEquals("f", res.getFailedUsers().get(0).getFailure());
-      assertEquals("b", res.getAdditionalErrors().get("a"));
     }
   }
 
@@ -1675,13 +1675,13 @@ public class UserServiceImplTest {
       UsersBatchResponse res = keyedUserService().inviteBatch(
           Arrays.asList(BatchUserRequest.builder().loginId("u1").build()),
           InviteOptions.builder().inviteUrl(mockUrl).locale("en").build(), true);
+      assertEquals("U1", res.getCreatedUsers().get(0).getUserId());
       assertRequest(captor.getValue(), "POST", "/v1/mgmt/user/create/batch");
       Map<?, ?> body = requestBody(captor.getValue());
       assertEquals("en", body.get("locale"));
       assertEquals(true, body.get("strict"));
       assertEquals(true, body.get("invite"));
       assertEquals(mockUrl, body.get("inviteUrl"));
-      assertEquals("U1", res.getCreatedUsers().get(0).getUserId());
     }
   }
 
@@ -1714,14 +1714,14 @@ public class UserServiceImplTest {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
       UsersBatchResponse res = keyedUserService().patchBatch(Arrays.asList(PatchUserBatchRequest.builder()
           .loginId("u1").name("n").ssoAppIds(Arrays.asList("app")).build()), true);
+      assertEquals("U1", res.getPatchedUsers().get(0).getUserId());
+      assertEquals("U2", res.getFailedUsers().get(0).getUser().getUserId());
+      assertEquals("b", res.getAdditionalErrors().get("a"));
       assertRequest(captor.getValue(), "PATCH", "/v1/mgmt/user/patch/batch");
       Map<?, ?> body = requestBody(captor.getValue());
       assertEquals(true, body.get("strict"));
       assertEquals(Collections.singletonList(mapOf("identifier", "u1", "name", "n", "ssoAppIds",
           Arrays.asList("app"))), body.get("users"));
-      assertEquals("U1", res.getPatchedUsers().get(0).getUserId());
-      assertEquals("U2", res.getFailedUsers().get(0).getUser().getUserId());
-      assertEquals("b", res.getAdditionalErrors().get("a"));
     }
   }
 
@@ -1859,13 +1859,14 @@ public class UserServiceImplTest {
     try (MockedStatic<HttpClients> mockedHttpClients = mockStatic(HttpClients.class)) {
       mockedHttpClients.when(HttpClients::createDefault).thenReturn(httpClient);
       ProviderTokenResponse res = keyedUserService().getProviderToken("u1", "google", true, false);
+      assertEquals(new ProviderTokenResponse("google", "p1", "at", 123L, Arrays.asList("s"), "rt"), res);
+      assertFalse(res.toString().contains("rt"));
       assertRequest(captor.getValue(), "GET", "/v1/mgmt/user/provider/token");
       String uri = captor.getValue().getRequestUri();
       assertTrue(uri.contains("loginId=u1"), uri);
       assertTrue(uri.contains("provider=google"), uri);
       assertTrue(uri.contains("withRefreshToken=true"), uri);
       assertTrue(uri.contains("forceRefresh=false"), uri);
-      assertEquals(new ProviderTokenResponse("google", "p1", "at", 123L, Arrays.asList("s"), "rt"), res);
     }
   }
 
