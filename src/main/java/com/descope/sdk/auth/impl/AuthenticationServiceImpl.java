@@ -15,6 +15,7 @@ import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.ExchangeTokenRequest;
+import com.descope.model.auth.RefreshSessionRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -55,12 +56,31 @@ class AuthenticationServiceImpl extends AuthenticationsBase {
   }
 
   @Override
+  public Token refreshSessionWithToken(String refreshToken, String externalToken) throws DescopeException {
+    return refreshSessionWithTokenAuthenticationInfo(refreshToken, externalToken).getToken();
+  }
+
+  @Override
   public AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken) throws DescopeException {
     if (StringUtils.isBlank(refreshToken)) {
       throw ServerCommonException.missingArguments("refresh token");
     }
 
     AuthenticationInfo authInfo = refreshSession(refreshToken);
+    if (authInfo.getRefreshToken() == null) { // refresh token is not returned because jwt rotation is not enabled
+      authInfo.setRefreshToken(validateAndCreateToken(refreshToken));
+    }
+    return authInfo;
+  }
+
+  @Override
+  public AuthenticationInfo refreshSessionWithTokenAuthenticationInfo(String refreshToken, String externalToken)
+      throws DescopeException {
+    if (StringUtils.isBlank(refreshToken)) {
+      throw ServerCommonException.missingArguments("refresh token");
+    }
+
+    AuthenticationInfo authInfo = refreshSession(refreshToken, new RefreshSessionRequest(externalToken));
     if (authInfo.getRefreshToken() == null) { // refresh token is not returned because jwt rotation is not enabled
       authInfo.setRefreshToken(validateAndCreateToken(refreshToken));
     }

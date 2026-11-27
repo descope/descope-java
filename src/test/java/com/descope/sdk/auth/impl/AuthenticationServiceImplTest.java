@@ -1,6 +1,8 @@
 package com.descope.sdk.auth.impl;
 
 import static com.descope.sdk.TestUtils.MOCK_TOKEN;
+import static com.descope.sdk.TestUtils.MOCK_USER_RESPONSE;
+import static com.descope.sdk.TestUtils.PROJECT_ID;
 import static com.descope.utils.CollectionUtils.mapOf;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,9 +20,11 @@ import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ClientFunctionalException;
 import com.descope.exception.ErrorCode;
 import com.descope.exception.RateLimitExceededException;
+import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AccessKeyLoginOptions;
 import com.descope.model.auth.AuthenticationInfo;
 import com.descope.model.auth.AuthenticationServices;
+import com.descope.model.auth.RefreshSessionRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -40,11 +44,15 @@ import com.descope.sdk.mgmt.TenantService;
 import com.descope.sdk.mgmt.UserService;
 import com.descope.sdk.mgmt.impl.ManagementServiceBuilder;
 import com.descope.utils.JwtUtils;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.RetryingTest;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 
 public class AuthenticationServiceImplTest {
@@ -115,6 +123,73 @@ public class AuthenticationServiceImplTest {
       assertEquals(ErrorCode.INVALID_TOKEN, thrown.getCode());
       assertEquals("Invalid Token", thrown.getMessage());
     }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void testRefreshWithExternalToken() {
+    JWTResponse response = new JWTResponse("sessionJwt", "refreshJwt", "domain", "/", 60, 120,
+        MOCK_USER_RESPONSE, true, null, null);
+    response.setSessionExpiration(300);
+    response.setExternalToken("externalTokenOut");
+    response.setClaims(mapOf("k", "v"));
+    response.setTenantSSOID("tenantSso");
+    response.setTrustedDeviceJwt("trustedDevice");
+    response.setNextRefreshSeconds(30);
+    response.setCookieName("DSR");
+    response.setSessionCookieName("DS");
+    response.setSessionCookieDomain("session.domain");
+    response.setUnsavedSSO(true);
+    response.setKnownDeviceJwt("knownDevice");
+    response.setUserCreationDeferred(true);
+    response.setExternalPasskey(true);
+    ApiProxy apiProxy = mock(ApiProxy.class);
+    ArgumentCaptor<URI> uri = ArgumentCaptor.forClass(URI.class);
+    ArgumentCaptor<Object> body = ArgumentCaptor.forClass(Object.class);
+    doReturn(response).when(apiProxy).post(uri.capture(), body.capture(), any());
+    AtomicReference<String> authHeader = new AtomicReference<>();
+    try (MockedStatic<ApiProxyBuilder> mockedApiProxyBuilder = mockStatic(ApiProxyBuilder.class);
+        MockedStatic<JwtUtils> mockedJwtUtils = mockStatic(JwtUtils.class)) {
+      mockedApiProxyBuilder.when(() -> ApiProxyBuilder.buildProxy(any(), any())).thenAnswer(inv -> {
+        authHeader.set(((Supplier<String>) inv.getArgument(0)).get());
+        return apiProxy;
+      });
+      mockedJwtUtils.when(() -> JwtUtils.getToken(anyString(), any())).thenReturn(MOCK_TOKEN);
+      AuthenticationInfo info =
+          authenticationService.refreshSessionWithTokenAuthenticationInfo("someRefreshJwt", "externalTokenIn");
+      assertEquals("/v1/auth/refresh", uri.getValue().getPath());
+      assertEquals("Bearer " + PROJECT_ID + ":someRefreshJwt", authHeader.get());
+      assertEquals(new RefreshSessionRequest("externalTokenIn"), body.getValue());
+      assertEquals(MOCK_TOKEN, info.getToken());
+      assertEquals(MOCK_TOKEN, info.getRefreshToken());
+      assertEquals(MOCK_USER_RESPONSE, info.getUser());
+      assertTrue(info.getFirstSeen());
+      assertEquals(300, info.getSessionExpiration());
+      assertEquals("externalTokenOut", info.getExternalToken());
+      assertEquals(mapOf("k", "v"), info.getClaims());
+      assertEquals("tenantSso", info.getTenantSSOID());
+      assertEquals("trustedDevice", info.getTrustedDeviceJwt());
+      assertEquals(30, info.getNextRefreshSeconds());
+      assertEquals("DSR", info.getCookieName());
+      assertEquals("DS", info.getSessionCookieName());
+      assertEquals("session.domain", info.getSessionCookieDomain());
+      assertTrue(info.getUnsavedSSO());
+      assertEquals("knownDevice", info.getKnownDeviceJwt());
+      assertTrue(info.getUserCreationDeferred());
+      assertTrue(info.getExternalPasskey());
+
+      // Without an external token the body is still sent, empty
+      assertEquals(MOCK_TOKEN, authenticationService.refreshSessionWithToken("someRefreshJwt", null));
+      assertEquals(new RefreshSessionRequest(null), body.getValue());
+    }
+  }
+
+  @Test
+  void testRefreshWithExternalTokenMissingRefreshToken() {
+    assertThrows(ServerCommonException.class,
+        () -> authenticationService.refreshSessionWithTokenAuthenticationInfo("", "externalTokenIn"));
+    assertThrows(ServerCommonException.class,
+        () -> authenticationService.refreshSessionWithToken(null, "externalTokenIn"));
   }
 
   @RetryingTest(value = 3, suspendForMs = 30000, onExceptions = RateLimitExceededException.class)

@@ -9,6 +9,7 @@ import static com.descope.utils.PatternUtils.PHONE_PATTERN;
 import com.descope.enums.DeliveryMethod;
 import com.descope.exception.ServerCommonException;
 import com.descope.model.auth.AuthenticationInfo;
+import com.descope.model.auth.RefreshSessionRequest;
 import com.descope.model.client.Client;
 import com.descope.model.jwt.Token;
 import com.descope.model.jwt.response.JWTResponse;
@@ -127,6 +128,29 @@ abstract class AuthenticationsBase extends SdkServicesBase implements Authentica
 
     JWTResponse jwtResponse = apiProxy.post(refreshTokenLinkURL, null, JWTResponse.class);
     return getAuthenticationInfo(jwtResponse);
+  }
+
+  AuthenticationInfo refreshSession(String refreshToken, RefreshSessionRequest request) {
+    validateJWT(refreshToken);
+    ApiProxy apiProxy = getApiProxy(refreshToken);
+    URI refreshTokenLinkURL = composeRefreshTokenLinkURL();
+
+    JWTResponse jwtResponse = apiProxy.post(refreshTokenLinkURL, request, JWTResponse.class);
+    AuthenticationInfo authInfo = getAuthenticationInfo(jwtResponse);
+    authInfo.setSessionExpiration(jwtResponse.getSessionExpiration());
+    authInfo.setExternalToken(jwtResponse.getExternalToken());
+    authInfo.setClaims(jwtResponse.getClaims());
+    authInfo.setTenantSSOID(jwtResponse.getTenantSSOID());
+    authInfo.setTrustedDeviceJwt(jwtResponse.getTrustedDeviceJwt());
+    authInfo.setNextRefreshSeconds(jwtResponse.getNextRefreshSeconds());
+    authInfo.setCookieName(jwtResponse.getCookieName());
+    authInfo.setSessionCookieName(jwtResponse.getSessionCookieName());
+    authInfo.setSessionCookieDomain(jwtResponse.getSessionCookieDomain());
+    authInfo.setUnsavedSSO(jwtResponse.getUnsavedSSO());
+    authInfo.setKnownDeviceJwt(jwtResponse.getKnownDeviceJwt());
+    authInfo.setUserCreationDeferred(jwtResponse.getUserCreationDeferred());
+    authInfo.setExternalPasskey(jwtResponse.getExternalPasskey());
+    return authInfo;
   }
 
   AuthenticationInfo getAuthenticationInfo(JWTResponse jwtResponse) {

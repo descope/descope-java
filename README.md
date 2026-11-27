@@ -517,6 +517,16 @@ try {
     // Handle the unauthorized error
 }
 
+// Optionally pass an external token with the refresh (or null), and read the full refresh response
+try {
+    Token t = as.refreshSessionWithToken(refreshToken, externalToken);
+    AuthenticationInfo info = as.refreshSessionWithTokenAuthenticationInfo(refreshToken, externalToken);
+    Integer sessionExpiration = info.getSessionExpiration();
+    Map<String, Object> claims = info.getClaims();
+} catch (DescopeException de) {
+    // Handle the unauthorized error
+}
+
 // Alternatively, you could combine the two and
 // have the session validated and automatically refreshed when expired
 try {
