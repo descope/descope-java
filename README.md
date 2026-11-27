@@ -75,9 +75,10 @@ These sections show how to use the SDK to perform various authentication/authori
 5. [SSO/SAML](#ssosaml)
 6. [TOTP Authentication](#totp-authentication)
 7. [Passwords](#passwords)
-8. [Session Validation](#session-validation)
-9. [Roles & Permission Validation](#roles--permission-validation)
-10. [Logging Out](#logging-out)
+8. [WebAuthn (Passkeys)](#webauthn-passkeys)
+9. [Session Validation](#session-validation)
+10. [Roles & Permission Validation](#roles--permission-validation)
+11. [Logging Out](#logging-out)
 
 ## Management Functions
 
@@ -494,6 +495,61 @@ try {
 }
 
 ```
+
+### WebAuthn (Passkeys)
+
+The SDK acts as a mid-layer between the browser's WebAuthn API and Descope. Each start call returns a transaction ID
+and the options to pass to `navigator.credentials.create` (sign up) or `navigator.credentials.get` (sign in). Send the
+browser's result to the matching finish call.
+
+```java
+WebAuthnService ws = descopeClient.getAuthenticationServices().getWebAuthnService();
+
+// Optional: tune the WebAuthn ceremony
+PasskeyOptions passkeyOptions = PasskeyOptions.builder()
+    .authenticatorSelection(PasskeyAuthenticatorSelection.builder()
+        .authenticatorAttachment(PasskeyAuthenticatorSelection.AUTHENTICATOR_ATTACHMENT_PLATFORM)
+        .residentKey(PasskeyAuthenticatorSelection.RESIDENT_KEY_REQUIRED)
+        .build())
+    .attestation(PasskeyOptions.ATTESTATION_NONE)
+    .userVerification(PasskeyOptions.USER_VERIFICATION_REQUIRED)
+    .build();
+
+try {
+    // Sign up: the display name labels the new passkey in the browser prompt and OS keychain
+    WebAuthnTransactionResponse signUp = ws.signUpStart(loginId, user, origin, signUpOptions, passkeyOptions,
+        "My laptop");
+    AuthenticationInfo info = ws.signUpFinish(new WebAuthnFinishRequest(signUp.getTransactionId(), browserResponse));
+
+    // Sign in. Pass the user's refresh token when loginOptions sets stepup or mfa
+    WebAuthnTransactionResponse signIn = ws.signInStart(loginId, origin, null, loginOptions, passkeyOptions);
+    info = ws.signInFinish(new WebAuthnFinishRequest(signIn.getTransactionId(), browserResponse));
+
+    // Sign up or in: call signUpFinish when getCreate() is true, signInFinish otherwise
+    WebAuthnTransactionResponse signUpOrIn = ws.signUpOrInStart(loginId, origin, null, loginOptions, ssoAppId,
+        passkeyOptions, "My laptop");
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+Authenticated users can add a passkey. With `mfa` set to true, the finish call returns a session whose `amr` merges
+the factors the user already passed with the new passkey.
+
+```java
+try {
+    WebAuthnTransactionResponse update = ws.updateUserDeviceStart(loginId, origin, refreshToken, true,
+        passkeyOptions, "My phone");
+    // Null when the update did not start with mfa
+    AuthenticationInfo info = ws.updateUserDeviceFinishWithSession(
+        new WebAuthnFinishRequest(update.getTransactionId(), browserResponse));
+} catch (DescopeException de) {
+    // Handle the error
+}
+```
+
+The returned `AuthenticationInfo` also carries the rest of the server's response, such as `getTenantSSOID()`,
+`getTrustedDeviceJwt()` and `getUserCreationDeferred()`.
 
 ### Session Validation
 
